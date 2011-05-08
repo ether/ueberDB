@@ -24,7 +24,7 @@ exports.database = function(type, dbSettings, wrapperSettings)
 {
   if(!type)
   {
-    type = "sqlite3";
+    type = "sqlite";
     dbSettings = null;
     wrapperSettings = null;
   }
