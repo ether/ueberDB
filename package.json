@@ -1,0 +1,14 @@
+{
+  "name"          : "ueberDB",
+  "description"   : "transform every database into a object key value store",
+  "url"           : "https://github.com/Pita/ueberDB",
+  "keywords"      : ["database", "keyvalue"],
+  "author"        : "Peter 'Pita' Martischka <petermartischka@googlemail.com>",
+  "dependencies"  : {
+                      "mysql"  : ">=0.9.1",
+                      "sqlite3": ">=2.0.12",
+                      "async"  : ">=0.1.9"
+                    }
+  "main"          : "./ueberDB",
+  "version"       : "0.0.1"
+}
