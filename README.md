@@ -1,0 +1,44 @@
+#About
+
+ueberDB is a abstraction layer for databases. It turns every database into a simple key value store, at the moment we only support mysql and sqlite. ueberDB uses a smart cache and buffer algorithm to make databases faster. Reads are cached and writes are done in a bulk. The bulk writing reduces the overhead of a database transaction.
+
+#Example
+
+<pre>
+var ueberDB = require("ueberDB");
+
+//mysql
+var db = new ueberDB.database("mysql", {"user":"root", host: "localhost", "password":"", database: "store"});
+//sqlite in-memory
+//var db = new ueberDB.database("sqlite");
+//sqlite in file
+//var db = new ueberDB.database("sqlite", {filename:"var/sqlite3.db"});
+//sqlite in file with a write interval of a half second
+//var db = new ueberDB.database("sqlite", {filename:"var/sqlite3.db"}, {writeInterval: 500});
+
+//initialize the database
+db.init(function (err)
+{
+  if(err) 
+  {
+    console.error(err);
+    process.exit(1);
+  }
+
+  //set a object as a value
+  //can be done without a callback, cause the value is immediately in the buffer
+  db.set("valueA", {a:1,b:2});
+  
+  //get the object
+  db.get("valueA", function(err, value){
+    console.log(value);
+    
+    db.close(function(){
+      process.exit(0);
+    });
+  });
+});
+</pre>
+
+#License 
+is Apache v2
