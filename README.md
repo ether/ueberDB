@@ -2,6 +2,10 @@
 
 ueberDB is a abstraction layer for databases. It turns every database into a simple key value store, at the moment we only support mysql and sqlite. ueberDB uses a smart cache and buffer algorithm to make databases faster. Reads are cached and writes are done in a bulk. The bulk writing reduces the overhead of a database transaction.
 
+#Install
+
+`npm install ueberDB`
+
 #Example
 
 <pre>
