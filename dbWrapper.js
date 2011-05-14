@@ -198,7 +198,7 @@ exports.database.prototype.set = function(key, value, callback)
       this.buffer[key].callbacks=[];
     
     //add this callback to the array
-    this.buffer[key].callbacks.push(callback);
+    if(callback) this.buffer[key].callbacks.push(callback);
   }
   //writecache is disabled, so we write directly to the database
   else
