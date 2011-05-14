@@ -10,5 +10,5 @@
                       "async"  : ">=0.1.9"
                     },
   "main"          : "./ueberDB",
-  "version"       : "0.0.1"
+  "version"       : "0.0.2"
 }

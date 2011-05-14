@@ -70,6 +70,16 @@ exports.database.prototype.set = function (key, value, callback)
   this.db.set(key, value, callback);
 }
 
+exports.database.prototype.getSub = function (key, sub, callback)
+{
+  this.db.getSub(key, sub, callback);
+}
+
+exports.database.prototype.setSub = function (key, sub, value, callback)
+{
+  this.db.setSub(key, sub, value, callback);
+}
+
 exports.database.prototype.remove = function (key, callback)
 {
   this.db.remove(key, callback);

@@ -26,6 +26,8 @@ The idea of the dbWrapper is to provide following features:
 All Features can be disabled or configured. The Wrapper provides default settings that can be overwriden by the driver and by the module user. 
 */
 
+var async = require("async");
+
 var defaultSettings =
 {
   //the number of elements that should be cached. To Disable cache just set it to zero
@@ -218,6 +220,69 @@ exports.database.prototype.set = function(key, value, callback)
       this.wrappedDB.set(key,value,callback);
     }
   }
+}
+
+/**
+ Sets a subvalue
+*/
+exports.database.prototype.setSub = function(key, sub, value, callback)
+{
+  var _this = this;
+
+  async.waterfall([
+    //get the full value
+    function(callback)
+    {
+      _this.get(key, callback);
+    },
+    //set the sub value and set the full value again 
+    function(fullValue, callback)
+    {
+      //get the subvalue parent
+      var subvalueParent = fullValue;
+      for (var i=0 ; i < (sub.length-1) ; i++)
+      {
+        subvalueParent = subvalueParent[sub[i]];
+      }
+      
+      //set the subvalue, we're doing that with the parent element
+      subvalueParent[sub[sub.length-1]] = value;
+      
+      _this.set(key, fullValue, callback);
+    }
+  ],function(err)
+  {
+    if(callback) callback(err);
+  })
+}
+
+/**
+ Returns a sub value of the object
+ @param sub is a array, for example if you want to access object.test.bla, the array is ["test", "bla"]
+*/
+exports.database.prototype.getSub = function(key, sub, callback)
+{
+  //get the full value
+  this.get(key, function (err, value)
+  {
+    //there happens an errror while getting this value, call callback
+    if(err)
+    {
+      callback(err);
+    }
+    //everything is correct, navigate to the subvalue and return it
+    else
+    {
+      var subvalue = value;
+      
+      for (var i=0 ; i<sub.length ; i++)
+      {
+        subvalue = subvalue[sub[i]];
+      }
+      
+      callback(err, subvalue);
+    }
+  });
 }
 
 /**
