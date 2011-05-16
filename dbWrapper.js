@@ -201,6 +201,13 @@ exports.database.prototype.set = function(key, value, callback)
     
     //add this callback to the array
     if(callback) this.buffer[key].callbacks.push(callback);
+    else
+    {
+      this.buffer[key].callbacks.push(function(err)
+      {
+        if(err) throw err;
+      });
+    }
   }
   //writecache is disabled, so we write directly to the database
   else
@@ -253,6 +260,7 @@ exports.database.prototype.setSub = function(key, sub, value, callback)
   ],function(err)
   {
     if(callback) callback(err);
+    else if(err != null) throw err;
   })
 }
 
