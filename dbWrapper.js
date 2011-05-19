@@ -249,7 +249,17 @@ exports.database.prototype.setSub = function(key, sub, value, callback)
       var subvalueParent = fullValue;
       for (var i=0 ; i < (sub.length-1) ; i++)
       {
-        subvalueParent = subvalueParent[sub[i]];
+        //test if the subvalue exist
+        if(subvalue != null && subvalue[sub[i]] !== undefined)
+        {
+          subvalueParent = subvalueParent[sub[i]];
+        }
+        //the subvalue doesn't exist, throw error
+        else
+        {
+          callback("Not able to find the subvalue '" + sub.join(".") + "' in " + JSON.stringify(value));
+          return;
+        }
       }
       
       //set the subvalue, we're doing that with the parent element
@@ -285,7 +295,17 @@ exports.database.prototype.getSub = function(key, sub, callback)
       
       for (var i=0 ; i<sub.length ; i++)
       {
-        subvalue = subvalue[sub[i]];
+        //test if the subvalue exist
+        if(subvalue != null && subvalue[sub[i]] !== undefined)
+        {
+          subvalue = subvalue[sub[i]];
+        }
+        //the subvalue doesn't exist, throw error
+        else
+        {
+          callback("Not able to find the subvalue " + sub.join(".") + " in " + JSON.stringify(value));
+          return;
+        }
       }
       
       callback(err, subvalue);
