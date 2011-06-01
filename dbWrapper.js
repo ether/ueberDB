@@ -254,11 +254,11 @@ exports.database.prototype.setSub = function(key, sub, value, callback)
         {
           subvalueParent = subvalueParent[sub[i]];
         }
-        //the subvalue doesn't exist, throw error
+        //the subvalue doesn't exist, create it
         else
         {
-          callback("Not able to find the subvalue '" + sub.join(".") + "' in " + JSON.stringify(value));
-          return;
+          subvalueParent[sub[i]] = {};
+          subvalueParent = subvalueParent[sub[i]];
         }
       }
       
@@ -300,11 +300,11 @@ exports.database.prototype.getSub = function(key, sub, callback)
         {
           subvalue = subvalue[sub[i]];
         }
-        //the subvalue doesn't exist, throw error
+        //the subvalue doesn't exist, break the loop and return null
         else
         {
-          callback("Not able to find the subvalue " + sub.join(".") + " in " + JSON.stringify(value));
-          return;
+          subvalue = null;
+          break;
         }
       }
       
