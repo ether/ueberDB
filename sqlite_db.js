@@ -113,5 +113,5 @@ exports.database.prototype.close = function(callback)
 
 function escape (val) 
 {
-  return "'"+val.replace("'", "''")+"'";
+  return "'"+val.replace(/'/g, "''")+"'";
 };
