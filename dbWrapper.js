@@ -250,7 +250,7 @@ exports.database.prototype.setSub = function(key, sub, value, callback)
       for (var i=0 ; i < (sub.length-1) ; i++)
       {
         //test if the subvalue exist
-        if(subvalue != null && subvalue[sub[i]] !== undefined)
+        if(subvalueParent != null && subvalueParent[sub[i]] !== undefined)
         {
           subvalueParent = subvalueParent[sub[i]];
         }
