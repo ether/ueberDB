@@ -62,22 +62,30 @@ exports.database.prototype.init = function(callback)
 
 exports.database.prototype.get = function (key, callback)
 {
-  this.db.get(key, callback);
+  this.db.get(key, function(err, value)
+  {
+    value = clone(value);
+    callback(err, value);
+  });
 }
 
 exports.database.prototype.set = function (key, value, callback)
 {
-  this.db.set(key, value, callback);
+  this.db.set(key, clone(value), callback);
 }
 
 exports.database.prototype.getSub = function (key, sub, callback)
 {
-  this.db.getSub(key, sub, callback);
+  this.db.getSub(key, sub, function(err, value)
+  {
+    value = clone(value);
+    callback(err, value);
+  });
 }
 
 exports.database.prototype.setSub = function (key, sub, value, callback)
 {
-  this.db.setSub(key, sub, value, callback);
+  this.db.setSub(key, sub, clone(value), callback);
 }
 
 exports.database.prototype.remove = function (key, callback)
@@ -88,4 +96,42 @@ exports.database.prototype.remove = function (key, callback)
 exports.database.prototype.close = function(callback)
 {
   this.db.close(callback);
+}
+
+function clone(obj)
+{
+  // Handle the 3 simple types, and null or undefined
+  if (null == obj || "object" != typeof obj) return obj;
+
+  // Handle Date
+  if (obj instanceof Date)
+  {
+    var copy = new Date();
+    copy.setTime(obj.getTime());
+    return copy;
+  }
+
+  // Handle Array
+  if (obj instanceof Array)
+  {
+    var copy = [];
+    for (var i = 0, len = obj.length; i < len; ++i)
+    {
+      copy[i] = clone(obj[i]);
+    }
+    return copy;
+  }
+
+  // Handle Object
+  if (obj instanceof Object)
+  {
+    var copy = {};
+    for (var attr in obj)
+    {
+      if (obj.hasOwnProperty(attr)) copy[attr] = clone(obj[attr]);
+    }
+    return copy;
+  }
+
+  throw new Error("Unable to copy obj! Its type isn't supported.");
 }
