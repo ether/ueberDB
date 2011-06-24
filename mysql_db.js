@@ -56,7 +56,7 @@ exports.database.prototype.init = function(callback)
     {
       var sql = "CREATE TABLE IF NOT EXISTS `store` ( " +
                 "`key` VARCHAR( 100 ) NOT NULL , " + 
-                "`value` TEXT NOT NULL , " + 
+                "`value` LONGTEXT NOT NULL , " + 
                 "PRIMARY KEY (  `key` ) " +
                 ") ENGINE = INNODB;";
       _this.db.query(sql,[],callback);
