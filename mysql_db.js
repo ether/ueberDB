@@ -68,8 +68,7 @@ exports.database.prototype.init = function(callback)
 
 exports.database.prototype.get = function (key, callback)
 {
-  var sql = this.db.format("SELECT `value` FROM  `store` WHERE  `key` = ?", [key]);
-  this.db.query(sql, [], function(err,results)
+  this.db.query("SELECT `value` FROM  `store` WHERE  `key` = ?", [key], function(err,results)
   {
     var value = null;
     
