@@ -37,7 +37,7 @@ var valueMap = {};
 
 //the default settings for benchmarking
 var bench_settings = {};
-bench_settings["mysql"] = {"user":"root", host: "localhost", "password":"", database: "store"};
+bench_settings["mysql"] = {"user":"etherpadlite", host: "localhost", "password":"etherpadlite", database: "etherpadlite"};
 bench_settings["sqlite"] = {filename:"var/sqlite3.db"};
 
 if(process.argv.length == 3)
@@ -219,8 +219,14 @@ function generateOperations(startNum, endNum, size, type)
 
 function doOperations(operations, measure, callback)
 {
-  async.forEach(operations, function(item, callback)
+  async.forEach(operations, function(item, _callback)
   {    
+    //slow down the callback, this ensures the db gets time write the values
+    var callback = function(err)
+    {
+      setTimeout(_callback, 1, err);
+    };
+  
     //if write or update, call set
     if(item.type == "write" || item.type == "update")
     {

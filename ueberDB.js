@@ -16,6 +16,7 @@
 
 var dbWrapper = require("./dbWrapper");
 var async = require("async");
+var channels = require("channels");
 
 /**
  The Constructor
@@ -34,6 +35,7 @@ exports.database = function(type, dbSettings, wrapperSettings)
   this.db_module = require("./" + type + "_db");
   this.dbSettings = dbSettings; 
   this.wrapperSettings = wrapperSettings; 
+  this.channels = new channels.channels(doOperation);
 }
 
 exports.database.prototype.init = function(callback)
@@ -62,35 +64,92 @@ exports.database.prototype.init = function(callback)
 
 exports.database.prototype.get = function (key, callback)
 {
-  this.db.get(key, function(err, value)
-  {
-    value = clone(value);
-    callback(err, value);
-  });
+  this.channels.emit(key, {"db": this.db, "type": "get", "key": key, "callback": callback});
 }
 
 exports.database.prototype.set = function (key, value, callback)
 {
-  this.db.set(key, clone(value), callback);
+  this.channels.emit(key, {"db": this.db, "type": "set", "key": key, "value": clone(value), "callback": callback});
 }
 
 exports.database.prototype.getSub = function (key, sub, callback)
 {
-  this.db.getSub(key, sub, function(err, value)
-  {
-    value = clone(value);
-    callback(err, value);
-  });
+  this.channels.emit(key, {"db": this.db, "type": "getsub", "key": key, "sub": sub, "callback": callback});
 }
 
 exports.database.prototype.setSub = function (key, sub, value, callback)
 {
-  this.db.setSub(key, sub, clone(value), callback);
+  this.channels.emit(key, {"db": this.db, "type": "setsub", "key": key, "sub": sub, "value": clone(value), "callback": callback});
 }
 
 exports.database.prototype.remove = function (key, callback)
 {
-  this.db.remove(key, callback);
+  this.channels.emit(key, {"db": this.db, "type": "remove", "key": key, "callback": callback});
+}
+
+function doOperation (operation, callback)
+{
+  if(operation.type == "get")
+  {
+    operation.db.get(operation.key, function(err, value)
+    {
+      //clone the value
+      value = clone(value);
+      
+      //call the caller callback
+      operation.callback(err, value);
+      
+      //call the queue callback
+      callback();
+    });
+  }
+  else if(operation.type == "set")
+  {  
+    operation.db.set(operation.key, operation.value, function(err)
+    {
+      //call the caller callback
+      if(operation.callback) operation.callback(err);
+    });
+    
+    //call the queue callback
+    callback();
+  }
+  else if(operation.type == "getsub")
+  {
+    operation.db.getSub(operation.key, operation.sub, function(err, value)
+    {
+      //clone the value
+      value = clone(value);
+      
+      //call the caller callback
+      operation.callback(err, value);
+      
+      //call the queue callback
+      callback();
+    });
+  }
+  else if(operation.type == "setsub")
+  {
+    operation.db.setSub(operation.key, operation.sub, operation.value, function(err)
+    {
+      //call the queue callback
+      callback();
+      
+      //call the caller callback
+      if(operation.callback) operation.callback(err);
+    });
+  }
+  else if(operation.type == "remove")
+  {
+    operation.db.remove(operation.key, function(err)
+    {
+      //call the caller callback
+      if(operation.callback) operation.callback(err);
+      
+      //call the queue callback
+      callback();
+    });
+  }
 }
 
 exports.database.prototype.close = function(callback)

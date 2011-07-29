@@ -265,7 +265,8 @@ exports.database.prototype.setSub = function(key, sub, value, callback)
       //set the subvalue, we're doing that with the parent element
       subvalueParent[sub[sub.length-1]] = value;
       
-      _this.set(key, fullValue, callback);
+      _this.set(key, fullValue);
+      callback();
     }
   ],function(err)
   {
