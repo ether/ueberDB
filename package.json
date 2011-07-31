@@ -10,6 +10,6 @@
                       "async"   : ">=0.1.9",
                       "channels": ">=0.0.1"
                     },
-  "main"          : "./ueberDB",
+  "main"          : "./CloneAndAtomicLayer",
   "version"       : "0.0.11"
 }

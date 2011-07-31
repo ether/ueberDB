@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-var dbWrapper = require("./dbWrapper");
+var cacheAndBufferLayer = require("./CacheAndBufferLayer");
 var async = require("async");
 var channels = require("channels");
 
@@ -52,7 +52,7 @@ exports.database.prototype.init = function(callback)
     //initalize the db wrapper
     function(callback)
     {
-      _this.db = new dbWrapper.database(_this.db, _this.wrapperSettings);
+      _this.db = new cacheAndBufferLayer.database(_this.db, _this.wrapperSettings);
       _this.db.init(callback);
     } 
   ],callback);
