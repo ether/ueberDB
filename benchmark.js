@@ -234,12 +234,12 @@ function doOperations(operations, measure, callback)
       {
          measureTime(function(callback)
          {
-           db.set(item.key, item.value, callback);
+           db.set(item.key, item.value, null, callback);
          },item.type, callback);
       }
       else
       {
-        db.set(item.key, item.value, callback);
+        db.set(item.key, item.value, null, callback);
       }  
     }
     else if(item.type == "read")
@@ -260,12 +260,12 @@ function doOperations(operations, measure, callback)
       if(measure)
       {
         measureTime(function(callback){
-          db.remove(item.key, callback);
+          db.remove(item.key, null, callback);
         },item.type, callback); 
       }
       else
       {
-        db.remove(item.key, callback);
+        db.remove(item.key, null, callback);
       }
     }
     else

@@ -173,7 +173,7 @@ exports.database.prototype.get = function(key, callback)
 /**
  Sets the value trough the wrapper
 */
-exports.database.prototype.set = function(key, value, callback)
+exports.database.prototype.set = function(key, value, bufferCallback, writeCallback)
 {
   //writing cache is enabled, so simply write it into the buffer
   if(this.settings.writeInterval > 0)
@@ -200,7 +200,7 @@ exports.database.prototype.set = function(key, value, callback)
       this.buffer[key].callbacks=[];
     
     //add this callback to the array
-    if(callback) this.buffer[key].callbacks.push(callback);
+    if(writeCallback) this.buffer[key].callbacks.push(writeCallback);
     else
     {
       this.buffer[key].callbacks.push(function(err)
@@ -208,10 +208,20 @@ exports.database.prototype.set = function(key, value, callback)
         if(err) throw err;
       });
     }
+    
+    //call the buffer callback
+    if (bufferCallback) bufferCallback();
   }
   //writecache is disabled, so we write directly to the database
   else
   {
+    //create a wrapper callback for write and buffer callback
+    var callback = function (err)
+    {
+      if (bufferCallback) bufferCallback(err);
+      if (writeCallback) writeCallback(err);
+    }
+  
     //The value is null, means this no set operation, this is a remove operation
     if(value==null)
     {
@@ -232,7 +242,7 @@ exports.database.prototype.set = function(key, value, callback)
 /**
  Sets a subvalue
 */
-exports.database.prototype.setSub = function(key, sub, value, callback)
+exports.database.prototype.setSub = function(key, sub, value, bufferCallback, writeCallback)
 {
   var _this = this;
 
@@ -265,8 +275,7 @@ exports.database.prototype.setSub = function(key, sub, value, callback)
       //set the subvalue, we're doing that with the parent element
       subvalueParent[sub[sub.length-1]] = value;
       
-      _this.set(key, fullValue);
-      callback();
+      _this.set(key, fullValue, bufferCallback, writeCallback);
     }
   ],function(err)
   {
@@ -317,10 +326,10 @@ exports.database.prototype.getSub = function(key, sub, callback)
 /**
  Removes the value trough the wrapper
 */
-exports.database.prototype.remove = function(key, callback)
+exports.database.prototype.remove = function(key, bufferCallback, writeCallback)
 {
   //make a set to null out of it
-  this.set(key, null, callback);
+  this.set(key, null, bufferCallback, writeCallback);
 }
 
 /**

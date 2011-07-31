@@ -67,9 +67,9 @@ exports.database.prototype.get = function (key, callback)
   this.channels.emit(key, {"db": this.db, "type": "get", "key": key, "callback": callback});
 }
 
-exports.database.prototype.set = function (key, value, callback)
+exports.database.prototype.set = function (key, value, bufferCallback, writeCallback)
 {
-  this.channels.emit(key, {"db": this.db, "type": "set", "key": key, "value": clone(value), "callback": callback});
+  this.channels.emit(key, {"db": this.db, "type": "set", "key": key, "value": clone(value), "bufferCallback": bufferCallback, "writeCallback": writeCallback});
 }
 
 exports.database.prototype.getSub = function (key, sub, callback)
@@ -77,14 +77,14 @@ exports.database.prototype.getSub = function (key, sub, callback)
   this.channels.emit(key, {"db": this.db, "type": "getsub", "key": key, "sub": sub, "callback": callback});
 }
 
-exports.database.prototype.setSub = function (key, sub, value, callback)
+exports.database.prototype.setSub = function (key, sub, value, bufferCallback, writeCallback)
 {
-  this.channels.emit(key, {"db": this.db, "type": "setsub", "key": key, "sub": sub, "value": clone(value), "callback": callback});
+  this.channels.emit(key, {"db": this.db, "type": "setsub", "key": key, "sub": sub, "value": clone(value), "bufferCallback": bufferCallback, "writeCallback": writeCallback});
 }
 
-exports.database.prototype.remove = function (key, callback)
+exports.database.prototype.remove = function (key, bufferCallback, writeCallback)
 {
-  this.channels.emit(key, {"db": this.db, "type": "remove", "key": key, "callback": callback});
+  this.channels.emit(key, {"db": this.db, "type": "remove", "key": key, "bufferCallback": bufferCallback, "writeCallback": writeCallback});
 }
 
 function doOperation (operation, callback)
@@ -107,12 +107,12 @@ function doOperation (operation, callback)
   {  
     operation.db.set(operation.key, operation.value, function(err)
     {
+      //call the queue callback
+      callback();
+      
       //call the caller callback
-      if(operation.callback) operation.callback(err);
-    });
-    
-    //call the queue callback
-    callback();
+      if(operation.bufferCallback) operation.bufferCallback(err);
+    }, operation.writeCallback);
   }
   else if(operation.type == "getsub")
   {
@@ -136,19 +136,19 @@ function doOperation (operation, callback)
       callback();
       
       //call the caller callback
-      if(operation.callback) operation.callback(err);
-    });
+      if(operation.bufferCallback) operation.bufferCallback(err);
+    }, operation.writeCallback);
   }
   else if(operation.type == "remove")
   {
     operation.db.remove(operation.key, function(err)
     {
-      //call the caller callback
-      if(operation.callback) operation.callback(err);
-      
       //call the queue callback
       callback();
-    });
+      
+      //call the caller callback
+      if(operation.bufferCallback) operation.bufferCallback(err);
+    }, operation.writeCallback);
   }
 }
 
