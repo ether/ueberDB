@@ -79,6 +79,9 @@ exports.database = function(wrappedDB, settings)
     setInterval(flush, this.settings.writeInterval, this);
   }
   
+  //set the flushing flag to false, this flag shows that there is a flushing action happing at the moment
+  this.isFlushing = false;
+  
   //ensure the buffer is flushed before the application ends
   process.on('exit', function () 
   {
@@ -158,7 +161,7 @@ exports.database.prototype.get = function(key, callback)
     
       //cache the value if caching is enabled
       if(self.settings.cache > 0)
-        self.buffer[key] = {"value":value, dirty:false, timestamp: new Date().getTime()};
+        self.buffer[key] = {"value":value, dirty:false, timestamp: new Date().getTime(), writingInProgress: false};
       
       self.bufferLength++;
       
@@ -347,7 +350,7 @@ exports.database.prototype.gc = function()
   var deleteCandidates = [];
   for(var i in this.buffer)
   {
-    if(this.buffer[i].dirty == false)
+    if(this.buffer[i].dirty == false && this.buffer[i].writingInProgress == false)
     {
       deleteCandidates.push({key: i, timestamp: this.buffer[i].timestamp});
     }
@@ -367,32 +370,20 @@ exports.database.prototype.gc = function()
       this.bufferLength--;
     }
   }
-  //There are no undirty values to delete, means we have to flush the cache
-  else
-  {
-    var self = this;
-  
-    setTimeout(flush,0,this,function(err){
-      self.gc();
-    });
-  }
 }
-
-/**
- Wrapes the flush function
-*/
-exports.database.prototype.flush = function(callback)
-{
-  flush(this,callback);
-}
-
-var transmissionNum = 0;
 
 /**
  Writes all dirty values to the database
 */
 function flush (db, callback)
 {
+  //return if there is a flushing action in process
+  if(db.isFlushing)
+  {
+    if(callback) callback();
+    return;
+  }
+
   var operations = [];
   var callbacks = [];
 
@@ -409,6 +400,8 @@ function flush (db, callback)
       //stringify the value if stringifying is enabled
       if(db.settings.json == true && value != null)
         value = JSON.stringify(value);
+      else
+        value = clone(value);
       
       //add the operation to the operations array
       operations.push({"type":type, "key":key, "value":value});
@@ -420,26 +413,78 @@ function flush (db, callback)
       db.buffer[i].callbacks = [];
       //set the dirty flag to false
       db.buffer[i].dirty = false;
+      //set the writingInProgress flag to true
+      db.buffer[i].writingInProgress = true;
     }
   }
   
   //send the bulk to the database driver and call the callbacks with the results  
   if(operations.length > 0)
-  {
-    var thistransmissionNum = transmissionNum;
+  {      
+    //set the flushing flag
+    db.isFlushing = true;
   
-    transmissionNum++;
+    console.error("FLUSH!");
     
     db.wrappedDB.doBulk(operations, function(err)
     {
+      //call all writingCallbacks
       for(var i in callbacks)
       {
         callbacks[i](err);
       }
+
+      //set the writingInProgress flag to false
+      for(var i in operations)
+      {
+        db.buffer[operations[i].key].writingInProgress = false;
+      }
       
       if(callback) callback();
+      
+      console.error("FLUSH DONE!");
+      
+      //set the flushing flag to false
+      db.isFlushing = false;
     });
-    
   }
+}
+
+function clone(obj)
+{
+  // Handle the 3 simple types, and null or undefined
+  if (null == obj || "object" != typeof obj) return obj;
+
+  // Handle Date
+  if (obj instanceof Date)
+  {
+    var copy = new Date();
+    copy.setTime(obj.getTime());
+    return copy;
+  }
+
+  // Handle Array
+  if (obj instanceof Array)
+  {
+    var copy = [];
+    for (var i = 0, len = obj.length; i < len; ++i)
+    {
+      copy[i] = clone(obj[i]);
+    }
+    return copy;
+  }
+
+  // Handle Object
+  if (obj instanceof Object)
+  {
+    var copy = {};
+    for (var attr in obj)
+    {
+      if (obj.hasOwnProperty(attr)) copy[attr] = clone(obj[attr]);
+    }
+    return copy;
+  }
+
+  throw new Error("Unable to copy obj! Its type isn't supported.");
 }
 
