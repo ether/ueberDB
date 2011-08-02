@@ -14,8 +14,9 @@
  * limitations under the License.
  */
  
-var opsPerSecond = 10000;
-var keysLength = 1;
+var opsPerSecond = 1000;
+var keysLength = 10000;
+var seconds = 60;
 
 var async = require("async");
 var ueberDB = require("./CloneAndAtomicLayer");
@@ -67,11 +68,11 @@ function doTests()
     db.set(keyName, keyValue);
   }
   
-  var operationTypes = ["get", "set", "getsub", "setsub", "remove"];
+  var operationTypes = ["get", "set", "getsub", "setsub"];
   var operations = [];
   
   //generate the operations
-  for(var i=0;i<opsPerSecond;i++)
+  for(var i=0;i<opsPerSecond*seconds;i++)
   {
     var operation = {};
     
@@ -143,14 +144,7 @@ function doTests()
         db.setSub(operation.key, operation.subkey, counter);
         callback();
       }
-      //remove a value
-      else if(operation.type == "remove")
-      {
-        //localDB[operation.key] = null;
-        //db.remove(operation.key);
-        callback();
-      }
-    }, Math.floor(Math.random()*1000));
+    }, Math.floor(Math.random()*1000*seconds));
   },
   function(err)
   {
