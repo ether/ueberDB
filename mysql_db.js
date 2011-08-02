@@ -68,7 +68,7 @@ exports.database.prototype.init = function(callback)
 
 exports.database.prototype.get = function (key, callback)
 {
-  this.db.query("SELECT `value` FROM  `store` WHERE  `key` = ?", [key], function(err,results)
+  this.db.query("SELECT `value` FROM `store` WHERE  `key` = ?", [key], function(err,results)
   {
     var value = null;
     
@@ -116,14 +116,11 @@ exports.database.prototype.doBulk = function (bulk, callback)
   }
   sql += "COMMIT;";
   
-  this.db.query(sql, function(err){
-    if(err)
-    {
-      console.error("ERROR WITH SQL: ");
-      console.error(sql);
-    }
-    
-    callback(err);
+  this.db.query(sql, function(err)
+  {    
+    setTimeout(function() {
+      callback(err);
+    }, 200);
   });
 }
 
