@@ -11,5 +11,5 @@
                       "channels": ">=0.0.1"
                     },
   "main"          : "./CloneAndAtomicLayer",
-  "version"       : "0.0.12"
+  "version"       : "0.0.13"
 }
