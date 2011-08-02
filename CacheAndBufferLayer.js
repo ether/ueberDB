@@ -423,8 +423,6 @@ function flush (db, callback)
   {      
     //set the flushing flag
     db.isFlushing = true;
-  
-    console.error("FLUSH!");
     
     db.wrappedDB.doBulk(operations, function(err)
     {
@@ -442,7 +440,7 @@ function flush (db, callback)
       
       if(callback) callback();
       
-      console.error("FLUSH DONE!");
+      //console.error("FLUSH DONE!");
       
       //set the flushing flag to false
       db.isFlushing = false;
