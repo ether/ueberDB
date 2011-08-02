@@ -102,26 +102,51 @@ exports.database.prototype.remove = function (key, callback)
 
 exports.database.prototype.doBulk = function (bulk, callback)
 { 
-  var sql = "START TRANSACTION;\n";
+  var _this = this;
+  
+  var replaceSQL = "REPLACE INTO `store` VALUES ";
+  var removeSQL = "DELETE FROM `store` WHERE `key` IN ("
+  
+  var firstReplace = true;
+  var firstRemove = true;
+  
   for(var i in bulk)
-  {
+  {  
     if(bulk[i].type == "set")
     {
-      sql+="REPLACE INTO `store` VALUES (" + this.db.escape(bulk[i].key) + ", " + this.db.escape(bulk[i].value) + ");\n";
+      if(!firstReplace)
+        replaceSQL+=",";
+      firstReplace = false;
+    
+      replaceSQL+="(" + _this.db.escape(bulk[i].key) + ", " + _this.db.escape(bulk[i].value) + ")";
     }
     else if(bulk[i].type == "remove")
     {
-      sql+="DELETE FROM `store` WHERE `key` = " + this.db.escape(bulk[i].key) + ";\n";
+      if(!firstRemove)
+        removeSQL+=",";
+      firstRemove = false;
+    
+      removeSQL+=_this.db.escape(bulk[i].key);
     }
   }
-  sql += "COMMIT;";
   
-  this.db.query(sql, function(err)
-  {    
-    setTimeout(function() {
-      callback(err);
-    }, 200);
-  });
+  replaceSQL+=";";
+  removeSQL+=");";
+  
+  async.parallel([
+    function(callback)
+    {
+      _this.db.query(replaceSQL, callback);
+    },
+    function(callback)
+    {
+      if(!firstRemove)
+        _this.db.query(removeSQL, callback);
+      else
+        callback();
+    }
+  ], callback);
+  
 }
 
 exports.database.prototype.close = function(callback)

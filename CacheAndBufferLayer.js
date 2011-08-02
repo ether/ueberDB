@@ -440,7 +440,8 @@ function flush (db, callback)
       
       if(callback) callback();
       
-      //console.error("FLUSH DONE!");
+      //call the garbage collector
+      db.gc();
       
       //set the flushing flag to false
       db.isFlushing = false;

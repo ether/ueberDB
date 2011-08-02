@@ -27,7 +27,6 @@ var counter = 0;
 
 //the default settings for benchmarking
 var bench_settings = {};
-//bench_settings["mysql"] = {"user":"root", host: "localhost", "password":"", database: "store"};
 bench_settings["mysql"] = {"user":"etherpadlite", host: "localhost", "password":"etherpadlite", database: "etherpadlite"};
 bench_settings["sqlite"] = {filename:"var/sqlite3.db"};
 
@@ -77,7 +76,7 @@ function doTests()
     var operation = {};
     
     //choose a operation type
-    operation.type = operationTypes[Math.floor(Math.random()*5)];
+    operation.type = operationTypes[Math.floor(Math.random()*4)];
     
     //choose the key that gets affected by this operation
     operation.key = keys[Math.floor(Math.random()*keys.length)];
@@ -93,10 +92,13 @@ function doTests()
   
   //run trough all operations, fire them randomly
   async.forEach(operations, function(operation, callback)
-  {
+  {  
     setTimeout(function ()
     {
       counter++;
+      
+      if(counter % 100 == 0)
+        console.log(counter + "/" + opsPerSecond*seconds);
       
       //get the value and test if its the expected value
       if(operation.type == "get")
@@ -111,7 +113,6 @@ function doTests()
           
           callback(err);
         });
-        callback();
       }
       //set the value
       else if(operation.type == "set")
