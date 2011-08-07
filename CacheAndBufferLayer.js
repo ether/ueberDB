@@ -130,7 +130,7 @@ exports.database.prototype.get = function(key, callback)
   //if cache is enabled and data is in the cache, get the value from the cache
   if(this.settings.cache > 0 && this.buffer[key])
   {
-    this.logger.debug(key + ": get from cache - " + JSON.stringify(this.buffer[key]).value);
+    this.logger.debug(key + ": get from cache - " + JSON.stringify(this.buffer[key].value));
     this.buffer[key].timestamp = new Date().getTime();
     callback(null, this.buffer[key].value);
   }
