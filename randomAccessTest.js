@@ -20,6 +20,7 @@ var seconds = 60;
 
 var async = require("async");
 var ueberDB = require("./CloneAndAtomicLayer");
+var log4js = require('log4js');
 
 var db;
 
@@ -35,7 +36,7 @@ bench_settings["sqlite"] = {filename:"var/sqlite3.db"};
 if(process.argv.length == 3)
 {
   var settings = bench_settings[process.argv[2]];
-  db = new ueberDB.database(process.argv[2], settings);
+  db = new ueberDB.database(process.argv[2], settings, null, log4js.getLogger("ueberDB"));
 
   db.init(function(err)
   {
@@ -61,6 +62,8 @@ function doOperations()
   }
 }
 
+var progressLogger = log4js.getLogger("progress");
+
 function doBatch()
 {
   counter++;
@@ -71,7 +74,7 @@ function doBatch()
 
   //print progress
   if(counter % 100 == 0)
-    console.log(counter + "/" + opsPerSecond*seconds);
+    progressLogger.info(counter + "/" + opsPerSecond*seconds);
 
   //test if there is a new operation to do
   if(counter % opsPerSecond == 0)
@@ -82,7 +85,7 @@ function doBatch()
     }
     else
     {
-      console.error("finished");
+      progressLogger.info("finished");
       process.exit(0);
     }
   }

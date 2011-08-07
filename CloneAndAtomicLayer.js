@@ -18,10 +18,12 @@ var cacheAndBufferLayer = require("./CacheAndBufferLayer");
 var async = require("async");
 var channels = require("channels");
 
+var defaultLogger = {debug: function(){}, info: function(){}, error: function(){}, warn: function(){}};
+
 /**
  The Constructor
 */
-exports.database = function(type, dbSettings, wrapperSettings)
+exports.database = function(type, dbSettings, wrapperSettings, logger)
 {
   if(!type)
   {
@@ -35,27 +37,15 @@ exports.database = function(type, dbSettings, wrapperSettings)
   this.db_module = require("./" + type + "_db");
   this.dbSettings = dbSettings; 
   this.wrapperSettings = wrapperSettings; 
+  this.logger = logger || defaultLogger;
   this.channels = new channels.channels(doOperation);
 }
 
 exports.database.prototype.init = function(callback)
 {
-  var _this = this;
-
-  async.waterfall([
-    //initalizie the db driver
-    function(callback)
-    {
-      _this.db = new _this.db_module.database(_this.dbSettings);
-      _this.db.init(callback);
-    },
-    //initalize the db wrapper
-    function(callback)
-    {
-      _this.db = new cacheAndBufferLayer.database(_this.db, _this.wrapperSettings);
-      _this.db.init(callback);
-    } 
-  ],callback);
+  var db = new this.db_module.database(this.dbSettings);
+  this.db = new cacheAndBufferLayer.database(db, this.wrapperSettings, this.logger);
+  this.db.init(callback);
 }
 
 /**
