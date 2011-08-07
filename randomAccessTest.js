@@ -23,7 +23,9 @@ var ueberDB = require("./CloneAndAtomicLayer");
 
 var db;
 
-var counter = 0;
+var counter = 1;
+var secondsCounter = 0;
+var localDB = {};
 
 //the default settings for benchmarking
 var bench_settings = {};
@@ -38,7 +40,7 @@ if(process.argv.length == 3)
   db.init(function(err)
   {
     if(err) throw err;
-    doTests();
+    doOperations ()
   });
 }
 else
@@ -46,160 +48,89 @@ else
   console.error("wrong parameters");
 }
 
-function doTests()
-{  
-  //this the localdb with values like they should be
-  var localDB = {};
-  var keys = [];
-  
-  //fill the localdb
-  for(var i=0;i<keysLength;i++)
-  {
-    //generate a key value pair
-    var keyName = "key" + i;
-    var keyValue = generateObject();
-    
-    //add to the key names array
-    keys.push(keyName);
-    
-    //save in the localdb and the real db
-    localDB[keyName] = keyValue
-    db.set(keyName, keyValue);
-  }
-  
-  var operationTypes = ["get", "set", "getsub", "setsub"];
-  var operations = [];
-  
-  //generate the operations
-  for(var i=0;i<opsPerSecond*seconds;i++)
-  {
-    var operation = {};
-    
-    //choose a operation type
-    operation.type = operationTypes[Math.floor(Math.random()*4)];
-    
-    //choose the key that gets affected by this operation
-    operation.key = keys[Math.floor(Math.random()*keys.length)];
-    
-    //if this a subkey access, choose the subkey
-    if(operation.type == "getsub" || operation.type == "setsub")
-    {
-      operation.subkey = ["sub", "num"];
-    }
-    
-    operations.push(operation);
-  }
-  
+var operationTypes = ["get", "set", "getsub", "setsub"];
+
+function doOperations()
+{
+  secondsCounter++;
+
   //run trough all operations, fire them randomly
-  async.forEach(operations, function(operation, callback)
+  for(var i=1;i<=opsPerSecond;i++)
   {  
-    setTimeout(function ()
-    {
-      counter++;
-      
-      if(counter % 100 == 0)
-        console.log(counter + "/" + opsPerSecond*seconds);
-      
-      //get the value and test if its the expected value
-      if(operation.type == "get")
-      {
-        var shouldBeValue = JSON.stringify(localDB[operation.key])
-        db.get(operation.key, function(err, value)
-        {
-          if(JSON.stringify(value) != shouldBeValue)
-          {
-            console.log("Incorrect value of " + operation.key + ", should be: " + shouldBeValue + ", is " + JSON.stringify(value))
-          }
-          
-          callback(err);
-        });
-      }
-      //set the value
-      else if(operation.type == "set")
-      {
-        var value = generateObject();
-        localDB[operation.key] = value;
-        db.set(operation.key, value);
-        callback();
-      }
-      //get the subvalue and test if its the expected value
-      else if(operation.type == "getsub")
-      {
-        var shouldBeValue = JSON.stringify(localDB[operation.key]["sub"]["num"]);
-        
-        db.getSub(operation.key, operation.subkey, function(err, value)
-        {
-          if(JSON.stringify(value) != shouldBeValue)
-          {
-            console.log("Incorrect subvalue of " + operation.key + ", should be: " + shouldBeValue + ", is " + JSON.stringify(value))
-          }
-          
-          callback(err);
-        });
-      }
-      //set the subvalue
-      else if(operation.type == "setsub")
-      {
-        var value = {num:counter};
-        localDB[operation.key]["sub"]["num"] = counter;
-        db.setSub(operation.key, operation.subkey, counter);
-        callback();
-      }
-    }, Math.floor(Math.random()*1000*seconds));
-  },
-  function(err)
-  {
-    if(err) throw err;
-    console.log("finished");
-    process.exit(0);
-  })
+    setTimeout(doBatch, Math.floor(Math.random()*1000));
+  }
 }
 
-/** 
- * generates a test object
- */
-function generateObject()
+function doBatch()
 {
-  return {"str": "str" + counter, sub: {num: counter}};
-}
+  counter++;
+  
+  //create the operation
+  var key = "key" + Math.floor(Math.random()*keysLength);
+  var type = localDB[key] == null ? "set" : operationTypes[Math.floor(Math.random()*4)];
 
-/** 
- * clones an object
- */
-function clone(obj)
-{
-  // Handle the 3 simple types, and null or undefined
-  if (null == obj || "object" != typeof obj) return obj;
+  //print progress
+  if(counter % 100 == 0)
+    console.log(counter + "/" + opsPerSecond*seconds);
 
-  // Handle Date
-  if (obj instanceof Date)
+  //test if there is a new operation to do
+  if(counter % opsPerSecond == 0)
   {
-    var copy = new Date();
-    copy.setTime(obj.getTime());
-    return copy;
-  }
-
-  // Handle Array
-  if (obj instanceof Array)
-  {
-    var copy = [];
-    for (var i = 0, len = obj.length; i < len; ++i)
+    if(secondsCounter < seconds)
     {
-      copy[i] = clone(obj[i]);
+      doOperations();
     }
-    return copy;
-  }
-
-  // Handle Object
-  if (obj instanceof Object)
-  {
-    var copy = {};
-    for (var attr in obj)
+    else
     {
-      if (obj.hasOwnProperty(attr)) copy[attr] = clone(obj[attr]);
+      console.error("finished");
+      process.exit(0);
     }
-    return copy;
   }
+    
 
-  throw new Error("Unable to copy obj! Its type isn't supported.");
+  //get the value and test if its the expected value
+  if(type == "get")
+  {
+    var shouldBeValue = JSON.stringify(localDB[key])
+    db.get(key, function(err, value)
+    {
+      if(err) throw err;
+
+      if(JSON.stringify(value) != shouldBeValue)
+      {
+        console.error("Incorrect value of " + key + ", should be: " + shouldBeValue + ", is " + JSON.stringify(value));
+        process.exit(1);
+      }
+    });
+  }
+  //set the value
+  else if(type == "set")
+  {
+    var value = {"str": "str" + counter, sub: {num: counter}};
+    localDB[key] = value;
+    db.set(key, value);
+  }
+  //get the subvalue and test if its the expected value
+  else if(type == "getsub")
+  {
+    var shouldBeValue = JSON.stringify(localDB[key]["sub"]["num"]);
+    
+    db.getSub(key, ["sub", "num"], function(err, value)
+    {
+      if(err) throw err;          
+
+      if(JSON.stringify(value) != shouldBeValue)
+      {
+        console.error("Incorrect subvalue of " + key + ", should be: " + shouldBeValue + ", is " + JSON.stringify(value));
+        process.exit(1);
+      }
+    });
+  }
+  //set the subvalue
+  else if(type == "setsub")
+  {
+    var value = {num:counter};
+    localDB[key]["sub"]["num"] = counter;
+    db.setSub(key, ["sub", "num"], counter);
+  }
 }
