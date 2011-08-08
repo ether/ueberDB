@@ -45,25 +45,13 @@ exports.database = function(settings)
 
 exports.database.prototype.init = function(callback)
 {
-  var _this = this;
+  var sql = "CREATE TABLE IF NOT EXISTS `store` ( " +
+            "`key` VARCHAR( 100 ) NOT NULL , " + 
+            "`value` LONGTEXT NOT NULL , " + 
+            "PRIMARY KEY (  `key` ) " +
+            ") ENGINE = INNODB;";
 
-  async.waterfall([
-    function(callback)
-    {
-      _this.db.connect(callback);
-    },
-    function(result, callback)
-    {
-      var sql = "CREATE TABLE IF NOT EXISTS `store` ( " +
-                "`key` VARCHAR( 100 ) NOT NULL , " + 
-                "`value` LONGTEXT NOT NULL , " + 
-                "PRIMARY KEY (  `key` ) " +
-                ") ENGINE = INNODB;";
-      _this.db.query(sql,[],callback);
-    } 
-  ],function(err, info){
-      callback(err);
-  });
+  this.db.query(sql,[],callback);
 }
 
 exports.database.prototype.get = function (key, callback)

@@ -5,10 +5,10 @@
   "keywords"       : ["database", "keyvalue"],
   "author"         : "Peter 'Pita' Martischka <petermartischka@googlemail.com>",
   "dependencies"   : {
-                       "mysql"   : ">=0.9.1",
-                       "sqlite3" : ">=2.0.12",
-                       "async"   : ">=0.1.9",
-                       "channels": ">=0.0.1"
+                       "mysql"   : "0.9.2",
+                       "sqlite3" : "2.0.15",
+                       "async"   : "0.1.9",
+                       "channels": "0.0.2"
                      },
   "devDependencies": {
                        "log4js"  : "0.3.7"

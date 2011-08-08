@@ -66,7 +66,7 @@ function benchmark(callback)
   }
   console.log("done");
 
-  async.waterfall([
+  async.series([
     //init db
     function(callback)
     {

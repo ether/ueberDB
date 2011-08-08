@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-var opsPerSecond = 1000;
+var opsPerSecond = 100;
 var keysLength = 10000;
 var seconds = 60;
 
