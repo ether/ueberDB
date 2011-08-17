@@ -121,7 +121,12 @@ exports.database.prototype.close = function(callback)
 */
 exports.database.prototype.doShutdown = function(callback)
 {
-  this.shutdownCallback = callback;
+  //wait until the buffer is fully written
+  if(this.settings.writeInterval > 0)
+    this.shutdownCallback = callback;
+  //we write direct, so there is no need to wait for a callback  
+  else
+    callback();
 }
 
 /**
