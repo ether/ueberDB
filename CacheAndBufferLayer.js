@@ -82,12 +82,6 @@ exports.database = function(wrappedDB, settings, logger)
   
   //set the flushing flag to false, this flag shows that there is a flushing action happing at the moment
   this.isFlushing = false;
-  
-  //ensure the buffer is flushed before the application ends
-  process.on('exit', function () 
-  {
-    flush(this);
-  });
 };
 
 /**
@@ -120,6 +114,14 @@ exports.database.prototype.init = function(callback)
 exports.database.prototype.close = function(callback)
 {
   this.wrappedDB.close(callback);
+}
+
+/**
+ Calls the callback the next time all buffers are flushed
+*/
+exports.database.prototype.doShutdown = function(callback)
+{
+  this.shutdownCallback = callback;
 }
 
 /**
@@ -469,6 +471,11 @@ function flush (db, callback)
       //set the flushing flag to false
       db.isFlushing = false;
     });
+  }
+  //the writing buffer is empty and there is a shutdown callback, call it!
+  else if(db.shutdownCallback != null)
+  {
+    db.shutdownCallback();
   }
 }
 

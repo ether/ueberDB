@@ -52,6 +52,11 @@ exports.database.prototype.init = function(callback)
  Wrapper functions
 */
 
+exports.database.prototype.doShutdown = function(callback)
+{
+  this.db.doShutdown(callback);
+}
+
 exports.database.prototype.get = function (key, callback)
 {
   this.channels.emit(key, {"db": this.db, "type": "get", "key": key, "callback": callback});
