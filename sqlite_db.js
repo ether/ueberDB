@@ -14,7 +14,16 @@
  * limitations under the License.
  */
 
-var sqlite3 = require("sqlite3");
+try
+{
+  var sqlite3 = require("sqlite3");  
+}
+catch(e)
+{
+  console.error("FATAL: The sqlite dependency could not be loaded. We removed it from the dependencies since it caused problems on several Platforms to compile it. If you still want to use sqlite, do a 'npm install sqlite3' in your etherpad-lite root folder");
+  process.exit(1);
+}
+
 var async = require("async");
 
 exports.database = function(settings)

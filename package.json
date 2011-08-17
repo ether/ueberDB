@@ -6,7 +6,6 @@
   "author"         : "Peter 'Pita' Martischka <petermartischka@googlemail.com>",
   "dependencies"   : {
                        "mysql"   : "0.9.2",
-                       "sqlite3" : "2.0.15",
                        "dirty"   : "0.9.2",
                        "async"   : "0.1.9",
                        "channels": "0.0.2"
