@@ -124,7 +124,10 @@ exports.database.prototype.doBulk = function (bulk, callback)
   async.parallel([
     function(callback)
     {
-      _this.db.query(replaceSQL, callback);
+      if(!firstReplace)
+        _this.db.query(replaceSQL, callback);
+      else
+        callback();
     },
     function(callback)
     {
