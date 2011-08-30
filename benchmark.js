@@ -38,6 +38,7 @@ var valueMap = {};
 //the default settings for benchmarking
 var bench_settings = {};
 bench_settings["mysql"] = {"user":"etherpadlite", host: "localhost", "password":"etherpadlite", database: "etherpadlite"};
+bench_settings["postgres"] = {"user":"etherpadlite", host: "localhost", "password":"etherpadlite", database: "etherpadlite"};
 bench_settings["sqlite"] = {filename:"var/sqlite3.db"};
 bench_settings["dirty"] = {filename:"var/dirty.db"};
 
