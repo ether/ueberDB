@@ -37,7 +37,10 @@ exports.database = function(settings)
 exports.database.prototype.init = function(callback)
 {
   this.db = new dirty(this.settings.filename);
-  callback();
+  this.db.on('load', function(err)
+  {
+    callback();
+  });
 }
 
 exports.database.prototype.get = function (key, callback)
