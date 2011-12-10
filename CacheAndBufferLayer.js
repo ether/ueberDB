@@ -481,6 +481,7 @@ function flush (db, callback)
   else if(db.shutdownCallback != null)
   {
     db.shutdownCallback();
+    db.shutdownCallback = null;
   }
 }
 
