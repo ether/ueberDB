@@ -62,7 +62,15 @@ exports.database.prototype.init = function(callback)
     },
     function(callback)
     {
-      db.query(sqlAlter,[],callback);
+      var t = setTimeout(function(){
+        console.log("we have to alter the mysql table, this may take a while...");
+      }, 3000);
+      
+      db.query(sqlAlter,[],function(err)
+      {
+        clearTimeout(t);
+        callback();
+      });
     }
   ], callback);
 }
