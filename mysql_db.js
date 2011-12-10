@@ -45,13 +45,26 @@ exports.database = function(settings)
 
 exports.database.prototype.init = function(callback)
 {
-  var sql = "CREATE TABLE IF NOT EXISTS `store` ( " +
-            "`key` VARCHAR( 100 ) NOT NULL , " + 
-            "`value` LONGTEXT NOT NULL , " + 
-            "PRIMARY KEY (  `key` ) " +
-            ") ENGINE = INNODB;";
+  var sqlCreate = "CREATE TABLE IF NOT EXISTS `store` ( " +
+                  "`key` VARCHAR( 100 ) NOT NULL COLLATE latin1_bin, " + 
+                  "`value` LONGTEXT NOT NULL , " + 
+                  "PRIMARY KEY (  `key` ) " +
+                  ") ENGINE = INNODB;"; 
+                  
+  var sqlAlter  = "ALTER TABLE store MODIFY `key` VARCHAR(100) COLLATE latin1_bin;";
 
-  this.db.query(sql,[],callback);
+  var db = this.db;
+
+  async.series([
+    function(callback)
+    {
+      db.query(sqlCreate,[],callback);
+    },
+    function(callback)
+    {
+      db.query(sqlAlter,[],callback);
+    }
+  ], callback);
 }
 
 exports.database.prototype.get = function (key, callback)
