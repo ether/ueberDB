@@ -31,7 +31,7 @@ exports.database = function(settings)
 
 exports.database.prototype.init = function(callback)
 {
-  this.client = couch.createClient(this.settings.port, this.settings.host, null, null, 0);
+  this.client = couch.createClient(this.settings.port, this.settings.host, this.settings.user, this.settings.pass, this.settings.maxListeners);
   this.db = this.client.db(this.settings.database);
   callback();
 }
