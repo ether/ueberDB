@@ -53,7 +53,7 @@ exports.database.prototype.get = function (key, callback)
 
 exports.database.prototype.set = function (key, value, callback)
 {
-  this.db.saveDoc({id: key, value: value}, callback);
+  this.db.saveDoc({_id: key, value: value}, callback);
 }
 
 exports.database.prototype.remove = function (key, callback)
