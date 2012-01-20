@@ -90,35 +90,61 @@ exports.database.prototype.remove = function (key, callback)
 exports.database.prototype.doBulk = function (bulk, callback)
 {
   var _this = this;
+  var keys = [];
+  var revs = {};
   var setters = [];
-  async.forEach(bulk, function(item, callback)
+  for(var i in bulk)
   {
-    var set = {_id: item.key};
-
-    // TODO: optimize me. we can get all documents in one go.
-    _this.db.getDoc(item.key, function(er, doc)
+    keys.push(bulk[i].key);
+  }
+  async.series([
+    function(callback)
     {
-      if(doc != null)
+      _this.db.request({
+        method: 'POST',
+        path: '/_all_docs',
+        data: {keys: keys},
+      }, function(er, r)
       {
-        set._rev = doc._rev;
-      }
-      if(item.type == "set")
+        if (er) throw new Error(JSON.stringify(er));
+        rows = r.rows;
+        for(var j in r.rows)
+        {
+          // couchDB will return error instead of value if key does not exist
+          if(rows[j].value!=null)
+          {
+            revs[rows[j].key] = rows[j].value.rev;
+          }
+        }
+        callback();
+      });
+    },
+    function(callback)
+    {
+      for(var i in bulk)
       {
-        set.value = item.value;
-        setters.push(set);
-      }
-      else if(item.type == "remove")
-      {
-        set._deleted = true;
-        setters.push(set);
+        var item = bulk[i];
+        var set = {_id: item.key};
+        if(revs[item.key] != null)
+        {
+          set._rev = revs[item.key];
+        }
+        if(item.type == "set")
+        {
+          set.value = item.value;
+          setters.push(set);
+        }
+        else if(item.type == "remove")
+        {
+          set._deleted = true;
+          setters.push(set);
+        }
       }
       callback();
-    });
-  }, function(err) {
-    if(err!=null)
-      console.error(err);
-    _this.db.bulkDocs({docs: setters}, callback);
-  });
+    }], function(err) {
+      _this.db.bulkDocs({docs: setters}, callback);
+    }
+  );
 }
 
 exports.database.prototype.close = function(callback)
