@@ -67,14 +67,11 @@ exports.database.prototype.init = function(callback)
       }
       
       if(level !== "1"){
-        console.log("migrate...");
         db.query(sqlAlter,[],function(err)
         {
           if(err){
             throw err;
           }
-          
-          console.log("migrate done");
           
           self.set("MYSQL_MIGRATION_LEVEL","1", function(err){
             if(err){
