@@ -54,25 +54,37 @@ exports.database.prototype.init = function(callback)
   var sqlAlter  = "ALTER TABLE store MODIFY `key` VARCHAR(100) COLLATE latin1_bin;";
 
   var db = this.db;
+  var self = this;
 
-  async.series([
-    function(callback)
-    {
-      db.query(sqlCreate,[],callback);
-    },
-    function(callback)
-    {
-      var t = setTimeout(function(){
-        console.log("we have to alter the mysql table, this may take a while...");
-      }, 3000);
+  db.query(sqlCreate,[],function(err){
+    //call the main callback
+    callback(err);
+    
+    //check migration level, alter if not migrated
+    self.get("MYSQL_MIGRATION_LEVEL", function(err, level){
+      if(err){
+        throw err;
+      }
       
-      db.query(sqlAlter,[],function(err)
-      {
-        clearTimeout(t);
-        callback();
-      });
-    }
-  ], callback);
+      if(level !== "1"){
+        console.log("migrate...");
+        db.query(sqlAlter,[],function(err)
+        {
+          if(err){
+            throw err;
+          }
+          
+          console.log("migrate done");
+          
+          self.set("MYSQL_MIGRATION_LEVEL","1", function(err){
+            if(err){
+              throw err;
+            }
+          });
+        });
+      }
+    })
+  });
 }
 
 exports.database.prototype.get = function (key, callback)
