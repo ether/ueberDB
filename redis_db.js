@@ -46,54 +46,26 @@ exports.database = function(settings) {
 }
 
 exports.database.prototype.init = function(callback) {
-    console.debug("Trying to connect to redis on " + this.settings.host + ":" + this.settings.port);
     this.client = redis.createClient(this.settings.port, this.settings.host);
 
     this.client.database = this.settings.database;
 
-    this.client.on("error", function(err) {
-        console.error(err);
-    });
-
+    this.client.on("error", callback);
     this.client.on("connect", function() {
-        console.debug("Connected to redis, now switching to database " + this.database);
-        this.select(this.database);
-        callback();
+        this.select(this.database, callback);
     });
 }
 
 exports.database.prototype.get = function (key, callback) {
-    console.debug("redis.get for key '" + key + "'");
-    this.client.get(key, function(err, val) {
-        if(err) {
-            console.error(err);
-        } else {
-            console.debug("redis.get result '" + val + "'");
-        }
-        callback(err?err:null, val);
-    });
+    this.client.get(key, callback);
 }
 
 exports.database.prototype.set = function (key, value, callback) {
-    this.client.set(key,value,function(err){
-        if(err) {
-            console.error(err);
-        } else {
-            console.debug("redis.set '" + key + "' => '" + val + "'");
-        }
-        callback(err?err:null);
-    });
+    this.client.set(key,value,callback);
 }
 
 exports.database.prototype.remove = function (key, callback) {
-    this.client.del(key,function(err) {
-        if(err) {
-            console.error(err);
-        } else {
-            console.debug("redis.del '" + key + "' => '" + val + "'");
-        }
-        callback(err?err:null);
-    });
+    this.client.del(key,callback);
 }
 
 exports.database.prototype.doBulk = function (bulk, callback) {
@@ -107,23 +79,9 @@ exports.database.prototype.doBulk = function (bulk, callback) {
         }
     }
 
-    multi.exec(function(err) {
-        if(err) {
-            console.error(err);
-        } else {
-            console.debug("redis.multi",bulk);
-        }
-        callback(err?err:null);
-    });
+    multi.exec(callback);
 }
 
 exports.database.prototype.close = function(callback) {
-    this.client.end(function(err){
-        if(err) {
-            console.error(err);
-        } else {
-            console.debug('Closed connection to redis server.');
-        }
-        callback(err?err:null);
-    });
+    this.client.end(callback);
 }
