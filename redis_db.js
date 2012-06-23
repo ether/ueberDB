@@ -14,46 +14,43 @@
  * limitations under the License.
  */
 
-/**
- * 2012 Philip 'DerKobe' Claren
- *
- * Install node-redis by mranney
- * https://github.com/mranney/node_redis
- *
- * Default settings for etherpad-lite:
- * ...
- * "dbType" : "redis",
- * "dbSettings" : {
- *   "host"     : "localhost",
- *   "port"     : 6379,
- *   "database" : 0
- * },
- * ...
- *
- */
-
+var async = require("async");
 var redis = require("redis");
+
+/* settings:
+    {
+      host: 
+      port:
+      database:
+      password:
+      client_options
+    }
+
+*/
 
 exports.database = function(settings) {
     this.client = null;
+    this.settings = settings || {};
+}
 
-    if(!settings) settings = {};
-    if(!settings.database) settings.database = 0;
-    if(!settings.host) settings.host = '127.0.0.1';
-    if(!settings.port) settings.port = 6379;
+exports.database.prototype.auth = function(callback){
+  if (this.settings.password)
+    this.client.auth(this.settings.password,callback);
+  callback();
+}
 
-    this.settings = settings;
+exports.database.prototype.select = function(callback){
+  if (this.settings.database)
+    return this.client.select(this.settings.database,callback);
+  callback();
 }
 
 exports.database.prototype.init = function(callback) {
-    this.client = redis.createClient(this.settings.port, this.settings.host);
+  this.client = redis.createClient(this.settings.port,
+  this.settings.host, this.settings.client_options);
 
-    this.client.database = this.settings.database;
-
-    this.client.on("error", callback);
-    this.client.on("connect", function() {
-        this.select(this.database, callback);
-    });
+  this.client.database = this.settings.database;
+	async.waterfall([this.auth.bind(this), this.select.bind(this)],callback);
 }
 
 exports.database.prototype.get = function (key, callback) {
@@ -83,5 +80,6 @@ exports.database.prototype.doBulk = function (bulk, callback) {
 }
 
 exports.database.prototype.close = function(callback) {
-    this.client.end(callback);
+    this.client.end();
+    callback()
 }
