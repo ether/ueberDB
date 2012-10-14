@@ -3,7 +3,10 @@
   "description"    : "transform every database into a object key value store",
   "url"            : "https://github.com/Pita/ueberDB",
   "keywords"       : ["database", "keyvalue"],
-  "author"         : "Peter 'Pita' Martischka <petermartischka@googlemail.com>",
+  "author"         : "Peter 'Pita' Martischka <petermartischka@googlemail.com> - Primary Technology Ltd",
+  "contributors"   : [
+                      { "name": "John McLear"
+                     ],
   "dependencies"   : {
                        "mysql"     : "0.9.5",
                        "dirty"     : "0.9.6",
@@ -15,5 +18,5 @@
                        "log4js"  : "0.4.1"
                      },
   "main"           : "./CloneAndAtomicLayer",
-  "version"        : "0.1.7"
+  "version"        : "0.1.8"
 }
