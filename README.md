@@ -1,6 +1,16 @@
 #About
 
-ueberDB is a abstraction layer for databases. It turns every database into a simple key value store, at the moment we only support mysql and sqlite. ueberDB uses a smart cache and buffer algorithm to make databases faster. Reads are cached and writes are done in a bulk. The bulk writing reduces the overhead of a database transaction.
+ueberDB is a abstraction layer for databases. It turns every database into a simple key value store.  ueberDB uses a smart cache and buffer algorithm to make databases faster. Reads are cached and writes are done in a bulk. The bulk writing reduces the overhead of a database transaction.
+
+#Database Support
+MySQL
+SQLite
+Postgres
+Level
+Dirty
+Mongo
+Redis
+Couch
 
 #Install
 
