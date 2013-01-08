@@ -99,6 +99,27 @@ exports.database.prototype.get = function (key, callback)
   });
 }
 
+exports.database.prototype.findKeys = function (key, notKey, callback)
+{
+  //desired keys are %key:%, e.g. pad:%
+  key=key.replace(/\*/,'%')+":%";
+  //not desired keys are notKey:%, e.g. %:%:%
+  notKey=notKey.replace(/\*/,'%')+":%";
+  this.db.query("SELECT `key` FROM `store` WHERE  `key` LIKE ? AND `key` NOT LIKE ?", [key, notKey], function(err,results)
+  {
+    var value = [];
+    
+    if(!err && results.length > 0)
+    {
+      results.forEach(function(val){
+        value.push(val.key);
+      });
+    }
+  
+    callback(err,value);
+  });
+}
+
 exports.database.prototype.set = function (key, value, callback)
 {
   if(key.length > 100)

@@ -62,6 +62,11 @@ exports.database.prototype.get = function (key, callback)
   this.channels.emit(key, {"db": this.db, "type": "get", "key": key, "callback": callback});
 }
 
+exports.database.prototype.findKeys = function (key, notKey, callback)
+{
+  this.channels.emit(key, {"db": this.db, "type": "find", "key": key, "notKey": notKey, "callback": callback});
+}
+
 exports.database.prototype.set = function (key, value, bufferCallback, writeCallback)
 {
   this.channels.emit(key, {"db": this.db, "type": "set", "key": key, "value": clone(value), "bufferCallback": bufferCallback, "writeCallback": writeCallback});
@@ -87,6 +92,20 @@ function doOperation (operation, callback)
   if(operation.type == "get")
   {
     operation.db.get(operation.key, function(err, value)
+    {
+      //clone the value
+      value = clone(value);
+      
+      //call the caller callback
+      operation.callback(err, value);
+      
+      //call the queue callback
+      callback();
+    });
+  }
+  else if(operation.type == "find")
+  {
+    operation.db.find(operation.key, operation.notKey function(err, value)
     {
       //clone the value
       value = clone(value);

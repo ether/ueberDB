@@ -40,6 +40,11 @@ exports.database.prototype.get = function (key, callback) {
     this.mongo.findOne(key, callback);
 }
 
+exports.database.prototype.findKeys = function (key, notKey, callback) {
+    var findKey=eval("/(?="+key.replace(/\*/,".*")+")(?="+notKey.replace(/\*/,".*")+")/g");
+    this.mongo.find(findKey, callback);
+}
+
 exports.database.prototype.set = function (key, value, callback) {
     this.mongo.set(key, value, callback);
 }
@@ -96,7 +101,23 @@ function MongoKeyValue(dbName, dbHost, dbPort, dbUser, dbPass, fncallback, colle
             });
         }); 
     }
-
+    
+    this.find = function(key, callback) {
+      me.db.collection(me.collectionName, function (err, collection) {
+            if (err) callback(err);
+            var p = collection.find({ key: key }, function (err, ret) {
+                if (ret){
+                    var keys=[];
+                    ret.forEach(function(val){
+                        keys.push(val.key);
+                    });
+                    callback(err, keys);
+                }else{
+                    callback(err, ret);
+                }
+            })
+        });
+    }
 
     this.findOne = function (key, callback) {
         me.db.collection(me.collectionName, function (err, collection) {

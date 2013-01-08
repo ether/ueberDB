@@ -185,6 +185,59 @@ exports.database.prototype.get = function(key, callback)
   }
 }
 
+exports.database.prototype.findKeys = function(key, notKey, callback){
+  var bufferKey=key+"-"+notKey;
+  //if cache is enabled and data is in the cache, get the value from the cache
+  if(this.settings.cache > 0 && this.buffer[bufferKey])
+  {
+    this.logger.debug("GET    - " + bufferKey + " - " + JSON.stringify(this.buffer[bufferKey].value) + " - from cache");
+    this.buffer[bufferKey].timestamp = new Date().getTime();
+    callback(null, this.buffer[bufferKey].value);
+  }
+  //caching is disabled but its still in a dirty writing cache, so we have to get the value out of the cache too
+  else if(this.settings.cache == 0 && this.buffer[bufferKey] && this.buffer[bufferKey].dirty)
+  {
+    this.logger.debug("GET    - " + bufferKey + " - " + JSON.stringify(this.buffer[bufferKey].value) + " - from dirty buffer");
+    this.buffer[bufferKey].timestamp = new Date().getTime();
+    callback(null, this.buffer[bufferKey].value);
+  }
+  //get it direct
+  else
+  {
+    var self = this;
+  
+    this.wrappedDB.find(key, notKey, function(err,value)
+    {  
+      if(self.settings.json)
+      {
+        try
+        {
+          value = JSON.parse(value);
+        }
+        catch(e)
+        {
+          console.error("JSON-PROBLEM:" + value);
+          callback(e);
+          return;
+        }
+      }
+    
+      //cache the value if caching is enabled
+      if(self.settings.cache > 0)
+        //self.buffer[bufferKey] = {"value":value, dirty:false, timestamp: new Date().getTime(), writingInProgress: false};
+      
+      //self.bufferLength++;
+      
+      //call the garbage collector
+      self.gc();
+      
+      self.logger.debug("GET    - " + bufferKey + " - " + JSON.stringify(value) + " - from database ");
+
+      callback(err,value);
+    });
+  }
+}
+
 /**
  Sets the value trough the wrapper
 */
