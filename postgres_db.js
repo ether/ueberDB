@@ -99,11 +99,19 @@ exports.database.prototype.get = function (key, callback)
 
 exports.database.prototype.findKeys = function (key, notKey, callback)
 {
+  var query="SELECT key FROM store WHERE  key LIKE $1"
+    , params=[key]
+  ;
   //desired keys are %key:%, e.g. pad:%
   key=key.replace(/\*/,'%')+":%";
-  //not desired keys are notKey:%, e.g. %:%:%
-  notKey=notKey.replace(/\*/,'%')+":%";
-  this.db.query("SELECT value FROM store WHERE key LIKE $1 AND key LIKE $2", [key,notKey], function(err,results)
+  
+  if(notKey!=null && notKey != undefined){
+    //not desired keys are notKey:%, e.g. %:%:%
+    notKey=notKey.replace(/\*/,'%')+":%";
+    query+=" AND key NOT LIKE $2"
+    params.push(notKey);
+  }
+  this.db.query(query, params, function(err,results)
   {
     var value = [];
     

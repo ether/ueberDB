@@ -64,7 +64,7 @@ exports.database.prototype.get = function (key, callback)
 
 exports.database.prototype.findKeys = function (key, notKey, callback)
 {
-  this.channels.emit(key, {"db": this.db, "type": "find", "key": key, "notKey": notKey, "callback": callback});
+  this.channels.emit(key, {"db": this.db, "type": "findKeys", "key": key, "notKey": notKey, "callback": callback});
 }
 
 exports.database.prototype.set = function (key, value, bufferCallback, writeCallback)
@@ -103,9 +103,9 @@ function doOperation (operation, callback)
       callback();
     });
   }
-  else if(operation.type == "find")
+  else if(operation.type == "findKeys")
   {
-    operation.db.find(operation.key, operation.notKey function(err, value)
+    operation.db.find(operation.key, operation.notKey, function(err, value)
     {
       //clone the value
       value = clone(value);
