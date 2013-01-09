@@ -4,3 +4,4 @@ exports["sqlite"] = {filename:"var/sqlite3.db"};
 exports["dirty"] = {filename:"var/dirty.db"};
 exports["redis"] = {};
 exports["couch"] = {port: 5984, host: 'localhost', database: "etherpadlite", maxListeners: 0};
+exports["mongodb"] = {port: 27017, host: "localhost", dbname: "etherpadlite"};

@@ -82,6 +82,17 @@ exports.database = function(wrappedDB, settings, logger)
   
   //set the flushing flag to false, this flag shows that there is a flushing action happing at the moment
   this.isFlushing = false;
+  
+  wrappedDB.createFindRegex = function(key, notKey){
+    var regex="";
+    key=key.replace(/\*/g,".*");
+    regex="(?=^"+key+"$)";
+    if(notKey!=null && notKey !=undefined){
+      notKey=notKey.replace(/\*/g,".*");
+      regex+="(?!"+notKey+"$)";
+    }
+    return eval("/"+regex+"/");
+  };
 };
 
 /**
@@ -183,6 +194,20 @@ exports.database.prototype.get = function(key, callback)
       callback(err,value);
     });
   }
+}
+
+exports.database.prototype.findKeys = function(key, notKey, callback){
+  var bufferKey=key+"-"+notKey;
+  var self = this;
+  this.wrappedDB.findKeys(key, notKey, function(err,keyValues)
+  {
+    //call the garbage collector
+    self.gc();
+      
+    self.logger.debug("GET    - " + bufferKey + " - " + JSON.stringify(keyValues) + " - from database ");
+
+    callback(err,keyValues);
+  });
 }
 
 /**
