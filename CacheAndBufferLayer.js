@@ -92,7 +92,6 @@ exports.database = function(wrappedDB, settings, logger)
       regex+="(?!"+notKey+"$)";
     }
     return eval("/"+regex+"/");
-    //return eval("/.*/");
   };
 };
 
@@ -205,7 +204,7 @@ exports.database.prototype.findKeys = function(key, notKey, callback){
     //call the garbage collector
     self.gc();
       
-    self.logger.debug("GET    - " + bufferKey + " - " + JSON.stringify(value) + " - from database ");
+    self.logger.debug("GET    - " + bufferKey + " - " + JSON.stringify(keyValues) + " - from database ");
 
     callback(err,keyValues);
   });

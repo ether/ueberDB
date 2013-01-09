@@ -105,7 +105,7 @@ function doOperation (operation, callback)
   }
   else if(operation.type == "findKeys")
   {
-    operation.db.find(operation.key, operation.notKey, function(err, value)
+    operation.db.findKeys(operation.key, operation.notKey, function(err, value)
     {
       //clone the value
       value = clone(value);

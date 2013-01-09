@@ -54,8 +54,6 @@ exports.database.prototype.findKeys = function (key, notKey, callback)
     , regex=this.createFindRegex(key, notKey)
   ;
   
-  console.log(regex);
-  
   this.db.forEach(function(key,val){
       if(key.search(regex)!=-1){
         keys.push(key);
