@@ -18,7 +18,7 @@ Abstract your databases, make datababies.  ueberDB turns every database into a s
 
 #Example
 
-<pre>
+```javascript
 var ueberDB = require("ueberDB");
 
 //mysql
@@ -52,7 +52,7 @@ db.init(function (err)
     });
   });
 });
-</pre>
+```
 
 #How to add support for another database
 Look at sqlite_db.js and mysql_db.js, your module have to provide the same functions. Call it DATABASENAME_db.js and reimplement the functions for your database. If you think it works, test it with `node benchmark.js DATABASENAME`. Benchmark.js is benchmark and test at the same time. It tries to set 100000 values. You can pipe stderr to a file and will create a csv with benchmark results.
