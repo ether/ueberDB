@@ -46,12 +46,12 @@ exports.database = function(settings)
 exports.database.prototype.init = function(callback)
 {
   var sqlCreate = "CREATE TABLE IF NOT EXISTS `store` ( " +
-                  "`key` VARCHAR( 100 ) NOT NULL COLLATE latin1_bin, " + 
+                  "`key` VARCHAR( 100 ) NOT NULL COLLATE utf8_general_ci, " + 
                   "`value` LONGTEXT NOT NULL , " + 
                   "PRIMARY KEY (  `key` ) " +
                   ") ENGINE = INNODB;"; 
                   
-  var sqlAlter  = "ALTER TABLE store MODIFY `key` VARCHAR(100) COLLATE latin1_bin;";
+  var sqlAlter  = "ALTER TABLE store MODIFY `key` VARCHAR(100) COLLATE utf8_general_ci;";
 
   var db = this.db;
   var self = this;
@@ -93,6 +93,35 @@ exports.database.prototype.get = function (key, callback)
     if(!err && results.length == 1)
     {
       value = results[0].value;
+    }
+  
+    callback(err,value);
+  });
+}
+
+exports.database.prototype.findKeys = function (key, notKey, callback)
+{
+  var query="SELECT `key` FROM `store` WHERE  `key` LIKE ?"
+    , params=[key]
+  ;
+  //desired keys are %key:%, e.g. pad:%
+  key=key.replace(/\*/,'%')+":%";
+  
+  if(notKey!=null && notKey != undefined){
+    //not desired keys are notKey:%, e.g. %:%:%
+    notKey=notKey.replace(/\*/,'%')+":%";
+    query+=" AND `key` NOT LIKE ?"
+    params.push(notKey);
+  }
+  this.db.query(query, params, function(err,results)
+  {
+    var value = [];
+    
+    if(!err && results.length > 0)
+    {
+      results.forEach(function(val){
+        value.push(val.key);
+      });
     }
   
     callback(err,value);
