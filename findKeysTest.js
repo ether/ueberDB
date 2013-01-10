@@ -53,7 +53,7 @@ function test ()
     {
       db.db.wrappedDB.set("test:test1:check:check1", "test:test1:check:check1", callback);
     },
-    //write second value
+    //write third value
     function(callback)
     {
       db.db.wrappedDB.set("check:check1:test:test1", "check:check1:test:test1", callback);
