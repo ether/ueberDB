@@ -15,8 +15,9 @@
                        "node-redis": "0.1.3"
                      },
   "devDependencies": {
-                       "log4js"  : "0.4.1"
+                       "log4js"  : "0.4.1",
+                       "mongodb": "*"
                      },
   "main"           : "./CloneAndAtomicLayer",
-  "version"        : "0.1.8"
+  "version"        : "0.1.9"
 }
