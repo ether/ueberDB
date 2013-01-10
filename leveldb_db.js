@@ -14,7 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+/**
+ * LevelDB port of UeberDB
+ * See http://code.google.com/p/leveldb/ for information about LevelDB
+ * 
+ * LevelDB must be installed in order to use this database.
+ * Install it using npm install leveldb
+ * 
+ * Options:
+ *   directory: The LevelDB directory, defaults to "leveldb-store"
+ *   create_if_missing: Create the LevelDB directory (but not parent directories)
+ *                      if it doesn't exist yet. Defaults to true.
+ *   write_buffer_size: The size of the LevelDB internal write buffer. Defaults to 4 Mibibytes.
+ *   block_size: The LevelDB blocksize. Defaults to 4 kibibytes
+ *   compression: Whether to compress the LevelDB using Snappy. Defaults to true.
+ */
 try
 {
   var leveldb = require("leveldb");
@@ -33,37 +47,29 @@ exports.database = function(settings)
   
   if(!settings || !settings.directory)
   {
-    settings = {directory:"leveldb-store"};
+    settings = {directory:"leveldb-store",create_if_missing: true};
   }
   
   this.settings = settings;
-  
-  //Set some LevelDB settings
-  //this.settings.cache = 1000;
-  //this.settings.writeInterval = 100;
-  //this.settings.json = true;
 }
 
 exports.database.prototype.init = function(callback) {
   var _this = this;
   async.waterfall([
-	function(callback) {
-		console.dir(_this.settings.directory);
-		leveldb.open(_this.settings.directory, { create_if_missing: true },
-		function(err, db) {
-			_this.db = db;
-			console.dir(db.put);
-			console.dir(err);
-			callback(err);
-		});
-	}
+    function(callback) {
+      leveldb.open(_this.settings.directory, { create_if_missing: true },
+         function(err, db) {
+           _this.db = db;
+           callback(err);
+	 });
+      }
   ],callback);
 }
 
 exports.database.prototype.get = function (key, callback)
 {
   this.db.get(key, function(err, value) {
-	callback(err, value ? value : null);
+    callback(err, value ? value : null);
   });
 }
 
@@ -83,10 +89,10 @@ exports.database.prototype.doBulk = function (bulk, callback)
   var batch = this.db.batch();
   for(var i in bulk) {
     if(bulk[i].type == "set") {
-	batch.put(bulk[i].key, bulk[i].value);
+      batch.put(bulk[i].key, bulk[i].value);
     }
     else if(bulk[i].type == "remove") {
-	batch.del(bulk[i].key);
+      batch.del(bulk[i].key);
     }
   }
   this.db.write(batch, callback);
