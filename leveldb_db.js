@@ -18,6 +18,9 @@
  * LevelDB port of UeberDB
  * See http://code.google.com/p/leveldb/ for information about LevelDB
  * 
+ * LevelDB must be installed in order to use this database.
+ * Install it using npm install leveldb
+ * 
  * Options:
  *   directory: The LevelDB directory, defaults to "leveldb-store"
  *   create_if_missing: Create the LevelDB directory (but not parent directories)
