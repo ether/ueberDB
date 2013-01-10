@@ -48,6 +48,21 @@ exports.database.prototype.get = function (key, callback)
   callback(null, this.db.get(key));
 }
 
+exports.database.prototype.findKeys = function (key, notKey, callback)
+{
+  var keys=[]
+    , regex=this.createFindRegex(key, notKey)
+  ;
+  
+  this.db.forEach(function(key,val){
+      if(key.search(regex)!=-1){
+        keys.push(key);
+      }
+    }
+  );
+  callback(null, keys);
+}
+
 exports.database.prototype.set = function (key, value, callback)
 {
   this.db.set(key,value,callback);
