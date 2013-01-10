@@ -83,6 +83,10 @@ exports.database = function(wrappedDB, settings, logger)
   //set the flushing flag to false, this flag shows that there is a flushing action happing at the moment
   this.isFlushing = false;
   
+  /**
+   * Adds function to db wrapper for findKey regex.
+   * Used by document dbs like mongodb or dirty.
+   */
   wrappedDB.createFindRegex = function(key, notKey){
     var regex="";
     key=key.replace(/\*/g,".*");
@@ -196,6 +200,10 @@ exports.database.prototype.get = function(key, callback)
   }
 }
 
+/**
+ * Find keys function searches the db sets for matching entries and
+ * returns the key entries via callback.
+ */
 exports.database.prototype.findKeys = function(key, notKey, callback){
   var bufferKey=key+"-"+notKey;
   var self = this;
