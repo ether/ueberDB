@@ -64,6 +64,7 @@ Only mysql, dirty and mongodb currently support findKeys feature. The following 
 * postgres
 * redis
 * sqlite
+
 For details on how it works please refer to the wiki: https://github.com/Pita/ueberDB/wiki/findKeys-functionality
 
 #License 
