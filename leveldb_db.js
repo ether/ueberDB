@@ -56,20 +56,20 @@ exports.database = function(settings)
 exports.database.prototype.init = function(callback) {
   var _this = this;
   async.waterfall([
-	function(callback) {
-		leveldb.open(_this.settings.directory, { create_if_missing: true },
-		function(err, db) {
-			_this.db = db;
-			callback(err);
-		});
-	}
+    function(callback) {
+      leveldb.open(_this.settings.directory, { create_if_missing: true },
+         function(err, db) {
+           _this.db = db;
+           callback(err);
+	 });
+      }
   ],callback);
 }
 
 exports.database.prototype.get = function (key, callback)
 {
   this.db.get(key, function(err, value) {
-	callback(err, value ? value : null);
+    callback(err, value ? value : null);
   });
 }
 
@@ -89,10 +89,10 @@ exports.database.prototype.doBulk = function (bulk, callback)
   var batch = this.db.batch();
   for(var i in bulk) {
     if(bulk[i].type == "set") {
-	batch.put(bulk[i].key, bulk[i].value);
+      batch.put(bulk[i].key, bulk[i].value);
     }
     else if(bulk[i].type == "remove") {
-	batch.del(bulk[i].key);
+      batch.del(bulk[i].key);
     }
   }
   this.db.write(batch, callback);
