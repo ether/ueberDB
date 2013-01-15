@@ -105,12 +105,12 @@ exports.database.prototype.findKeys = function (key, notKey, callback)
     , params=[]
   ;
   //desired keys are %key:%, e.g. pad:%
-  key=key.replace(/\*/g,'%')+":%";
+  key=key.replace(/\*/g,'%');
   params.push(key);
   
   if(notKey!=null && notKey != undefined){
     //not desired keys are notKey:%, e.g. %:%:%
-    notKey=notKey.replace(/\*/g,'%')+":%";
+    notKey=notKey.replace(/\*/g,'%');
     query+=" AND `key` NOT LIKE ?"
     params.push(notKey);
   }
