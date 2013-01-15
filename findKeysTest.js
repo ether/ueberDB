@@ -61,28 +61,41 @@ function test ()
     //try findKeys
     function(callback)
     {
-      db.db.wrappedDB.findKeys("test:test1", null, function(err, value){
-        if(err)
-        {
-          callback(err);
-          return;
-        }
-        
-        try{
-          assert.equal(value.length, 1, "different result amount than expected returned: "+value.length);
-          assert.equal(value[0], "test:test1", "wrong value returned " + value);
-        }
-        catch(e)
-        {
-          console.error(e.message);
-        }
-        
-        callback();
-      });
+      doTest("test:test1", null,1,["test:test1"],callback);
+    },
+    //try findKeys
+    function(callback)
+    {
+      doTest("test:*","*:*:*",1,["test:test1"],callback);
+    },
+    //try findKeys
+    function(callback)
+    {
+      doTest("test:*",null,2,["test:test1","test:test1:check:check1"],callback);
     },
   ], function(err){
     if(err) throw err;
     
     process.exit();
+  });
+}
+var doTest=function(key,notKey,expectedLength,expectedValue,callback){
+  db.db.wrappedDB.findKeys(key, notKey, function(err, value){
+    if(err)
+    {
+      callback(err);
+      return;
+    }
+        
+    try{
+      assert.deepEqual(value.length, expectedLength, "different result amount than expected returned. Expected: "+expectedLength+", Actual: "+value.length);
+      assert.deepEqual(value, expectedValue, "wrong values returned. Expected: "+expectedValue+", Actual: "+ value);
+    }
+    catch(e)
+    {
+      console.error(e.message);
+    }
+        
+    callback();
   });
 }
