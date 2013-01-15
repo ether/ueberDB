@@ -20,32 +20,14 @@ var async = require("async");
 exports.database = function(settings)
 {
   this.settings = settings;
-  
-  var connString = "tcp://";
-    
-  if(this.settings.user != null) {
-    connString += this.settings.user;  
-    if(this.settings.password != null)
-      connString += ":" + this.settings.password;
-    connString += "@";
-  }
-  
-  if(this.settings.host != null)
-    connString += this.settings.host;
-    
-  if(this.settings.port != null)
-    connString += ":" + this.settings.port;
-    
-  if(this.settings.database != null)
-    connString += "/" + this.settings.database;
-  
+
   this.settings.cache = 1000;
   this.settings.writeInterval = 100;
   this.settings.json = true;
-  
-  this.db = new pg.Client(connString);
+
+  this.db = new pg.Client(this.settings);
   this.db.connect();
-  
+
 }
 
 exports.database.prototype.init = function(callback)
