@@ -77,6 +77,37 @@ exports.database.prototype.get = function (key, callback)
   });
 }
 
+exports.database.prototype.findKeys = function (key, notKey, callback)
+{
+  var query="SELECT key FROM store WHERE key LIKE ?"
+    , params=[]
+  ;
+  //desired keys are %key:%, e.g. pad:%
+  key=key.replace(/\*/g,'%');
+  params.push(key);
+  
+  if(notKey!=null && notKey != undefined){
+    //not desired keys are notKey:%, e.g. %:%:%
+    notKey=notKey.replace(/\*/g,'%');
+    query+=" AND key NOT LIKE ?"
+    params.push(notKey);
+  }
+  
+  this.db.all(query, params, function(err,results)
+  {
+    var value = [];
+    
+    if(!err && Object.keys(results).length > 0)
+    {
+      results.forEach(function(val){
+        value.push(val.key);
+      });
+    }
+  
+    callback(err,value);
+  });
+}
+
 exports.database.prototype.set = function (key, value, callback)
 {
   this.db.run("REPLACE INTO store VALUES (?,?)", key, value, callback);
