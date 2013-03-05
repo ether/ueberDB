@@ -88,6 +88,8 @@ var doTest=function(key,notKey,expectedLength,expectedValue,callback){
     }
         
     try{
+      value.sort();
+      expectedValue.sort();
       assert.deepEqual(value.length, expectedLength, "different result amount than expected returned. Expected: "+expectedLength+", Actual: "+value.length);
       assert.deepEqual(value, expectedValue, "wrong values returned. Expected: "+expectedValue+", Actual: "+ value);
     }
