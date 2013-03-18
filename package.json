@@ -10,6 +10,7 @@
                      ],
   "dependencies"   : {
                        "mysql"     : "0.9.5",
+                       "pg"        : "0.14.1",
                        "dirty"     : "0.9.6",
                        "async"     : "0.1.15",
                        "channels"  : "0.0.2",
