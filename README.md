@@ -11,6 +11,7 @@ Abstract your databases, make datababies.  ueberDB turns every database into a s
 * Mongo
 * Redis
 * Couch
+* Cassandra
 
 #Install
 
@@ -61,7 +62,8 @@ Look at sqlite_db.js and mysql_db.js, your module have to provide the same funct
 Only mysql, dirty and mongodb currently support findKeys feature. The following do not yet support the function:
 * couch
 * leveldb
-* redis
+* redis (Only keys of the format *:*:*)
+* cassandra (Only keys of the format *:*:*)
 
 For details on how it works please refer to the wiki: https://github.com/Pita/ueberDB/wiki/findKeys-functionality
 
