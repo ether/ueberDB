@@ -22,5 +22,5 @@
                        "mongodb": "*"
                      },
   "main"           : "./CloneAndAtomicLayer",
-  "version"        : "0.1.96"
+  "version"        : "0.2.0"
 }
