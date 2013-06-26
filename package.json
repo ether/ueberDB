@@ -21,6 +21,10 @@
                        "log4js"  : "0.4.1",
                        "mongodb": "*"
                      },
+  "repository" : { 
+                       "type" : "git",
+                       "url" : "http://github.com/pita/ueberDB.git"
+                 },
   "main"           : "./CloneAndAtomicLayer",
   "version"        : "0.2.0"
 }
