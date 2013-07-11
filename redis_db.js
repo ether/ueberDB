@@ -21,7 +21,7 @@ var redis = require("redis");
     {
       host: 
       port:
-      socket: * NOTE: if you're using Unix sockets, you don't need host or port in your settings.json
+      socket:
       database:
       password:
       client_options
@@ -47,12 +47,12 @@ exports.database.prototype.select = function(callback){
 }
 
 exports.database.prototype.init = function(callback) {
-  if (!this.settings.socket) {
-    this.client = redis.createClient(this.settings.port,
-    this.settings.host, this.settings.client_options);
-  } else {
+  if (this.settings.socket) {
     this.client = redis.createClient(this.settings.socket, 
     this.settings.client_options);
+  } else {
+    this.client = redis.createClient(this.settings.port,
+    this.settings.host, this.settings.client_options);
   }
   
   this.client.database = this.settings.database;
