@@ -21,6 +21,7 @@ var redis = require("redis");
     {
       host: 
       port:
+      socket:
       database:
       password:
       client_options
@@ -46,9 +47,14 @@ exports.database.prototype.select = function(callback){
 }
 
 exports.database.prototype.init = function(callback) {
-  this.client = redis.createClient(this.settings.port,
-  this.settings.host, this.settings.client_options);
-
+  if (this.settings.socket) {
+    this.client = redis.createClient(this.settings.socket, 
+    this.settings.client_options);
+  } else {
+    this.client = redis.createClient(this.settings.port,
+    this.settings.host, this.settings.client_options);
+  }
+  
   this.client.database = this.settings.database;
 	async.waterfall([this.auth.bind(this), this.select.bind(this)],callback);
 }
