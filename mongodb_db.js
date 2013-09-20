@@ -105,7 +105,7 @@ function MongoKeyValue(dbName, dbHost, dbPort, dbUser, dbPass, fncallback, colle
     this.find = function(key, callback) {
       me.db.collection(me.collectionName, function (err, collection) {
             if (err) callback(err);
-            var p = collection.find({ key: key }).toArray(function (err, ret) {
+            var p = collection.find({ key: key }, { _id:0, key: 1 }).toArray(function (err, ret) {
                 if (ret){
                     var keys=[];
                     ret.forEach(function(val){
