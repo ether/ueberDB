@@ -49,6 +49,9 @@ exports.database = function(wrappedDB, settings, logger)
   this.wrappedDB=wrappedDB;
   this.logger = logger;  
 
+  this.buffer = {};
+  this.bufferLength = 0;
+
   //apply default settings
   this.settings               = {};
   this.settings.cache         = defaultSettings.cache;
@@ -98,22 +101,6 @@ exports.database = function(wrappedDB, settings, logger)
     return eval("/"+regex+"/");
   };
 };
-
-/**
- key is the key of the keyValue Object
- value is a object
- {
-   value: the value of the keyValue object, contains only deserialized data
-   dirty: true or false, means if its already written to the database or not
-   callback: (optional) a array of callbacks that should be called once this value is written
-   timestamp: a timestamp that shows when this item was read or write the last time. 
-              The Garbage collector needs this value
- }  
-*/
-exports.database.prototype.buffer = {};
-
-//the length of the Buffer.
-exports.database.prototype.bufferLength = 0;
 
 /**
  wraps the init function of the original DB
