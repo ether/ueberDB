@@ -42,7 +42,7 @@ exports.database = function(settings) {
 
   if (!settings || !settings.directory) {
     settings = {
-      directory: "lmdb-store",
+      directory: "var/data.db",
       create_if_missing: true
     };
   }
@@ -84,7 +84,7 @@ exports.database.prototype.init = function(callback) {
         batch.del(entity.key);
       }
     })
-    this.db.write(batch, callback);
+    batch.write(callback);
   }
 
   exports.database.prototype.close = function(callback) {
