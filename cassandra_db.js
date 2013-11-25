@@ -53,6 +53,7 @@ exports.database = function(settings) {
   self.settings.timeout = parseInt(settings.timeout, 10) || 3000;
   self.settings.replication = parseInt(settings.replication, 10) || 1;
   self.settings.strategyClass = settings.strategyClass || 'SimpleStrategy';
+  self.settings.cqlVersion = '2.0.0';
 };
 
 /**
