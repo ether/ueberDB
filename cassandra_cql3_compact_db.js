@@ -13,6 +13,7 @@
  */
 
 var CassandraUtil = require('./cassandra/util');
+var util = require('util');
 
 /**
  * Cassandra DB constructor.
@@ -30,11 +31,11 @@ var CassandraUtil = require('./cassandra/util');
 exports.database = function(settings) {
   var self = this;
   self.settings = CassandraUtil.createConfig(settings);
-  self.settings.cqlVersion = '2.0.0';
+  self.settings.cqlVersion = '3.0.0';
 };
 
 /**
- * Initializes the Cassandra pool, connects to cassandra and creates the CF if it didn't exist already.
+ * Initializes the Cassandra pool, connects to cassandra and creates the table if it didn't exist already.
  *
  * @param  {Function}   callback        Standard callback method.
  * @param  {Error}      callback.err    An error object (if any.)
@@ -44,11 +45,11 @@ exports.database.prototype.init = function(callback) {
 
   // The query and parameters that can be used to create the etherpad column family
   var createCfQuery = {
-    'cql': 'CREATE COLUMNFAMILY ? (key text PRIMARY KEY, data text);',
-    'parameters': [ self.settings.cfName ]
+    'cql': util.format('CREATE TABLE "%s" ("key" text, "column1" text, "value" text, PRIMARY KEY ("key", "column1")) WITH COMPACT STORAGE', self.settings.cfName),
+    'parameters': []
   };
 
-  // Initialize the cassandra connection pool, creating the column family if necessary
+  // Initialize the cassandra connection pool, creating the table if necessary
   CassandraUtil.initPool(self.settings, createCfQuery, function(err, pool) {
     if (err) {
       return callback(err);
@@ -69,17 +70,14 @@ exports.database.prototype.init = function(callback) {
  */
 exports.database.prototype.get = function (key, callback) {
   var self = this;
-  var cql = 'SELECT ? FROM ? WHERE ? = ?';
-  self.pool.cql(cql, [ 'data', self.settings.cfName, 'key', key ], function (err, rows) {
+  self.pool.cql(util.format('SELECT "value" FROM "%s" WHERE "key" = ? AND "column1" = ?', self.settings.cfName), [ key, 'data' ], function (err, rows) {
     if (err) {
       return callback(err);
-    }
-
-    if (rows.length === 0 || rows[0].count === 0 || !rows[0].get('data')) {
+    } else if (rows.length === 0) {
       return callback(null, null);
     }
 
-    callback(null, rows[0].get('data').value);
+    callback(null, rows[0].get('value').value);
   });
 };
 
@@ -95,10 +93,10 @@ exports.database.prototype.get = function (key, callback) {
  */
 exports.database.prototype.findKeys = function (key, notKey, callback) {
   var self = this;
+  var cql = null;
   if (!notKey) {
     // Get all the keys.
-    var cql = 'SELECT ? FROM ?';
-    self.pool.cql(cql, [ 'key', self.settings.cfName ], function (err, rows) {
+    self.pool.cql(util.format('SELECT "key" FROM "%s"', self.settings.cfName), [], function (err, rows) {
       if (err) {
         return callback(err);
       }
@@ -117,28 +115,25 @@ exports.database.prototype.findKeys = function (key, notKey, callback) {
     if (matches) {
       // Get the 'text' bit out of the key and get all those keys from a special column.
       // We can retrieve them from this column as we're duplicating them on .set/.remove
-      var cql = 'SELECT * from ? WHERE ? = ?';
-      self.pool.cql(cql, [ self.settings.cfName, 'key', 'ueberdb:keys:' + matches[1] ], function (err, rows) {
+      self.pool.cql(util.format('SELECT * from "%s" WHERE "key" = ?', self.settings.cfName), [ 'ueberdb:keys:' + matches[1] ], function (err, rows) {
         if (err) {
           return callback(err);
-        }
-
-        // If the key could not be found, the column count will still be one as the `key` column always returns.
-        if (rows.length === 0 || rows[0].count <= 1 || !rows[0].get('data')) {
+        } else if (rows.length === 0) {
           return callback(null, []);
         }
 
         var keys = [];
-        rows[0].forEach(function(name, value) {
-          keys.push(name);
+        rows.forEach(function(row) {
+          keys.push(row.get('column1').value);
         });
-        callback(null, keys);
+
+        return callback(null, keys);
       });
     } else {
-      callback(new customError('Cassandra db only supports key patterns like pad:* when notKey is set to *:*:*', 'apierror'), null);
+      return callback(new customError('Cassandra db only supports key patterns like pad:* when notKey is set to *:*:*', 'apierror'), null);
     }
   } else {
-    callback(new customError('Cassandra db currently only supports *:*:* as notKey', 'apierror'), null);
+    return callback(new customError('Cassandra db currently only supports *:*:* as notKey', 'apierror'), null);
   }
 };
 
@@ -174,38 +169,31 @@ exports.database.prototype.remove = function (key, callback) {
  */
 exports.database.prototype.doBulk = function (bulk, callback) {
   var self = this;
-  var query = 'BEGIN BATCH USING CONSISTENCY ONE \n';
+  var query = 'BEGIN BATCH \n';
   var parameters = [];
   bulk.forEach(function(operation) {
     var matches = /^([^:]+):([^:]+)$/.exec(operation.key);
     if (operation.type === 'set') {
-      query += 'UPDATE ? SET ? = ? WHERE ? = ?; \n';
-      parameters.push(self.settings.cfName);
-      parameters.push('data');
+      query += util.format('UPDATE "%s" SET "value" = ? WHERE "key" = ? AND "column1" = ?; \n', self.settings.cfName);
       parameters.push(operation.value);
-      parameters.push('key');
       parameters.push(operation.key);
+      parameters.push('data');
 
       if (matches) {
-        query += 'UPDATE ? SET ? = 1 WHERE ? = ?; \n';
-        parameters.push(self.settings.cfName);
-        parameters.push(matches[0]);
-        parameters.push('key');
+        query += util.format('UPDATE "%s" SET "value" = ? WHERE "key" = ? AND "column1" = ?; \n', self.settings.cfName);
+        parameters.push('1');
         parameters.push('ueberdb:keys:' + matches[1]);
+        parameters.push(matches[0]);
       }
 
     } else if (operation.type === 'remove') {
-      query += 'DELETE FROM ? WHERE ? = ?; \n';
-      parameters.push(self.settings.cfName);
-      parameters.push('key');
+      query += util.format('DELETE FROM "%s" WHERE "key" = ?', self.settings.cfName);
       parameters.push(operation.key);
 
       if (matches) {
-        query += 'DELETE ? FROM ? WHERE ? = ?; \n';
-        parameters.push(matches[0]);
-        parameters.push(self.settings.cfName);
-        parameters.push('key');
+        query += util.format('DELETE FROM "%s" WHERE "key" = ? AND "column1" = ?', self.settings.cfName);
         parameters.push('ueberdb:keys:' + matches[1]);
+        parameters.push(matches[0]);
       }
     }
   });
