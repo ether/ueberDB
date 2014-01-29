@@ -75,5 +75,6 @@ exports.database.prototype.remove = function (key, callback)
 
 exports.database.prototype.close = function(callback)
 {
+	this.db.close();
   if(callback) callback();
 }
