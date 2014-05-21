@@ -49,7 +49,7 @@ exports.database.prototype.init = function(callback)
                   "`key` VARCHAR( 100 ) NOT NULL COLLATE utf8_general_ci, " + 
                   "`value` LONGTEXT NOT NULL , " + 
                   "PRIMARY KEY (  `key` ) " +
-                  ") ENGINE = INNODB;"; 
+                  ") ENGINE = MyISAM;"; 
                   
   var sqlAlter  = "ALTER TABLE store MODIFY `key` VARCHAR(100) COLLATE utf8_general_ci;";
 
