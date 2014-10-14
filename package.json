@@ -15,7 +15,7 @@
                        "async"     : "0.1.15",
                        "channels"  : "0.0.2",
                        "node-redis": "0.1.x",
-                       "helenus"   : "0.6.2"
+                       "helenus"   : "0.6.10"
                      },
   "devDependencies": {
                        "log4js"  : "0.4.1",
