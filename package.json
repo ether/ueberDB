@@ -18,7 +18,8 @@
                        "pg"               : "4.3.0",
                        "nano"             : "^6.1.2",
                        "cassandra-driver" : "2.0.1",
-                       "elasticsearch"    : "4.0.2"
+                       "elasticsearch"    : "4.0.2",
+                       "node-crate"       : "1.0.26"
                      },
   "devDependencies": {
                        "log4js"    : "0.6.22",

@@ -7,3 +7,4 @@ exports["couch"] = {port: 5984, host: 'localhost', database: "etherpadlite", max
 exports["mongodb"] = {port: 27017, host: "localhost", dbname: "etherpadlite"};
 exports["cassandra"] = {clientOptions: {keyspace: 'etherpadlite', contactPoints: ['localhost']}, columnFamily: "etherpadlite"};
 exports["elasticsearch"] = {};
+exports["crate"] = {schema: "etherpadlite", table: "store", number_of_replicas: "0-5" };
