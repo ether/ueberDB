@@ -19,7 +19,7 @@ var async = require("async");
 
 exports.database = function(settings)
 {
-  this.db = new mysql.createClient();
+  this.db = require('mysql').createConnection(settings);
   
   this.settings = settings;
   
