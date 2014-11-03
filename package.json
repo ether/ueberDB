@@ -13,7 +13,7 @@
                        "dirty"     : "0.9.x",
                        "async"     : "0.1.15",
                        "channels"  : "0.0.2",
-                       "node-redis": "0.1.x",
+                       "redis"     : ">=0.12.1",
                        "helenus"   : "0.6.10"
                      },
   "devDependencies": {
