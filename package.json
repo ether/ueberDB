@@ -9,13 +9,14 @@
                       { "name": "spcsser"}
                      ],
   "dependencies"   : {
-                       "mysql"     : ">=2.5.1",
-                       "dirty"     : "0.9.x",
-                       "async"     : "0.1.15",
-                       "channels"  : "0.0.2",
-                       "redis"     : ">=0.12.1",
-                       "pg"        : ">=4.0.0-beta2",
-                       "helenus"   : "0.6.10"
+                       "mysql"          : ">=2.5.1",
+                       "dirty"          : "0.9.x",
+                       "async"          : "0.1.15",
+                       "channels"       : "0.0.2",
+                       "redis"          : ">=0.12.1",
+                       "pg"             : ">=4.0.0-beta2",
+                       "helenus"        : "0.6.10",
+                       "felix-couchdb"  : "^1.0.7"
                      },
   "devDependencies": {
                        "log4js"    : "0.4.1",
