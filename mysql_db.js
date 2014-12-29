@@ -43,6 +43,22 @@ exports.database = function(settings)
   this.settings.json = true;
 }
 
+exports.database.prototype.clearPing = function(){
+  if (this.interval) {
+    clearInterval(this.interval);
+  }
+}
+
+exports.database.prototype.schedulePing = function(){
+  this.clearPing();
+
+  var self = this;
+  this.interval = setInterval(function(){
+    console.log('ping');
+    self.db.query('SELECT 1');
+  }, 10000);
+}
+
 exports.database.prototype.init = function(callback)
 {
   var sqlCreate = "CREATE TABLE IF NOT EXISTS `store` ( " +
@@ -82,6 +98,8 @@ exports.database.prototype.init = function(callback)
       }
     })
   });
+
+  this.schedulePing();
 }
 
 exports.database.prototype.get = function (key, callback)
@@ -97,6 +115,8 @@ exports.database.prototype.get = function (key, callback)
   
     callback(err,value);
   });
+
+  this.schedulePing();
 }
 
 exports.database.prototype.findKeys = function (key, notKey, callback)
@@ -128,6 +148,8 @@ exports.database.prototype.findKeys = function (key, notKey, callback)
   
     callback(err,value);
   });
+
+  this.schedulePing();
 }
 
 exports.database.prototype.set = function (key, value, callback)
@@ -142,11 +164,15 @@ exports.database.prototype.set = function (key, value, callback)
       callback(err);
     });
   }
+
+  this.schedulePing();
 }
 
 exports.database.prototype.remove = function (key, callback)
 {
   this.db.query("DELETE FROM `store` WHERE `key` = ?", [key], callback);
+
+  this.schedulePing();
 }
 
 exports.database.prototype.doBulk = function (bulk, callback)
@@ -198,10 +224,12 @@ exports.database.prototype.doBulk = function (bulk, callback)
         callback();
     }
   ], callback);
-  
+ 
+  this.schedulePing(); 
 }
 
 exports.database.prototype.close = function(callback)
 {
+  this.clearPing();
   this.db.end(callback);
 }
