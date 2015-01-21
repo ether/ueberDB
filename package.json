@@ -3,10 +3,11 @@
   "description"    : "transform every database into a object key value store",
   "url"            : "https://github.com/Pita/ueberDB",
   "keywords"       : ["database", "keyvalue"],
-  "author"         : "Peter 'Pita' Martischka <petermartischka@googlemail.com> - Primary Technology Ltd",
+  "author"         : "Etherpad Foundation",
   "contributors"   : [
                       { "name": "John McLear"},
-                      { "name": "spcsser"}
+                      { "name": "spcsser"},
+                      { "name": "Peter Martischka"}
                      ],
   "dependencies"   : {
                        "mysql"          : ">=2.5.1",
@@ -16,7 +17,7 @@
                        "redis"          : ">=0.12.1",
                        "pg"             : ">=4.0.0-beta2",
                        "helenus"        : "0.6.10",
-                       "felix-couchdb"  : "^1.0.7"
+                       "felix-couchdb"  : "1.0.7"
                      },
   "devDependencies": {
                        "log4js"    : "0.4.1",
@@ -27,5 +28,5 @@
                        "url" : "http://github.com/pita/ueberDB.git"
                  },
   "main"           : "./CloneAndAtomicLayer",
-  "version"        : "0.2.10"
+  "version"        : "0.2.11"
 }
