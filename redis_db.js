@@ -87,6 +87,13 @@ exports.database.prototype.set = function (key, value, callback) {
     if(matches) {
         this.client.sadd(new Array("ueberDB:keys:" + matches[1], matches[0]));
     }
+
+    var matchesEvent = /^pad:([^:]+):(revs|chat):([^:]+)$/.exec(key);
+    if (matchesEvent) {
+        var keySet = "pad:" + matchesEvent[1] + ":" + matchesEvent[2];
+        this.client.sadd(new Array(keySet, key));
+    }
+    
     this.client.set(key,value,callback);
 }
 
@@ -95,6 +102,13 @@ exports.database.prototype.remove = function (key, callback) {
     if(matches) {
         this.client.srem(new Array("ueberDB:keys:" + matches[1], matches[0]));
     }
+
+    var matchesEvent = /^pad:([^:]+):(revs|chat):([^:]+)$/.exec(key);
+    if (matchesEvent) {
+        var keySet = "pad:" + matchesEvent[1] + ":" + matchesEvent[2];
+        this.client.srem(new Array(keySet, key));
+    }
+
     this.client.del(key,callback);
 }
 
@@ -103,14 +117,23 @@ exports.database.prototype.doBulk = function (bulk, callback) {
 
     for(var i in bulk) {
         var matches = /^([^:]+):([^:]+)$/.exec(bulk[i].key);
+        var matchesEvent = /^pad:([^:]+):(revs|chat):([^:]+)$/.exec(bulk[i].key);
         if(bulk[i].type == "set") {
             if(matches) {
                 multi.sadd(new Array("ueberDB:keys:" + matches[1], matches[0]));
+            }
+            if (matchesEvent) {
+                var keySet = "pad:" + matchesEvent[1] + ":" + matchesEvent[2];
+                multi.sadd(new Array(keySet, bulk[i].key));
             }
             multi.set(bulk[i].key, bulk[i].value);
         } else if(bulk[i].type == "remove") {
             if(matches) {
                 multi.srem(new Array("ueberDB:keys:" + matches[1], matches[0]));
+            }
+            if (matchesEvent) {
+                var keySet = "pad:" + matchesEvent[1] + ":" + matchesEvent[2];
+                multi.srem(new Array(keySet, bulk[i].key));
             }
             multi.del(bulk[i].key);
         }
