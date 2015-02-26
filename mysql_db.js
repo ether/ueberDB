@@ -54,7 +54,6 @@ exports.database.prototype.schedulePing = function(){
 
   var self = this;
   this.interval = setInterval(function(){
-    console.log('ping');
     self.db.query('SELECT 1');
   }, 10000);
 }

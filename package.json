@@ -28,5 +28,5 @@
                        "url" : "http://github.com/pita/ueberDB.git"
                  },
   "main"           : "./CloneAndAtomicLayer",
-  "version"        : "0.2.11"
+  "version"        : "0.2.12"
 }
