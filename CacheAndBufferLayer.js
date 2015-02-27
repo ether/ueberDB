@@ -156,7 +156,15 @@ exports.database.prototype.get = function(key, callback)
     var self = this;
   
     this.wrappedDB.get(key, function(err,value)
-    {  
+    {
+      if (err)
+      {
+        console.error("QUERY-ERROR: key = " + key);
+        console.error(err.stack || util.inspect(err));
+        callback(err);
+        return;
+      }
+
       if(self.settings.json)
       {
         try
@@ -165,7 +173,7 @@ exports.database.prototype.get = function(key, callback)
         }
         catch(e)
         {
-          console.error("JSON-PROBLEM:" + value);
+          console.error("JSON-PROBLEM: value = " + value);
           callback(e);
           return;
         }

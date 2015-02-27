@@ -16,6 +16,7 @@
 
 var async = require("async");
 var ueberDB = require("./CloneAndAtomicLayer");
+var util = require("util");
 
 //settings
 var maxValues = 100000;
@@ -49,7 +50,7 @@ if(process.argv.length == 3)
     console.log("finished");
     console.log("time: " +  time + "s");
     process.exit(0);
-  })  
+  });
 }
 
 //the benchmark function
@@ -232,12 +233,12 @@ function doOperations(operations, measure, callback)
       {
          measureTime(function(callback)
          {
-           db.set(item.key, item.value, null, callback);
+           db.set(item.key, item.value, null, errorReporterCallback(item, callback));
          },item.type, callback);
       }
       else
       {
-        db.set(item.key, item.value, null, callback);
+        db.set(item.key, item.value, null, errorReporterCallback(item, callback));
       }  
     }
     else if(item.type == "read")
@@ -246,11 +247,11 @@ function doOperations(operations, measure, callback)
       {
         measureTime(function(callback){
           db.get(item.key, callback);
-        },item.type, callback); 
+        },item.type, errorReporterCallback(item, callback));
       }
       else
       {
-        db.get(item.key, callback);
+        db.get(item.key, errorReporterCallback(item, callback));
       }
     }
     else if(item.type == "delete")
@@ -259,11 +260,11 @@ function doOperations(operations, measure, callback)
       {
         measureTime(function(callback){
           db.remove(item.key, null, callback);
-        },item.type, callback); 
+        },item.type, errorReporterCallback(item, callback));
       }
       else
       {
-        db.remove(item.key, null, callback);
+        db.remove(item.key, null, errorReporterCallback(item, callback));
       }
     }
     else
@@ -314,6 +315,20 @@ function measureTime(func, type, callback){
     
     callback(err);
   });
+}
+
+// Create a callback that will log important information if an
+// ueberDB query results in an error
+function errorReporterCallback(op, callback) {
+  return function(err) {
+    if (err) {
+      console.error('error executing operation:');
+      console.error(util.inspect(op));
+      console.error(err.stack);
+    }
+
+    callback(err);
+  };
 }
 
 var lastRands = [];
