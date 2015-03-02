@@ -16,7 +16,6 @@
                        "channels"       : "0.0.2",
                        "redis"          : ">=0.12.1",
                        "pg"             : ">=4.0.0-beta2",
-                       "helenus"        : "0.6.10",
                        "felix-couchdb"  : "1.0.7"
                      },
   "devDependencies": {
@@ -28,5 +27,5 @@
                        "url" : "http://github.com/pita/ueberDB.git"
                  },
   "main"           : "./CloneAndAtomicLayer",
-  "version"        : "0.2.12"
+  "version"        : "0.2.13"
 }

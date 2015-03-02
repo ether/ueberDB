@@ -11,7 +11,6 @@ Abstract your databases, make datababies.  ueberDB turns every database into a s
 * Mongo
 * Redis
 * Couch
-* Cassandra
 
 #Install
 
