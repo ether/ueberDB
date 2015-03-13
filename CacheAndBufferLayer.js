@@ -320,7 +320,11 @@ exports.database.prototype.setSub = function(key, sub, value, bufferCallback, wr
     }
   ],function(err)
   {
-    if(callback) callback(err);
+    if(bufferCallback || writeCallback)
+    {
+      if(bufferCallback) bufferCallback(err);
+      if(writeCallback) writeCallback(err);
+    }
     else if(err != null) throw err;
   })
 }
