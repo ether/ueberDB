@@ -317,15 +317,16 @@ exports.database.prototype.setSub = function(key, sub, value, bufferCallback, wr
       subvalueParent[sub[sub.length-1]] = value;
       
       _this.set(key, fullValue, bufferCallback, writeCallback);
+      callback(null);
     }
   ],function(err)
   {
-    if(bufferCallback || writeCallback)
+    if(err)
     {
       if(bufferCallback) bufferCallback(err);
-      if(writeCallback) writeCallback(err);
+      else if(writeCallback) writeCallback(err);
+      else throw err;
     }
-    else if(err != null) throw err;
   })
 }
 
