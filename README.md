@@ -11,6 +11,7 @@ Abstract your databases, make datababies.  ueberDB turns every database into a s
 * Mongo
 * Redis
 * Couch
+* Elasticsearch
 
 #Install
 
@@ -33,7 +34,7 @@ var db = new ueberDB.database("mysql", {"user":"root", host: "localhost", "passw
 //initialize the database
 db.init(function (err)
 {
-  if(err) 
+  if(err)
   {
     console.error(err);
     process.exit(1);
@@ -42,11 +43,11 @@ db.init(function (err)
   //set a object as a value
   //can be done without a callback, cause the value is immediately in the buffer
   db.set("valueA", {a:1,b:2});
-  
+
   //get the object
   db.get("valueA", function(err, value){
     console.log(value);
-    
+
     db.close(function(){
       process.exit(0);
     });
@@ -61,10 +62,11 @@ Look at sqlite_db.js and mysql_db.js, your module have to provide the same funct
 Only mysql, dirty and mongodb currently support findKeys feature. The following do not yet support the function:
 * couch
 * leveldb
-* redis (Only keys of the format *:*:*)
-* cassandra (Only keys of the format *:*:*)
+* redis (Only keys of the format \*:\*:\*)
+* cassandra (Only keys of the format \*:\*:\*)
+* elasticsearch (Only keys of the format \*:\*:\*)
 
 For details on how it works please refer to the wiki: https://github.com/Pita/ueberDB/wiki/findKeys-functionality
 
-#License 
+#License
 [Apache License v2](http://www.apache.org/licenses/LICENSE-2.0.html)

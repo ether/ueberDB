@@ -6,3 +6,4 @@ exports["redis"] = {};
 exports["couch"] = {port: 5984, host: 'localhost', database: "etherpadlite", maxListeners: 0};
 exports["mongodb"] = {port: 27017, host: "localhost", dbname: "etherpadlite"};
 exports["cassandra"] = {clientOptions: {keyspace: 'etherpadlite', contactPoints: ['localhost']}, columnFamily: "etherpadlite"};
+exports["elasticsearch"] = {};
