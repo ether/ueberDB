@@ -17,7 +17,8 @@
                        "redis"            : ">=0.12.1",
                        "pg"               : "4.3.0",
                        "felix-couchdb"    : "1.0.7",
-                       "cassandra-driver" : "2.0.1"
+                       "cassandra-driver" : "2.0.1",
+                       "elasticsearch"    : "4.0.2"
                      },
   "devDependencies": {
                        "log4js"    : "0.6.22",
