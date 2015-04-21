@@ -30,10 +30,41 @@ exports.database = function(settings)
   this.settings.json = false;
 }
 
+var insertDesignDocs = function insertDesignDocs() 
+{
+  // the regexp is the same as this.createFindRegex('pad:*', '*:*:*');
+  // copied here because we can't use this.createFindRegex method in couch
+  var designDoc = {
+    views: {
+      "findAllPads": {
+        map: function (doc, req) {
+          if (/(?=^pad:.*$)(?!.*:.*:.*$)/.test(doc._id)){
+            emit(doc._id.replace('pad:', ''), doc);
+          }
+        },
+      },
+    },
+  };
+
+  var handleError = function handleError(er) {
+    if (er) throw new Error(er);
+  };
+
+  // Always ensure that couchDb has the latest version of the design document
+  this.db.getDoc('_design/ueberDb', function (er, doc) {
+    if (er && er.error === 'not_found') return this.db.saveDesign('ueberDb', designDoc, handleError);    
+    if (er) throw new Error(er);
+    designDoc._rev = doc._rev;
+    this.db.saveDesign('ueberDb', designDoc, handleError);
+  }.bind(this));
+
+};
+
 exports.database.prototype.init = function(callback)
 {
-  this.client = couch.createClient(this.settings.port, this.settings.host, this.settings.user, this.settings.pass, this.settings.maxListeners);
+  this.client = couch.createClient(this.settings.port, this.settings.host, this.settings.user, this.settings.password, this.settings.maxListeners);
   this.db = this.client.db(this.settings.database);
+  insertDesignDocs.call(this);
   callback();
 }
 
@@ -49,6 +80,24 @@ exports.database.prototype.get = function (key, callback)
     {
       callback(null, doc.value);
     }
+  });
+}
+
+exports.database.prototype.findKeys = function (key, notKey, callback) 
+{
+  var findKey = this.createFindRegex(key, notKey);
+  this.db.view('ueberDb', 'findAllPads', function (er, result) {
+    if (er) return callback(er, null);
+    result = result
+      .rows
+      .filter(function (pad) {
+        // in case of findKeys is used for a more smaller portion thant the basic wildcard
+        return findKey.test(pad.value._id);
+      })
+      .map(function (pad) {
+        return pad.key;
+      });
+    callback(null, result);
   });
 }
 
