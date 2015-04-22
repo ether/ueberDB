@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-var couch = require("felix-couchdb");
-var async = require("async");
+var couch       = require("felix-couchdb");
+var async       = require("async");
+
+var handleError = function handleError(er) {
+  if (er) throw new Error(er);
+};
 
 exports.database = function(settings)
 {
@@ -30,10 +34,24 @@ exports.database = function(settings)
   this.settings.json = false;
 }
 
+// Always ensure that couchDb has at least an empty design doc for UeberDb use
+// this will be necessary for the `findKeys` method
+var checkUeberDbDesignDocument = function checkUeberDbDesignDocument() 
+{
+  var db = this.db;
+  db.getDoc('_design/ueberDb', function (er, doc) {
+    if (er && er.error === 'not_found') {
+      return db.saveDesign('ueberDb', {views: {}}, handleError)
+    };
+    if (er) throw new Error(er);
+  });
+};
+
 exports.database.prototype.init = function(callback)
 {
-  this.client = couch.createClient(this.settings.port, this.settings.host, this.settings.user, this.settings.pass, this.settings.maxListeners);
+  this.client = couch.createClient(this.settings.port, this.settings.host, this.settings.user, this.settings.password, this.settings.maxListeners);
   this.db = this.client.db(this.settings.database);
+  checkUeberDbDesignDocument.call(this);
   callback();
 }
 
@@ -50,6 +68,48 @@ exports.database.prototype.get = function (key, callback)
       callback(null, doc.value);
     }
   });
+}
+
+exports.database.prototype.findKeys = function (key, notKey, callback)
+{
+  var regex     = this.createFindRegex(key, notKey);
+  var queryKey  = key + '__' + notKey;
+  var db        = this.db;
+  
+  // always look up if the query haven't be done before
+  var checkQuery = function checkQuery(er, doc) { 
+    handleError(er);
+    var queryExists = queryKey in doc.views;
+    if (!queryExists) return createQuery(doc);
+    makeQuery();
+  };
+
+  // Cache the query for faster reuse in the future
+  var createQuery = function createQuery(doc) {
+    var mapFunction     = {
+      map: 'function(doc) {' +
+        'if (' + regex + '.test(doc._id)) {' +
+          'emit(doc._id, null);' +
+        '}' +
+      '}',
+    }
+    doc.views[queryKey] = mapFunction;
+    db.saveDesign('ueberDb', doc, function (er) {
+      handleError(er);
+      makeQuery();
+    })
+  };
+
+  // If this is the first time the request is used, this can take a while…
+  var makeQuery = function makeQuery(er) {
+    db.view('ueberDb', queryKey, function (er, docs) {
+      handleError(er);
+      docs = docs.rows.map(function (doc) { return doc.key; });
+      callback(null, docs);  
+    });
+  };
+
+  db.getDoc('_design/ueberDb', checkQuery);
 }
 
 exports.database.prototype.set = function (key, value, callback)
