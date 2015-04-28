@@ -14,74 +14,97 @@
  * limitations under the License.
  */
 
-var couch       = require("felix-couchdb");
-var async       = require("async");
+var nano            = require('nano');
+var async           = require('async');
+
+var DESIGN_NAME     = 'ueberDb';
+var DESIGN_PATH     = '_design/' + DESIGN_NAME;
 
 var handleError = function handleError(er) {
   if (er) throw new Error(er);
 };
 
-exports.database = function(settings)
-{
-  this.db=null;
-  this.client=null;
-  
+exports.database = function(settings) {
+  this.db       = null;
+  this.client   = null;
   this.settings = settings;
-  
-  //set default settings
-  this.settings.cache = 1000;
-  this.settings.writeInterval = 100;
-  this.settings.json = false;
-}
+};
 
-// Always ensure that couchDb has at least an empty design doc for UeberDb use
-// this will be necessary for the `findKeys` method
-var checkUeberDbDesignDocument = function checkUeberDbDesignDocument() 
-{
-  var db = this.db;
-  db.getDoc('_design/ueberDb', function (er, doc) {
-    if (er && er.error === 'not_found') {
-      return db.saveDesign('ueberDb', {views: {}}, handleError)
-    };
-    if (er) throw new Error(er);
+exports.database.prototype.init = function(callback) {
+  var settings  = this.settings;
+  var client    = null;
+  var db        = null;
+
+  var config    = {
+    url: 'http://' + settings.host + ':' + settings.port,
+    requestDefaults: {
+      pool: {
+        maxSockets: settings.maxListeners || 1,
+      },
+      auth: {
+        user: settings.user,
+        pass: settings.password
+      },
+    },
+  };
+
+  var createDb = function createDb() {
+    client.db.create(settings.database, function(er, body) {
+      if (er) return callback(er);
+      return setDb();
+    });
+  };
+
+  var setDb = function setDb() {
+    db = client.use(settings.database);
+    checkUeberDbDesignDocument(db);
+    this.client = client;
+    this.db     = db;
+    callback();
+  }.bind(this);
+
+  // Always ensure that couchDb has at least an empty design doc for UeberDb use
+  // this will be necessary for the `findKeys` method
+  var checkUeberDbDesignDocument = function checkUeberDbDesignDocument() {
+    db.head(DESIGN_PATH, function(er, _, header) {
+      if (er && er.statusCode === 404) return db.insert({views: {}}, DESIGN_PATH, handleError);
+      if (er) throw new Error(er);
+    });
+  };
+
+  client = nano(config);
+  client.db.get(settings.database, function(er, body) {
+    if (er && er.statusCode === 404) return createDb();
+    if (er) return callback(er);
+    return setDb();
   });
 };
 
-exports.database.prototype.init = function(callback)
-{
-  this.client = couch.createClient(this.settings.port, this.settings.host, this.settings.user, this.settings.password, this.settings.maxListeners);
-  this.db = this.client.db(this.settings.database);
-  checkUeberDbDesignDocument.call(this);
-  callback();
-}
-
-exports.database.prototype.get = function (key, callback)
-{
-  this.db.getDoc(key, function(er, doc)
-  {
-    if(doc == null)
-    {
-      callback(null, null);
-    }
-    else
-    {
-      callback(null, doc.value);
-    }
+exports.database.prototype.get = function(key, callback) {
+  var db = this.db;
+  db.get(key, function(er, doc) {
+    if (er && er.statusCode !== 404) {
+      console.log('GET');
+      console.log(er);
+    };
+    if (doc == null) return callback(null, null);
+    callback(null, doc.value);
   });
-}
+};
 
-exports.database.prototype.findKeys = function (key, notKey, callback)
-{
+exports.database.prototype.findKeys = function(key, notKey, callback) {
   var regex     = this.createFindRegex(key, notKey);
   var queryKey  = key + '__' + notKey;
   var db        = this.db;
-  
+
   // always look up if the query haven't be done before
-  var checkQuery = function checkQuery(er, doc) { 
-    handleError(er);
-    var queryExists = queryKey in doc.views;
-    if (!queryExists) return createQuery(doc);
-    makeQuery();
+  var checkQuery = function checkQuery() {
+    db.get(DESIGN_PATH, function(er, doc) {
+      handleError(er);
+      var queryExists = queryKey in doc.views;
+      if (!queryExists) return createQuery(doc);
+      makeQuery();
+    });
   };
 
   // Cache the query for faster reuse in the future
@@ -94,7 +117,7 @@ exports.database.prototype.findKeys = function (key, notKey, callback)
       '}',
     }
     doc.views[queryKey] = mapFunction;
-    db.saveDesign('ueberDb', doc, function (er) {
+    db.insert(doc, DESIGN_PATH, function(er) {
       handleError(er);
       makeQuery();
     })
@@ -102,112 +125,73 @@ exports.database.prototype.findKeys = function (key, notKey, callback)
 
   // If this is the first time the request is used, this can take a while…
   var makeQuery = function makeQuery(er) {
-    db.view('ueberDb', queryKey, function (er, docs) {
+    db.view(DESIGN_NAME, queryKey, function(er, docs) {
       handleError(er);
-      docs = docs.rows.map(function (doc) { return doc.key; });
-      callback(null, docs);  
+      docs = docs.rows.map(function(doc) { return doc.key; });
+      callback(null, docs);
     });
   };
 
-  db.getDoc('_design/ueberDb', checkQuery);
-}
+  checkQuery();
+};
 
-exports.database.prototype.set = function (key, value, callback)
-{
-  var _this = this;
-  this.db.getDoc(key, function(er, doc)
-  {
-    if(doc == null)
-    {
-      _this.db.saveDoc({_id: key, value: value}, callback);
-    }
-    else
-    {
-      _this.db.saveDoc({_id: key, _rev: doc._rev, value: value}, callback);
-    }
+exports.database.prototype.set = function(key, value, callback) {
+  var db = this.db;
+  db.get(key, function(er, doc) {
+    if (doc == null) return db.insert({_id: key, value: value}, callback);
+    db.insert({_id: key, _rev: doc._rev, value: value}, callback);
   });
-}
+};
 
-exports.database.prototype.remove = function (key, callback)
-{
-  var _this = this;
-  this.db.getDoc(key, function(er, doc)
-  {
-    if(doc == null)
-    {
+exports.database.prototype.remove = function(key, callback) {
+  var db = this.db;
+  db.head(key, function(er, _, header) {
+    if (er && er.statusCode === 404) return callback(null);
+    if (er) return callback(er)
+    db.destroy(key, header.etag, function(er, body) {
+      if (er) return callback(er);
       callback(null);
-    }
-    else
-    {
-      _this.db.removeDoc(key, doc._rev, function(er,r)
-      {
-        callback(null);
-      });
-    }
+    });
   });
-}
+};
 
-exports.database.prototype.doBulk = function (bulk, callback)
-{
+exports.database.prototype.doBulk = function(bulk, callback) {
+  var db = this.db;
   var _this = this;
   var keys = [];
   var revs = {};
   var setters = [];
-  for(var i in bulk)
-  {
+  for (var i in bulk) {
     keys.push(bulk[i].key);
   }
   async.series([
-    function(callback)
-    {
-      _this.db.request({
-        method: 'POST',
-        path: '/_all_docs',
-        data: {keys: keys},
-      }, function(er, r)
-      {
+    function fetchRevs(callback) {
+      db.fetchRevs({keys: keys}, function (er, r) {
         if (er) throw new Error(JSON.stringify(er));
         rows = r.rows;
-        for(var j in r.rows)
-        {
+        for (var j in r.rows) {
           // couchDB will return error instead of value if key does not exist
-          if(rows[j].value!=null)
-          {
-            revs[rows[j].key] = rows[j].value.rev;
-          }
+          if (rows[j].value != null) revs[rows[j].key] = rows[j].value.rev;
         }
         callback();
       });
     },
-    function(callback)
-    {
-      for(var i in bulk)
-      {
+    function setActions(callback) {
+      for (var i in bulk) {
         var item = bulk[i];
         var set = {_id: item.key};
-        if(revs[item.key] != null)
-        {
-          set._rev = revs[item.key];
-        }
-        if(item.type == "set")
-        {
-          set.value = item.value;
-          setters.push(set);
-        }
-        else if(item.type == "remove")
-        {
-          set._deleted = true;
-          setters.push(set);
-        }
+        if (revs[item.key] != null) set._rev = revs[item.key];
+        if (item.type === 'set')    set.value = item.value;
+        if (item.type === 'remove') set._deleted = true;
+        setters.push(set);
       }
       callback();
-    }], function(err) {
-      _this.db.bulkDocs({docs: setters}, callback);
+    }], function makeBulk(err) {
+      db.bulk({docs: setters}, callback);
     }
   );
-}
+};
 
-exports.database.prototype.close = function(callback)
-{
-  if(callback) callback();
-}
+exports.database.prototype.close = function(callback) {
+  if (callback) callback();
+};
