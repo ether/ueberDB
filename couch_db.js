@@ -28,6 +28,12 @@ exports.database = function(settings) {
   this.db       = null;
   this.client   = null;
   this.settings = settings;
+
+  // force some settings
+  // used by CacheAndBufferLayer.js
+  this.settings.cache = 1000;
+  this.settings.writeInterval = 100;
+  this.settings.json = false;
 };
 
 exports.database.prototype.init = function(callback) {
