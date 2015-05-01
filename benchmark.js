@@ -40,6 +40,7 @@ var bench_settings = require("./defaultTestSettings.js");
 
 if(process.argv.length == 3)
 {
+  console.log("test");
   var settings = bench_settings[process.argv[2]];
   db = new ueberDB.database(process.argv[2], settings);
 

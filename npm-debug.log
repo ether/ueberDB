@@ -1,0 +1,113 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/local/bin/node', '/usr/local/bin/npm', 'publish' ]
+2 info using npm@1.4.28
+3 info using node@v0.10.33
+4 verbose publish [ '.' ]
+5 verbose cache add [ '.', null ]
+6 verbose cache add name=undefined spec="." args=[".",null]
+7 verbose parsed url { protocol: null,
+7 verbose parsed url   slashes: null,
+7 verbose parsed url   auth: null,
+7 verbose parsed url   host: null,
+7 verbose parsed url   port: null,
+7 verbose parsed url   hostname: null,
+7 verbose parsed url   hash: null,
+7 verbose parsed url   search: null,
+7 verbose parsed url   query: null,
+7 verbose parsed url   pathname: '.',
+7 verbose parsed url   path: '.',
+7 verbose parsed url   href: '.' }
+8 silly lockFile 3a52ce78- .
+9 verbose lock . /home/jose/.npm/3a52ce78-.lock
+10 verbose tar pack [ '/home/jose/.npm/ueberDB/0.2.15/package.tgz', '.' ]
+11 verbose tarball /home/jose/.npm/ueberDB/0.2.15/package.tgz
+12 verbose folder .
+13 info prepublish ueberDB@0.2.15
+14 silly lockFile 1f1177db-tar tar://.
+15 verbose lock tar://. /home/jose/.npm/1f1177db-tar.lock
+16 silly lockFile a9b94a84-e-npm-ueberDB-0-2-15-package-tgz tar:///home/jose/.npm/ueberDB/0.2.15/package.tgz
+17 verbose lock tar:///home/jose/.npm/ueberDB/0.2.15/package.tgz /home/jose/.npm/a9b94a84-e-npm-ueberDB-0-2-15-package-tgz.lock
+18 silly lockFile 1f1177db-tar tar://.
+19 silly lockFile 1f1177db-tar tar://.
+20 silly lockFile a9b94a84-e-npm-ueberDB-0-2-15-package-tgz tar:///home/jose/.npm/ueberDB/0.2.15/package.tgz
+21 silly lockFile a9b94a84-e-npm-ueberDB-0-2-15-package-tgz tar:///home/jose/.npm/ueberDB/0.2.15/package.tgz
+22 silly lockFile f78ebdd8--jose-npm-ueberDB-0-2-15-package /home/jose/.npm/ueberDB/0.2.15/package
+23 verbose lock /home/jose/.npm/ueberDB/0.2.15/package /home/jose/.npm/f78ebdd8--jose-npm-ueberDB-0-2-15-package.lock
+24 silly lockFile f78ebdd8--jose-npm-ueberDB-0-2-15-package /home/jose/.npm/ueberDB/0.2.15/package
+25 silly lockFile f78ebdd8--jose-npm-ueberDB-0-2-15-package /home/jose/.npm/ueberDB/0.2.15/package
+26 silly lockFile 3a52ce78- .
+27 silly lockFile 3a52ce78- .
+28 silly publish { name: 'ueberDB',
+28 silly publish   description: 'transform every database into a object key value store',
+28 silly publish   url: 'https://github.com/Pita/ueberDB',
+28 silly publish   keywords: [ 'database', 'keyvalue' ],
+28 silly publish   author: { name: 'Etherpad Foundation' },
+28 silly publish   contributors:
+28 silly publish    [ { name: 'John McLear' },
+28 silly publish      { name: 'spcsser' },
+28 silly publish      { name: 'Peter Martischka' } ],
+28 silly publish   dependencies:
+28 silly publish    { mysql: '2.6.1',
+28 silly publish      dirty: '0.9.x',
+28 silly publish      async: '0.1.15',
+28 silly publish      channels: '0.0.4',
+28 silly publish      redis: '>=0.12.1',
+28 silly publish      pg: '4.3.0',
+28 silly publish      nano: '^6.1.2',
+28 silly publish      'cassandra-driver': '2.0.1',
+28 silly publish      elasticsearch: '4.0.2' },
+28 silly publish   devDependencies: { log4js: '0.6.22', mongodb: '2.0.25' },
+28 silly publish   repository: { type: 'git', url: 'http://github.com/pita/ueberDB.git' },
+28 silly publish   main: './CloneAndAtomicLayer',
+28 silly publish   version: '0.2.15',
+28 silly publish   readme: '#About\n\nAbstract your databases, make datababies.  ueberDB turns every database into a simple key value store by providing a layer of abstraction between your software and your database.  ueberDB uses a smart cache and buffer algorithm to make databases faster. Reads are cached and writes are done in a bulk. The bulk writing reduces the overhead of a database transaction.  The syntax is simple and clean and getting started is easy.\n\n#Database Support\n* MySQL\n* SQLite\n* Postgres\n* Level\n* Dirty\n* Mongo\n* Redis\n* Couch\n* Elasticsearch\n\n#Install\n\n`npm install ueberDB`\n\n#Example\n\n```javascript\nvar ueberDB = require("ueberDB");\n\n//mysql\nvar db = new ueberDB.database("mysql", {"user":"root", host: "localhost", "password":"", database: "store"});\n//sqlite in-memory\n//var db = new ueberDB.database("sqlite");\n//sqlite in file\n//var db = new ueberDB.database("sqlite", {filename:"var/sqlite3.db"});\n//sqlite in file with a write interval of a half second\n//var db = new ueberDB.database("sqlite", {filename:"var/sqlite3.db"}, {writeInterval: 500});\n\n//initialize the database\ndb.init(function (err)\n{\n  if(err)\n  {\n    console.error(err);\n    process.exit(1);\n  }\n\n  //set a object as a value\n  //can be done without a callback, cause the value is immediately in the buffer\n  db.set("valueA", {a:1,b:2});\n\n  //get the object\n  db.get("valueA", function(err, value){\n    console.log(value);\n\n    db.close(function(){\n      process.exit(0);\n    });\n  });\n});\n```\n\n#How to add support for another database\nLook at sqlite_db.js and mysql_db.js, your module have to provide the same functions. Call it DATABASENAME_db.js and reimplement the functions for your database. If you think it works, test it with `node benchmark.js DATABASENAME`. Benchmark.js is benchmark and test at the same time. It tries to set 100000 values. You can pipe stderr to a file and will create a csv with benchmark results.\n\n#Limitations\nOnly mysql, dirty, mongodb and couch currently support findKeys feature. The following do not yet support the function:\n\n* leveldb\n* redis (Only keys of the format \\*:\\*:\\*)\n* cassandra (Only keys of the format \\*:\\*:\\*)\n* elasticsearch (Only keys of the format \\*:\\*:\\*)\n\nFor details on how it works please refer to the wiki: https://github.com/Pita/ueberDB/wiki/findKeys-functionality\n\n#License\n[Apache License v2](http://www.apache.org/licenses/LICENSE-2.0.html)\n',
+28 silly publish   readmeFilename: 'README.md',
+28 silly publish   gitHead: 'e52586fb4397f74b50904b9be83a844f275c1ae0',
+28 silly publish   bugs: { url: 'https://github.com/pita/ueberDB/issues' },
+28 silly publish   homepage: 'https://github.com/pita/ueberDB',
+28 silly publish   _id: 'ueberDB@0.2.15',
+28 silly publish   scripts: {},
+28 silly publish   _shasum: '363e24de085581376734f8777657ad5d3e188783',
+28 silly publish   _from: '.' }
+29 verbose request where is /ueberDB
+30 verbose request registry https://registry.npmjs.org/
+31 verbose request id d932af67322a19e3
+32 verbose url raw /ueberDB
+33 verbose url resolving [ 'https://registry.npmjs.org/', './ueberDB' ]
+34 verbose url resolved https://registry.npmjs.org/ueberDB
+35 verbose request where is https://registry.npmjs.org/ueberDB
+36 info trying registry request attempt 1 at 18:37:18
+37 http PUT https://registry.npmjs.org/ueberDB
+38 http 403 https://registry.npmjs.org/ueberDB
+39 verbose headers { 'content-type': 'application/json',
+39 verbose headers   'cache-control': 'max-age=60',
+39 verbose headers   'content-length': '96',
+39 verbose headers   'accept-ranges': 'bytes',
+39 verbose headers   date: 'Fri, 01 May 2015 17:37:19 GMT',
+39 verbose headers   via: '1.1 varnish',
+39 verbose headers   connection: 'keep-alive',
+39 verbose headers   'x-served-by': 'cache-lcy1123-LCY',
+39 verbose headers   'x-cache': 'MISS',
+39 verbose headers   'x-cache-hits': '0',
+39 verbose headers   'x-timer': 'S1430501838.870774,VS0,VE818' }
+40 error publish Failed PUT 403
+41 error Error: "You cannot publish over the previously published version 0.2.15." : ueberDB
+41 error     at RegClient.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:308:14)
+41 error     at Request._callback (/usr/local/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:246:65)
+41 error     at Request.self.callback (/usr/local/lib/node_modules/npm/node_modules/request/request.js:236:22)
+41 error     at Request.emit (events.js:98:17)
+41 error     at Request.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/request/request.js:1142:14)
+41 error     at Request.emit (events.js:117:20)
+41 error     at IncomingMessage.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/request/request.js:1096:12)
+41 error     at IncomingMessage.emit (events.js:117:20)
+41 error     at _stream_readable.js:943:16
+41 error     at process._tickCallback (node.js:419:13)
+42 error If you need help, you may report this *entire* log,
+42 error including the npm and node versions, at:
+42 error     <http://github.com/npm/npm/issues>
+43 error System Linux 3.16.0-34-generic
+44 error command "/usr/local/bin/node" "/usr/local/bin/npm" "publish"
+45 error cwd /home/jose/ueberDB
+46 error node -v v0.10.33
+47 error npm -v 1.4.28
+48 verbose exit [ 1, true ]
