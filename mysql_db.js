@@ -61,12 +61,12 @@ exports.database.prototype.schedulePing = function(){
 exports.database.prototype.init = function(callback)
 {
   var sqlCreate = "CREATE TABLE IF NOT EXISTS `store` ( " +
-                  "`key` VARCHAR( 100 ) NOT NULL COLLATE utf8_general_ci, " + 
-                  "`value` LONGTEXT NOT NULL , " + 
-                  "PRIMARY KEY (  `key` ) " +
-                  ") ENGINE = MyISAM;"; 
-                  
-  var sqlAlter  = "ALTER TABLE store MODIFY `key` VARCHAR(100) COLLATE utf8_general_ci;";
+                  "`key` VARCHAR( 100 ) NOT NULL COLLATE utf8mb4_bin, " +
+                  "`value` LONGTEXT COLLATE utf8mb4_bin NOT NULL , " +
+                  "PRIMARY KEY ( `key` ) " +
+                  ") ENGINE=MyISAM CHARSET=utf8mb4 COLLATE=utf8mb4_bin;";
+
+  var sqlAlter  = "ALTER TABLE store MODIFY `key` VARCHAR(100) COLLATE utf8mb4_bin;";
 
   var db = this.db;
   var self = this;
