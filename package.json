@@ -1,5 +1,5 @@
 {
-  "name"           : "ueberDB",
+  "name"           : "ueberdb2",
   "description"    : "transform every database into a object key value store",
   "url"            : "https://github.com/Pita/ueberDB",
   "keywords"       : ["database", "keyvalue"],
@@ -29,5 +29,5 @@
                        "url" : "http://github.com/pita/ueberDB.git"
                  },
   "main"           : "./CloneAndAtomicLayer",
-  "version"        : "0.2.17"
+  "version"        : "0.3.0"
 }
