@@ -206,6 +206,21 @@ exports.database.prototype.findKeys = function(key, notKey, callback){
 }
 
 /**
+ * Remove a record from the database
+ */
+exports.database.prototype.remove = function(key, callback){
+  var self = this;
+  this.wrappedDB.remove(key, function(err)
+  {
+    //call the garbage collector
+    self.gc();
+    self.logger.debug("DELETE - " + key + " - from database ");
+
+    callback(err);
+  });
+}
+
+/**
  Sets the value trough the wrapper
 */
 exports.database.prototype.set = function(key, value, bufferCallback, writeCallback)
@@ -315,7 +330,6 @@ exports.database.prototype.setSub = function(key, sub, value, bufferCallback, wr
       
       //set the subvalue, we're doing that with the parent element
       subvalueParent[sub[sub.length-1]] = value;
-      
       _this.set(key, fullValue, bufferCallback, writeCallback);
     }
   ],function(err)
@@ -365,17 +379,6 @@ exports.database.prototype.getSub = function(key, sub, callback)
       callback(err, subvalue);
     }
   });
-}
-
-/**
- Removes the value trough the wrapper
-*/
-exports.database.prototype.remove = function(key, bufferCallback, writeCallback)
-{
-  this.logger.debug("REMOVE - " + key);
-
-  //make a set to null out of it
-  this.set(key, null, bufferCallback, writeCallback);
 }
 
 /**

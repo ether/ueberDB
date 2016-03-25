@@ -144,6 +144,7 @@ exports.database.prototype.findKeys = function(key, notKey, callback) {
 exports.database.prototype.set = function(key, value, callback) {
   var db = this.db;
   db.get(key, function(er, doc) {
+
     if (doc == null) return db.insert({_id: key, value: value}, callback);
     db.insert({_id: key, _rev: doc._rev, value: value}, callback);
   });
@@ -154,7 +155,9 @@ exports.database.prototype.remove = function(key, callback) {
   db.head(key, function(er, _, header) {
     if (er && er.statusCode === 404) return callback(null);
     if (er) return callback(er)
-    db.destroy(key, header.etag, function(er, body) {
+    // etag has additional quotation marks, remove them
+    var etag = JSON.parse(header).etag;
+    db.destroy(key, etag, function(er, body) {
       if (er) return callback(er);
       callback(null);
     });

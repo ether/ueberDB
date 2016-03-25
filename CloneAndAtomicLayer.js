@@ -67,6 +67,11 @@ exports.database.prototype.findKeys = function (key, notKey, callback)
   this.channels.emit(key, {"db": this.db, "type": "findKeys", "key": key, "notKey": notKey, "callback": callback});
 }
 
+exports.database.prototype.remove = function (key, callback)
+{
+  this.channels.emit(key, {"db": this.db, "type": "remove", "key": key, "callback": callback});
+}
+
 exports.database.prototype.set = function (key, value, bufferCallback, writeCallback)
 {
   this.channels.emit(key, {"db": this.db, "type": "set", "key": key, "value": clone(value), "bufferCallback": bufferCallback, "writeCallback": writeCallback});
@@ -82,11 +87,6 @@ exports.database.prototype.setSub = function (key, sub, value, bufferCallback, w
   this.channels.emit(key, {"db": this.db, "type": "setsub", "key": key, "sub": sub, "value": clone(value), "bufferCallback": bufferCallback, "writeCallback": writeCallback});
 }
 
-exports.database.prototype.remove = function (key, bufferCallback, writeCallback)
-{
-  this.channels.emit(key, {"db": this.db, "type": "remove", "key": key, "bufferCallback": bufferCallback, "writeCallback": writeCallback});
-}
-
 function doOperation (operation, callback)
 {
   if(operation.type == "get")
@@ -100,6 +100,14 @@ function doOperation (operation, callback)
       operation.callback(err, value);
       
       //call the queue callback
+      callback();
+    });
+  }
+  else if(operation.type == "remove"){
+    operation.db.remove(operation.key, function(err)
+    {
+      //call the queue callback
+      operation.callback(err);
       callback();
     });
   }
@@ -145,17 +153,6 @@ function doOperation (operation, callback)
   else if(operation.type == "setsub")
   {
     operation.db.setSub(operation.key, operation.sub, operation.value, function(err)
-    {
-      //call the queue callback
-      callback();
-      
-      //call the caller callback
-      if(operation.bufferCallback) operation.bufferCallback(err);
-    }, operation.writeCallback);
-  }
-  else if(operation.type == "remove")
-  {
-    operation.db.remove(operation.key, function(err)
     {
       //call the queue callback
       callback();
