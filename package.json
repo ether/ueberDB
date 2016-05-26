@@ -21,15 +21,16 @@
     }
   ],
   "dependencies": {
-    "mysql": "2.6.1",
-    "dirty": "0.9.x",
     "async": "0.1.15",
-    "channels": "0.0.4",
-    "redis": ">=0.12.1",
-    "pg": "4.3.0",
-    "nano": "^6.1.2",
     "cassandra-driver": "2.0.1",
-    "elasticsearch": "4.0.2"
+    "channels": "0.0.4",
+    "dirty": "0.9.x",
+    "elasticsearch": "4.0.2",
+    "mysql": "2.6.1",
+    "nano": "^6.1.2",
+    "pg": "4.3.0",
+    "redis": ">=0.12.1",
+    "rethinkdb": "^2.3.1"
   },
   "devDependencies": {
     "log4js": "0.6.22",

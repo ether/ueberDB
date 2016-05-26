@@ -196,7 +196,7 @@ function generateOperations(startNum, endNum, size, type)
       key = "key" + (startNum + uniqueRandomNum(endNum-startNum))
     }
     
-    var operation = {type:type, key:key};
+    var operation = {type:type, key:key, callback:function(){}};
     
     if(type == "write" || type == "update")
     {
@@ -259,12 +259,12 @@ function doOperations(operations, measure, callback)
       if(measure)
       {
         measureTime(function(callback){
-          db.remove(item.key, null, callback);
+          db.remove(item.key, callback);
         },item.type, callback); 
       }
       else
       {
-        db.remove(item.key, null, callback);
+        db.remove(item.key, callback);
       }
     }
     else
