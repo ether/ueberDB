@@ -25,7 +25,7 @@
     "cassandra-driver": "2.0.1",
     "channels": "0.0.4",
     "dirty": "0.9.x",
-    "elasticsearch": "4.0.2",
+    "elasticsearch": "11.0.1",
     "mysql": "2.6.1",
     "nano": "^6.1.2",
     "pg": "4.3.0",
