@@ -27,7 +27,7 @@
     "dirty": "0.9.x",
     "elasticsearch": "11.0.1",
     "mysql": "2.6.1",
-    "nano": "^6.1.2",
+    "nano": "^6.2.0",
     "pg": "4.3.0",
     "redis": ">=0.12.1",
     "rethinkdb": "^2.3.1"
@@ -41,7 +41,7 @@
     "url": "http://github.com/pita/ueberDB.git"
   },
   "main": "./CloneAndAtomicLayer",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "gitHead": "00cb8c896433922111c12fe9d2a45087fdb11d59",
   "bugs": {
     "url": "https://github.com/pita/ueberDB/issues"
