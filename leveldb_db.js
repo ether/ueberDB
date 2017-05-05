@@ -19,7 +19,7 @@
  * See http://code.google.com/p/leveldb/ for information about LevelDB
  * 
  * LevelDB must be installed in order to use this database.
- * Install it using npm install leveldb
+ * Install it using npm install hyperlevel or npm install level-hyper
  * 
  * Options:
  *   directory: The LevelDB directory, defaults to "leveldb-store"
@@ -31,11 +31,20 @@
  */
 try
 {
-  var leveldb = require("leveldb");
+		// default leveldb binding
+  var leveldb = require("level")
+  		// hyperlevel fork
+  		|| require("hyperlevel")
+  		|| require("level-hyper")
+  		// basholevel fork
+  		|| require("basholevel")
+  		|| require("level-basho")
+  		// old binding
+  		|| require("leveldb")
 }
 catch(e)
 {
-  console.error("FATAL: The leveldb dependency could not be loaded.");
+  console.error("FATAL: The level dependency could not be found. Please install one using npm from the following: level, hyperlevel, level-hyper, basholevel, level-basho.");
   process.exit(1);
 }
 
