@@ -35,8 +35,8 @@ exports.database = function(type, dbSettings, wrapperSettings, logger)
   //saves all settings and require the db module
   this.type = type;
   this.db_module = require("./" + type + "_db");
-  this.dbSettings = dbSettings; 
-  this.wrapperSettings = wrapperSettings; 
+  this.dbSettings = dbSettings;
+  this.wrapperSettings = wrapperSettings;
   this.logger = logger || defaultLogger;
   this.channels = new channels.channels(doOperation);
 }
@@ -95,10 +95,10 @@ function doOperation (operation, callback)
     {
       //clone the value
       value = clone(value);
-      
+
       //call the caller callback
       operation.callback(err, value);
-      
+
       //call the queue callback
       callback();
     });
@@ -106,8 +106,10 @@ function doOperation (operation, callback)
   else if(operation.type == "remove"){
     operation.db.remove(operation.key, function(err)
     {
+      //call the caller callback
+      if(operation.callback) operation.callback(err);
+
       //call the queue callback
-      operation.callback(err);
       callback();
     });
   }
@@ -117,21 +119,21 @@ function doOperation (operation, callback)
     {
       //clone the value
       value = clone(value);
-      
+
       //call the caller callback
       operation.callback(err, value);
-      
+
       //call the queue callback
       callback();
     });
   }
   else if(operation.type == "set")
-  {  
+  {
     operation.db.set(operation.key, operation.value, function(err)
     {
       //call the queue callback
       callback();
-      
+
       //call the caller callback
       if(operation.bufferCallback) operation.bufferCallback(err);
     }, operation.writeCallback);
@@ -142,10 +144,10 @@ function doOperation (operation, callback)
     {
       //clone the value
       value = clone(value);
-      
+
       //call the caller callback
       operation.callback(err, value);
-      
+
       //call the queue callback
       callback();
     });
@@ -156,7 +158,7 @@ function doOperation (operation, callback)
     {
       //call the queue callback
       callback();
-      
+
       //call the caller callback
       if(operation.bufferCallback) operation.bufferCallback(err);
     }, operation.writeCallback);
