@@ -55,6 +55,8 @@ exports.database.prototype.init = function(callback)
 			
   var _this = this;
   
+  _this.upsertStatement = "SELECT ueberdb_insert_or_update($1,$2)";
+  
   this.db.query(testTableExists, function(err, result) {
     if (result.rows.length == 0) {
   	  _this.db.query(createTable, callback);
@@ -117,7 +119,7 @@ exports.database.prototype.set = function (key, value, callback)
   }
   else
   {
-    this.db.query("SELECT ueberdb_insert_or_update($1,$2)", [key,value], callback);
+    this.db.query(_this.upsertStatement, [key,value], callback);
   }
 }
 
@@ -160,7 +162,7 @@ exports.database.prototype.doBulk = function (bulk, callback)
     {
       if (!replaceVALs.length < 1) {
         for (var v in replaceVALs) {
-          _this.db.query("SELECT ueberdb_insert_or_update($1,$2)", replaceVALs[v], callback);
+          _this.db.query(_this.upsertStatement, replaceVALs[v], callback);
         }
       } else {
         callback();
