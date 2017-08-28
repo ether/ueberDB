@@ -51,17 +51,51 @@ exports.database.prototype.init = function(callback)
              "END; " +
              "$$ LANGUAGE plpgsql;";
 			
-  this.db.query(createFunc, []);
-			
   var _this = this;
   
-  _this.upsertStatement = "SELECT ueberdb_insert_or_update($1,$2)";
+  // this variable will be given a value depending on the result of the
+  // feature detection
+  _this.upsertStatement = null;
+  
+  /*
+   * - Detects if this Postgres version supports INSERT .. ON CONFLICT
+   *   UPDATE (PostgreSQL >= 9.5 and CockroachDB)
+   * - If upsert is not supported natively, creates in the DB a pl/pgsql
+   *   function that emulates it
+   * - Performs a side effect, setting _this.upsertStatement to the sql
+   *   statement that needs to be used, based on the detection result
+   * - calls the callback
+   */
+  function detectUpsertMethod(callback) {
+    var upsertViaFunction = "SELECT ueberdb_insert_or_update($1,$2)";
+    var upsertNatively    = "INSERT INTO store(key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = excluded.value";
+    
+    var testNativeUpsert = "EXPLAIN " + upsertNatively;
+
+    _this.db.query(testNativeUpsert, ["test-key", "test-value"], function(err, results) {
+      if (err) {
+        // the UPSERT statement failed: we will have to emulate it via
+        // an sql function
+        _this.upsertStatement = upsertViaFunction;
+        
+        // actually create the emulation function
+        _this.db.query(createFunc, [], callback);
+
+        return;
+      }
+      
+      // if we get here, the EXPLAIN UPSERT succeeded, and we can use a
+      // native UPSERT
+      _this.upsertStatement = upsertNatively;
+      callback();
+    });
+  }
   
   this.db.query(testTableExists, function(err, result) {
     if (result.rows.length == 0) {
-  	  _this.db.query(createTable, callback);
+  	  _this.db.query(createTable, detectUpsertMethod(callback));
   	} else {
-  	  callback();
+  	  detectUpsertMethod(callback);
   	}
   });
 }
