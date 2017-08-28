@@ -39,18 +39,6 @@ exports.database.prototype.init = function(callback)
   			'"value" text NOT NULL, ' +
 			'CONSTRAINT store_pkey PRIMARY KEY (key))';
 			
-  var createFunc = "CREATE OR REPLACE FUNCTION ueberdb_insert_or_update(character varying, text) " +
-             "RETURNS void AS $$ " +
-             "BEGIN " +
-             "  IF EXISTS( SELECT * FROM store WHERE key = $1 ) THEN " +
-             "    UPDATE store SET value = $2 WHERE key = $1; " +
-             "  ELSE " +
-             "    INSERT INTO store(key,value) VALUES( $1, $2 ); " +
-             "  END IF; "+
-             "  RETURN; " +
-             "END; " +
-             "$$ LANGUAGE plpgsql;";
-			
   var _this = this;
   
   // this variable will be given a value depending on the result of the
@@ -69,6 +57,17 @@ exports.database.prototype.init = function(callback)
   function detectUpsertMethod(callback) {
     var upsertViaFunction = "SELECT ueberdb_insert_or_update($1,$2)";
     var upsertNatively    = "INSERT INTO store(key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = excluded.value";
+    var createFunc = "CREATE OR REPLACE FUNCTION ueberdb_insert_or_update(character varying, text) " +
+             "RETURNS void AS $$ " +
+             "BEGIN " +
+             "  IF EXISTS( SELECT * FROM store WHERE key = $1 ) THEN " +
+             "    UPDATE store SET value = $2 WHERE key = $1; " +
+             "  ELSE " +
+             "    INSERT INTO store(key,value) VALUES( $1, $2 ); " +
+             "  END IF; "+
+             "  RETURN; " +
+             "END; " +
+             "$$ LANGUAGE plpgsql;";
     
     var testNativeUpsert = "EXPLAIN " + upsertNatively;
 
