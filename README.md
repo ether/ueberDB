@@ -1,8 +1,8 @@
-#About
+# About
 
 Abstract your databases, make datababies.  ueberDB turns every database into a simple key value store by providing a layer of abstraction between your software and your database.  ueberDB uses a smart cache and buffer algorithm to make databases faster. Reads are cached and writes are done in a bulk. The bulk writing reduces the overhead of a database transaction.  The syntax is simple and clean and getting started is easy.
 
-#Database Support
+# Database Support
 * Couch
 * Crate
 * Dirty
@@ -15,11 +15,11 @@ Abstract your databases, make datababies.  ueberDB turns every database into a s
 * RethinkDB
 * SQLite
 
-#Install
+# Install
 
 `npm install ueberDB`
 
-#Example
+# Example
 
 ```javascript
 var ueberDB = require("ueberDB");
@@ -57,10 +57,10 @@ db.init(function (err)
 });
 ```
 
-#How to add support for another database
+# How to add support for another database
 Look at sqlite_db.js and mysql_db.js, your module have to provide the same functions. Call it DATABASENAME_db.js and reimplement the functions for your database. If you think it works, test it with `node benchmark.js DATABASENAME`. Benchmark.js is benchmark and test at the same time. It tries to set 100000 values. You can pipe stderr to a file and will create a csv with benchmark results.
 
-#Limitations
+# Limitations
 Only mysql, dirty, mongodb, couch, rethink and crate currently support findKeys feature. The following do not yet support the function:
 
 * leveldb
@@ -70,5 +70,5 @@ Only mysql, dirty, mongodb, couch, rethink and crate currently support findKeys 
 
 For details on how it works please refer to the wiki: https://github.com/Pita/ueberDB/wiki/findKeys-functionality
 
-#License
+# License
 [Apache License v2](http://www.apache.org/licenses/LICENSE-2.0.html)
