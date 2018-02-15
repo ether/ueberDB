@@ -21,7 +21,7 @@ exports.database = function(settings)
 {
   this.settings = settings;
 
-  this.settings.cache = 1000;
+  this.settings.cache = settings.cache || 1000;
   this.settings.writeInterval = 100;
   this.settings.json = true;
 
