@@ -212,6 +212,12 @@ exports.database.prototype.remove = function(key, callback){
   var self = this;
   this.wrappedDB.remove(key, function(err)
   {
+    // Remove the key from the buffer so that it's not flushed to DB whenever the flush decides to run.
+    // Fixes https://github.com/Pita/ueberDB/issues/105 which was caused by https://github.com/tiblu/ueberDB/commit/86ced9b3999ca6e46ec73bb93f6d9b1ec730d1b0
+    if (!err) {
+      delete self.buffer[key];
+    }
+
     //call the garbage collector
     self.gc();
     self.logger.debug("DELETE - " + key + " - from database ");
