@@ -209,16 +209,10 @@ exports.database.prototype.findKeys = function(key, notKey, callback){
  * Remove a record from the database
  */
 exports.database.prototype.remove = function(key, callback){
-  var self = this;
-  this.wrappedDB.remove(key, function(err)
-  {
-    //call the garbage collector
-    self.gc();
-    self.logger.debug("DELETE - " + key + " - from database ");
+  this.logger.debug("DELETE - " + key + " - from database ");
 
-    callback(err);
-  });
-}
+  this.set(key, null, callback);
+};
 
 /**
  Sets the value trough the wrapper
