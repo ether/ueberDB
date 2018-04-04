@@ -1,6 +1,4 @@
 /**
- * Mariano Julio Vicario aka Ranu - TW: @el_ranu
- * http://www.ranu.com.ar
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,171 +11,179 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+var fs = require('fs');
+var MongoClient = require('mongodb').MongoClient;
 
+/**
+ * "settings" must be an object with the following properties:
+ *   - host           (string): mandatory if no url is provided on settings
+ *   - dbname         (string): mandatory if no url is provided on settings
+ *   - port           (number): mandatory if no url is provided on settings
+ *   - url            (string): full connection url, following the documentation on
+ *                              https://docs.mongodb.com/manual/reference/connection-string/
+ *   - user           (string)
+ *   - password       (string)
+ *   - extra          (object): optional connection settings, as described on
+ *                              http://mongodb.github.io/node-mongodb-native/2.2/api/MongoClient.html#.connect
+ *                              If using SSL, provide the file path(s) on properties
+ *                              "sslCAPath", "sslKeyPath", and/or "sslKeyPath", and file content
+ *                              will be loaded into the appropriate setting
+ *   - collectionName (string): defaults to "store"
+ *
+ * Example:
+ * {
+ *    "url": "mongodb://user:password@my.server.com:27017,my.other.server.com:27018/theDBName?ssl=true",
+ *    "extra": {
+ *      "mongos": {
+ *        "ssl": true,
+ *        "sslValidate": true,
+ *        "sslCAPath": "/config/the-ca.pem"
+ *      }
+ *    }
+ * }
+ */
+exports.database = function(settings) {
+  var assertions = {
+    exist: function(v) {return v !== undefined && v !== null},
+    isString: function(v) {return typeof v === 'string'},
+    isNumber: function(v) {return typeof v === 'number'},
+  }
+  var assert = function(value, assertion, message) { if (!assertion(value)) throw message }
 
-exports.database = function (settings) {
-    this.db = null;
-    this.mongo = null;
+  assert(settings, assertions.exist, 'you need to inform the settings');
 
-    if (!settings || typeof settings.dbname != 'string' || typeof settings.port != 'number') {
-        throw "some settings are incorrect or not  complete";
+  // some settings are only necessary when the full url is not provided
+  if (!settings.url) {
+    assert(settings.host, assertions.isString, 'you need to inform a valid host (string)');
+    assert(settings.dbname, assertions.isString, 'you need to inform a valid dbname (string)');
+    assert(settings.port, assertions.isNumber, 'you need to inform a valid port (number)');
+  }
+
+  this.settings = settings;
+  this.settings.collectionName = assertions.isString(this.settings.collectionName) ? this.settings.collectionName : 'store';
+
+  // these values are used by CacheAndBufferLayer
+  this.settings.cache = 1000;
+  this.settings.writeInterval = 100;
+  this.settings.json = true;
+}
+
+exports.database.prototype._loadSslCertificatesIntoSettings = function(rootSettings) {
+  ['sslCA', 'sslKey', 'sslCert'].forEach(function(setting) {
+    var settingPath = rootSettings[setting + 'Path'];
+
+    if (settingPath) {
+      rootSettings[setting] = fs.readFileSync(settingPath);
+
+      // "sslCA" property needs to be replicated into a "ca" property on mongo 2.0
+      // https://www.compose.com/articles/one-missing-key-and-how-it-broke-node-js-and-mongodb/
+      if (setting === 'sslCA') {
+        rootSettings['ca'] = rootSettings[setting];
+      }
     }
+  });
+}
 
-    this.settings = settings;
-    this.settings.cache = 1000;
-    this.settings.writeInterval = 100;
-    this.settings.json = true;
-    
+exports.database.prototype._buildExtraSettings = function(extraSettings) {
+  extraSettings = extraSettings || {};
+  var loadSslCertificates = this._loadSslCertificatesIntoSettings;
+
+  [
+    // mongodb 2.2: SSL settings are on root
+    // http://mongodb.github.io/node-mongodb-native/2.2/tutorials/connect/ssl/
+    extraSettings,
+    // mongodb 2.0: SSL settings are on sub-levels, depending of where we're connecting to
+    // http://mongodb.github.io/node-mongodb-native/2.0/reference/connecting/ssl/
+    extraSettings.server,
+    extraSettings.replset,
+    extraSettings.mongos,
+  ].forEach(function(rootSettings) {
+    if (rootSettings) {
+      loadSslCertificates(rootSettings);
+    }
+  });
+
+  return extraSettings;
+}
+
+// Builds basic connection urls. Examples:
+// var basicUrl = 'mongodb://<HOST>:<PORT>/<DB>';
+// var urlWithAuthentication = 'mongodb://<USER>:<PASSWORD>@<HOST>:<PORT>/<DB>';
+exports.database.prototype._buildUrl = function(settings) {
+  var protocol = 'mongodb://';
+  var authentication = settings.user && settings.password ? settings.user + ':' + settings.password + '@' : '';
+  return protocol + authentication + settings.host + ':' + settings.port + '/' + settings.dbname
 }
 
 exports.database.prototype.init = function(callback) {
-    this.mongo = new MongoKeyValue(this.settings.dbname, this.settings.host, this.settings.port, this.settings.user, this.settings.password, function (err) {
-        callback(err);
-    }, this.settings.collectionName);
+  this.onMongoReady = callback || function(){};
+
+  var url = this.settings.url || this._buildUrl(this.settings);
+  var options = this._buildExtraSettings(this.settings.extra);
+  MongoClient.connect(url, options, this._onMongoConnect.bind(this));
 }
 
-exports.database.prototype.get = function (key, callback) {
-    this.mongo.findOne(key, callback);
-}
+exports.database.prototype._onMongoConnect = function(error, db) {
+  if (error) {throw 'an error occurred [' + error + '] on mongo connect'}
 
-exports.database.prototype.findKeys = function (key, notKey, callback) {
-    var findKey=this.createFindRegex(key,notKey);
-    this.mongo.find(findKey, callback);
-}
+  this.db = db;
+  this.collection = this.db.collection(this.settings.collectionName);
+  this.db.ensureIndex(this.settings.collectionName, {key: 1}, {unique:true, background:true}, function(err, indexName) {
+    if (err) {
+      console.error('Error creating index');
+      console.error(err.stack ? err.stack : err);
+    }
+  });
 
-exports.database.prototype.set = function (key, value, callback) {
-    this.mongo.set(key, value, callback);
-}
+  exports.database.prototype.set = function (key, value, callback) {
+    this.collection.update({key: key}, {key: key, val: value}, {safe: true, upsert: true}, callback);
+  }
 
-exports.database.prototype.remove = function (key, callback) {
-    this.mongo.remove(key, callback);
-}
-
-exports.database.prototype.doBulk = function (bulk, callback) {
-    this.mongo.bulk(bulk, callback);
-}
-
-exports.database.prototype.close = function (callback) {
-    this.mongo.close(callback);
-    this.mongo = null;
-}
-
-function escape (val) 
-{
-  return "'"+val.replace(/'/g, "''")+"'";
-};
-
-
-function MongoKeyValue(dbName, dbHost, dbPort, dbUser, dbPass, fncallback, collectionname) {
-    fncallback = typeof (fncallback) == 'function' ? fncallback : null ;
-    var mongodb = require('mongodb').Db;
-    var Server = require('mongodb').Server;
-    var Connection = require('mongodb').Connection; 
-    this.collectionName = typeof collectionname === 'string' ? collectionname : "store";
-    
-    this.db = new mongodb(dbName, new Server(dbHost, dbPort, { auto_reconnect: true }), {});
-    this.collection = null;
-    var me = this;
-    var callback = fncallback;
-    this.db.open(function (err, colle) {
-        me.collection = colle;
-        if (dbUser && dbPass) {
-            me.db.authenticate(dbUser, dbPass, function (err) {
-                ensureIndex();
-                callback(err);
-            });
-        }
-        else {
-            ensureIndex();
-            callback(err);
-        }
-
+  exports.database.prototype.get = function (key, callback) {
+    this.collection.findOne({key: key}, function(err, doc) {
+      var value = doc ? doc.val : doc;
+      callback(err, value);
     });
+  }
 
-    function ensureIndex() {
-        me.db.collection(me.collectionName, function (err, collection) {
-            collection.ensureIndex({key :1}, function(err, name){
-                var name;
-            });
-        }); 
-    }
-    
-    this.find = function(key, callback) {
-      me.db.collection(me.collectionName, function (err, collection) {
-            if (err) callback(err);
-            var p = collection.find({ key: key }, { _id:0, key: 1 }).toArray(function (err, ret) {
-                if (ret){
-                    var keys=[];
-                    ret.forEach(function(val){
-                        keys.push(val.key);
-                    });
-                    callback(err, keys);
-                }else{
-                    callback(err, ret);
-                }
-            });
-        });
+  exports.database.prototype.remove = function (key, callback) {
+    this.collection.remove({key: key}, {safe: true}, callback);
+  }
+
+  exports.database.prototype.findKeys = function (key, notKey, callback) {
+    var findRegex = this.createFindRegex(key, notKey);
+    this.collection.find({key: findRegex}).toArray(function(err, docs) {
+      docs = docs || [];
+      var keys = docs.map(function(doc) { return doc.key });
+
+      callback(err, keys);
+    });
+  }
+
+  exports.database.prototype.doBulk = function (bulkOperations, callback) {
+    var operations = {
+      'set': 'updateOne',
+      'remove': 'deleteOne',
     }
 
-    this.findOne = function (key, callback) {
-        me.db.collection(me.collectionName, function (err, collection) {
-            if (err) callback(err);
-            var p = collection.findOne({ key: key }, function (err, ret) {
-                if (ret)
-                    callback(err, ret.val);
-                else
-                    callback(err, ret);
-            })
-        });
+    var mongoBulkOperations = [];
+    for (var i in bulkOperations) {
+      var eachUeberOperation = bulkOperations[i];
+      var mongoOperationType = operations[eachUeberOperation.type];
+      var mongoOperationDetails = {
+        filter: { key: eachUeberOperation.key } ,
+        update: { $set: { val: eachUeberOperation.value } },
+        upsert: true,
+      };
+      var eachBulk = {}
+      eachBulk[mongoOperationType] = mongoOperationDetails;
+      mongoBulkOperations.push(eachBulk);
     }
 
-    this.set = function (key, value, callback) {
-        me.db.collection(me.collectionName, function (err, collection) {
-            collection.update({key: key}, { key: key, val: value }, { safe: true, upsert: true }, function (err, docs) {
-                callback(err);
-            });
-        });
-    }
+    this.collection.bulkWrite(mongoBulkOperations, callback);
+  }
 
-    this.bulk = function (bulk, callback) {
-        var co = 1;
-        me.db.collection(me.collectionName, function (err, collection) {
-            for (var i in bulk) {
-                if (bulk[i].type == "set") {
-                    collection.update({ key: bulk[i].key }, { key: bulk[i].key, val: bulk[i].value }, { safe: true, upsert: true }, function (err, docs) {
-                        if (err) console.log(err);
-                        if (co === bulk.length) {
-                            callback(err);
-                            co= 1;
-                        }
-                        co++;
-                    });
-                }
-                else if (bulk[i].type == "remove") {
-                    collection.remove({ key: bulk[i].key }, { safe: true }, function (err) {
-                        if (err) console.log(err);
-                        if ( co === bulk.length) {
-                            callback(err);
-                            co = 1;
-                        }
-                        co++;
-                    });
-                }
-            }
-        });
-    }
+  exports.database.prototype.close = function (callback) {this.db.close(callback)}
 
-    this.remove = function (key, callback) {
-        me.db.collection(me.collectionName, function (err, collection) {
-            collection.remove({ key: key }, { safe: true }, function (err) {
-                callback(err);
-            });
-        });
-    }
-
-    this.close = function (callback) {
-        me.db.close(function (err) {
-            callback(err);
-        });
-    }
+  this.onMongoReady(error, this);
 }
