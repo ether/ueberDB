@@ -21,6 +21,9 @@ var elasticsearchSettings = {
   hostname      : '127.0.0.1',
   port          : '9200',
   base_index    : 'ueberes',
+  
+  // for a list of valid API values see:
+  // https://www.elastic.co/guide/en/elasticsearch/client/javascript-api/current/configuration.html#config-options
   api           : '2.4'
 };
 
