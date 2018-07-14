@@ -43,7 +43,7 @@
     "url": "http://github.com/pita/ueberDB.git"
   },
   "main": "./CloneAndAtomicLayer",
-  "version": "0.3.7",
+  "version": "0.3.9",
   "gitHead": "00cb8c896433922111c12fe9d2a45087fdb11d59",
   "bugs": {
     "url": "https://github.com/pita/ueberDB/issues"
