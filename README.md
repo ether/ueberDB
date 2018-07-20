@@ -9,7 +9,7 @@ Abstract your databases, make datababies.  ueberDB turns every database into a s
 * Elasticsearch
 * Level
 * Mongo
-* MySQL
+* MySQL (<= 5.7)
 * Postgres
 * Redis
 * RethinkDB

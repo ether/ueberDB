@@ -25,8 +25,8 @@
     "cassandra-driver": "2.0.1",
     "channels": "0.0.4",
     "dirty": "0.9.x",
-    "elasticsearch": "11.0.1",
-    "mysql": "2.6.1",
+    "elasticsearch": "15.1.1",
+    "mysql": "2.15.0",
     "nano": "^6.2.0",
     "pg": "~6.1.6",
     "redis": ">=0.12.1",
@@ -43,7 +43,7 @@
     "url": "http://github.com/pita/ueberDB.git"
   },
   "main": "./CloneAndAtomicLayer",
-  "version": "0.3.7",
+  "version": "0.3.9",
   "gitHead": "00cb8c896433922111c12fe9d2a45087fdb11d59",
   "bugs": {
     "url": "https://github.com/pita/ueberDB/issues"
