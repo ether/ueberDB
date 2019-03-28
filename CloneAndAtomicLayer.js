@@ -15,7 +15,6 @@
  */
 
 var cacheAndBufferLayer = require("./CacheAndBufferLayer");
-var async = require("async");
 var channels = require("channels");
 
 var defaultLogger = {debug: function(){}, info: function(){}, error: function(){}, warn: function(){}};
@@ -67,9 +66,9 @@ exports.database.prototype.findKeys = function (key, notKey, callback)
   this.channels.emit(key, {"db": this.db, "type": "findKeys", "key": key, "notKey": notKey, "callback": callback});
 }
 
-exports.database.prototype.remove = function (key, callback)
+exports.database.prototype.remove = function (key, bufferCallback, writeCallback)
 {
-  this.channels.emit(key, {"db": this.db, "type": "remove", "key": key, "callback": callback});
+  this.channels.emit(key, {"db": this.db, "type": "remove", "key": key, "bufferCallback": bufferCallback, "writeCallback": writeCallback});
 }
 
 exports.database.prototype.set = function (key, value, bufferCallback, writeCallback)
@@ -106,12 +105,12 @@ function doOperation (operation, callback)
   else if(operation.type == "remove"){
     operation.db.remove(operation.key, function(err)
     {
-      //call the caller callback
-      if(operation.callback) operation.callback(err);
-
       //call the queue callback
       callback();
-    });
+
+      //call the caller callback
+      if(operation.bufferCallback) operation.bufferCallback(err);
+    }, operation.writeCallback);
   }
   else if(operation.type == "findKeys")
   {

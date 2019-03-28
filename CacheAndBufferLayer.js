@@ -19,11 +19,11 @@ This module is made for the case, you want to use a SQL-Based Databse or a KeyVa
 
 The idea of the dbWrapper is to provide following features:
 
-* automatic JSON serialize/deserialize to abstract that away from the database driver and the module user. 
-* cache reads. A amount of KeyValues are hold in the memory, so that reading is faster. 
-* Buffer DB Writings. Sets and deletes should be buffered to make them in a setted interval with a bulk. This reduces the overhead of database transactions and makes the database faster. But there is also a danger to loose data integrity, to keep that, we should provide a flush function.  
+* automatic JSON serialize/deserialize to abstract that away from the database driver and the module user.
+* cache reads. A amount of KeyValues are hold in the memory, so that reading is faster.
+* Buffer DB Writings. Sets and deletes should be buffered to make them in a setted interval with a bulk. This reduces the overhead of database transactions and makes the database faster. But there is also a danger to loose data integrity, to keep that, we should provide a flush function.
 
-All Features can be disabled or configured. The Wrapper provides default settings that can be overwriden by the driver and by the module user. 
+All Features can be disabled or configured. The Wrapper provides default settings that can be overwriden by the driver and by the module user.
 */
 
 var async = require("async");
@@ -47,7 +47,7 @@ exports.database = function(wrappedDB, settings, logger)
 {
   //saved the wrappedDB
   this.wrappedDB=wrappedDB;
-  this.logger = logger;  
+  this.logger = logger;
 
   this.buffer = {};
   this.bufferLength = 0;
@@ -60,7 +60,7 @@ exports.database = function(wrappedDB, settings, logger)
 
   //try to apply the settings of the driver
   if(wrappedDB.settings != null)
-  {  
+  {
     if(wrappedDB.settings.cache         != null)  this.settings.cache         = wrappedDB.settings.cache;
     if(wrappedDB.settings.writeInterval != null)  this.settings.writeInterval = wrappedDB.settings.writeInterval;
     if(wrappedDB.settings.json          != null)  this.settings.json          = wrappedDB.settings.json;
@@ -73,19 +73,19 @@ exports.database = function(wrappedDB, settings, logger)
     if(settings.writeInterval != null)  this.settings.writeInterval = settings.writeInterval;
     if(settings.json          != null)  this.settings.json          = settings.json;
   }
-  
+
   //freeze the settings at this point
   this.settings = Object.freeze(this.settings);
-  
+
   //start the write Interval
   if(this.settings.writeInterval > 0)
   {
     setInterval(flush, this.settings.writeInterval, this);
   }
-  
+
   //set the flushing flag to false, this flag shows that there is a flushing action happing at the moment
   this.isFlushing = false;
-  
+
   /**
    * Adds function to db wrapper for findKey regex.
    * Used by document dbs like mongodb or dirty.
@@ -126,13 +126,13 @@ exports.database.prototype.doShutdown = function(callback)
   //wait until the buffer is fully written
   if(this.settings.writeInterval > 0)
     this.shutdownCallback = callback;
-  //we write direct, so there is no need to wait for a callback  
+  //we write direct, so there is no need to wait for a callback
   else
     callback();
 }
 
 /**
- Gets the value trough the wrapper. 
+ Gets the value trough the wrapper.
 */
 exports.database.prototype.get = function(key, callback)
 {
@@ -154,9 +154,9 @@ exports.database.prototype.get = function(key, callback)
   else
   {
     var self = this;
-  
+
     this.wrappedDB.get(key, function(err,value)
-    {  
+    {
       if(self.settings.json)
       {
         try
@@ -170,16 +170,16 @@ exports.database.prototype.get = function(key, callback)
           return;
         }
       }
-    
+
       //cache the value if caching is enabled
       if(self.settings.cache > 0)
         self.buffer[key] = {"value":value, dirty:false, timestamp: new Date().getTime(), writingInProgress: false};
-      
+
       self.bufferLength++;
-      
+
       //call the garbage collector
       self.gc();
-      
+
       self.logger.debug("GET    - " + key + " - " + JSON.stringify(value) + " - from database ");
 
       callback(err,value);
@@ -198,7 +198,7 @@ exports.database.prototype.findKeys = function(key, notKey, callback){
   {
     //call the garbage collector
     self.gc();
-      
+
     self.logger.debug("GET    - " + bufferKey + " - " + JSON.stringify(keyValues) + " - from database ");
 
     callback(err,keyValues);
@@ -208,10 +208,10 @@ exports.database.prototype.findKeys = function(key, notKey, callback){
 /**
  * Remove a record from the database
  */
-exports.database.prototype.remove = function(key, callback){
+exports.database.prototype.remove = function(key, bufferCallback, writeCallback){
   this.logger.debug("DELETE - " + key + " - from database ");
 
-  this.set(key, null, callback);
+  this.set(key, null, bufferCallback, writeCallback);
 };
 
 /**
@@ -225,26 +225,26 @@ exports.database.prototype.set = function(key, value, bufferCallback, writeCallb
     this.logger.debug("SET    - "+ key + " - " + JSON.stringify(value) + " - to buffer");
 
     //initalize the buffer object if it not exists
-    if(!this.buffer[key]) 
+    if(!this.buffer[key])
     {
       this.buffer[key] = {};
       this.bufferLength++;
     }
-    
+
     //set the new values
     this.buffer[key].value = value;
     this.buffer[key].dirty = true;
     this.buffer[key].timestamp = new Date().getTime();
-    
+
     //call the garbage collector
     this.gc();
-    
+
     //initalize the callback array in the buffer object if it not exists.
-    //we need this as an array, cause the value may be many times overwritten bevors its finally written to the database, 
+    //we need this as an array, cause the value may be many times overwritten bevors its finally written to the database,
     //but all callbacks must be called
-    if(!this.buffer[key].callbacks) 
+    if(!this.buffer[key].callbacks)
       this.buffer[key].callbacks=[];
-    
+
     //add this callback to the array
     if(writeCallback) this.buffer[key].callbacks.push(writeCallback);
     else
@@ -254,7 +254,7 @@ exports.database.prototype.set = function(key, value, bufferCallback, writeCallb
         if(err) throw err;
       });
     }
-    
+
     //call the buffer callback
     if (bufferCallback) bufferCallback();
   }
@@ -269,7 +269,7 @@ exports.database.prototype.set = function(key, value, bufferCallback, writeCallb
       if (bufferCallback) bufferCallback(err);
       if (writeCallback) writeCallback(err);
     }
-  
+
     //The value is null, means this no set operation, this is a remove operation
     if(value==null)
     {
@@ -281,7 +281,7 @@ exports.database.prototype.set = function(key, value, bufferCallback, writeCallb
       //stringify the value if stringifying is enabled
       if(this.settings.json == true)
         value = JSON.stringify(value);
-    
+
       this.wrappedDB.set(key,value,callback);
     }
   }
@@ -302,7 +302,7 @@ exports.database.prototype.setSub = function(key, sub, value, bufferCallback, wr
     {
       _this.get(key, callback);
     },
-    //set the sub value and set the full value again 
+    //set the sub value and set the full value again
     function(fullValue, callback)
     {
       //get the subvalue parent
@@ -321,7 +321,7 @@ exports.database.prototype.setSub = function(key, sub, value, bufferCallback, wr
           subvalueParent = subvalueParent[sub[i]];
         }
       }
-      
+
       //set the subvalue, we're doing that with the parent element
       subvalueParent[sub[sub.length-1]] = value;
       _this.set(key, fullValue, bufferCallback, writeCallback);
@@ -358,7 +358,7 @@ exports.database.prototype.getSub = function(key, sub, callback)
     else
     {
       var subvalue = value;
-      
+
       for (var i=0 ; i<sub.length ; i++)
       {
         //test if the subvalue exist
@@ -373,7 +373,7 @@ exports.database.prototype.getSub = function(key, sub, callback)
           break;
         }
       }
-      
+
       _this.logger.debug("GETSUB - " + key + JSON.stringify(sub) + " - " + JSON.stringify(subvalue));
       callback(err, subvalue);
     }
@@ -390,7 +390,7 @@ exports.database.prototype.gc = function()
   {
     return;
   }
-  
+
   //collect all values that are not dirty
   var deleteCandidates = [];
   for(var i in this.buffer)
@@ -400,14 +400,14 @@ exports.database.prototype.gc = function()
       deleteCandidates.push({key: i, timestamp: this.buffer[i].timestamp});
     }
   }
-  
+
   if(deleteCandidates.length > 0)
   {
     //sort them based on the timestamp
     deleteCandidates.sort(function(a,b){
       return a.timestamp-b.timestamp;
     });
-    
+
     var collected = 0;
 
     //delete the half buffer
@@ -446,19 +446,19 @@ function flush (db, callback)
       var type  = db.buffer[i].value == null ? "remove" : "set";
       var key   = i;
       var value = db.buffer[i].value;
-      
+
       //stringify the value if stringifying is enabled
       if(db.settings.json == true && value != null)
         value = JSON.stringify(value);
       else
         value = clone(value);
-      
+
       //add the operation to the operations array
       operations.push({"type":type, "key":key, "value":value});
-      
+
       //collect callbacks
       callbacks = callbacks.concat(db.buffer[i].callbacks);
-      
+
       //clean callbacks
       db.buffer[i].callbacks = [];
       //set the dirty flag to false
@@ -467,15 +467,15 @@ function flush (db, callback)
       db.buffer[i].writingInProgress = true;
     }
   }
-  
-  //send the bulk to the database driver and call the callbacks with the results  
+
+  //send the bulk to the database driver and call the callbacks with the results
   if(operations.length > 0)
-  {      
+  {
     db.logger.info("Flushed " + operations.length + " values");
 
     //set the flushing flag
     db.isFlushing = true;
-    
+
     db.wrappedDB.doBulk(operations, function(err)
     {
       //call all writingCallbacks
@@ -489,12 +489,12 @@ function flush (db, callback)
       {
         db.buffer[operations[i].key].writingInProgress = false;
       }
-      
+
       if(callback) callback();
-      
+
       //call the garbage collector
       db.gc();
-      
+
       //set the flushing flag to false
       db.isFlushing = false;
     });
