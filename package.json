@@ -16,7 +16,8 @@
                        "channels"   : "0.0.2",
                        "node-redis" : "0.1.x",
                        "helenus"    : "0.6.2",
-                       "node-crate" : "1.0.26"
+                       "node-crate" : "1.0.26",
+                       "mssql"      : "5.0.5"
                      },
   "devDependencies": {
                        "log4js"  : "0.4.1",
