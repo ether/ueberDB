@@ -1,75 +1,35 @@
 {
-  "name": "ueberdb2",
+  "name": "ueberDB",
   "description": "transform every database into a object key value store",
   "url": "https://github.com/Pita/ueberDB",
   "keywords": [
     "database",
     "keyvalue"
   ],
-  "author": {
-    "name": "Etherpad Foundation"
-  },
+  "author": "Peter 'Pita' Martischka <petermartischka@googlemail.com> - Primary Technology Ltd",
   "contributors": [
     {
       "name": "John McLear"
     },
     {
       "name": "spcsser"
-    },
-    {
-      "name": "Peter Martischka"
     }
   ],
   "dependencies": {
-    "async": "0.1.15",
-    "cassandra-driver": "2.0.1",
-    "channels": "0.0.4",
+    "async": "^0.1.15",
+    "channels": "0.0.2",
     "dirty": "0.9.x",
-    "elasticsearch": "15.1.1",
-    "mysql": "2.15.0",
-    "nano": "^6.2.0",
-    "pg": "~6.1.6",
-    "redis": ">=0.12.1",
-    "rethinkdb": "^2.3.1"
+    "helenus": "0.6.2",
+    "mssql": "^5.0.5",
+    "mysql": "0.9.5",
+    "node-crate": "1.0.26",
+    "node-redis": "0.1.x",
+    "pg": "0.14.1"
   },
   "devDependencies": {
-    "log4js": "0.6.22",
-    "mongodb": "2.0.25",
-    "mocha": "3.2.0",
-    "expect.js": "0.3.1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "http://github.com/pita/ueberDB.git"
+    "log4js": "0.4.1",
+    "mongodb": "*"
   },
   "main": "./CloneAndAtomicLayer",
-  "version": "0.4.0",
-  "gitHead": "00cb8c896433922111c12fe9d2a45087fdb11d59",
-  "bugs": {
-    "url": "https://github.com/pita/ueberDB/issues"
-  },
-  "homepage": "https://github.com/pita/ueberDB",
-  "_id": "ueberdb2@0.3.0",
-  "scripts": {},
-  "_shasum": "cbebe8b8a0879f4ca970c3d69bd578e291d6e835",
-  "_from": "ueberdb2@0.3.0",
-  "_npmVersion": "2.5.1",
-  "_nodeVersion": "0.12.0",
-  "_npmUser": {
-    "name": "johnyma22",
-    "email": "john@mclear.co.uk"
-  },
-  "maintainers": [
-    {
-      "name": "johnyma22",
-      "email": "john@mclear.co.uk"
-    }
-  ],
-  "dist": {
-    "shasum": "cbebe8b8a0879f4ca970c3d69bd578e291d6e835",
-    "tarball": "http://registry.npmjs.org/ueberdb2/-/ueberdb2-0.3.0.tgz"
-  },
-  "directories": {},
-  "_resolved": "https://registry.npmjs.org/ueberdb2/-/ueberdb2-0.3.0.tgz",
-  "readme": "ERROR: No README data found!"
+  "version": "0.1.96"
 }
