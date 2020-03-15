@@ -68,7 +68,7 @@ Only mysql, dirty, mongodb, couch, rethink and crate currently support findKeys 
 * cassandra (Only keys of the format \*:\*:\*)
 * elasticsearch (Only keys of the format \*:\*:\*)
 
-For details on how it works please refer to the wiki: https://github.com/Pita/ueberDB/wiki/findKeys-functionality
+For details on how it works please refer to the wiki: https://github.com/ether/ueberDB/wiki/findKeys-functionality
 
 # License
 [Apache License v2](http://www.apache.org/licenses/LICENSE-2.0.html)
