@@ -34,7 +34,7 @@ var db = new ueberDB.database("mysql", {"user":"root", host: "localhost", "passw
 //var db = new ueberDB.database("sqlite", {filename:"var/sqlite3.db"}, {writeInterval: 500});
 
 //initialize the database
-db.init(function (err)
+db.init(async function (err)
 {
   if(err)
   {
@@ -44,7 +44,7 @@ db.init(function (err)
 
   //set a object as a value
   //can be done without a callback, cause the value is immediately in the buffer
-  db.set("valueA", {a:1,b:2});
+  await db.set("valueA", {a:1,b:2});
 
   //get the object
   db.get("valueA", function(err, value){
