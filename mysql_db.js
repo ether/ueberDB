@@ -37,6 +37,9 @@ exports.database = function(settings)
     
   if(this.settings.database != null)
     this.db.database = this.settings.database;
+
+  if(this.settings.charset != null)
+    this.db.charset = this.settings.charset;
   
   this.settings.cache = 1000;
   this.settings.writeInterval = 100;
@@ -60,6 +63,32 @@ exports.database.prototype.schedulePing = function(){
 
 exports.database.prototype.init = function(callback)
 {
+  var db = this.db;
+  var self = this;
+
+  // Checks for Database charset et al
+  var dbCharSet = "SELECT DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '"+db.database+"'";
+  db.query(dbCharSet,function(err, result){
+
+    if (result[0].DEFAULT_CHARACTER_SET_NAME !== db.charset){
+      console.error("Database is not configured with charset "+db.charset+ " -- This may lead to crashes when certain characters are pasted in pads");
+      console.log(result[0], db.charset);
+    };
+
+    if (result[0].DEFAULT_COLLATION_NAME.indexOf(db.charset) === -1 ){
+      console.error("Database is not configured with collation name that includes "+db.charset+" -- This may lead to crashes when certain characters are pasted in pads");
+      console.log(result[0], db.charset, result[0].DEFAULT_COLLATION_NAME);
+    };
+  });
+
+  var tableCharSet = "SELECT CCSA.character_set_name FROM information_schema.`TABLES` T,information_schema.`COLLATION_CHARACTER_SET_APPLICABILITY` CCSA WHERE CCSA.collation_name = T.table_collation AND T.table_schema = '"+db.database+"' AND T.table_name = 'store'";
+  db.query(tableCharSet,function(err, result, tf){
+    if (result[0].character_set_name !== db.charset){
+      console.error("table is not configured with charset "+db.charset+" -- This may lead to crashes when certain characters are pasted in pads");
+      console.log(result[0], db.charset);
+    };
+  });
+
   var sqlCreate = "CREATE TABLE IF NOT EXISTS `store` ( " +
                   "`key` VARCHAR( 100 ) NOT NULL COLLATE utf8mb4_bin, " +
                   "`value` LONGTEXT COLLATE utf8mb4_bin NOT NULL , " +
@@ -67,9 +96,6 @@ exports.database.prototype.init = function(callback)
                   ") ENGINE=MyISAM CHARSET=utf8mb4 COLLATE=utf8mb4_bin;";
 
   var sqlAlter  = "ALTER TABLE store MODIFY `key` VARCHAR(100) COLLATE utf8mb4_bin;";
-
-  var db = this.db;
-  var self = this;
 
   db.query(sqlCreate,[],function(err){
     //call the main callback

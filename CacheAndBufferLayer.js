@@ -35,7 +35,9 @@ var defaultSettings =
   //the interval in ms the wrapper writes to the database. To Disable interval writes just set it to zero
   writeInterval: 100,
   //a flag if the data sould be serialized/deserialized to json
-  json:true
+  json:true,
+  // use utf8mb4 as default
+  charset: "utf8mb4"
 }
 
 /**
@@ -57,6 +59,7 @@ exports.database = function(wrappedDB, settings, logger)
   this.settings.cache         = defaultSettings.cache;
   this.settings.writeInterval = defaultSettings.writeInterval;
   this.settings.json          = defaultSettings.json;
+  this.settings.charset       = defaultSettings.charset;
 
   //try to apply the settings of the driver
   if(wrappedDB.settings != null)
@@ -64,6 +67,7 @@ exports.database = function(wrappedDB, settings, logger)
     if(wrappedDB.settings.cache         != null)  this.settings.cache         = wrappedDB.settings.cache;
     if(wrappedDB.settings.writeInterval != null)  this.settings.writeInterval = wrappedDB.settings.writeInterval;
     if(wrappedDB.settings.json          != null)  this.settings.json          = wrappedDB.settings.json;
+    if(wrappedDB.settings.charset       != null)  this.settings.charset       = wrappedDB.settings.charset;
   }
 
   //try to apply the settings given with the constructor
@@ -72,6 +76,7 @@ exports.database = function(wrappedDB, settings, logger)
     if(settings.cache         != null)  this.settings.cache         = settings.cache;
     if(settings.writeInterval != null)  this.settings.writeInterval = settings.writeInterval;
     if(settings.json          != null)  this.settings.json          = settings.json;
+    if(settings.charset       != null)  this.settings.charset       = settings.charset;
   }
 
   //freeze the settings at this point
