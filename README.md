@@ -22,7 +22,7 @@ Abstract your databases, make datababies.  ueberDB turns every database into a s
 # Example
 
 ```javascript
-var ueberDB = require("ueberDB");
+var ueberDB = require("ueberdb2");
 
 //mysql
 var db = new ueberDB.database("mysql", {"user":"root", host: "localhost", "password":"", database: "store"});
@@ -69,6 +69,9 @@ Only mysql, dirty, mongodb, couch, rethink and crate currently support findKeys 
 * elasticsearch (Only keys of the format \*:\*:\*)
 
 For details on how it works please refer to the wiki: https://github.com/ether/ueberDB/wiki/findKeys-functionality
+
+# MySQL /MariaDB Advice
+You should create your database as utf8mb4_bin.  UeberDB will check this as startup.
 
 # License
 [Apache License v2](http://www.apache.org/licenses/LICENSE-2.0.html)
