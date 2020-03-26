@@ -10,7 +10,7 @@ Abstract your databases, make datababies.  ueberDB turns every database into a s
 * Level
 * Mongo
 * MySQL (<= 5.7)
-* Postgres
+* Postgres (also compatible with CockroachDB)
 * Redis
 * RethinkDB
 * SQLite
