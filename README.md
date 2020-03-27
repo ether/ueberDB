@@ -72,7 +72,8 @@ Only mysql, dirty, mongodb, couch, rethink and crate currently support findKeys 
 For details on how it works please refer to the wiki: https://github.com/ether/ueberDB/wiki/findKeys-functionality
 
 # MySQL /MariaDB Advice
-You should create your database as utf8mb4_bin.  UeberDB will check this as startup.
+You should create your database as utf8mb4_bin.
+Also, please ensure `settings.json` (`dbSettings.charset`) is configured to use the same charset that your database uses, otherwise ueberDB will complain at startup.
 
 # License
 [Apache License v2](http://www.apache.org/licenses/LICENSE-2.0.html)
