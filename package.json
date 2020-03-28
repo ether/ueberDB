@@ -21,22 +21,22 @@
     }
   ],
   "dependencies": {
-    "async": "0.1.15",
-    "cassandra-driver": "2.0.1",
+    "async": "^3.2.0",
+    "cassandra-driver": "^4.5.0",
     "channels": "0.0.4",
-    "dirty": "0.9.x",
-    "elasticsearch": "15.1.1",
+    "dirty": "^1.1.0",
+    "elasticsearch": "^16.7.1",
     "mysql": "2.18.1",
-    "nano": "^6.2.0",
-    "pg": "~6.1.6",
+    "nano": "^8.2.2",
+    "pg": "^7.18.2",
     "redis": ">=0.12.1",
     "rethinkdb": "^2.3.1"
   },
   "devDependencies": {
-    "log4js": "0.6.22",
-    "mongodb": "2.0.25",
-    "mocha": "3.2.0",
-    "expect.js": "0.3.1"
+    "expect.js": "0.3.1",
+    "log4js": "^6.1.2",
+    "mocha": "^7.1.1",
+    "mongodb": "^3.5.5"
   },
   "repository": {
     "type": "git",
