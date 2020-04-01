@@ -195,7 +195,7 @@ exports.database.prototype.set = function (key, value, callback)
 
 exports.database.prototype.remove = function (key, callback)
 {
-  this.db.query("DELETE FROM `store` WHERE `key` = ?", [key], callback);
+  this.db.query("DELETE FROM `store` WHERE BINARY `key` = ?", [key], callback);
 
   this.schedulePing();
 }
@@ -205,7 +205,7 @@ exports.database.prototype.doBulk = function (bulk, callback)
   var _this = this;
   
   var replaceSQL = "REPLACE INTO `store` VALUES ";
-  var removeSQL = "DELETE FROM `store` WHERE `key` IN ("
+  var removeSQL = "DELETE FROM `store` WHERE BINARY `key` IN ("
   
   var firstReplace = true;
   var firstRemove = true;
