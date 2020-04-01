@@ -129,7 +129,7 @@ exports.database.prototype.init = function(callback)
 
 exports.database.prototype.get = function (key, callback)
 {
-  this.db.query("SELECT `value` FROM `store` WHERE  `key` = ?", [key], function(err,results)
+  this.db.query("SELECT `value` FROM `store` WHERE BINARY `key` = ?", [key], function(err,results)
   {
     var value = null;
     
@@ -146,7 +146,7 @@ exports.database.prototype.get = function (key, callback)
 
 exports.database.prototype.findKeys = function (key, notKey, callback)
 {
-  var query="SELECT `key` FROM `store` WHERE  `key` LIKE ?"
+  var query="SELECT `key` FROM `store` WHERE BINARY `key` LIKE ?"
     , params=[]
   ;
   
