@@ -20,27 +20,27 @@ var async = require("async");
 exports.database = function(settings)
 {
   this.db = require('mysql').createConnection(settings);
-  
+
   this.settings = settings;
-  
+
   if(this.settings.host != null)
     this.db.host = this.settings.host;
-    
+
   if(this.settings.port != null)
     this.db.port = this.settings.port;
-    
+
   if(this.settings.user != null)
     this.db.user = this.settings.user;
-  
+
   if(this.settings.password != null)
     this.db.password = this.settings.password;
-    
+
   if(this.settings.database != null)
     this.db.database = this.settings.database;
 
   if(this.settings.charset != null)
     this.db.charset = this.settings.charset;
-  
+
   this.settings.cache = 1000;
   this.settings.writeInterval = 100;
   this.settings.json = true;
@@ -66,30 +66,6 @@ exports.database.prototype.init = function(callback)
   var db = this.db;
   var self = this;
 
-  // Checks for Database charset et al
-  var dbCharSet = "SELECT DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '"+db.database+"'";
-  db.query(dbCharSet,function(err, result){
-
-    if (result[0].DEFAULT_CHARACTER_SET_NAME !== db.charset){
-      console.error("Database is not configured with charset "+db.charset+ " -- This may lead to crashes when certain characters are pasted in pads");
-      console.log(result[0], db.charset);
-    };
-
-    if (result[0].DEFAULT_COLLATION_NAME.indexOf(db.charset) === -1 ){
-      console.error("Database is not configured with collation name that includes "+db.charset+" -- This may lead to crashes when certain characters are pasted in pads");
-      console.log(result[0], db.charset, result[0].DEFAULT_COLLATION_NAME);
-    };
-  });
-
-  var tableCharSet = "SELECT CCSA.character_set_name FROM information_schema.`TABLES` T,information_schema.`COLLATION_CHARACTER_SET_APPLICABILITY` CCSA WHER$
-  db.query(tableCharSet,function(err, result, tf){
-    if (!result[0]) console.warn("Database has no character_set_name value -- This may lead to crashes when certain characters are pasted in pads");
-    if (result[0] && (result[0].character_set_name !== db.charset)){
-      console.error("table is not configured with charset "+db.charset+" -- This may lead to crashes when certain characters are pasted in pads");
-      console.log(result[0], db.charset);
-    };
-  });
-
   var sqlCreate = "CREATE TABLE IF NOT EXISTS `store` ( " +
                   "`key` VARCHAR( 100 ) NOT NULL COLLATE utf8mb4_bin, " +
                   "`value` LONGTEXT COLLATE utf8mb4_bin NOT NULL , " +
@@ -101,20 +77,43 @@ exports.database.prototype.init = function(callback)
   db.query(sqlCreate,[],function(err){
     //call the main callback
     callback(err);
-    
+
+    // Checks for Database charset et al
+    var dbCharSet = "SELECT DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '"+db.database+"'";
+    db.query(dbCharSet,function(err, result){
+      if (result[0].DEFAULT_CHARACTER_SET_NAME !== db.charset){
+        console.error("Database is not configured with charset "+db.charset+ " -- This may lead to crashes when certain characters are pasted in pads");
+        console.log(result[0], db.charset);
+      };
+
+      if (result[0].DEFAULT_COLLATION_NAME.indexOf(db.charset) === -1 ){
+        console.error("Database is not configured with collation name that includes "+db.charset+" -- This may lead to crashes when certain characters are pasted in pads");
+        console.log(result[0], db.charset, result[0].DEFAULT_COLLATION_NAME);
+      };
+    });
+
+    var tableCharSet = "SELECT CCSA.character_set_name FROM information_schema.`TABLES` T,information_schema.`COLLATION_CHARACTER_SET_APPLICABILITY` CCSA WHERE CCSA.collation_name = T.table_collation AND T.table_schema = '"+db.database+"' AND T.table_name = 'store'";
+    db.query(tableCharSet,function(err, result, tf){
+      if (!result[0]) console.warn("Data has no character_set_name value -- This may lead to crashes when certain characters are pasted in pads");
+      if (result[0] && (result[0].character_set_name !== db.charset)){
+        console.error("table is not configured with charset "+db.charset+" -- This may lead to crashes when certain characters are pasted in pads");
+        console.log(result[0], db.charset);
+      };
+    });
+
     //check migration level, alter if not migrated
     self.get("MYSQL_MIGRATION_LEVEL", function(err, level){
       if(err){
         throw err;
       }
-      
+
       if(level !== "1"){
         db.query(sqlAlter,[],function(err)
         {
           if(err){
             throw err;
           }
-          
+
           self.set("MYSQL_MIGRATION_LEVEL","1", function(err){
             if(err){
               throw err;
