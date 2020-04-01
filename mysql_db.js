@@ -81,9 +81,10 @@ exports.database.prototype.init = function(callback)
     };
   });
 
-  var tableCharSet = "SELECT CCSA.character_set_name FROM information_schema.`TABLES` T,information_schema.`COLLATION_CHARACTER_SET_APPLICABILITY` CCSA WHERE CCSA.collation_name = T.table_collation AND T.table_schema = '"+db.database+"' AND T.table_name = 'store'";
+  var tableCharSet = "SELECT CCSA.character_set_name FROM information_schema.`TABLES` T,information_schema.`COLLATION_CHARACTER_SET_APPLICABILITY` CCSA WHER$
   db.query(tableCharSet,function(err, result, tf){
-    if (result[0].character_set_name !== db.charset){
+    if (!result[0]) console.warn("Database has no character_set_name value -- This may lead to crashes when certain characters are pasted in pads");
+    if (result[0] && (result[0].character_set_name !== db.charset)){
       console.error("table is not configured with charset "+db.charset+" -- This may lead to crashes when certain characters are pasted in pads");
       console.log(result[0], db.charset);
     };
