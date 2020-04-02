@@ -176,24 +176,23 @@ exports.doBulk = function(bulk, callback)
 
   removeSQL+=");";
 
-  async.parallel([
-    function(callback)
-    {
-      if (!replaceVALs.length < 1) {
-        for (var v in replaceVALs) {
-          _this.db.query(_this.upsertStatement, replaceVALs[v], callback);
-        }
-      } else {
-        callback();
-      }
-    },
-    function(callback)
-    {
-      if(!removeVALs.length < 1)
-        _this.db.query(removeSQL, removeVALs, callback);
-      else
-        callback();
-    }
-  ], callback);
+  let functions = []
 
+  for (let v in replaceVALs) {
+    const f = function (callback) {
+      return _this.db.query(_this.upsertStatement, replaceVALs[v], callback);
+    }
+
+    functions.push(f)
+  }
+
+  const removeFunction = function(callback) {
+    if(!removeVALs.length < 1)
+      _this.db.query(removeSQL, removeVALs, callback);
+    else
+      callback();
+  }
+  functions.push(removeFunction)
+
+  async.parallel(functions, callback);
 }
