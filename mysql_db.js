@@ -146,7 +146,7 @@ exports.database.prototype.get = function (key, callback)
 
 exports.database.prototype.findKeys = function (key, notKey, callback)
 {
-  var query="SELECT `key` FROM `store` WHERE `key` = ? BINARY `key` LIKE ?"
+  var query="SELECT `key` FROM `store` WHERE `key` = ? AND BINARY `key` LIKE ?"
     , params=[]
   ;
   

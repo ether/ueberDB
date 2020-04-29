@@ -43,7 +43,7 @@
     "url": "https://github.com/ether/ueberDB.git"
   },
   "main": "./CloneAndAtomicLayer",
-  "version": "0.4.6",
+  "version": "0.4.7",
   "gitHead": "00cb8c896433922111c12fe9d2a45087fdb11d59",
   "bugs": {
     "url": "https://github.com/ether/ueberDB/issues"
