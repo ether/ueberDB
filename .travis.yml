@@ -22,7 +22,7 @@ before_script:
 #  - "tests/frontend/travis/sauce_tunnel.sh"
 
 script:
-  - "tests/frontend/travis/runner.sh"
+#  - "tests/frontend/travis/runner.sh"
 
 env:
 #  global:
