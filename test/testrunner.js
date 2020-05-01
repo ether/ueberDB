@@ -2,7 +2,7 @@ const expect    = require('chai').expect
 const databases = require('./lib/databases.js').databases;
 const tests     = require('./lib/tests.js');
 const Randexp   = require('randexp');
-const ueberDB   = require('ueberdb2');
+const ueberDB   = require('ueberdb2test');
 
 let randomVal = new Randexp(/.+/).gen();
 console.warn(randomVal);
