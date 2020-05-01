@@ -35,7 +35,7 @@
   "devDependencies": {
     "expect.js": "0.3.1",
     "log4js": "^6.1.2",
-    "mocha": "^7.1.1",
+    "mocha": "^7.1.2",
     "mongodb": "^3.5.5"
   },
   "repository": {
@@ -50,7 +50,9 @@
   },
   "homepage": "https://github.com/ether/ueberDB",
   "_id": "ueberdb2@0.3.0",
-  "scripts": {},
+  "scripts": {
+    "test": "node tests/testrunner.js"
+  },
   "_shasum": "cbebe8b8a0879f4ca970c3d69bd578e291d6e835",
   "_from": "ueberdb2@0.3.0",
   "_npmVersion": "2.5.1",
