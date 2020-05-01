@@ -31,6 +31,7 @@
     "mysql": "2.18.1",
     "nano": "^8.2.2",
     "pg": "^7.18.2",
+    "randexp": "^0.5.3",
     "redis": ">=0.12.1",
     "rethinkdb": "^2.3.1"
   },
@@ -52,7 +53,7 @@
   "homepage": "https://github.com/ether/ueberDB",
   "_id": "ueberdb2@0.3.0",
   "scripts": {
-    "test": "node tests/testrunner.js"
+    "test": "node ./node_modules/mocha/bin/mocha"
   },
   "_shasum": "cbebe8b8a0879f4ca970c3d69bd578e291d6e835",
   "_from": "ueberdb2@0.3.0",
@@ -74,8 +75,5 @@
   },
   "directories": {},
   "_resolved": "https://registry.npmjs.org/ueberdb2/-/ueberdb2-0.3.0.tgz",
-  "readme": "ERROR: No README data found!",
-  "scripts":{
-    "test": "node ./node_modules/mocha/bin/mocha"
-  }
+  "readme": "ERROR: No README data found!"
 }
