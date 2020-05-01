@@ -23,9 +23,11 @@
   "dependencies": {
     "async": "^3.2.0",
     "cassandra-driver": "^4.5.0",
+    "chai": "^4.2.0",
     "channels": "0.0.4",
     "dirty": "^1.1.0",
     "elasticsearch": "^16.7.1",
+    "mocha": "^7.1.2",
     "mysql": "2.18.1",
     "nano": "^8.2.2",
     "pg": "^7.18.2",
@@ -35,7 +37,6 @@
   "devDependencies": {
     "expect.js": "0.3.1",
     "log4js": "^6.1.2",
-    "mocha": "^7.1.2",
     "mongodb": "^3.5.5"
   },
   "repository": {
@@ -73,5 +74,8 @@
   },
   "directories": {},
   "_resolved": "https://registry.npmjs.org/ueberdb2/-/ueberdb2-0.3.0.tgz",
-  "readme": "ERROR: No README data found!"
+  "readme": "ERROR: No README data found!",
+  "scripts":{
+    "test": "node ./node_modules/mocha/bin/mocha"
+  }
 }
