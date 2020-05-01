@@ -2,7 +2,7 @@ const expect    = require('chai').expect
 const databases = require('./lib/databases.js').databases;
 const tests     = require('./lib/tests.js');
 const Randexp   = require('randexp');
-const ueberDB   = require('ueberdb2test');
+const ueberDB   = require('../CloneAndAtomicLayer.js');
 
 let randomVal = new Randexp(/.+/).gen();
 console.warn(randomVal);
