@@ -39,4 +39,4 @@ jobs:
 
 notifications:
   email:
-    - john@mclear.co.uk
+#    - john@mclear.co.uk
