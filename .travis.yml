@@ -5,14 +5,14 @@ node_js:
 
 services:
   - docker
-#  - mongodb
-#  - mysql
-#  - postgresql
+  - mongodb
+  - mysql
+  - postgresql
 
 before_install:
-#  - mysql -e 'CREATE DATABASE myapp_test;'
-#  - psql -c 'create database travis_ci_test;' -U postgres
-#  - mongo mydb_test --eval 'db.createUser({user:"travis",pwd:"test",roles:["readWrite"]});'
+  - mysql -e 'CREATE DATABASE myapp_test;'
+  - psql -c 'create database travis_ci_test;' -U postgres
+  - mongo mydb_test --eval 'db.createUser({user:"travis",pwd:"test",roles:["readWrite"]});'
 
 install:
 #  - "bin/installDeps.sh"
