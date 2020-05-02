@@ -3,7 +3,8 @@ const expect    = require('chai').expect
 const databases = require('./lib/databases.js').databases;
 const tests     = require('./lib/tests.js');
 const ueberDB   = require('../index.js');
-const fs        = require('fs')
+const fs        = require('fs');
+
 // For each Database (gets database settings)
 for (const database in databases){
   let dbSettings = databases[database];
