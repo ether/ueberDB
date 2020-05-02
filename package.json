@@ -45,7 +45,7 @@
     "type": "git",
     "url": "https://github.com/ether/db.git"
   },
-  "main": "./inde",
+  "main": "./index",
   "version": "0.4.8",
   "gitHead": "00cb8c896433922111c12fe9d2a45087fdb11d59",
   "bugs": {

@@ -2,7 +2,7 @@ const assert    = require('assert');
 const expect    = require('chai').expect
 const databases = require('./lib/databases.js').databases;
 const tests     = require('./lib/tests.js');
-const ueberDB   = require('../CloneAndAtomicLayer.js');
+const ueberDB   = require('../index.js');
 
 // For each Database (gets database settings)
 for (const database in databases){
