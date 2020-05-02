@@ -33,7 +33,7 @@ exports.database = function(type, dbSettings, wrapperSettings, logger)
 
   //saves all settings and require the db module
   this.type = type;
-  this.db_module = require("./" + type + "_db");
+  this.db_module = require("./databases/" + type + "_db");
   this.dbSettings = dbSettings;
   this.wrapperSettings = wrapperSettings;
   this.logger = logger || defaultLogger;

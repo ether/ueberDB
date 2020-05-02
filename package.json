@@ -1,13 +1,13 @@
 {
-  "name": "ueberdb2",
-  "description": "transform every database into a object key value store",
-  "url": "https://github.com/ether/ueberDB",
+  "name": "etherdb",
+  "description": "Transform every database into a object key value store",
+  "url": "https://github.com/ether/db",
   "keywords": [
     "database",
     "keyvalue"
   ],
   "author": {
-    "name": "Etherpad Foundation"
+    "name": "The Etherpad Foundation"
   },
   "contributors": [
     {
@@ -33,7 +33,8 @@
     "pg": "^7.18.2",
     "randexp": "^0.5.3",
     "redis": ">=0.12.1",
-    "rethinkdb": "^2.3.1"
+    "rethinkdb": "^2.3.1",
+    "simple-git" : "*"
   },
   "devDependencies": {
     "expect.js": "0.3.1",
@@ -42,21 +43,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ether/ueberDB.git"
+    "url": "https://github.com/ether/db.git"
   },
-  "main": "./CloneAndAtomicLayer",
+  "main": "./inde",
   "version": "0.4.8",
   "gitHead": "00cb8c896433922111c12fe9d2a45087fdb11d59",
   "bugs": {
-    "url": "https://github.com/ether/ueberDB/issues"
+    "url": "https://github.com/ether/db/issues"
   },
-  "homepage": "https://github.com/ether/ueberDB",
-  "_id": "ueberdb2@0.3.0",
+  "homepage": "https://github.com/ether/db",
   "scripts": {
     "test": "node ./node_modules/mocha/bin/mocha"
   },
   "_shasum": "cbebe8b8a0879f4ca970c3d69bd578e291d6e835",
-  "_from": "ueberdb2@0.3.0",
   "_npmVersion": "2.5.1",
   "_nodeVersion": "0.12.0",
   "_npmUser": {
@@ -65,7 +64,7 @@
   },
   "maintainers": [
     {
-      "name": "johnyma22",
+      "name": "John McLear",
       "email": "john@mclear.co.uk"
     }
   ],
