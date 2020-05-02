@@ -3,15 +3,20 @@ const expect    = require('chai').expect
 const databases = require('./lib/databases.js').databases;
 const tests     = require('./lib/tests.js');
 const ueberDB   = require('../index.js');
-
+const fs        = require('fs')
 // For each Database (gets database settings)
 for (const database in databases){
   let dbSettings = databases[database];
-  // connect to database
-  if(database === "dirty") dbSettings = dbSettings[database];
+
+  if(database === "dirty"){
+    fs.unlinkSync(dbSettings.filename);
+  }
 
   var db = new ueberDB.database(database, dbSettings);
+  db.dbSettings.cache = 60000;
 
+  console.warn(db.dbSettings);
+  // connect to database
   db.init(function (err){
     if(err){
       console.error(err);
@@ -20,13 +25,7 @@ for (const database in databases){
     // cache on
     for (const test in tests.tests){
       var testFn = tests.tests[test];
-      testFn(db, assert, database+": "+test);
-    }
-    // cache off
-    for (const test in tests.tests){
-      delete db.cache;
-      var testFn = tests.tests[test];
-      testFn(db, assert, database+": "+test);
+      testFn(db, assert, database+": cache"+dbSettings.cache||0 + " : "+test);
     }
   });
 }
