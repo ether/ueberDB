@@ -8,7 +8,9 @@ const ueberDB   = require('../CloneAndAtomicLayer.js');
 for (const database in databases){
   let dbSettings = databases[database];
   // connect to database
-  var db = new ueberDB.database(database, dbSettings)
+  if(database === "dirty") dbSettings = dbSettings[database];
+
+  var db = new ueberDB.database(database, dbSettings);
 
   db.init(function (err){
     if(err){
@@ -17,10 +19,11 @@ for (const database in databases){
     }
     for (const test in tests.tests){
       var testFn = tests.tests[test];
-      testFn(db, assert, test);
+      testFn(db, assert, database+": "+test);
     }
   });
 }
+
 /*
 Test approaches:
   [*] Fuzzed inc. whitespace

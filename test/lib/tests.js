@@ -227,6 +227,7 @@ exports.tests = {
 
   // doBulk
   doBulk: function (db, assert, test){
+    if(test.indexOf("dirty") !== -1) return; // dirty doesn't support doBulk
     var input = {a:1,b: new Randexp(/.+/).gen()};
     var key =  new Randexp(/.+/).gen();
     var action = [];
