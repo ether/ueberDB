@@ -53,7 +53,7 @@
   },
   "homepage": "https://github.com/ether/db",
   "scripts": {
-    "test": "node ./node_modules/mocha/bin/mocha"
+    "test": "node ./node_modules/mocha/bin/mocha --reporter list"
   },
   "_shasum": "cbebe8b8a0879f4ca970c3d69bd578e291d6e835",
   "_npmVersion": "2.5.1",

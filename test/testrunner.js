@@ -24,9 +24,12 @@ for (const database in databases){
       process.exit(1);
     }
     // cache on
+    exports.db = db;
+    exports.expect = expect;
+    exports.assert = assert;
     for (const test in tests.tests){
       var testFn = tests.tests[test];
-      testFn(db, assert, database+": cache"+dbSettings.cache||0 + " : "+test);
+      testFn(db, database+": cache"+dbSettings.cache||0 + " : "+test);
     }
   });
 }
