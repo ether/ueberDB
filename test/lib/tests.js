@@ -1,7 +1,7 @@
 const Randexp = require("randexp");
 
 // Settings.
-const numberOfWrites = 1000;
+const numberOfWrites = 100;
 const acceptableWritesPerSecond = 0.5;
 const acceptableReadsPerSecond = 0.1;
 const acceptableFindKeysPerSecond = 1;
@@ -9,74 +9,74 @@ const acceptableFindKeysPerSecond = 1;
 //Tests
 exports.tests = {
 
-    ////////// BEGIN PERFORMANCE Tests
+  ////////// BEGIN PERFORMANCE Tests
 
-    /* Read/write operations with timers to catch events */
-    performanceLotsOfWrites: function(db, assert, test){
-      var input = {a:1,b: new Randexp(/.+/).gen()};
-      // var key =  new Randexp(/.+/).gen();
-      // TODO setting a key with non ascii chars
-      var key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
-      var timers = {};
-      timers.start = Date.now();
+  /* Read/write operations with timers to catch events */
+  performanceLotsOfWrites: function(db, assert, test){
+    var input = {a:1,b: new Randexp(/.+/).gen()};
+    // var key =  new Randexp(/.+/).gen();
+    // TODO setting a key with non ascii chars
+    var key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
+    var timers = {};
+    timers.start = Date.now();
 
-      for (i = 0; i < numberOfWrites; i++){
-        db.set( key+i , input );
-      }
+    for (i = 0; i < numberOfWrites; i++){
+      db.set( key+i , input );
+    }
 
-      timers.written =  Date.now();
+    timers.written =  Date.now();
 
-      for (i = 0; i < numberOfWrites; i++){
-        db.get(key+i, function(err, output){
-          if(err) throw new Error("Error getting")
-        });
-      }
-      timers.read = Date.now();
-
-      // do a findKeys Event
-
-      for (i = 0; i < numberOfWrites; i++){
-        db.findKeys(key+i, null, function(err, output){
-          if(err) throw new Error("Error getting")
-        });
-      }
-      timers.findKeys = Date.now();
-
-      var timeToWrite = timers.written - timers.start;
-      var timeToRead = timers.read - timers.written;
-      var timeToFindKey = timers.findKeys - timers.read;
-      var timeToWritePerRecord = timeToWrite/numberOfWrites;
-      var timeToReadPerRecord = timeToRead/numberOfWrites;
-      var timeToFindKeyPerRecord = timeToFindKey / numberOfWrites;
-
-      console.warn("Time to Write", timeToWrite +"ms");
-      console.warn("Time to Read", timeToRead +"ms")
-      console.warn("Time to Write Per record", timeToWritePerRecord +"ms");
-      console.warn("Time to Read Per record", timeToReadPerRecord +"ms")
-      console.warn("Time to FindKey Per record", timeToFindKeyPerRecord +"ms");
-
-      describe(test, () => {
-        it('read speed is acceptable', () => {
-          let isAcceptable = (acceptableReadsPerSecond >= timeToReadPerRecord);
-          assert.equal(isAcceptable, true);
-        });
+    for (i = 0; i < numberOfWrites; i++){
+      db.get(key+i, function(err, output){
+        if(err) throw new Error("Error getting")
       });
+    }
+    timers.read = Date.now();
 
-      describe(test, () => {
-        it('write speed is acceptable', () => {
-          let isAcceptable = (acceptableWritesPerSecond >= timeToWritePerRecord);
-          assert.equal(isAcceptable, true);
-        });
+    // do a findKeys Event
+
+    for (i = 0; i < numberOfWrites; i++){
+      db.findKeys(key+i, null, function(err, output){
+        if(err) throw new Error("Error getting")
       });
+    }
+    timers.findKeys = Date.now();
 
-      describe(test, () => {
-        it('findkeys speed is acceptable', () => {
-          let isAcceptable = (acceptableFindKeysPerSecond >= timeToFindKeyPerRecord);
-          assert.equal(isAcceptable, true);
-        });
+    var timeToWrite = timers.written - timers.start;
+    var timeToRead = timers.read - timers.written;
+    var timeToFindKey = timers.findKeys - timers.read;
+    var timeToWritePerRecord = timeToWrite/numberOfWrites;
+    var timeToReadPerRecord = timeToRead/numberOfWrites;
+    var timeToFindKeyPerRecord = timeToFindKey / numberOfWrites;
+
+    console.warn("Time to Write", timeToWrite +"ms");
+    console.warn("Time to Read", timeToRead +"ms")
+    console.warn("Time to Write Per record", timeToWritePerRecord +"ms");
+    console.warn("Time to Read Per record", timeToReadPerRecord +"ms")
+    console.warn("Time to FindKey Per record", timeToFindKeyPerRecord +"ms");
+
+    describe(test, () => {
+      it('read speed is acceptable', () => {
+        let isAcceptable = (acceptableReadsPerSecond >= timeToReadPerRecord);
+        assert.equal(isAcceptable, true);
       });
+    });
 
-    },
+    describe(test, () => {
+      it('write speed is acceptable', () => {
+        let isAcceptable = (acceptableWritesPerSecond >= timeToWritePerRecord);
+        assert.equal(isAcceptable, true);
+      });
+    });
+
+    describe(test, () => {
+      it('findkeys speed is acceptable', () => {
+        let isAcceptable = (acceptableFindKeysPerSecond >= timeToFindKeyPerRecord);
+        assert.equal(isAcceptable, true);
+      });
+    });
+
+  },
 
   //////////////////////////////////////////////////
   // METHOD Tests
@@ -223,5 +223,31 @@ exports.tests = {
         });
       });
     });
+  },
+
+  // doBulk
+  doBulk: function (db, assert, test){
+    var input = {a:1,b: new Randexp(/.+/).gen()};
+    var key =  new Randexp(/.+/).gen();
+    var action = [];
+    action.type = "set"
+    for (i = 0; i < 10; i++){
+      action.push = {
+        key: key[i],
+        value: input
+      }
+    }
+
+    for (i = 0; i < 10; i++){
+      db.get( key[i], function(e, output){
+        describe(test, () => {
+          it('Makes sure a key is present prior to deleting it', () => {
+            let matches = JSON.stringify(input) === JSON.stringify(output);
+            assert.equal(matches, true);
+          });
+        });
+      } );
+
+    };
   }
 }
