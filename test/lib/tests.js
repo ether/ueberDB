@@ -1,6 +1,86 @@
 const Randexp = require("randexp");
 
+// Settings.
+const numberOfWrites = 1000;
+const acceptableWritesPerSecond = 0.5;
+const acceptableReadsPerSecond = 0.1;
+const acceptableFindKeysPerSecond = 1;
+
+//Tests
 exports.tests = {
+
+    ////////// BEGIN PERFORMANCE Tests
+
+    /* Read/write operations with timers to catch events */
+    performanceLotsOfWrites: function(db, assert, test){
+      var input = {a:1,b: new Randexp(/.+/).gen()};
+      // var key =  new Randexp(/.+/).gen();
+      // TODO setting a key with non ascii chars
+      var key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
+      var timers = {};
+      timers.start = Date.now();
+
+      for (i = 0; i < numberOfWrites; i++){
+        db.set( key+i , input );
+      }
+
+      timers.written =  Date.now();
+
+      for (i = 0; i < numberOfWrites; i++){
+        db.get(key+i, function(err, output){
+          if(err) throw new Error("Error getting")
+        });
+      }
+      timers.read = Date.now();
+
+      // do a findKeys Event
+
+      for (i = 0; i < numberOfWrites; i++){
+        db.findKeys(key+i, null, function(err, output){
+          if(err) throw new Error("Error getting")
+        });
+      }
+      timers.findKeys = Date.now();
+
+      var timeToWrite = timers.written - timers.start;
+      var timeToRead = timers.read - timers.written;
+      var timeToFindKey = timers.findKeys - timers.read;
+      var timeToWritePerRecord = timeToWrite/numberOfWrites;
+      var timeToReadPerRecord = timeToRead/numberOfWrites;
+      var timeToFindKeyPerRecord = timeToFindKey / numberOfWrites;
+
+      console.warn("Time to Write", timeToWrite +"ms");
+      console.warn("Time to Read", timeToRead +"ms")
+      console.warn("Time to Write Per record", timeToWritePerRecord +"ms");
+      console.warn("Time to Read Per record", timeToReadPerRecord +"ms")
+      console.warn("Time to FindKey Per record", timeToFindKeyPerRecord +"ms");
+
+      describe(test, () => {
+        it('read speed is acceptable', () => {
+          let isAcceptable = (acceptableReadsPerSecond >= timeToReadPerRecord);
+          assert.equal(isAcceptable, true);
+        });
+      });
+
+      describe(test, () => {
+        it('write speed is acceptable', () => {
+          let isAcceptable = (acceptableWritesPerSecond >= timeToWritePerRecord);
+          assert.equal(isAcceptable, true);
+        });
+      });
+
+      describe(test, () => {
+        it('findkeys speed is acceptable', () => {
+          let isAcceptable = (acceptableFindKeysPerSecond >= timeToFindKeyPerRecord);
+          assert.equal(isAcceptable, true);
+        });
+      });
+
+    },
+
+  //////////////////////////////////////////////////
+  // METHOD Tests
+
   whiteSpaceInKey: function(db, assert, test){
     var input = {a:1,b: new Randexp(/.+/).gen()};
 
@@ -52,6 +132,8 @@ exports.tests = {
     });
 
   },
+
+
   /* Basic read/write operation */
   basicReadWrite: function(db, assert, test){
     var input = {a:1,b: new Randexp(/.+/).gen()};
@@ -69,6 +151,28 @@ exports.tests = {
       });
     });
   },
+
+
+
+  /* Basic read/write operation */
+  longStringWrite: function(db, assert, test){
+    var input = {"testLongString": new Randexp(/[a-f0-9]{50000}/).gen()};
+    var key =  new Randexp(/.+/).gen();
+    // set long string
+    db.set( key , input );
+
+    //get the object
+    db.get(key, function(err, output){
+      describe(test, () => {
+        it('Does a basic write->read operation with a random key/value', () => {
+          let matches = JSON.stringify(input) === JSON.stringify(output);
+          assert.equal(matches, true);
+        });
+      });
+    });
+  },
+
+
   /* Basic findKeys test functionality */
   findKeys: function (db, assert, test){
     var input = {a:1,b: new Randexp(/.+/).gen()};
@@ -93,7 +197,8 @@ exports.tests = {
       }
     });
   },
-  /* Basic findKeys test functionality */
+
+  /* remove functionality */
   remove: function (db, assert, test){
     var input = {a:1,b: new Randexp(/.+/).gen()};
     var key =  new Randexp(/.+/).gen();
@@ -119,15 +224,4 @@ exports.tests = {
       });
     });
   }
-
-
-
-}
-
-exports.runTest = async function(test, db){
-
-  db.close(function(){
-    process.exit(0);
-  });
-
 }
