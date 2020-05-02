@@ -17,7 +17,14 @@ for (const database in databases){
       console.error(err);
       process.exit(1);
     }
+    // cache on
     for (const test in tests.tests){
+      var testFn = tests.tests[test];
+      testFn(db, assert, database+": "+test);
+    }
+    // cache off
+    for (const test in tests.tests){
+      delete db.cache;
       var testFn = tests.tests[test];
       testFn(db, assert, database+": "+test);
     }
