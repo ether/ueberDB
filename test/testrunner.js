@@ -12,13 +12,13 @@ for (const database in databases){
   if(database === "dirty"){
     try{
       fs.unlinkSync(dbSettings.filename);
-    }catch(){}
+    }catch(e){
+    }
   }
 
   var db = new ueberDB.database(database, dbSettings);
   db.dbSettings.cache = 60000;
 
-  console.warn(db.dbSettings);
   // connect to database
   db.init(function (err){
     if(err){
