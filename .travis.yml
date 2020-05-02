@@ -14,7 +14,7 @@ before_install:
   - mysql -e 'CREATE USER "ueberdb"@"localhost" identified by "ueberdb";'
   - mysql -e "grant CREATE,ALTER,SELECT,INSERT,UPDATE,DELETE on ueberdb.* to 'ueberdb'@'localhost';"
   - psql -c 'create database ueberdb;' -U postgres
-  - psql -c "grant CREATE,ALTER,SELECT,INSERT,UPDATE,DELETE on ueberdb.* to 'ueberdb'@'localhost';" -U postgres
+#  - psql -c "grant CREATE,ALTER,SELECT,INSERT,UPDATE,DELETE on ueberdb.* to 'ueberdb'@'localhost';" -U postgres
   - mongo ueberdb --eval 'db.createUser({user:"ueberdb",pwd:"test",roles:["readWrite"]});'
 
 install:
