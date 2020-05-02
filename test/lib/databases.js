@@ -12,9 +12,9 @@ exports.databases = {
   },
   /*
   postgres:{
-    "user"    : "ueberdb",
+    "user"    : "postgres",
     "host"    : "localhost",
-    "password": "ueberdb",
+    "password": "",
     "database": "ueberdb",
     "charset" : "utf8mb4"
   },

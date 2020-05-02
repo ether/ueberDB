@@ -14,33 +14,18 @@ before_install:
   - mysql -e 'CREATE USER "ueberdb"@"localhost" identified by "ueberdb";'
   - mysql -e "grant CREATE,ALTER,SELECT,INSERT,UPDATE,DELETE on ueberdb.* to 'ueberdb'@'localhost';"
   - psql -c 'create database ueberdb;' -U postgres
-  - psql -c 'CREATE USER "ueberdb"@"localhost" identified by "ueberdb";' -U postgres
   - psql -c "grant CREATE,ALTER,SELECT,INSERT,UPDATE,DELETE on ueberdb.* to 'ueberdb'@'localhost';" -U postgres
   - mongo ueberdb --eval 'db.createUser({user:"ueberdb",pwd:"test",roles:["readWrite"]});'
 
 install:
-#  - "bin/installDeps.sh"
   - "export GIT_HASH=$(git rev-parse --verify --short HEAD)"
-
-before_script:
-#  - "tests/frontend/travis/sauce_tunnel.sh"
-
-script:
-#  - "tests/frontend/travis/runner.sh"
-
-env:
-#  global:
-#    - secure: "WMGxFkOeTTlhWB+ChMucRtIqVmMbwzYdNHuHQjKCcj8HBEPdZLfCuK/kf4rG\nVLcLQiIsyllqzNhBGVHG1nyqWr0/LTm8JRqSCDDVIhpyzp9KpCJQQJG2Uwjk\n6/HIJJh/wbxsEdLNV2crYU/EiVO3A4Bq0YTHUlbhUqG3mSCr5Ec="
-#    - secure: "gejXUAHYscbR6Bodw35XexpToqWkv2ifeECsbeEmjaLkYzXmUUNWJGknKSu7\nEUsSfQV8w+hxApr1Z+jNqk9aX3K1I4btL3cwk2trnNI8XRAvu1c1Iv60eerI\nkE82Rsd5lwUaMEh+/HoL8ztFCZamVndoNgX7HWp5J/NRZZMmh4g="
 
 jobs:
   include:
     - name: "Run the Backend tests"
       install:
         - "npm install"
-#      script:
-#        - "tests/tests.sh"
 
 notifications:
   email:
-#    - john@mclear.co.uk
+    - john@mclear.co.uk
