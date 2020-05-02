@@ -1,3 +1,4 @@
+*.db
 var/*.db*
 *~
 node_modules

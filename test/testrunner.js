@@ -10,7 +10,9 @@ for (const database in databases){
   let dbSettings = databases[database];
 
   if(database === "dirty"){
-    fs.unlinkSync(dbSettings.filename);
+    try{
+      fs.unlinkSync(dbSettings.filename);
+    }catch(){}
   }
 
   var db = new ueberDB.database(database, dbSettings);
