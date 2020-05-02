@@ -8,7 +8,7 @@ const ueberDB   = require('../CloneAndAtomicLayer.js');
 for (const database in databases){
   let dbSettings = databases[database];
   // connect to database
-  var db = new ueberDB.database(database, dbSettings[database])
+  var db = new ueberDB.database(database, dbSettings)
 
   db.init(function (err){
     if(err){
@@ -23,7 +23,7 @@ for (const database in databases){
 }
 /*
 Test approaches:
-  * Fuzzed inc. whitespace
+  [*] Fuzzed inc. whitespace
   * Keys not present
   * Large data sets
   * Collect time metrics
@@ -33,4 +33,3 @@ Methods:
   > set & find keys
   > set and remove
 */
-

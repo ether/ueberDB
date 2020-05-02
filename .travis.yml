@@ -10,9 +10,13 @@ services:
   - postgresql
 
 before_install:
-  - mysql -e 'CREATE DATABASE myapp_test;'
-  - psql -c 'create database travis_ci_test;' -U postgres
-  - mongo mydb_test --eval 'db.createUser({user:"travis",pwd:"test",roles:["readWrite"]});'
+  - mysql -e 'CREATE DATABASE ueberdb;'
+  - mysql -e 'CREATE USER "ueberdb"@"localhost" identified by "ueberdb";'
+  - mysql -e "grant CREATE,ALTER,SELECT,INSERT,UPDATE,DELETE on ueberdb.* to 'ueberdb'@'localhost';"
+  - psql -c 'create database ueberdb;' -U postgres
+  - psql -c 'CREATE USER "ueberdb"@"localhost" identified by "ueberdb";' -U postgres
+  - psql -c "grant CREATE,ALTER,SELECT,INSERT,UPDATE,DELETE on ueberdb.* to 'ueberdb'@'localhost';" -U postgres
+  - mongo ueberdb --eval 'db.createUser({user:"ueberdb",pwd:"test",roles:["readWrite"]});'
 
 install:
 #  - "bin/installDeps.sh"
