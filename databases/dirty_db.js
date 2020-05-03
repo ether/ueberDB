@@ -19,8 +19,8 @@ var async = require("async");
 
 exports.database = function(settings)
 {
-  this.db=null; 
-  
+  this.db=null;
+
   if(!settings || !settings.filename)
   {
     settings = {filename:null};

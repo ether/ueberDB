@@ -34,7 +34,8 @@
     "randexp": "^0.5.3",
     "redis": ">=0.12.1",
     "rethinkdb": "^2.3.1",
-    "simple-git" : "*"
+    "rimraf": "^3.0.2",
+    "simple-git": "*"
   },
   "devDependencies": {
     "expect.js": "0.3.1",
@@ -53,7 +54,7 @@
   },
   "homepage": "https://github.com/ether/db",
   "scripts": {
-    "test": "node ./node_modules/mocha/bin/mocha --reporter list"
+    "test": "mocha test/test-*.js -R list"
   },
   "_shasum": "cbebe8b8a0879f4ca970c3d69bd578e291d6e835",
   "_npmVersion": "2.5.1",
