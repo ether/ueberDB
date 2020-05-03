@@ -47,8 +47,7 @@
     "url": "https://github.com/ether/db.git"
   },
   "main": "./index",
-  "version": "0.4.8",
-  "gitHead": "00cb8c896433922111c12fe9d2a45087fdb11d59",
+  "version": "0.0.1",
   "bugs": {
     "url": "https://github.com/ether/db/issues"
   },
@@ -56,9 +55,6 @@
   "scripts": {
     "test": "mocha test/test-*.js -R list"
   },
-  "_shasum": "cbebe8b8a0879f4ca970c3d69bd578e291d6e835",
-  "_npmVersion": "2.5.1",
-  "_nodeVersion": "0.12.0",
   "_npmUser": {
     "name": "johnyma22",
     "email": "john@mclear.co.uk"
@@ -68,12 +64,5 @@
       "name": "John McLear",
       "email": "john@mclear.co.uk"
     }
-  ],
-  "dist": {
-    "shasum": "cbebe8b8a0879f4ca970c3d69bd578e291d6e835",
-    "tarball": "http://registry.npmjs.org/ueberdb2/-/ueberdb2-0.3.0.tgz"
-  },
-  "directories": {},
-  "_resolved": "https://registry.npmjs.org/ueberdb2/-/ueberdb2-0.3.0.tgz",
-  "readme": "ERROR: No README data found!"
+  ]
 }

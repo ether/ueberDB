@@ -11,7 +11,7 @@ describe('test-flush', function() {
   });
 
   it ('should fire drain event on write', function(done) {
-    var db = dirty(file);
+    var db = new ueberDB.database("mysql", {"user":"root", host: "localhost", "password":"", database: "store"});
     db.set('foo', 'bar');
     db.on('drain', function() {
       done();
@@ -81,7 +81,7 @@ describe('test-load', function() {
         done();
       });
     });
-    
+
   });
 });
 
@@ -110,8 +110,8 @@ describe('test-chaining-of-constructor', function() {
       db.close();
 
       db = dirty(file).on('load', function(size) {
-        assert.strictEqual(db.size(), 2);  
-        assert.strictEqual(size, 2);  
+        assert.strictEqual(db.size(), 2);
+        assert.strictEqual(size, 2);
       });
     });
   });

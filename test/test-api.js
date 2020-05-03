@@ -1,16 +1,14 @@
 var config = require('./config');
   path = require('path'),
   fs = require('fs'),
-  dirty = require(config.LIB_DIRTY),
+  etherdb = require(config.LIB_ETHERDB),
   events = require('events'),
   assert = require('assert');
 
 var exists = fs.exists;
 
-function dirtyAPITests(file) {
-  var mode = (file) ? 'persistent' : 'transient';
-console.warn("mode", mode)
-  describe('dirty api (' + mode + ' mode)', function() {
+function etherdbAPITests(file) {
+  describe('etherdb api', function() {
     function cleanup(done) {
       exists(file, function(doesExist) {
         if (doesExist) {
@@ -23,35 +21,41 @@ console.warn("mode", mode)
 
     before(cleanup);
 
-    describe('dirty constructor', function() {
-      var db = dirty(file);
+    describe('etherdb constructor', function() {
+      //var db = etherdb(file);
+      var db = new etherdb.database("dirty", {"filename": exports.TMP_PATH });
+//      db.init(function(){
+//        after(cleanup);
 
-      after(cleanup);
+/*
+        it('is an event emitter', function() {
+          assert.ok(db instanceof events.EventEmitter);
+        });
 
-      it('is an event emitter', function() {
-        assert.ok(db instanceof events.EventEmitter);
-      });
-
-      it('is a dirty', function() {
-        assert.ok(db instanceof dirty);
-      });
+        it('is a etherdb', function() {
+          assert.ok(db instanceof etherdb);
+        });
+*/
+//      })
 
     });
+
 
     describe('events', function() {
 
       afterEach(cleanup);
 
+
       it('should fire load', function(done) {
-        var db = dirty(file);
-        db.on('load', function(length) {
+        var db = new etherdb.database("dirty", {"filename": exports.TMP_PATH });
+        db.on('init', function(length) {
           assert.strictEqual(length, 0);
           done();
         });
       });
 
       it('should fire drain after write', function(done) {
-        var db = dirty(file);
+        var db = etherdb(file);
         db.on('load', function(length) {
           assert.strictEqual(length, 0);
 
@@ -62,14 +66,15 @@ console.warn("mode", mode)
 
         });
       });
-    });
 
+    });
+/*
     describe('accessors', function(done) {
       after(cleanup);
       var db;
 
       it('.set should trigger callback', function(done) {
-        db = dirty(file);
+        db = etherdb(file);
         db.set('key', 'value', function(err) {
           assert.ok(!err);
           done();
@@ -117,7 +122,7 @@ console.warn("mode", mode)
           return done();
         }
 
-        db = dirty(file);
+        db = etherdb(file);
         db.on('load', function(length) {
           assert.strictEqual(length, 2);
           assert.strictEqual(db.get('key'), 'value');
@@ -135,7 +140,7 @@ console.warn("mode", mode)
           console.log('N/A in transient mode');
           return done();
         }
-        var db = dirty(file);
+        var db = etherdb(file);
         db.on('load', function(length) {
           db.set('close', 'close');
           db.on('drain', function() {
@@ -148,9 +153,9 @@ console.warn("mode", mode)
         });
       });
     });
-
+*/
   });
 }
 
-dirtyAPITests('');
-dirtyAPITests(config.TMP_PATH + '/apitest.dirty');
+etherdbAPITests('');
+etherdbAPITests(config.TMP_PATH + '/apitest.etherdb');
