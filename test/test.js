@@ -11,8 +11,8 @@ var exists = fs.exists;
 var db;
 
 // Basic speed settings, can be overriden on a per database setting
-var defaultNumberOfWrites = 50000;
-const acceptableWrites = 3;
+var defaultNumberOfWrites = 10000;
+const acceptableWrites = 10;
 const acceptableReads = 0.1;
 const acceptableFindKeys = 0.2;
 const CACHE_ON = true;
@@ -20,8 +20,8 @@ const CACHE_OFF = false;
 var keys = Object.keys(databases);
 
 const table = new clitable({
-    head: ['Database', 'Write', 'Read', 'findKey']
-  , colWidths: [20, 10, 10, 10]
+    head: ['Database', '# of items', 'Write(in seconds)', 'Read(in seconds)', 'findKey(in seconds)']
+  , colWidths: [20, 10, 20, 20, 25]
 });
 
 keys.forEach(async function(database) {
@@ -39,7 +39,8 @@ after(function(){
     });
   }
   console.log(table.toString())
-  process.exit(0);
+  db.close(); // close the database
+  process.exit()
 });
 
 
@@ -220,20 +221,20 @@ async function etherdbAPITests(database, dbSettings, cacheEnabled, done) {
       var timeToReadPerRecord = timeToRead/numberOfWrites;
       var timeToFindKeyPerRecord = timeToFindKey / numberOfWrites;
 
-      table.push([database +":"+cacheStatus, timeToWritePerRecord, timeToReadPerRecord, timeToFindKeyPerRecord]);
+      table.push([database +":"+cacheStatus, numberOfWrites, timeToWritePerRecord, timeToReadPerRecord, timeToFindKeyPerRecord]);
 
       var acceptableReadTime = (((dbSettings.speeds && dbSettings.speeds.read) || acceptableReads));
-//      console.log("ART", acceptableReadTime, timeToReadPerRecord)
+      console.log("ART", acceptableReadTime, timeToReadPerRecord)
       var reads = acceptableReadTime >= timeToReadPerRecord;
 
       var acceptableWriteTime = (((dbSettings.speeds && dbSettings.speeds.write) || acceptableWrites));
-//      console.log("AWT", acceptableWriteTime, timeToWritePerRecord)
+      console.log("AWT", acceptableWriteTime, timeToWritePerRecord)
       var writes = acceptableWriteTime >= timeToWritePerRecord;
 
       var acceptableFindKeysTime = (((dbSettings.speeds && dbSettings.speeds.findKey) || acceptableFindKeys));
-//      console.log("AFKT", acceptableFindKeysTime, timeToFindKeyPerRecord)
+      console.log("AFKT", acceptableFindKeysTime, timeToFindKeyPerRecord)
       var findKeys = acceptableFindKeysTime >= timeToFindKeyPerRecord;
-//      console.log(reads, writes, findKeys)
+      console.log(reads, writes, findKeys)
       assert.equal((reads === writes === findKeys), true);
     });
 

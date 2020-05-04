@@ -145,7 +145,7 @@ async function example(db){
 # Limitations
 
 ## findKeys query support
-Certain regular expressions will fail 
+Certain regular expressions will fail
 
 ## findKeys database support
 The following have limitations on findKeys
@@ -161,6 +161,9 @@ To scale EtherDB you should use sharding especially for real time applications. 
 
 ## Key Length Restrictions
 Your Key Length will be limited by the database you chose to use but keep into account portability within your application.
+
+## doBulk operations on .set out of memory
+doBulk operations that chain IE a large number of .set without a pause to handle the channel clearance can cause a ``Javascript out of heap memory``.
 
 # MySQL /MariaDB Advice
 You should create your database as utf8mb4_bin,
