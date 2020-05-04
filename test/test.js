@@ -10,7 +10,7 @@ var exists = fs.exists;
 var db;
 
 // Basic speed settings, can be overriden on a per database setting
-var numberOfWrites = 10000;
+var defaultNumberOfWrites = 1000000;
 const acceptableWritesPerSecond = 0.5;
 const acceptableReadsPerSecond = 0.1;
 const acceptableFindKeysPerSecond = 1;
@@ -47,6 +47,7 @@ async function etherdbAPITests(database, dbSettings, done) {
           }
         });
       }
+      /*
       try{
         setTimeout(function(){
           db.close(function(){
@@ -57,7 +58,7 @@ async function etherdbAPITests(database, dbSettings, done) {
       }catch(e){
         console.error("Closing error", e)
       }
-
+*/
       done;
     });
 
@@ -169,31 +170,6 @@ async function etherdbAPITests(database, dbSettings, done) {
       });
     });
 
-    /*
-    it('Makes sure a key is present prior to deleting it', () => {
-      if(database.indexOf("dirty") !== -1) return; // dirty doesn't support doBulk
-      var input = {a:1,b: new Randexp(/.+/).gen()};
-      var key = new Randexp(/.+/).gen();
-      var action = [];
-      action.type = "set"
-      for (i = 0; i < 10; i++){
-        action.push = {
-          key: key[i],
-          value: input
-        }
-      }
-      db.doBulk(action);
-
-      for (i = 0; i < 10; i++){
-        db.get( key[i], function(e, output){
-          let matches = JSON.stringify(input) === JSON.stringify(output);
-          assert.equal(matches, true);
-        });
-      };
-
-    });
-    */
-
     // Read/write operations with timers to catch events
     it('Speed is acceptable', () => {
       var input = {a:1,b: new Randexp(/.+/).gen()};
@@ -202,7 +178,7 @@ async function etherdbAPITests(database, dbSettings, done) {
       var key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
       var timers = {};
       timers.start = Date.now();
-      numberOfWrites = (dbSettings.speeds && dbSettings.speeds.numberOfWrites) || numberOfWrites;
+      let numberOfWrites = (dbSettings.speeds && dbSettings.speeds.numberOfWrites) || defaultNumberOfWrites;
       for (i = 0; i < numberOfWrites; i++){
         db.set( key+i , input );
       }
@@ -231,13 +207,13 @@ async function etherdbAPITests(database, dbSettings, done) {
       var timeToWritePerRecord = timeToWrite/numberOfWrites;
       var timeToReadPerRecord = timeToRead/numberOfWrites;
       var timeToFindKeyPerRecord = timeToFindKey / numberOfWrites;
-
+/*
       console.warn("\nTime to Write", timeToWrite +"ms");
       console.warn("\nTime to Read", timeToRead +"ms")
       console.warn("\nTime to Write Per record", timeToWritePerRecord +"ms");
       console.warn("\nTime to Read Per record", timeToReadPerRecord +"ms")
       console.warn("\nTime to FindKey Per record", timeToFindKeyPerRecord +"ms");
-
+*/
       var reads = (((dbSettings.speeds && dbSettings.speeds.acceptableReadsPerSecond) || acceptableReadsPerSecond) >= timeToReadPerRecord);
       var writes = (((dbSettings.speeds && dbSettings.speeds.acceptableWritesPerSecond) || acceptableWritesPerSecond) >= timeToWritePerRecord);
       var findKeys = (((dbSettings.speeds && dbSettings.speeds.acceptableFindKeysPerSecond) || acceptableFindKeysPerSecond) >= timeToFindKeyPerRecord);
