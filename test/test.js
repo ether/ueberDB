@@ -11,10 +11,10 @@ var exists = fs.exists;
 var db;
 
 // Basic speed settings, can be overriden on a per database setting
-var defaultNumberOfWrites = 10000;
+var defaultNumberOfWrites = 1000;
 const acceptableWrites = 10;
 const acceptableReads = 0.1;
-const acceptableFindKeys = 0.2;
+const acceptableFindKeys = 1;
 const CACHE_ON = true;
 const CACHE_OFF = false;
 var keys = Object.keys(databases);
@@ -40,7 +40,7 @@ after(function(){
   }
   console.log(table.toString())
   db.close(); // close the database
-  process.exit()
+  process.exit(0)
 });
 
 
