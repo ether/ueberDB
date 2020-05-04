@@ -105,7 +105,13 @@ You should create your database as utf8mb4_bin,
 
 
 # How to add support for another database
-Look at sqlite_db.js and mysql_db.js, your module have to provide the same functions. Call it DATABASENAME_db.js and reimplement the functions for your database. If you think it works, test it with `node benchmark.js DATABASENAME`. Benchmark.js is benchmark and test at the same time. It tries to set 100000 values. You can pipe stderr to a file and will create a csv with benchmark results.
+1. Look at ``databases/sqlite_db.js`` and ``databases/mysql_db.js``, your module have to provide the same functions. Call it DATABASENAME_db.js and reimplement the functions for your database.
+
+2. Add some example settings to ``test/lib/databases.js`` for your database.
+
+3. Add your database Travis setup steps to ``.travis.yml``, see the ``before_install`` section and MySQL example
+
+4. Run ``npm test`` and ensure it's working.
 
 # License
 [Apache License v2](http://www.apache.org/licenses/LICENSE-2.0.html)
