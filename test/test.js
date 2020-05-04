@@ -10,7 +10,7 @@ var exists = fs.exists;
 var db;
 
 // Basic speed settings, can be overriden on a per database setting
-var defaultNumberOfWrites = 200000;
+var defaultNumberOfWrites = 100000;
 const acceptableWritesPerSecond = 0.5;
 const acceptableReadsPerSecond = 0.1;
 const acceptableFindKeysPerSecond = 1;
@@ -22,6 +22,20 @@ keys.forEach(async function(database) {
   console.log("Testing", database);
   await etherdbAPITests(database, dbSettings)
 })
+
+after(function(){
+  if(databases.dirty.filename){
+    exists(databases.dirty.filename, function(doesExist) {
+      if (doesExist) {
+        fs.unlinkSync(databases.dirty.filename);
+      }
+    });
+  }
+  db.close(function(){
+    process.exit(0)
+  })
+});
+
 
 async function etherdbAPITests(database, dbSettings, done) {
   describe('etherdb:' +database, function() {
@@ -39,28 +53,6 @@ async function etherdbAPITests(database, dbSettings, done) {
     }
 
     before(init);
-    after(function(){
-      if(dbSettings.filename){
-        exists(dbSettings.filename, function(doesExist) {
-          if (doesExist) {
-            fs.unlinkSync(dbSettings.filename);
-          }
-        });
-      }
-      /*
-      try{
-        setTimeout(function(){
-          db.close(function(){
-            process.exit(0);
-          });
-        }, 500)
-
-      }catch(e){
-        console.error("Closing error", e)
-      }
-*/
-      done;
-    });
 
     describe("white space", function(){
 
