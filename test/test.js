@@ -11,7 +11,7 @@ var exists = fs.exists;
 var db;
 
 // Basic speed settings, can be overriden on a per database setting
-var defaultNumberOfWrites = 100000;
+var defaultNumberOfWrites = 10000;
 const acceptableWritesPerSecond = 0.5;
 const acceptableReadsPerSecond = 0.1;
 const acceptableFindKeysPerSecond = 1;

@@ -28,7 +28,9 @@
 npm install etherDB
 ```
 
-# Example
+# Examples
+
+## Basic
 
 ```javascript
 const etherDB = require("etherdb");
@@ -64,7 +66,35 @@ async function example(db){
 }
 ```
 
-# Disabling Cache for real time read/write
+## findKeys
+
+```javascript
+const etherDB = require("etherdb");
+var db = new etherDB.database("dirty", {filename:"var/sqlite3.db"});
+exampleFK(db);
+
+// using async
+async function exampleFK(db){
+  // initialize the database connection.
+  await db.init();
+
+  // no need for await because it's already in cache..
+  db.set("valueA", {a:1,b:2});
+  db.set("valueA:h1", {a:1,b:2});
+  db.set("valueA:h2", {a:3,b:4});
+
+  // using callback
+  db.findKeys("valueA:", null, function(err, value){ // TODO check
+    // value will be ["valueA:h1", "valueA:h2"]
+    // close the database connection.
+    db.close(function(){
+      process.exit(0);
+    });
+  });
+}
+```
+
+## Disabling Cache for real time read/write
 Set ``db.cache = 0;`` to disable Caching of Read / Writes.
 
 ```
@@ -113,6 +143,9 @@ async function example(db){
 |  dirty_git |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |        |
 
 # Limitations
+
+## findKeys query support
+Certain regular expressions will fail 
 
 ## findKeys database support
 The following have limitations on findKeys
