@@ -11,10 +11,10 @@ var exists = fs.exists;
 var db;
 
 // Basic speed settings, can be overriden on a per database setting
-var defaultNumberOfWrites = 10000;
-const acceptableWritesPerSecond = 0.5;
-const acceptableReadsPerSecond = 0.1;
-const acceptableFindKeysPerSecond = 1;
+var defaultNumberOfWrites = 50000;
+const acceptableWrites = 3;
+const acceptableReads = 0.1;
+const acceptableFindKeys = 0.2;
 const CACHE_ON = true;
 const CACHE_OFF = false;
 var keys = Object.keys(databases);
@@ -38,10 +38,8 @@ after(function(){
       }
     });
   }
-  db.close(function(){
-    console.log(table.toString())
-    process.exit(0)
-  })
+  console.log(table.toString())
+  process.exit(0);
 });
 
 
@@ -53,6 +51,7 @@ async function etherdbAPITests(database, dbSettings, cacheEnabled, done) {
   }
   describe('etherdb:' +database + ":"+cacheStatus, function() {
 
+    this.timeout(100000);
     function init(done) {
       if(dbSettings.filename){
         exists(dbSettings.filename, function(doesExist) {
@@ -179,6 +178,7 @@ async function etherdbAPITests(database, dbSettings, cacheEnabled, done) {
 
     // Read/write operations with timers to catch events
     it('Speed is acceptable', () => {
+      this.timeout(100000);
       var input = {a:1,b: new Randexp(/.+/).gen()};
       // var key =  new Randexp(/.+/).gen();
       // TODO setting a key with non ascii chars
@@ -211,13 +211,29 @@ async function etherdbAPITests(database, dbSettings, cacheEnabled, done) {
       var timeToWrite = timers.written - timers.start;
       var timeToRead = timers.read - timers.written;
       var timeToFindKey = timers.findKeys - timers.read;
+/*
+      console.log("timeToWrite", timeToWrite);
+      console.log("timeToRead", timeToRead);
+      console.log("timeToFindKey", timeToFindKey);
+*/
       var timeToWritePerRecord = timeToWrite/numberOfWrites;
       var timeToReadPerRecord = timeToRead/numberOfWrites;
       var timeToFindKeyPerRecord = timeToFindKey / numberOfWrites;
-      table.push([database +":"+cacheStatus, timeToWritePerRecord, timeToReadPerRecord, timeToFindKeyPerRecord])
-      var reads = (((dbSettings.speeds && dbSettings.speeds.acceptableReadsPerSecond) || acceptableReadsPerSecond) >= timeToReadPerRecord);
-      var writes = (((dbSettings.speeds && dbSettings.speeds.acceptableWritesPerSecond) || acceptableWritesPerSecond) >= timeToWritePerRecord);
-      var findKeys = (((dbSettings.speeds && dbSettings.speeds.acceptableFindKeysPerSecond) || acceptableFindKeysPerSecond) >= timeToFindKeyPerRecord);
+
+      table.push([database +":"+cacheStatus, timeToWritePerRecord, timeToReadPerRecord, timeToFindKeyPerRecord]);
+
+      var acceptableReadTime = (((dbSettings.speeds && dbSettings.speeds.read) || acceptableReads));
+//      console.log("ART", acceptableReadTime, timeToReadPerRecord)
+      var reads = acceptableReadTime >= timeToReadPerRecord;
+
+      var acceptableWriteTime = (((dbSettings.speeds && dbSettings.speeds.write) || acceptableWrites));
+//      console.log("AWT", acceptableWriteTime, timeToWritePerRecord)
+      var writes = acceptableWriteTime >= timeToWritePerRecord;
+
+      var acceptableFindKeysTime = (((dbSettings.speeds && dbSettings.speeds.findKey) || acceptableFindKeys));
+//      console.log("AFKT", acceptableFindKeysTime, timeToFindKeyPerRecord)
+      var findKeys = acceptableFindKeysTime >= timeToFindKeyPerRecord;
+//      console.log(reads, writes, findKeys)
       assert.equal((reads === writes === findKeys), true);
     });
 

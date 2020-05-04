@@ -3,9 +3,9 @@ exports.databases = {
     "filename": "/tmp/test.db",
     "speeds":{
       numberOfWrites: 1000,
-      acceptableWritesPerSecond: 1,
-      acceptableReadsPerSecond: 0.1,
-      acceptableFindKeysPerSecond: 1
+      write: 0.5,
+      read: 0.1,
+      findKey: 0.2
     }
   }
   ,
