@@ -15,7 +15,7 @@
  */
 
 var async = require("async");
-var ueberDB = require("./CloneAndAtomicLayer");
+var ueberDB = require("../index");
 
 //settings
 var maxValues = 100000;

@@ -1,10 +1,13 @@
-# Abstract your databases, make datababies. 
+# Abstract your databases, make datababies.
 
 # About
-ueberDB turns every database into a simple key value store by providing a layer of abstraction between your software and your database.  
-ueberDB uses a smart cache and buffer algorithm to make databases faster.  Reads are cached and writes are done in a bulk.  
-The bulk writing reduces the overhead of a database transaction.  
-The syntax is simple and clean and getting started is easy.
+✓ EtherDB turns every database into a simple key value store by providing a layer of abstraction between your software and your database.
+
+✓ EtherDB uses a smart cache and buffer algorithm to make databases faster.  Reads are cached and writes are done in a bulk.
+
+✓ EtherDB does bulk writing ergo reduces the overhead of database transactions.
+
+✓ EtherDB uses a simple and clean syntax ergo getting started is easy.
 
 # Database Support
 * Couch
@@ -22,21 +25,26 @@ The syntax is simple and clean and getting started is easy.
 
 # Install
 
-`npm install ueberDB`
+```
+npm install EtherDB
+```
 
 # Example
 
 ```javascript
-var ueberDB = require("ueberdb2");
+var EtherDB = require("etherdb");
 
 //mysql
-var db = new ueberDB.database("mysql", {"user":"root", host: "localhost", "password":"", database: "store"});
+var db = new EtherDB.database("mysql", {"user":"root", host: "localhost", "password":"", database: "store", charset: "utf8mb4"});
+
+//dirty in file
+//var db = new EtherDB.database("dirty", {filename:"var/sqlite3.db"});
 //sqlite in-memory
-//var db = new ueberDB.database("sqlite");
+//var db = new EtherDB.database("sqlite");
 //sqlite in file
-//var db = new ueberDB.database("sqlite", {filename:"var/sqlite3.db"});
+//var db = new EtherDB.database("sqlite", {filename:"var/sqlite3.db"});
 //sqlite in file with a write interval of a half second
-//var db = new ueberDB.database("sqlite", {filename:"var/sqlite3.db"}, {writeInterval: 500});
+//var db = new EtherDB.database("sqlite", {filename:"var/sqlite3.db"}, {writeInterval: 500});
 
 //initialize the database
 db.init(async function (err)
@@ -91,6 +99,8 @@ Look at sqlite_db.js and mysql_db.js, your module have to provide the same funct
 * SQLite
 
 # Limitations
+
+## findKeys database support
 Only mysql, dirty, mongodb, couch, rethink and crate currently support findKeys feature. The following do not yet support the function:
 
 * leveldb
@@ -98,13 +108,16 @@ Only mysql, dirty, mongodb, couch, rethink and crate currently support findKeys 
 * cassandra (Only keys of the format \*:\*:\*)
 * elasticsearch (Only keys of the format \*:\*:\*)
 
-For details on how it works please refer to the wiki: https://github.com/ether/ueberDB/wiki/findKeys-functionality
+For details on how it works please refer to the wiki: https://github.com/ether/EtherDB/wiki/findKeys-functionality
 
-Key length restriction ***TODO***
+## Scaling, High availability and disaster recovery.
+To scale EtherDB you should use sharding especially for real time applications.  An example of this is sharding given Pads within Etherpad based on their initial pad authors geographical location.  High availability and disaster recovery can be provided through replication of your database however YMMV on passing Settings to your database library.  Do not be under the illusion that EtherDB provides any Stateless capabilities, it does not.
+
+## Key Length Restrictions
+Your Key Length will be limited by the database you chose to use but keep into account portability within your application.
 
 # MySQL /MariaDB Advice
-You should create your database as utf8mb4_bin.
-Also, please ensure `settings.json` (`dbSettings.charset`) is configured to use the same charset that your database uses, otherwise ueberDB will complain at startup.
+You should create your database as utf8mb4_bin,
 
 # License
 [Apache License v2](http://www.apache.org/licenses/LICENSE-2.0.html)
