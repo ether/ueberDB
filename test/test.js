@@ -24,7 +24,7 @@ keys.forEach(async function(database) {
 })
 
 async function etherdbAPITests(database, dbSettings, done) {
-  describe('etherdb api and performance for ' +database, function() {
+  describe('etherdb:' +database, function() {
 
     function init(done) {
       if(dbSettings.filename){
@@ -51,7 +51,7 @@ async function etherdbAPITests(database, dbSettings, done) {
       done;
     });
 
-    describe(database + "white space", function(){
+    describe("white space", function(){
 
       var input = {a:1,b: new Randexp(/.+/).gen()};
       var key = new Randexp(/.+/).gen();
