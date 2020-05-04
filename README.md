@@ -31,43 +31,38 @@ npm install EtherDB
 # Example
 
 ```javascript
-var EtherDB = require("etherdb");
+var etherDB = require("etherdb");
 
 //mysql
-var db = new EtherDB.database("mysql", {"user":"root", host: "localhost", "password":"", database: "store", charset: "utf8mb4"});
-
-//dirty in file
-//var db = new EtherDB.database("dirty", {filename:"var/sqlite3.db"});
+var db = new etherDB.database("mysql", {"user":"root", host: "localhost", "password":"", database: "store"});
+// dirty to file system
+//var db = new etherDB.database("dirty", {filename:"var/sqlite3.db"});
 //sqlite in-memory
-//var db = new EtherDB.database("sqlite");
+//var db = new etherDB.database("sqlite");
 //sqlite in file
-//var db = new EtherDB.database("sqlite", {filename:"var/sqlite3.db"});
+//var db = new etherDB.database("sqlite", {filename:"var/sqlite3.db"});
 //sqlite in file with a write interval of a half second
-//var db = new EtherDB.database("sqlite", {filename:"var/sqlite3.db"}, {writeInterval: 500});
+//var db = new etherDB.database("sqlite", {filename:"var/sqlite3.db"}, {writeInterval: 500});
 
-//initialize the database
-db.init(async function (err)
-{
-  if(err)
-  {
-    console.error(err);
-    process.exit(1);
-  }
+// execute the database function.
+example(db);
 
-  //set a object as a value
-  //can be done without a callback, cause the value is immediately in the buffer
-  await db.set("valueA", {a:1,b:2});
+// using async
+async function example(db){
+  await db.init();
 
-  //get the object
+  // no need for await because it's already in cache..
+  db.set("valueA", {a:1,b:2});
+
+  // using callback
   db.get("valueA", function(err, value){
-    console.log(value);
-
     db.close(function(){
       process.exit(0);
     });
   });
-});
+}
 ```
+
 # Disabling Cache for real time read/write
 Set ``db.cache = 0;`` to disable Caching of Read / Writes.
 
