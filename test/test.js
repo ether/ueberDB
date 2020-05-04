@@ -47,6 +47,17 @@ async function etherdbAPITests(database, dbSettings, done) {
           }
         });
       }
+      try{
+        setTimeout(function(){
+          db.close(function(){
+            process.exit(0);
+          });
+        }, 500)
+
+      }catch(e){
+        console.error("Closing error", e)
+      }
+
       done;
     });
 
@@ -232,7 +243,7 @@ async function etherdbAPITests(database, dbSettings, done) {
       var findKeys = (((dbSettings.speeds && dbSettings.speeds.acceptableFindKeysPerSecond) || acceptableFindKeysPerSecond) >= timeToFindKeyPerRecord);
       assert.equal((reads === writes === findKeys), true);
     });
-    // done
+
   });
   //  done
 }
