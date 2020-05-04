@@ -26,7 +26,7 @@ Abstract your databases, make datababies.  ueberDB turns every database into a s
 var ueberDB = require("ueberdb2");
 
 //mysql
-var db = new ueberDB.database("mysql", {"user":"root", host: "localhost", "password":"", database: "store"});
+let db = new ueberDB.database("mysql", {"user":"root", host: "localhost", "password":"", database: "store"});
 //sqlite in-memory
 //var db = new ueberDB.database("sqlite");
 //sqlite in file
@@ -34,28 +34,22 @@ var db = new ueberDB.database("mysql", {"user":"root", host: "localhost", "passw
 //sqlite in file with a write interval of a half second
 //var db = new ueberDB.database("sqlite", {filename:"var/sqlite3.db"}, {writeInterval: 500});
 
-//initialize the database
-db.init(async function (err)
-{
-  if(err)
-  {
-    console.error(err);
-    process.exit(1);
-  }
+example(db);
 
-  //set a object as a value
-  //can be done without a callback, cause the value is immediately in the buffer
-  await db.set("valueA", {a:1,b:2});
+// using async
+async function example(db){
+  await db.init();
 
-  //get the object
+  // no need for await because it's already in cache..
+  db.set("valueA", {a:1,b:2});
+
+  // using callback
   db.get("valueA", function(err, value){
-    console.log(value);
-
     db.close(function(){
       process.exit(0);
     });
   });
-});
+}
 ```
 
 # How to add support for another database
