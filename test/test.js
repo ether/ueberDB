@@ -189,7 +189,7 @@ async function etherdbAPITests(database, dbSettings, done) {
       var key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
       var timers = {};
       timers.start = Date.now();
-      numberOfWrites = dbSettings.speeds.numberOfWrites || numberOfWrites;
+      numberOfWrites = (dbSettings.speeds && dbSettings.speeds.numberOfWrites) || numberOfWrites;
       for (i = 0; i < numberOfWrites; i++){
         db.set( key+i , input );
       }
