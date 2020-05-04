@@ -18,7 +18,6 @@
 * Mongo
 * MySQL (<= 5.7)
 * Postgres (single connection and with connection pool)
-* CockroachDB (use the postgres_db module)
 * Redis
 * RethinkDB
 * SQLite
@@ -78,32 +77,23 @@ Look at sqlite_db.js and mysql_db.js, your module have to provide the same funct
 |--------|-----|-----|----------|--------|--------|--------|--------|
 |  mysql |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
 |  couchdb |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
-|  cassandra |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
+|  cassandra |  ✓  |  ✓  |          |   ✓    |   ✓    |   ✓    |   ✓    |
 |  maria |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
-|  couch |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
 |  crate |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
 |  dirty |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |        |
 |  elasticsearch |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
-|  level |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
+|  level |  ✓  |  ✓  |          |   ✓    |   ✓    |   ✓    |   ✓    |
 |  mongo |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
-|  cockroach |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
 |  redis |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
 |  rethinkdb |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
 |  sqlite |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
 |  dirty_git |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |        |
 
-* Postgres (single connection and with connection pool)
-* CockroachDB (use the postgres_db module)
-* Redis
-* RethinkDB
-* SQLite
-
 # Limitations
 
 ## findKeys database support
-Only mysql, dirty, mongodb, couch, rethink and crate currently support findKeys feature. The following do not yet support the function:
+The following have limitations on findKeys
 
-* leveldb
 * redis (Only keys of the format \*:\*:\*)
 * cassandra (Only keys of the format \*:\*:\*)
 * elasticsearch (Only keys of the format \*:\*:\*)
@@ -111,7 +101,7 @@ Only mysql, dirty, mongodb, couch, rethink and crate currently support findKeys 
 For details on how it works please refer to the wiki: https://github.com/ether/EtherDB/wiki/findKeys-functionality
 
 ## Scaling, High availability and disaster recovery.
-To scale EtherDB you should use sharding especially for real time applications.  An example of this is sharding given Pads within Etherpad based on their initial pad authors geographical location.  High availability and disaster recovery can be provided through replication of your database however YMMV on passing Settings to your database library.  Do not be under the illusion that EtherDB provides any Stateless capabilities, it does not.
+To scale EtherDB you should use sharding especially for real time applications.  An example of this is sharding given Pads within Etherpad based on their initial pad authors geographical location.  High availability and disaster recovery can be provided through replication of your database however YMMV on passing Settings to your database library.  Do not be under the illusion that EtherDB provides any Stateless capabilities, it does not.  An option is to use something like rethinkdb and set cache to 0 but YMMV.
 
 ## Key Length Restrictions
 Your Key Length will be limited by the database you chose to use but keep into account portability within your application.
