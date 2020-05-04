@@ -1,6 +1,6 @@
 exports.databases = {
   dirty:{
-    "filename": "var/test.db",
+    "filename": "/tmp/test.db",
     "speeds":{
       numberOfWrites: 1000,
       acceptableWritesPerSecond: 1,
