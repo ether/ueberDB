@@ -1,19 +1,39 @@
 var ueberDB = require("ueberdb2");
+var Randexp = require("randexp");
 
-let db = new ueberDB.database("dirty", {filename:"./dirty.db"});
-example(db);
+let db = new ueberDB.database("mysql", {
+  "user" : "ueberdb",
+  "host" : "localhost",
+  "password": "ueberdb", // using async async function example(db){
+  "database": "ueberdb",
+  "charset" : "utf8mb4"
+});
+db.init(function(){
 
-// using async
-async function example(db){
-  await db.init();
+  console.log(typeof db.set)
 
-  // no need for await because it's already in cache..
-  db.set("valueA", {a:1,b:2});
+  console.log(typeof db.get)
 
-  // using callback
-  db.get("valueA", function(err, value){
-    db.close(function(){
-      process.exit(0);
+  console.log(typeof db.doBulk)
+  var input = {a:1,b: new Randexp(/.+/).gen()};
+  var key = new Randexp(/.+/).gen();
+  var action = [];
+  action.type = "set"
+  for (i = 0; i < 10; i++){
+    action.push = {
+      key: key[i],
+      value: input
+    }
+  }
+  //  db.doBulk(action);
+  for (i = 0; i < 10; i++){
+
+    db.setKeys()
+    db.get( key[i], function(e, output){
+      let matches = JSON.stringify(input) === JSON.stringify(output);
+      console.log(input, output);
+
     });
-  });
-}
+  };
+
+});
