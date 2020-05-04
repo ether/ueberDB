@@ -1,11 +1,10 @@
-const config = require('./config');
 path = require('path'),
 fs = require('fs'),
-etherdb = require(config.LIB_ETHERDB),
+etherdb = require('../index'),
 events = require('events'),
-assert = require('assert');
-Randexp = require("randexp");
-
+assert = require('assert'),
+Randexp = require("randexp"),
+databases = require("./lib/databases").databases;
 
 var exists = fs.exists;
 var db;
@@ -16,27 +15,45 @@ const acceptableWritesPerSecond = 0.5;
 const acceptableReadsPerSecond = 0.1;
 const acceptableFindKeysPerSecond = 1;
 
-function etherdbAPITests(file) {
-  describe('etherdb api', function() {
-    function cleanup(done) {
-      exists(file, function(doesExist) {
-        if (doesExist) {
-          fs.unlinkSync(file);
-        }
+var keys = Object.keys(databases);
 
-        done();
-      });
-    }
+keys.forEach(async function(database) {
+  var dbSettings = databases[database];
+  console.log("Testing", database, dbSettings);
+  await etherdbAPITests(database, dbSettings)
+})
+
+async function etherdbAPITests(database, dbSettings, done) {
+  describe('etherdb api and performance for ' +database, function() {
 
     function init(done) {
-      db = new etherdb.database("dirty", {"filename": exports.TMP_PATH });
+      if(dbSettings.filename){
+        exists(dbSettings.filename, function(doesExist) {
+          console.log("doesExist", doesExist)
+          if (doesExist) {
+            fs.unlinkSync(dbSettings.filename);
+          }
+        });
+      }
+      db = new etherdb.database(database, dbSettings);
       db.init(done)
     }
 
-    // before(cleanup);
     before(init);
+    after(function(){
+      console.log("done");
+      if(dbSettings.filename){
+        exists(dbSettings.filename, function(doesExist) {
+          console.log("doesExist", doesExist)
+          if (doesExist) {
+            fs.unlinkSync(dbSettings.filename);
+          }
+        });
+      }
+      done;
+    });
 
-    describe("white space", function(){
+    describe(database + "white space", function(){
 
       var input = {a:1,b: new Randexp(/.+/).gen()};
       var key = new Randexp(/.+/).gen();
@@ -222,22 +239,3 @@ function etherdbAPITests(file) {
   });
 
 }
-
-etherdbAPITests(config.TMP_PATH + '/apitest.etherdb');
-
-//////////////////////////////////////////////////
-// METHOD Tests
-
-
-// Basic read/write operation
-
-
-/*
-
-// remove functionality
-
-// doBulk
-
-////////// BEGIN PERFORMANCE Tests
-
-*/

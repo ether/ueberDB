@@ -1,8 +1,7 @@
 exports.databases = {
   dirty:{
-    "filename": "var/dirty.db"
-  }
-  /*
+    "filename": "var/test.db"
+  }/*
   ,
   mysql:{
     "user"    : "ueberdb",
@@ -12,7 +11,7 @@ exports.databases = {
     "charset" : "utf8mb4"
   }
 
-  /*,
+  ,
   postgres:{
     "user"    : "postgres",
     "host"    : "localhost",
@@ -23,6 +22,5 @@ exports.databases = {
   ,
   mongo:{
 
-  }
-  */
+  }*/
 }
