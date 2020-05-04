@@ -162,7 +162,7 @@ async function etherdbAPITests(database, dbSettings, done) {
     });
 
     it('Makes sure a key is present prior to deleting it - SHOULD FAIL IN DIRTY', () => {
-      //// TODO:       if(test.indexOf("dirty") !== -1) return; // dirty doesn't support doBulk
+      if(database.indexOf("dirty") !== -1) return; // dirty doesn't support doBulk
       var input = {a:1,b: new Randexp(/.+/).gen()};
       var key =  new Randexp(/.+/).gen();
       var action = [];
