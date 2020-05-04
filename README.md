@@ -25,13 +25,13 @@
 # Install
 
 ```
-npm install EtherDB
+npm install etherDB
 ```
 
 # Example
 
 ```javascript
-var etherDB = require("etherdb");
+const etherDB = require("etherdb");
 
 //mysql
 var db = new etherDB.database("mysql", {"user":"root", host: "localhost", "password":"", database: "store"});
@@ -44,11 +44,11 @@ var db = new etherDB.database("mysql", {"user":"root", host: "localhost", "passw
 //sqlite in file with a write interval of a half second
 //var db = new etherDB.database("sqlite", {filename:"var/sqlite3.db"}, {writeInterval: 500});
 
-// execute the database function.
 example(db);
 
 // using async
 async function example(db){
+  // initialize the database connection.
   await db.init();
 
   // no need for await because it's already in cache..
@@ -56,6 +56,7 @@ async function example(db){
 
   // using callback
   db.get("valueA", function(err, value){
+    // close the database connection.
     db.close(function(){
       process.exit(0);
     });
@@ -65,6 +66,34 @@ async function example(db){
 
 # Disabling Cache for real time read/write
 Set ``db.cache = 0;`` to disable Caching of Read / Writes.
+
+```
+const etherDB = require("etherdb");
+var db = new etherDB.database("dirty", {filename:"var/sqlite3.db"});
+
+example(db);
+
+// going cacheless
+async function example(db){
+  // initialize the database connection.
+  await db.init();
+
+  db.cache = 0; // kills the cache
+
+  // no need for await because it's already in cache..
+  db.set("valueA", {a:1,b:2});
+
+  // using callback
+  db.get("valueA", function(err, value){
+    // close the database connection.
+    db.close(function(){
+      process.exit(0);
+    });
+  });
+}
+
+```
+
 
 # Feature support (TODO CI coverage)
 |        | Get | Set | findKeys | Remove | getSub | setSub | doBulk |CI Coverage|

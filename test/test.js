@@ -4,7 +4,8 @@ etherdb = require('../index'),
 events = require('events'),
 assert = require('assert'),
 Randexp = require("randexp"),
-databases = require("./lib/databases").databases;
+databases = require("./lib/databases").databases,
+clitable = require("cli-table");
 
 var exists = fs.exists;
 var db;
@@ -14,13 +15,19 @@ var defaultNumberOfWrites = 100000;
 const acceptableWritesPerSecond = 0.5;
 const acceptableReadsPerSecond = 0.1;
 const acceptableFindKeysPerSecond = 1;
-
+const CACHE_ON = true;
+const CACHE_OFF = false;
 var keys = Object.keys(databases);
+
+const table = new clitable({
+    head: ['Database', 'Write', 'Read', 'findKey']
+  , colWidths: [20, 10, 10, 10]
+});
 
 keys.forEach(async function(database) {
   var dbSettings = databases[database];
-  console.log("Testing", database);
-  await etherdbAPITests(database, dbSettings)
+  await etherdbAPITests(database, dbSettings, CACHE_ON)
+  await etherdbAPITests(database, dbSettings, CACHE_OFF)
 })
 
 after(function(){
@@ -32,13 +39,19 @@ after(function(){
     });
   }
   db.close(function(){
+    console.log(table.toString())
     process.exit(0)
   })
 });
 
 
-async function etherdbAPITests(database, dbSettings, done) {
-  describe('etherdb:' +database, function() {
+async function etherdbAPITests(database, dbSettings, cacheEnabled, done) {
+  if(cacheEnabled){
+    var cacheStatus = "cache-on";
+  }else{
+    var cacheStatus = "cache-off"
+  }
+  describe('etherdb:' +database + ":"+cacheStatus, function() {
 
     function init(done) {
       if(dbSettings.filename){
@@ -49,7 +62,10 @@ async function etherdbAPITests(database, dbSettings, done) {
         });
       }
       db = new etherdb.database(database, dbSettings);
-      db.init(done)
+      db.init(function(){
+        if(!cacheEnabled) db.cache = 0;
+        done();
+      })
     }
 
     before(init);
@@ -198,13 +214,7 @@ async function etherdbAPITests(database, dbSettings, done) {
       var timeToWritePerRecord = timeToWrite/numberOfWrites;
       var timeToReadPerRecord = timeToRead/numberOfWrites;
       var timeToFindKeyPerRecord = timeToFindKey / numberOfWrites;
-/*
-      console.warn("\nTime to Write", timeToWrite +"ms");
-      console.warn("\nTime to Read", timeToRead +"ms")
-      console.warn("\nTime to Write Per record", timeToWritePerRecord +"ms");
-      console.warn("\nTime to Read Per record", timeToReadPerRecord +"ms")
-      console.warn("\nTime to FindKey Per record", timeToFindKeyPerRecord +"ms");
-*/
+      table.push([database +":"+cacheStatus, timeToWritePerRecord, timeToReadPerRecord, timeToFindKeyPerRecord])
       var reads = (((dbSettings.speeds && dbSettings.speeds.acceptableReadsPerSecond) || acceptableReadsPerSecond) >= timeToReadPerRecord);
       var writes = (((dbSettings.speeds && dbSettings.speeds.acceptableWritesPerSecond) || acceptableWritesPerSecond) >= timeToWritePerRecord);
       var findKeys = (((dbSettings.speeds && dbSettings.speeds.acceptableFindKeysPerSecond) || acceptableFindKeysPerSecond) >= timeToFindKeyPerRecord);

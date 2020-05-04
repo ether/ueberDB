@@ -25,6 +25,7 @@
     "cassandra-driver": "^4.5.0",
     "chai": "^4.2.0",
     "channels": "0.0.4",
+    "cli-table": "^0.3.1",
     "dirty": "^1.1.0",
     "elasticsearch": "^16.7.1",
     "mocha": "^7.1.2",
