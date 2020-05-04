@@ -9,8 +9,8 @@ databases = require("./lib/databases").databases;
 var exists = fs.exists;
 var db;
 
-// Settings.
-const numberOfWrites = 100;
+// Basic speed settings, can be overriden on a per database setting
+var numberOfWrites = 10000;
 const acceptableWritesPerSecond = 0.5;
 const acceptableReadsPerSecond = 0.1;
 const acceptableFindKeysPerSecond = 1;
@@ -19,7 +19,7 @@ var keys = Object.keys(databases);
 
 keys.forEach(async function(database) {
   var dbSettings = databases[database];
-  console.log("Testing", database, dbSettings);
+  console.log("Testing", database);
   await etherdbAPITests(database, dbSettings)
 })
 
@@ -29,7 +29,6 @@ async function etherdbAPITests(database, dbSettings, done) {
     function init(done) {
       if(dbSettings.filename){
         exists(dbSettings.filename, function(doesExist) {
-          console.log("doesExist", doesExist)
           if (doesExist) {
             fs.unlinkSync(dbSettings.filename);
           }
@@ -44,7 +43,6 @@ async function etherdbAPITests(database, dbSettings, done) {
       console.log("done");
       if(dbSettings.filename){
         exists(dbSettings.filename, function(doesExist) {
-          console.log("doesExist", doesExist)
           if (doesExist) {
             fs.unlinkSync(dbSettings.filename);
           }
@@ -161,7 +159,7 @@ async function etherdbAPITests(database, dbSettings, done) {
       });
     });
 
-    it('Makes sure a key is present prior to deleting it - SHOULD FAIL IN DIRTY', () => {
+    it('Makes sure a key is present prior to deleting it', () => {
       if(database.indexOf("dirty") !== -1) return; // dirty doesn't support doBulk
       var input = {a:1,b: new Randexp(/.+/).gen()};
       var key =  new Randexp(/.+/).gen();
@@ -191,7 +189,7 @@ async function etherdbAPITests(database, dbSettings, done) {
       var key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
       var timers = {};
       timers.start = Date.now();
-
+      numberOfWrites = dbSettings.speeds.numberOfWrites || numberOfWrites;
       for (i = 0; i < numberOfWrites; i++){
         db.set( key+i , input );
       }
@@ -221,21 +219,21 @@ async function etherdbAPITests(database, dbSettings, done) {
       var timeToReadPerRecord = timeToRead/numberOfWrites;
       var timeToFindKeyPerRecord = timeToFindKey / numberOfWrites;
 
-      console.warn("Time to Write", timeToWrite +"ms");
-      console.warn("Time to Read", timeToRead +"ms")
-      console.warn("Time to Write Per record", timeToWritePerRecord +"ms");
-      console.warn("Time to Read Per record", timeToReadPerRecord +"ms")
-      console.warn("Time to FindKey Per record", timeToFindKeyPerRecord +"ms");
+      console.warn("\nTime to Write", timeToWrite +"ms");
+      console.warn("\nTime to Read", timeToRead +"ms")
+      console.warn("\nTime to Write Per record", timeToWritePerRecord +"ms");
+      console.warn("\nTime to Read Per record", timeToReadPerRecord +"ms")
+      console.warn("\nTime to FindKey Per record", timeToFindKeyPerRecord +"ms");
 
-      var isAcceptable = (acceptableReadsPerSecond >= timeToReadPerRecord);
-      assert.equal(isAcceptable, true);
-
-      var isAcceptable = (acceptableWritesPerSecond >= timeToWritePerRecord);
-      assert.equal(isAcceptable, true);
-
-      var isAcceptable = (acceptableFindKeysPerSecond >= timeToFindKeyPerRecord);
-      assert.equal(isAcceptable, true);
+      var reads = ((dbSettings.speeds.acceptableReadsPerSecond || acceptableReadsPerSecond) >= timeToReadPerRecord);
+      var writes = ((dbSettings.speeds.acceptableWritesPerSecond || acceptableWritesPerSecond) >= timeToWritePerRecord);
+      var findKeys = ((dbSettings.speeds.acceptableFindKeysPerSecond || acceptableFindKeysPerSecond) >= timeToFindKeyPerRecord);
+      assert.equal((reads === writes === findKeys), true);
     });
+    done
   });
-
+  done
 }
+
+
+// TODO: Need test which prefills with 1e7 of data then does a get.
