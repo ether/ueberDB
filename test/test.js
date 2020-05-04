@@ -164,7 +164,6 @@ async function etherdbAPITests(database, dbSettings, done) {
       db.remove(key);
 
       db.get(key, function(e,output){
-        console.warn("output", output)
         let matches = (typeof output === "undefined" || output == null);
         assert.equal(matches, true);
       });

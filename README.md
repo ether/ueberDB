@@ -66,15 +66,15 @@ async function example(db){
 # Disabling Cache for real time read/write
 Set ``db.cache = 0;`` to disable Caching of Read / Writes.
 
-# Feature support (TODO)
-|        | Get | Set | findKeys | Remove | getSub | setSub | doBulk |
-|--------|-----|-----|----------|--------|--------|--------|--------|
-|  mysql |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
+# Feature support (TODO CI coverage)
+|        | Get | Set | findKeys | Remove | getSub | setSub | doBulk |CI Coverage|
+|--------|-----|-----|----------|--------|--------|--------|--------|--------|
+|  mysql |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |   ✓   |
 |  couchdb |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
 |  cassandra |  ✓  |  ✓  |          |   ✓    |   ✓    |   ✓    |   ✓    |
 |  maria |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
 |  crate |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
-|  dirty |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |        |
+|  dirty |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |        |   ✓   |
 |  elasticsearch |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
 |  level |  ✓  |  ✓  |          |   ✓    |   ✓    |   ✓    |   ✓    |
 |  mongo |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
