@@ -225,9 +225,9 @@ async function etherdbAPITests(database, dbSettings, done) {
       console.warn("\nTime to Read Per record", timeToReadPerRecord +"ms")
       console.warn("\nTime to FindKey Per record", timeToFindKeyPerRecord +"ms");
 
-      var reads = ((dbSettings.speeds.acceptableReadsPerSecond || acceptableReadsPerSecond) >= timeToReadPerRecord);
-      var writes = ((dbSettings.speeds.acceptableWritesPerSecond || acceptableWritesPerSecond) >= timeToWritePerRecord);
-      var findKeys = ((dbSettings.speeds.acceptableFindKeysPerSecond || acceptableFindKeysPerSecond) >= timeToFindKeyPerRecord);
+      var reads = (((dbSettings.speeds && dbSettings.speeds.acceptableReadsPerSecond) || acceptableReadsPerSecond) >= timeToReadPerRecord);
+      var writes = (((dbSettings.speeds && dbSettings.speeds.acceptableWritesPerSecond) || acceptableWritesPerSecond) >= timeToWritePerRecord);
+      var findKeys = (((dbSettings.speeds && dbSettings.speeds.acceptableFindKeysPerSecond) || acceptableFindKeysPerSecond) >= timeToFindKeyPerRecord);
       assert.equal((reads === writes === findKeys), true);
     });
     done
