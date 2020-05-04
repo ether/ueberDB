@@ -1,5 +1,6 @@
 /**
  * 2011 Peter 'Pita' Martischka
+ * 2020 John McLear
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +15,7 @@
  * limitations under the License.
  */
 
-var cacheAndBufferLayer = require("./CacheAndBufferLayer");
+var cacheAndBufferLayer = require("./lib/CacheAndBufferLayer");
 var channels = require("channels");
 
 var defaultLogger = {debug: function(){}, info: function(){}, error: function(){}, warn: function(){}};
