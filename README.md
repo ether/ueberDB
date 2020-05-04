@@ -105,13 +105,19 @@ You should create your database as utf8mb4_bin,
 
 
 # How to add support for another database
-1. Look at ``databases/sqlite_db.js`` and ``databases/mysql_db.js``, your module have to provide the same functions. Call it DATABASENAME_db.js and reimplement the functions for your database.
+1. Add your database to ``packages.json``, this will happen automatically if you run ``npm install %yourdatabase%``
 
-2. Add some example settings to ``test/lib/databases.js`` for your database.
+1. Add some example settings to ``test/lib/databases.js`` for your database.
 
-3. Add your database Travis setup steps to ``.travis.yml``, see the ``before_install`` section and MySQL example
+1. Look at ``databases/sqlite_db.js`` and ``databases/mysql_db.js``, your module have to provide the same functions. Call it DATABASENAME_db.js and reimplement the functions for your database.  Most of your work here will be copy/paste from other databases so don't be scared.
 
-4. Run ``npm test`` and ensure it's working.
+1. Add your database Travis setup steps to ``.travis.yml``, see the ``before_install`` section and MySQL example.
+
+1. Run ``npm test`` and ensure it's working.
+
+1. Branch from master ``git checkout -b my-awesome-database`` and submit a pull request including the changes which should include **1 new and 3 modified files**.
+
+Simples!  <3
 
 # License
 [Apache License v2](http://www.apache.org/licenses/LICENSE-2.0.html)
