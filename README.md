@@ -159,8 +159,7 @@ Your Key Length will be limited by the database you chose to use but keep into a
 doBulk operations that chain IE a large number of .set without a pause to handle the channel clearance can cause a ``Javascript out of heap memory``.
 
 # MySQL /MariaDB Advice
-You should create your database as utf8mb4_bin,
-
+You should create your database as utf8mb4_bin.
 
 # How to add support for another database
 1. Add your database to ``packages.json``, this will happen automatically if you run ``npm install %yourdatabase%``
@@ -175,7 +174,7 @@ You should create your database as utf8mb4_bin,
 
 1. Branch from master ``git checkout -b my-awesome-database`` and submit a pull request including the changes which should include **1 new and 3 modified files**.
 
-Simples!  <3
+1. Once merged we really need you to be on top of maintaining your code.
 
 # Dropped Databases and Why.
 * Mongo was dropped due to an API break in the client, the old client is still in the database folder.
