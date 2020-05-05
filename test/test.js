@@ -225,15 +225,15 @@ async function etherdbAPITests(database, dbSettings, cacheEnabled, done) {
       table.push([database +":"+cacheStatus, numberOfWrites, timeToWritePerRecord, timeToReadPerRecord, timeToFindKeyPerRecord]);
 
       var acceptableReadTime = (((dbSettings.speeds && dbSettings.speeds.read) || acceptableReads));
-//      console.log("ART", acceptableReadTime, timeToReadPerRecord)
+      console.log("ART", acceptableReadTime, timeToReadPerRecord)
       var reads = acceptableReadTime >= timeToReadPerRecord;
 
       var acceptableWriteTime = (((dbSettings.speeds && dbSettings.speeds.write) || acceptableWrites));
-//      console.log("AWT", acceptableWriteTime, timeToWritePerRecord)
+      console.log("AWT", acceptableWriteTime, timeToWritePerRecord)
       var writes = acceptableWriteTime >= timeToWritePerRecord;
 
       var acceptableFindKeysTime = (((dbSettings.speeds && dbSettings.speeds.findKey) || acceptableFindKeys));
-//      console.log("AFKT", acceptableFindKeysTime, timeToFindKeyPerRecord)
+      console.log("AFKT", acceptableFindKeysTime, timeToFindKeyPerRecord)
       var findKeys = acceptableFindKeysTime >= timeToFindKeyPerRecord;
 //      console.log(reads, writes, findKeys)
       assert.equal((reads === writes === findKeys), true);
