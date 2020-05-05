@@ -53,7 +53,7 @@
   },
   "homepage": "https://github.com/ether/db",
   "scripts": {
-    "test": "mocha test/test*.js --timeout 100000"
+    "test": "mocha test/test*.js --timeout 1000000"
   },
   "_npmUser": {
     "name": "johnyma22",
