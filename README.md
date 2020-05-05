@@ -193,3 +193,4 @@ You should create your database as utf8mb4_bin.
 * Tidied file structure.
 * Improved documentation.
 * Sensible name for software makes it clear that it's maintained by The Etherpad Foundation.
+* Make db.init await / async
