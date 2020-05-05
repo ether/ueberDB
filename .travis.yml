@@ -10,17 +10,17 @@ services:
   - postgresql
 
 before_install:
-  - mysql -e 'CREATE DATABASE ueberdb;'
-  - mysql -e 'CREATE USER "ueberdb"@"localhost" identified by "ueberdb";'
-  - mysql -e "ALTER DATABASE ueberdb CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;"
-  - mysql -e "grant CREATE,ALTER,SELECT,INSERT,UPDATE,DELETE on ueberdb.* to 'ueberdb'@'localhost';"
-  - mysql -e "CREATE TABLE \`store\` (\`key\` varchar(100) COLLATE utf8mb4_bin NOT NULL DEFAULT '',\`value\` longtext COLLATE utf8mb4_bin NOT NULL,PRIMARY KEY (\`key\`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;" ueberdb
+  - mysql -e 'CREATE DATABASE etherdb;'
+  - mysql -e 'CREATE USER "etherdb"@"localhost" identified by "etherdb";'
+  - mysql -e "ALTER DATABASE etherdb CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;"
+  - mysql -e "grant CREATE,ALTER,SELECT,INSERT,UPDATE,DELETE on etherdb.* to 'etherdb'@'localhost';"
+  - mysql -e "CREATE TABLE \`store\` (\`key\` varchar(100) COLLATE utf8mb4_bin NOT NULL DEFAULT '',\`value\` longtext COLLATE utf8mb4_bin NOT NULL,PRIMARY KEY (\`key\`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;" etherdb
 # Brings in procedure required for creating large data set
-  - mysql < test/mysql.sql
+  - mysql etherdb < test/mysql.sql
   - mysql -e 'CALL generate_data();';
-  - psql -c 'create database ueberdb;' -U postgres
-#  - psql -c "grant CREATE,ALTER,SELECT,INSERT,UPDATE,DELETE on ueberdb.* to 'ueberdb'@'localhost';" -U postgres
-  - mongo ueberdb --eval 'db.createUser({user:"ueberdb",pwd:"test",roles:["readWrite"]});'
+  - psql -c 'create database etherdb;' -U postgres
+#  - psql -c "grant CREATE,ALTER,SELECT,INSERT,UPDATE,DELETE on etherdb.* to 'etherdb'@'localhost';" -U postgres
+  - mongo etherdb --eval 'db.createUser({user:"etherdb",pwd:"test",roles:["readWrite"]});'
 
 install:
   - "export GIT_HASH=$(git rev-parse --verify --short HEAD)"

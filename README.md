@@ -176,7 +176,7 @@ You should create your database as utf8mb4_bin,
 
 1. Look at ``databases/sqlite_db.js`` and ``databases/mysql_db.js``, your module have to provide the same functions. Call it DATABASENAME_db.js and reimplement the functions for your database.  Most of your work here will be copy/paste from other databases so don't be scared.
 
-1. Add your database Travis setup steps to ``.travis.yml``, see the ``before_install`` section and MySQL example.
+1. Add your database Travis setup steps to ``.travis.yml``, see the ``before_install`` section and MySQL example.  Note that MySQL has a preloaded script (comes from mysql.sql) which preloads the database with 1M records.  If you can, you should do the same.
 
 1. Run ``npm test`` and ensure it's working.
 

@@ -10,11 +10,14 @@ exports.databases = {
   }
   ,
   mysql:{
-    "user"    : "ueberdb",
+    "user"    : "etherdb",
     "host"    : "localhost",
-    "password": "ueberdb",
-    "database": "ueberdb",
-    "charset" : "utf8mb4"
+    "password": "etherdb",
+    "database": "etherdb",
+    "charset" : "utf8mb4",
+    "speeds":{
+      numberOfpreloadedEntries: 1000000
+    }
   }
 /*
   ,
@@ -22,7 +25,7 @@ exports.databases = {
     "user"    : "postgres",
     "host"    : "localhost",
     "password": "",
-    "database": "ueberdb",
+    "database": "etherdb",
     "charset" : "utf8mb4"
   }
   ,
