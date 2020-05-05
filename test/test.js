@@ -52,7 +52,7 @@ async function etherdbAPITests(database, dbSettings, cacheEnabled, done) {
   }
   describe('etherdb:' +database + ":"+cacheStatus, function() {
 
-    this.timeout(100000);
+    this.timeout(1000000);
     function init(done) {
       if(dbSettings.filename){
         exists(dbSettings.filename, function(doesExist) {
@@ -180,7 +180,7 @@ async function etherdbAPITests(database, dbSettings, cacheEnabled, done) {
 
     // Read/write operations with timers to catch events
     it('Speed is acceptable', () => {
-      this.timeout(100000);
+      this.timeout(1000000);
       var input = {a:1,b: new Randexp(/.+/).gen()};
       // var key =  new Randexp(/.+/).gen();
       // TODO setting a key with non ascii chars
