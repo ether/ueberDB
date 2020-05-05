@@ -45,7 +45,15 @@ exports.database.prototype.init = function(callback)
 {
   var db = new this.db_module.database(this.dbSettings);
   this.db = new cacheAndBufferLayer.database(db, this.wrapperSettings, this.logger);
-  this.db.init(callback);
+  if(callback){
+    this.db.init(callback)
+  }else{
+    return new Promise((resolve, reject) => {
+      this.db.init(function(){
+        resolve();
+      });
+    });
+  };
 }
 
 /**
