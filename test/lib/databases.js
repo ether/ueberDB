@@ -14,7 +14,7 @@ elasticsearch:{
 redis:{
   hostname: "127.0.0.1"
 },
-rethinkdb:{
+rethink:{
   hostname: "127.0.0.1"
 },
 sqlite:{
