@@ -17,9 +17,10 @@
 * Level
 * Mongo
 * MySQL (<= 5.7)
+* Maria
 * Postgres (single connection and with connection pool)
 * Redis
-* RethinkDB
+* Rethink
 * SQLite
 
 # Install
