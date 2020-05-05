@@ -1,8 +1,10 @@
 exports.databases = {
+/*
 couch:{
   hostname: "127.0.0.1",
   port: 5984
 },
+*/
 cassandra:{
   hostname: "127.0.0.1"
 }
