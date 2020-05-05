@@ -77,7 +77,7 @@ async function exampleFK(db){
   db.set("valueA:h2", {a:3,b:4});
 
   // using callback
-  db.findKeys("valueA:", null, function(err, value){ // TODO: Check this
+  db.findKeys("valueA:*", null, function(err, value){ // TODO: Check this
     // value will be ["valueA:h1", "valueA:h2"]
     // close the database connection.
     db.close(function(){
