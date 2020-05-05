@@ -62,7 +62,8 @@ async function etherdbAPITests(database, dbSettings, cacheEnabled, done) {
         });
       }
       db = new etherdb.database(database, dbSettings);
-      db.init(function(){
+      db.init(function(e){
+        if(e) throw new Error(e);
         if(!cacheEnabled) db.cache = 0;
         done();
       })
