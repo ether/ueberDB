@@ -6,10 +6,12 @@ couch:{
 },
 */
 cassandra:{
-  hostname: "127.0.0.1"
+  contactPoints: ['h1'],
+  localDataCenter: 'localhost',
+  keyspace: 'etherdb'
 },
 rethink:{
-  hostname: "127.0.0.1"
+  hostname: "localhost"
 }
 /*
   elasticsearch:{
