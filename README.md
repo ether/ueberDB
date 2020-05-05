@@ -182,3 +182,14 @@ You should create your database as utf8mb4_bin.
 
 # License
 [Apache License v2](http://www.apache.org/licenses/LICENSE-2.0.html)
+
+# What's changed from UeberDB?
+
+* Dropped broken Databases[Mongo/SQLite] (probably a breaking change for some people)
+* Introduced CI.
+* Introduced better testing.
+* Fixed broken database clients IE Redis.
+* Updated Depdendencies where possible.
+* Tidied file structure.
+* Improved documentation.
+* Sensible name for software makes it clear that it's maintained by The Etherpad Foundation.
