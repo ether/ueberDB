@@ -1,8 +1,4 @@
 exports.databases = {
-  couch:{
-    hostname: "127.0.0.1",
-    port: 5984
-  },
   dirty:{
     "filename": "/tmp/test.db",
     "speeds":{
@@ -33,7 +29,6 @@ exports.databases = {
   }
   ,
   redis:{
-    test: true,
     hostname: "127.0.0.1"
   }
 }
