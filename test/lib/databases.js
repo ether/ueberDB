@@ -3,9 +3,6 @@ exports.databases = {
     hostname: "127.0.0.1",
     port: 5984
   },
-  elasticsearch:{
-    hostname: "127.0.0.1"
-  },
   dirty:{
     "filename": "/tmp/test.db",
     "speeds":{
