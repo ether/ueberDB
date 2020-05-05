@@ -8,14 +8,13 @@ couch:{
 cassandra:{
   hostname: "127.0.0.1"
 },
-elasticsearch:{
-  hostname: "127.0.0.1"
-},
 rethink:{
   hostname: "127.0.0.1"
 }
-
 /*
+  elasticsearch:{
+    hostname: "127.0.0.1"
+  },
   dirty:{
     "filename": "/tmp/test.db",
     "speeds":{

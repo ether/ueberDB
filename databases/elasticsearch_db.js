@@ -51,7 +51,7 @@ exports.database = function(settings) {
     elasticsearchSettings.api = this.settings.api;
   }
 
-  console.info("ElasticSearch DB will be used with these settings: " + JSON.stringify(elasticsearchSettings));
+  // console.info("ElasticSearch DB will be used with these settings: " + JSON.stringify(elasticsearchSettings));
 };
 
 /**
