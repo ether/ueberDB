@@ -7,7 +7,20 @@ couch:{
 */
 cassandra:{
   hostname: "127.0.0.1"
+},
+elasticsearch:{
+  hostname: "127.0.0.1"
+},
+redis:{
+  hostname: "127.0.0.1"
+},
+rethinkdb:{
+  hostname: "127.0.0.1"
+},
+sqlite:{
+  filename: "/tmp/sqlite.db"
 }
+
 /*
   dirty:{
     "filename": "/tmp/test.db",
