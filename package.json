@@ -31,12 +31,12 @@
     "mocha": "^7.1.2",
     "mysql": "2.18.1",
     "nano": "^8.2.2",
-    "pg": "^7.18.2",
+    "pg": "^8.0.3",
     "randexp": "^0.5.3",
     "redis": "^3.0.2",
     "rethinkdb": "^2.4.2",
     "rimraf": "^3.0.2",
-    "simple-git": "*"
+    "simple-git": "^2.4.0"
   },
   "devDependencies": {
     "expect.js": "0.3.1",
