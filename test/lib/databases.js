@@ -1,4 +1,5 @@
 exports.databases = {
+/*
   dirty:{
     "filename": "/tmp/test.db",
     "speeds":{
@@ -20,6 +21,7 @@ exports.databases = {
     }
   }
   ,
+*/
   postgres:{
     "user"    : "postgres",
     "host"    : "localhost",
