@@ -19,7 +19,6 @@ exports.databases = {
       numberOfpreloadedEntries: 1000000
     }
   }
-/*
   ,
   postgres:{
     "user"    : "postgres",
@@ -31,5 +30,5 @@ exports.databases = {
   ,
   mongo:{
 
-  }*/
+  }
 }
