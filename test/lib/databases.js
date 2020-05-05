@@ -31,6 +31,6 @@ exports.databases = {
   }
   ,
   mongo:{
-
+    "user"    : "admin"
   }
 }
