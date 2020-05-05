@@ -6,9 +6,11 @@ couch:{
 },
 */
 cassandra:{
-  contactPoints: ['h1'],
-  localDataCenter: 'localhost',
-  keyspace: 'etherdb'
+  clientOptions: {
+    contactPoints: ['h1'],
+    localDataCenter: 'localhost',
+    keyspace: 'etherdb'
+  }
 },
 rethink:{
   hostname: "localhost"
