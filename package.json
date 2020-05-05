@@ -36,7 +36,8 @@
     "redis": ">=0.12.1",
     "rethinkdb": "^2.3.1",
     "rimraf": "^3.0.2",
-    "simple-git": "*"
+    "simple-git": "*",
+    "sqlite3": "*"
   },
   "devDependencies": {
     "expect.js": "0.3.1",
