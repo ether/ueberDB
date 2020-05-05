@@ -11,9 +11,6 @@ cassandra:{
 elasticsearch:{
   hostname: "127.0.0.1"
 },
-redis:{
-  hostname: "127.0.0.1"
-},
 rethink:{
   hostname: "127.0.0.1"
 }
@@ -48,5 +45,11 @@ rethink:{
     "charset" : "utf8mb4"
   }
   ,
+*/
+
+/*
+redis:{
+  hostname: "127.0.0.1"
+},
 */
 }
