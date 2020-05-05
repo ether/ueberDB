@@ -31,7 +31,7 @@ keys.forEach(async function(database) {
 })
 
 after(function(){
-  if(databases.dirty.filename){
+  if(databases.dirty && databases.dirty.filename){
     exists(databases.dirty.filename, function(doesExist) {
       if (doesExist) {
         fs.unlinkSync(databases.dirty.filename);
