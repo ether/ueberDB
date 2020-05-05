@@ -5,7 +5,6 @@ node_js:
 
 services:
   - docker
-  - mongodb
   - mysql
   - postgresql
   - couchdb
@@ -26,7 +25,6 @@ before_install:
   - mysql etherdb -e 'CALL generate_data();';
   - psql -c 'create database etherdb;' -U postgres
 #  - psql -c "grant CREATE,ALTER,SELECT,INSERT,UPDATE,DELETE on etherdb.* to 'etherdb'@'localhost';" -U postgres
-  - mongo etherdb --eval 'db.createUser({user:"etherdb",pwd:"test",roles:["readWrite"]});'
 
 install:
   - "export GIT_HASH=$(git rev-parse --verify --short HEAD)"

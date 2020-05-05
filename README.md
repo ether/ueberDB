@@ -15,7 +15,6 @@
 * Dirty
 * Elasticsearch
 * Level
-* Mongo
 * MySQL (<= 5.7)
 * Maria
 * Postgres (single connection and with connection pool)
@@ -137,7 +136,6 @@ async function example(db){
 |  dirty |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |        |   ✓   |
 |  elasticsearch |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
 |  level |  ✓  |  ✓  |          |   ✓    |   ✓    |   ✓    |   ✓    |
-|  mongo |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
 |  redis |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
 |  rethinkdb |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
 |  sqlite |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
