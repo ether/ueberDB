@@ -1,21 +1,8 @@
 exports.databases = {
-/*
-couch:{
-  hostname: "127.0.0.1",
-  port: 5984
-},
-*/
-cassandra:{
-  clientOptions: {
-    contactPoints: ['h1'],
-    localDataCenter: 'localhost',
-    keyspace: 'etherdb'
-  }
-},
-rethink:{
-  hostname: "localhost"
-}
-/*
+  couch:{
+    hostname: "127.0.0.1",
+    port: 5984
+  },
   elasticsearch:{
     hostname: "127.0.0.1"
   },
@@ -48,11 +35,7 @@ rethink:{
     "charset" : "utf8mb4"
   }
   ,
-*/
-
-/*
-redis:{
-  hostname: "127.0.0.1"
-},
-*/
+  redis:{
+    hostname: "127.0.0.1"
+  }
 }

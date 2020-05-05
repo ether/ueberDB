@@ -120,6 +120,7 @@ exports.database.prototype.doBulk = function (bulk, callback) {
 }
 
 exports.database.prototype.close = function(callback) {
+    this.client.flush();
     this.client.end();
     callback()
 }

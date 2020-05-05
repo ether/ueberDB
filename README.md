@@ -124,27 +124,28 @@ async function example(db){
 |  mysql |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |   ✓   |
 |  postgres  |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |   ✓   |
 |  couchdb |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
-|  cassandra |  ✓  |  ✓  |          |   ✓    |   ✓    |   ✓    |   ✓    |
+|  cassandra |  ✓  |  ✓  |    *     |   ✓    |   ✓    |   ✓    |   ✓    |
 |  maria |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
 |  crate |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
 |  dirty |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |        |   ✓   |
-|  elasticsearch |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
+|  elasticsearch |  ✓  |  ✓  |    *     |   ✓    |   ✓    |   ✓    |   ✓    |
 |  level |  ✓  |  ✓  |          |   ✓    |   ✓    |   ✓    |   ✓    |
-|  redis |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
-|  rethinkdb |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
+|  redis |  ✓  |  ✓  |    *     |   ✓    |   ✓    |   ✓    |   ✓    |
+|  rethinkdb |  ✓  |  ✓  |    *     |   ✓    |   ✓    |   ✓    |   ✓    |
 |  dirty_git |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |        |
 
 # Limitations
 
-## findKeys query support
+## findKeys query support -- TODO DOCUMENT WHAT FAILS
 Certain regular expressions will fail
 
-## findKeys database support
+## * findKeys database support
 The following have limitations on findKeys
 
 * redis (Only keys of the format \*:\*:\*)
 * cassandra (Only keys of the format \*:\*:\*)
 * elasticsearch (Only keys of the format \*:\*:\*)
+* rethink (Currently doesn't work)
 
 For details on how it works please refer to the wiki: https://github.com/ether/EtherDB/wiki/findKeys-functionality
 
