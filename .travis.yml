@@ -8,6 +8,12 @@ services:
   - mongodb
   - mysql
   - postgresql
+  - couchdb
+  - sqlite3
+  - redis
+  - cassandra
+  - elasticsearch
+  - rethinkdb
 
 before_install:
   - mysql -e 'CREATE DATABASE etherdb;'
