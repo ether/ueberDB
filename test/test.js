@@ -14,14 +14,15 @@ var db;
 var defaultNumberOfWrites = 20000;
 const acceptableWrites = 3;
 const acceptableReads = 0.1;
+const acceptableRemove = 1;
 const acceptableFindKeys = 1;
 const CACHE_ON = true;
 const CACHE_OFF = false;
 var keys = Object.keys(databases);
 
 const table = new clitable({
-    head: ['Database', '# of items', 'Write(in seconds)', 'Read(in seconds)', 'findKey(in seconds)']
-  , colWidths: [20, 10, 20, 20, 25]
+    head: ['Database', '# of items', 'Write(in seconds)', 'Read(scnds)', 'findKey(scnds)', 'remove(scnds)']
+  , colWidths: [20, 10, 20, 20, 25, 25]
 });
 
 keys.forEach(async function(database) {
@@ -196,7 +197,7 @@ async function etherdbAPITests(database, dbSettings, cacheEnabled, done) {
 
       for (i = 0; i < numberOfWrites; i++){
         db.get(key+i, function(err, output){
-          if(err) throw new Error("Error getting")
+          if(err) throw new Error("Error .get")
         });
       }
       timers.read = Date.now();
@@ -205,24 +206,32 @@ async function etherdbAPITests(database, dbSettings, cacheEnabled, done) {
 
       for (i = 0; i < numberOfWrites; i++){
         db.findKeys(key+i, null, function(err, output){
-          if(err) throw new Error("Error getting")
+          if(err) throw new Error("Error .findKeys")
         });
       }
       timers.findKeys = Date.now();
 
+      for (i = 0; i < numberOfWrites; i++){
+        db.remove(key+i, null, function(err, output){
+          if(err) throw new Error("Error .remove")
+        });
+      }
+      timers.remove = Date.now();
       var timeToWrite = timers.written - timers.start;
       var timeToRead = timers.read - timers.written;
       var timeToFindKey = timers.findKeys - timers.read;
+      var timeToRemove = timers.remove - timers.findKeys;
 /*
       console.log("timeToWrite", timeToWrite);
       console.log("timeToRead", timeToRead);
       console.log("timeToFindKey", timeToFindKey);
+      console.log("timeToRemove", timeToRemove);
 */
       var timeToWritePerRecord = timeToWrite/numberOfWrites;
       var timeToReadPerRecord = timeToRead/numberOfWrites;
       var timeToFindKeyPerRecord = timeToFindKey / numberOfWrites;
-
-      table.push([database +":"+cacheStatus, numberOfWrites, timeToWritePerRecord, timeToReadPerRecord, timeToFindKeyPerRecord]);
+      var timeToRemovePerRecord = timeToRemove / numberOfWrites;
+      table.push([database +":"+cacheStatus, numberOfWrites, timeToWritePerRecord, timeToReadPerRecord, timeToFindKeyPerRecord, timeToRemovePerRecord]);
 
       var acceptableReadTime = (((dbSettings.speeds && dbSettings.speeds.read) || acceptableReads));
       console.log("ART", acceptableReadTime, timeToReadPerRecord)
@@ -235,8 +244,11 @@ async function etherdbAPITests(database, dbSettings, cacheEnabled, done) {
       var acceptableFindKeysTime = (((dbSettings.speeds && dbSettings.speeds.findKey) || acceptableFindKeys));
       console.log("AFKT", acceptableFindKeysTime, timeToFindKeyPerRecord)
       var findKeys = acceptableFindKeysTime >= timeToFindKeyPerRecord;
-//      console.log(reads, writes, findKeys)
-      assert.equal((reads === writes === findKeys), true);
+
+      var acceptableRemoveTime = (((dbSettings.speeds && dbSettings.speeds.remove) || acceptableRemove));
+      console.log("ARemT", acceptableRemoveTime, timeToRemovePerRecord)
+      var remove = acceptableRemoveTime >= timeToRemovePerRecord;
+      assert.equal((reads === writes === findKeys === remove), true);
     });
 
   });
