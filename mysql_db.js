@@ -236,7 +236,7 @@ exports.database.prototype.doBulk = function (bulk, callback)
 
   replaceSQL+=";";
 
-  var removeSQL = "DELETE FROM `store` WHERE BINARY `key` IN " + keysToDelete + ";";
+  var removeSQL = "DELETE FROM `store` WHERE `key` IN " + keysToDelete + " AND BINARY `key` IN " + keysToDelete + ";";
   
   async.parallel([
     function(callback)
