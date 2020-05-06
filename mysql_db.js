@@ -205,7 +205,6 @@ exports.database.prototype.doBulk = function (bulk, callback)
   var _this = this;
   
   var replaceSQL = "REPLACE INTO `store` VALUES ";
-  var removeSQL = "DELETE FROM `store` WHERE BINARY `key` IN ";
   
   // keysToDelete is a string of the form "(k1, k2, ..., kn)" painstakingly built by hand.
   let keysToDelete = "(";
@@ -236,7 +235,8 @@ exports.database.prototype.doBulk = function (bulk, callback)
   keysToDelete += ")";
 
   replaceSQL+=";";
-  removeSQL+= keysToDelete + ";";
+
+  var removeSQL = "DELETE FROM `store` WHERE BINARY `key` IN " + keysToDelete + ";";
   
   async.parallel([
     function(callback)
