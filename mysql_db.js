@@ -205,8 +205,11 @@ exports.database.prototype.doBulk = function (bulk, callback)
   var _this = this;
   
   var replaceSQL = "REPLACE INTO `store` VALUES ";
-  var removeSQL = "DELETE FROM `store` WHERE BINARY `key` IN ("
+  var removeSQL = "DELETE FROM `store` WHERE BINARY `key` IN ";
   
+  // keysToDelete is a string of the form "(k1, k2, ..., kn)" painstakingly built by hand.
+  let keysToDelete = "(";
+
   var firstReplace = true;
   var firstRemove = true;
   
@@ -223,15 +226,17 @@ exports.database.prototype.doBulk = function (bulk, callback)
     else if(bulk[i].type == "remove")
     {
       if(!firstRemove)
-        removeSQL+=",";
+        keysToDelete+=",";
       firstRemove = false;
     
-      removeSQL+=_this.db.escape(bulk[i].key);
+      keysToDelete+=_this.db.escape(bulk[i].key);
     }
   }
   
+  keysToDelete += ")";
+
   replaceSQL+=";";
-  removeSQL+=");";
+  removeSQL+= keysToDelete + ";";
   
   async.parallel([
     function(callback)
