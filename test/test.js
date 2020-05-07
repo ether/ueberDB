@@ -22,7 +22,7 @@ var keys = Object.keys(databases);
 
 const table = new clitable({
     head: ['Database', '# of items', 'Write(in seconds)', 'Read(scnds)', 'findKey(scnds)', 'remove(scnds)']
-  , colWidths: [20, 10, 20, 20, 25, 25]
+  , colWidths: [20, 10, 20, 15, 15, 15]
 });
 
 keys.forEach(async function(database) {
