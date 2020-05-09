@@ -15,7 +15,7 @@
 * Dirty
 * Elasticsearch
 * Level
-* MySQL (<= 5.7)
+* MySQL
 * Maria
 * Postgres (single connection and with connection pool)
 * Redis
