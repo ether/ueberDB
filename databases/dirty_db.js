@@ -14,6 +14,13 @@
  * limitations under the License.
  */
 
+/*
+*
+* Fair warning that length may not provide the correct value upon load.
+* See https://github.com/ether/etherpad-lite/pull/3984
+*
+*/
+
 var dirty = require("dirty");
 var async = require("async");
 
