@@ -20,6 +20,18 @@ exports.databases = {
     }
   }
   ,
+  mysql:{
+    "user"    : "etherdb",
+    "host"    : "localhost",
+    "password": "etherdb",
+    "database": "etherdb",
+    "charset" : "utf8mb4",
+    "speeds":{
+      numberOfpreloadedEntries: 1000000
+    },
+    "engine"  : "innodb"
+  }
+  ,
   postgres:{
     "user"    : "postgres",
     "host"    : "localhost",

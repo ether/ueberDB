@@ -35,7 +35,7 @@ npm install etherDB
 const etherDB = require("etherdb");
 
 //mysql
-var db = new etherDB.database("mysql", {"user":"root", host: "localhost", "password":"", database: "store"});
+var db = new etherDB.database("mysql", {"user":"root", host: "localhost", "password":"", database: "store", engine: "MyISAM"});
 // dirty to file system
 //var db = new etherDB.database("dirty", {filename:"var/dirty.db"});
 

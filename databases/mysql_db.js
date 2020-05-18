@@ -41,6 +41,7 @@ exports.database = function(settings)
   if(this.settings.charset != null)
     this.db.charset = this.settings.charset;
 
+  this.settings.engine = "MyISAM"
   this.settings.cache = 1000;
   this.settings.writeInterval = 100;
   this.settings.json = true;
@@ -70,7 +71,7 @@ exports.database.prototype.init = function(callback)
                   "`key` VARCHAR( 100 ) NOT NULL COLLATE utf8mb4_bin, " +
                   "`value` LONGTEXT COLLATE utf8mb4_bin NOT NULL , " +
                   "PRIMARY KEY ( `key` ) " +
-                  ") ENGINE=MyISAM CHARSET=utf8mb4 COLLATE=utf8mb4_bin;";
+                  ") ENGINE=" + this.settings.engine + " CHARSET=utf8mb4 COLLATE=utf8mb4_bin;";
 
   var sqlAlter  = "ALTER TABLE store MODIFY `key` VARCHAR(100) COLLATE utf8mb4_bin;";
 
