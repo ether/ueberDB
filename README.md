@@ -195,3 +195,10 @@ You should create your database as utf8mb4_bin.
 * Improved documentation.
 * Sensible name for software makes it clear that it's maintained by The Etherpad Foundation.
 * Make db.init await / async
+
+## Dirty_Git Easter Egg.
+* I suck at hiding Easter eggs..  
+
+Dirty_git will ``commit`` and ``push`` to Git on every ``set``.  To use ``git init`` or ``git clone`` within your dirty database location and then set your upstream IE ``git remote add origin git://whztevz``.
+
+The logic behind dirty git is that you can still use dirty but you can also have offsite backups.  It's noisy and spammy but it can be useful.
