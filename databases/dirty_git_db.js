@@ -64,21 +64,15 @@ exports.database.prototype.findKeys = function (key, notKey, callback)
   callback(null, keys);
 }
 
-exports.database.prototype.set = function async(key, value, callback)
+exports.database.prototype.set = function (key, value, callback)
 {
   this.db.set(key,value,callback);
-  const git = require('simple-git/promise', this.settings.filename);
-  const remote = `https://${settings.ep_git.user}:${settings.ep_git.pass}@${settings.ep_git.repo}`;
-
-  console.log("workingDir", workingDir);
-  let statusSummary = null;
-  try {
-    statusSummary = await git(this.settings.filename).status();
-  }
-  catch (e) {
-    console.error("e", e);
-    // handle the error
-  }
+  var databasePath = require('path').dirname(this.settings.filename);
+  require('simple-git')(databasePath)
+    .silent(true)
+    .add('./*.db')
+    .commit("Automated commit...")
+    .push(['-u', 'origin', 'master'], () => console.debug('Stored git commit'));
 }
 
 exports.database.prototype.remove = function (key, callback)
