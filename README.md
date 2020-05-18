@@ -20,6 +20,7 @@
 * Postgres (single connection and with connection pool)
 * Redis
 * Rethink
+* MsSQL
 
 # Install
 
