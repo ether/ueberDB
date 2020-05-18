@@ -64,9 +64,11 @@ exports.database.prototype.findKeys = function (key, notKey, callback)
   var keys=[]
     , regex=this.createFindRegex(key, notKey)
     , that=this;
-
+console.log("keys", key); // is populated
   r.filter(function(item){
+console.log("ITEM!");
     if (item.id.search(regex)!=-1){
+console.warn("DSFDSFSDF", item);
       keys.push(item.id);
     }
   }).run(that.connection,callback);

@@ -1,5 +1,6 @@
 /**
  * 2011 Peter 'Pita' Martischka
+ * 2020 John McLear
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +15,7 @@
  * limitations under the License.
  */
 
-var cacheAndBufferLayer = require("./CacheAndBufferLayer");
+var cacheAndBufferLayer = require("./lib/CacheAndBufferLayer");
 var channels = require("channels");
 
 var defaultLogger = {debug: function(){}, info: function(){}, error: function(){}, warn: function(){}};
@@ -33,7 +34,7 @@ exports.database = function(type, dbSettings, wrapperSettings, logger)
 
   //saves all settings and require the db module
   this.type = type;
-  this.db_module = require("./" + type + "_db");
+  this.db_module = require("./databases/" + type + "_db");
   this.dbSettings = dbSettings;
   this.wrapperSettings = wrapperSettings;
   this.logger = logger || defaultLogger;
@@ -44,7 +45,15 @@ exports.database.prototype.init = function(callback)
 {
   var db = new this.db_module.database(this.dbSettings);
   this.db = new cacheAndBufferLayer.database(db, this.wrapperSettings, this.logger);
-  this.db.init(callback);
+  if(callback){
+    this.db.init(callback)
+  }else{
+    return new Promise((resolve, reject) => {
+      this.db.init(function(){
+        resolve();
+      });
+    });
+  };
 }
 
 /**
