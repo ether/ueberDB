@@ -162,6 +162,26 @@ doBulk operations that chain IE a large number of .set without a pause to handle
 # MySQL /MariaDB Advice
 You should create your database as utf8mb4_bin.
 
+# Redis TLS communication
+
+If you enabled TLS on your Redis database (available since Redis 6.0) you will need to change your connections parameters, here is an example: 
+
+```
+settings:
+    {
+      host: 
+      port: rediss://<redis_database_address>:<redis_database_port>
+      socket:
+      database:
+      password:
+      client_options
+    }
+```
+
+Do not provide a `host` value.
+
+If you don't provide a certificate on the client side, you need to add the environment variable `NODE_TLS_REJECT_UNAUTHORIZED = 0` and add the flag `--tls-auth-clients no` when launching the redis-server to accept connections.
+
 # How to add support for another database
 1. Add your database to ``packages.json``, this will happen automatically if you run ``npm install %yourdatabase%``
 
