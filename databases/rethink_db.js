@@ -30,7 +30,6 @@ exports.database = function(settings)
   this.port = settings.port;
   this.table = settings.table;
   this.connection = null;
-  
 }
 
 exports.database.prototype.init = function(callback)
@@ -64,15 +63,11 @@ exports.database.prototype.findKeys = function (key, notKey, callback)
   var keys=[]
     , regex=this.createFindRegex(key, notKey)
     , that=this;
-console.log("keys", key); // is populated
   r.filter(function(item){
-console.log("ITEM!");
     if (item.id.search(regex)!=-1){
-console.warn("DSFDSFSDF", item);
       keys.push(item.id);
     }
   }).run(that.connection,callback);
- 
 }
 
 exports.database.prototype.set = function (key, value, callback)
@@ -88,7 +83,7 @@ exports.database.prototype.doBulk = function (bulk, callback)
   var _out=[];
 
   for(var i in bulk)
-  {  
+  {
     if(bulk[i].type == "set")
     {
       _in.push({id:bulk[i].key, content:bulk[i].value})
