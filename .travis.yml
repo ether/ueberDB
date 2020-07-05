@@ -1,0 +1,45 @@
+language: node_js
+
+node_js:
+  - 14
+
+services:
+  - docker
+  - mysql
+  - postgresql
+  - couchdb
+  - sqlite3
+  - redis
+  - cassandra
+  - elasticsearch
+  - rethinkdb
+
+before_install:
+  - mysql -e 'CREATE DATABASE ueberdb;'
+  - mysql -e 'CREATE USER "ueberdb"@"localhost" identified by "ueberdb";'
+  - mysql -e "ALTER DATABASE ueberdb CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;"
+  - mysql -e "grant CREATE,ALTER,SELECT,INSERT,UPDATE,DELETE on ueberdb.* to 'ueberdb'@'localhost';"
+  - mysql -e "CREATE TABLE \`store\` (\`key\` varchar(100) COLLATE utf8mb4_bin NOT NULL DEFAULT '',\`value\` longtext COLLATE utf8mb4_bin NOT NULL,PRIMARY KEY (\`key\`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;" ueberdb
+#  - cp /etc/rethinkdb/default.conf.sample /etc/rethinkdb/instances.d/instance1.conf
+
+#addons:
+#  rethinkdb: '2.3.4'
+
+# Brings in procedure required for creating large data set
+  - mysql ueberdb < test/lib/mysql.sql
+  - mysql ueberdb -e 'CALL generate_data();';
+  - psql -c 'create database ueberdb;' -U postgres
+#  - psql -c "grant CREATE,ALTER,SELECT,INSERT,UPDATE,DELETE on ueberdb.* to 'ueberdb'@'localhost';" -U postgres
+
+install:
+  - "export GIT_HASH=$(git rev-parse --verify --short HEAD)"
+
+jobs:
+  include:
+    - name: "Run the Backend tests"
+      install:
+        - "npm install"
+
+notifications:
+  email:
+    - john@mclear.co.uk

@@ -15,6 +15,7 @@
  */
 
 var dirty = require("dirty");
+var git = require("simple-git");
 var async = require("async");
 
 exports.database = function(settings)
@@ -53,7 +54,7 @@ exports.database.prototype.findKeys = function (key, notKey, callback)
   var keys=[]
     , regex=this.createFindRegex(key, notKey)
   ;
-  
+
   this.db.forEach(function(key,val){
       if(key.search(regex)!=-1){
         keys.push(key);
@@ -66,6 +67,12 @@ exports.database.prototype.findKeys = function (key, notKey, callback)
 exports.database.prototype.set = function (key, value, callback)
 {
   this.db.set(key,value,callback);
+  var databasePath = require('path').dirname(this.settings.filename);
+  require('simple-git')(databasePath)
+    .silent(true)
+    .add('./*.db')
+    .commit("Automated commit...")
+    .push(['-u', 'origin', 'master'], () => console.debug('Stored git commit'));
 }
 
 exports.database.prototype.remove = function (key, callback)
