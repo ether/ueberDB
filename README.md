@@ -25,7 +25,7 @@
 # Install
 
 ```
-npm install UeberDB
+npm install ueberdb2
 ```
 
 # Examples
