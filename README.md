@@ -1,13 +1,13 @@
 # Abstract your databases, make datababies.
 
 # About
-✓ EtherDB turns every database into a simple key value store by providing a layer of abstraction between your software and your database.
+✓ UeberDB turns every database into a simple key value store by providing a layer of abstraction between your software and your database.
 
-✓ EtherDB uses a cache and buffer to make databases faster.  Reads are cached and writes are done in a bulk.  This can be turned off.
+✓ UeberDB uses a cache and buffer to make databases faster.  Reads are cached and writes are done in a bulk.  This can be turned off.
 
-✓ EtherDB does bulk writing ergo reduces the overhead of database transactions.
+✓ UeberDB does bulk writing ergo reduces the overhead of database transactions.
 
-✓ EtherDB uses a simple and clean syntax ergo getting started is easy.
+✓ UeberDB uses a simple and clean syntax ergo getting started is easy.
 
 # Database Support
 * Couch
@@ -25,7 +25,7 @@
 # Install
 
 ```
-npm install etherDB
+npm install UeberDB
 ```
 
 # Examples
@@ -33,12 +33,12 @@ npm install etherDB
 ## Basic
 
 ```javascript
-const etherDB = require("etherdb");
+const UeberDB = require("UeberDB");
 
 //mysql
-var db = new etherDB.database("mysql", {"user":"root", host: "localhost", "password":"", database: "store", engine: "MyISAM"});
+var db = new UeberDB.database("mysql", {"user":"root", host: "localhost", "password":"", database: "store", engine: "MyISAM"});
 // dirty to file system
-//var db = new etherDB.database("dirty", {filename:"var/dirty.db"});
+//var db = new UeberDB.database("dirty", {filename:"var/dirty.db"});
 
 example(db);
 
@@ -63,8 +63,8 @@ async function example(db){
 ## findKeys
 
 ```javascript
-const etherDB = require("etherdb");
-var db = new etherDB.database("dirty", {filename:"var/dirty.db"});
+const UeberDB = require("UeberDB");
+var db = new UeberDB.database("dirty", {filename:"var/dirty.db"});
 exampleFK(db);
 
 // using async
@@ -92,8 +92,8 @@ async function exampleFK(db){
 Set ``db.cache = 0;`` to disable Caching of Read / Writes.
 
 ```
-const etherDB = require("etherdb");
-var db = new etherDB.database("dirty", {filename:"var/dirty.db"});
+const UeberDB = require("UeberDB");
+var db = new UeberDB.database("dirty", {filename:"var/dirty.db"});
 
 example(db);
 
@@ -148,10 +148,10 @@ The following have limitations on findKeys
 * elasticsearch (Only keys of the format \*:\*:\*)
 * rethink (Currently doesn't work)
 
-For details on how it works please refer to the wiki: https://github.com/ether/EtherDB/wiki/findKeys-functionality
+For details on how it works please refer to the wiki: https://github.com/ether/UeberDB/wiki/findKeys-functionality
 
 ## Scaling, High availability and disaster recovery.
-To scale EtherDB you should use sharding especially for real time applications.  An example of this is sharding given Pads within Etherpad based on their initial pad authors geographical location.  High availability and disaster recovery can be provided through replication of your database however YMMV on passing Settings to your database library.  Do not be under the illusion that EtherDB provides any Stateless capabilities, it does not.  An option is to use something like rethinkdb and set cache to 0 but YMMV.
+To scale UeberDB you should use sharding especially for real time applications.  An example of this is sharding given Pads within Etherpad based on their initial pad authors geographical location.  High availability and disaster recovery can be provided through replication of your database however YMMV on passing Settings to your database library.  Do not be under the illusion that UeberDB provides any Stateless capabilities, it does not.  An option is to use something like rethinkdb and set cache to 0 but YMMV.
 
 ## Key Length Restrictions
 Your Key Length will be limited by the database you chose to use but keep into account portability within your application.

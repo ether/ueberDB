@@ -1,7 +1,7 @@
 {
-  "name": "etherdb",
+  "name": "ueberdb2",
   "description": "Transform every database into a object key value store",
-  "url": "https://github.com/ether/db",
+  "url": "https://github.com/ether/ueberDB",
   "keywords": [
     "database",
     "keyvalue"
@@ -45,14 +45,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ether/db.git"
+    "url": "https://github.com/ether/ueberDB.git"
   },
   "main": "./index",
   "version": "0.0.1",
   "bugs": {
-    "url": "https://github.com/ether/db/issues"
+    "url": "https://github.com/ether/ueberDB/issues"
   },
-  "homepage": "https://github.com/ether/db",
+  "homepage": "https://github.com/ether/ueberDB",
   "scripts": {
     "test": "mocha test/test*.js --timeout 1000000"
   },

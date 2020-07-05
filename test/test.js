@@ -1,6 +1,6 @@
 path = require('path'),
 fs = require('fs'),
-etherdb = require('../index'),
+ueberdb = require('../index'),
 events = require('events'),
 assert = require('assert'),
 Randexp = require("randexp"),
@@ -27,8 +27,8 @@ const table = new clitable({
 
 keys.forEach(async function(database) {
   var dbSettings = databases[database];
-  await etherdbAPITests(database, dbSettings, CACHE_ON)
-  await etherdbAPITests(database, dbSettings, CACHE_OFF)
+  await ueberdbAPITests(database, dbSettings, CACHE_ON)
+  await ueberdbAPITests(database, dbSettings, CACHE_OFF)
 })
 
 after(function(){
@@ -45,13 +45,13 @@ after(function(){
 });
 
 
-async function etherdbAPITests(database, dbSettings, cacheEnabled, done) {
+async function ueberdbAPITests(database, dbSettings, cacheEnabled, done) {
   if(cacheEnabled){
     var cacheStatus = "cache-on";
   }else{
     var cacheStatus = "cache-off"
   }
-  describe('etherdb:' +database + ":"+cacheStatus, function() {
+  describe('ueberdb:' +database + ":"+cacheStatus, function() {
 
     this.timeout(1000000);
     function init(done) {
@@ -62,7 +62,7 @@ async function etherdbAPITests(database, dbSettings, cacheEnabled, done) {
           }
         });
       }
-      db = new etherdb.database(database, dbSettings);
+      db = new ueberdb.database(database, dbSettings);
       db.init(function(e){
         if(e) throw new Error(e);
         if(!cacheEnabled) db.cache = 0;

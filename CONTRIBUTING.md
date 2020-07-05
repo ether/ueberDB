@@ -44,7 +44,7 @@
   * what actually happened
 * Please format logfiles and code examples with markdown see github Markdown help below the issue textarea for more information.
 
-## General goals of EtherDB
+## General goals of UeberDB
 To make sure everybody is going in the same direction:
 * easy to install for admins and easy to use for people
 * easy to integrate into other apps, but also usable as standalone
