@@ -33,7 +33,7 @@ npm install UeberDB
 ## Basic
 
 ```javascript
-const UeberDB = require("UeberDB");
+const UeberDB = require("ueberdb2");
 
 //mysql
 var db = new UeberDB.database("mysql", {"user":"root", host: "localhost", "password":"", database: "store", engine: "MyISAM"});
@@ -63,7 +63,7 @@ async function example(db){
 ## findKeys
 
 ```javascript
-const UeberDB = require("UeberDB");
+const UeberDB = require("ueberdb2");
 var db = new UeberDB.database("dirty", {filename:"var/dirty.db"});
 exampleFK(db);
 
@@ -92,7 +92,7 @@ async function exampleFK(db){
 Set ``db.cache = 0;`` to disable Caching of Read / Writes.
 
 ```
-const UeberDB = require("UeberDB");
+const UeberDB = require("ueberdb2");
 var db = new UeberDB.database("dirty", {filename:"var/dirty.db"});
 
 example(db);
