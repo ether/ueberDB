@@ -23,7 +23,7 @@ exports.database = function(settings)
 
   this.settings.cache = settings.cache || 1000;
   this.settings.writeInterval = 100;
-  this.settings.json = false;
+  this.settings.json = true;
 
   this.db = new pg.Client(this.settings);
   this.db.connect();

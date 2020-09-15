@@ -19,19 +19,11 @@ var async = require("async");
 exports.init = function(callback)
 {
   var testTableExists = "SELECT 1 as exists FROM pg_tables WHERE tablename = 'store'";
-  var testValueColumnType = "SELECT data_type FROM information_schema.columns " +
-    "WHERE table_name = 'store' " +
-    "AND column_name = 'value'";
 
   var createTable = 'CREATE TABLE store (' +
     '"key" character varying(100) NOT NULL, ' +
-    '"value" jsonb NOT NULL, ' +
+    '"value" text NOT NULL, ' +
     'CONSTRAINT store_pkey PRIMARY KEY (key))';
-
-  var updateValueColumnType = "ALTER TABLE store " +
-    "ALTER COLUMN value " +
-    "TYPE jsonb " +
-    "USING value::jsonb";
 
   var _this = this;
 
@@ -88,16 +80,6 @@ exports.init = function(callback)
     if (result.rows.length == 0) {
       _this.db.query(createTable, detectUpsertMethod(callback));
     } else {
-      _this.db.query(testValueColumnType, function(err, result) {
-	/* we already checked whether the table exists, so we can reasonably assume
-	 * the column does as well
-	 */
-	if (result.rows[0].data_type != "jsonb") {
-	  _this.db.query(updateValueColumnType, function(err, result) {
-	    if (err) {
-	      callback(err, null);
-	    }});
-	}});
       detectUpsertMethod(callback);
     }
   });

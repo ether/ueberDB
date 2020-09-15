@@ -23,7 +23,7 @@ exports.database = function(settings)
 
   this.settings.cache = settings.cache || 1000;
   this.settings.writeInterval = 100;
-  this.settings.json = false;
+  this.settings.json = true;
 
   // Pool specific defaults
   this.settings.max = this.settings.max || 20;
