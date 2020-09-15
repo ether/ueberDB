@@ -49,9 +49,9 @@ exports.init = function(callback)
    * - calls the callback
    */
   function detectUpsertMethod(callback) {
-    var upsertViaFunction = "SELECT ueberdb_insert_or_update_jsonb($1,$2)";
+    var upsertViaFunction = "SELECT ueberdb_insert_or_update($1,$2)";
     var upsertNatively    = "INSERT INTO store(key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = excluded.value";
-    var createFunc = "CREATE OR REPLACE FUNCTION ueberdb_insert_or_update_jsonb(character varying, jsonb) " +
+    var createFunc = "CREATE OR REPLACE FUNCTION ueberdb_insert_or_update(character varying, text) " +
       "RETURNS void AS $$ " +
       "BEGIN " +
       "  IF EXISTS( SELECT * FROM store WHERE key = $1 ) THEN " +
