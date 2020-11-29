@@ -20,7 +20,7 @@ exports.init = function(callback)
 {
   var testTableExists = "SELECT 1 as exists FROM pg_tables WHERE tablename = 'store'";
 
-  var createTable = 'CREATE TABLE store (' +
+  var createTable = 'CREATE TABLE IF NOT EXISTS store (' +
     '"key" character varying(100) NOT NULL, ' +
     '"value" text NOT NULL, ' +
     'CONSTRAINT store_pkey PRIMARY KEY (key))';
