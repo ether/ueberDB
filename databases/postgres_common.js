@@ -80,10 +80,14 @@ exports.init = function (callback) {
   };
 
   this.db.query(testTableExists, (err, result) => {
-    if (result.rows.length === 0) {
-      _this.db.query(createTable, detectUpsertMethod(callback));
+    if (result.rows) {
+      if (result.rows.length === 0) {
+        _this.db.query(createTable, detectUpsertMethod(callback));
+      } else {
+        detectUpsertMethod(callback);
+      }
     } else {
-      detectUpsertMethod(callback);
+      console.warn('See https://github.com/ether/ueberDB/issues/139');
     }
   });
 };
