@@ -75,10 +75,10 @@ exports.database.prototype.findKeys = function (key, notKey, callback) {
         if(matches) {
             this.client.SMEMBERS("ueberDB:keys:" + matches[1], callback);
         } else {
-            callback(new customError("redis db only supports key patterns like pad:* when notKey is set to *:*:*","apierror"), null);
+            callback(new Error('redis db only supports key patterns like pad:* when notKey is set to *:*:*', 'apierror'), null);
         }
     } else {
-        callback(new customError("redis db currently only supports *:*:* as notKey","apierror"), null);
+        callback(new Error('redis db currently only supports *:*:* as notKey', 'apierror'), null);
     }
 }
 

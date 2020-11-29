@@ -167,7 +167,7 @@ exports.database.prototype.set = function (key, value, callback) {
  *    completion of a successful database write.
  */
 exports.database.prototype.remove = function (key, callback) {
-  client.delete(getOptionsFromKey(key), function(error, response) {
+  client.delete(key, function(error, response) {
     parseResponse(error, response, callback);
   });
 };
