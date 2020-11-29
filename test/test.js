@@ -48,7 +48,7 @@ after(() => {
   }
   console.log(table.toString());
   db.close(); // close the database
-  process.exit(0);
+  throw new Error('Exiting');
 });
 
 
