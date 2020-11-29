@@ -36,7 +36,7 @@ npm install ueberdb2
 const UeberDB = require("ueberdb2");
 
 //mysql
-var db = new UeberDB.database("mysql", {"user":"root", host: "localhost", "password":"", database: "store", engine: "MyISAM"});
+var db = new UeberDB.database("mysql", {"user":"root", host: "localhost", "password":"", database: "store", engine: "InnoDB"});
 // dirty to file system
 //var db = new UeberDB.database("dirty", {filename:"var/dirty.db"});
 
