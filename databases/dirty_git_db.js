@@ -15,9 +15,7 @@
  * limitations under the License.
  */
 
-let dirty = require('dirty');
-let git = require('simple-git');
-let async = require('async');
+const Dirty = require('dirty');
 
 exports.database = function (settings) {
   this.db = null;
@@ -35,7 +33,7 @@ exports.database = function (settings) {
 };
 
 exports.database.prototype.init = function (callback) {
-  this.db = new dirty(this.settings.filename);
+  this.db = new Dirty(this.settings.filename);
   this.db.on('load', (err) => {
     callback();
   });
@@ -46,22 +44,20 @@ exports.database.prototype.get = function (key, callback) {
 };
 
 exports.database.prototype.findKeys = function (key, notKey, callback) {
-  let keys = [],
-     regex = this.createFindRegex(key, notKey)
-  ;
+  const keys = [];
+  const regex = this.createFindRegex(key, notKey);
 
-  this.db.forEach((key,val)=> {
-    if (key.search(regex) != -1) {
+  this.db.forEach((key, val) => {
+    if (key.search(regex) !== -1) {
       keys.push(key);
     }
-  }
-  );
+  });
   callback(null, keys);
 };
 
 exports.database.prototype.set = function (key, value, callback) {
   this.db.set(key, value, callback);
-  let databasePath = require('path').dirname(this.settings.filename);
+  const databasePath = require('path').dirname(this.settings.filename);
   require('simple-git')(databasePath)
       .silent(true)
       .add('./*.db')

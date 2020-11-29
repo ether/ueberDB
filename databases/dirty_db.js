@@ -22,8 +22,7 @@
 *
 */
 
-let dirty = require('dirty');
-let async = require('async');
+const Dirty = require('dirty');
 
 exports.database = function (settings) {
   this.db = null;
@@ -41,7 +40,7 @@ exports.database = function (settings) {
 };
 
 exports.database.prototype.init = function (callback) {
-  this.db = new dirty(this.settings.filename);
+  this.db = new Dirty(this.settings.filename);
   this.db.on('load', (err) => {
     callback();
   });
@@ -52,16 +51,14 @@ exports.database.prototype.get = function (key, callback) {
 };
 
 exports.database.prototype.findKeys = function (key, notKey, callback) {
-  let keys = [],
-     regex = this.createFindRegex(key, notKey)
-  ;
+  const keys = [];
+  const regex = this.createFindRegex(key, notKey);
 
-  this.db.forEach((key,val)=> {
-    if (key.search(regex) != -1) {
+  this.db.forEach((key, val) => {
+    if (key.search(regex) !== -1) {
       keys.push(key);
     }
-  }
-  );
+  });
   callback(null, keys);
 };
 
