@@ -1,3 +1,4 @@
+'use strict';
 /**
  * 2011 Peter 'Pita' Martischka
  *
@@ -21,67 +22,58 @@
 *
 */
 
-var dirty = require("dirty");
-var async = require("async");
+let dirty = require('dirty');
+let async = require('async');
 
-exports.database = function(settings)
-{
-  this.db=null;
+exports.database = function (settings) {
+  this.db = null;
 
-  if(!settings || !settings.filename)
-  {
-    settings = {filename:null};
+  if (!settings || !settings.filename) {
+    settings = {filename: null};
   }
-  
+
   this.settings = settings;
-  
-  //set default settings
+
+  // set default settings
   this.settings.cache = 0;
   this.settings.writeInterval = 0;
   this.settings.json = false;
-}
+};
 
-exports.database.prototype.init = function(callback)
-{
+exports.database.prototype.init = function (callback) {
   this.db = new dirty(this.settings.filename);
-  this.db.on('load', function(err)
-  {
+  this.db.on('load', (err) => {
     callback();
   });
-}
+};
 
-exports.database.prototype.get = function (key, callback)
-{
+exports.database.prototype.get = function (key, callback) {
   callback(null, this.db.get(key));
-}
+};
 
-exports.database.prototype.findKeys = function (key, notKey, callback)
-{
-  var keys=[]
-    , regex=this.createFindRegex(key, notKey)
+exports.database.prototype.findKeys = function (key, notKey, callback) {
+  let keys = [],
+     regex = this.createFindRegex(key, notKey)
   ;
-  
-  this.db.forEach(function(key,val){
-      if(key.search(regex)!=-1){
-        keys.push(key);
-      }
+
+  this.db.forEach((key,val)=> {
+    if (key.search(regex) != -1) {
+      keys.push(key);
     }
+  }
   );
   callback(null, keys);
-}
+};
 
-exports.database.prototype.set = function (key, value, callback)
-{
-  this.db.set(key,value,callback);
-}
+exports.database.prototype.set = function (key, value, callback) {
+  this.db.set(key, value, callback);
+};
 
-exports.database.prototype.remove = function (key, callback)
-{
-  this.db.rm(key,callback);
-}
+exports.database.prototype.remove = function (key, callback) {
+  this.db.rm(key, callback);
+};
 
-exports.database.prototype.close = function(callback)
-{
-	this.db.close();
-  if(callback) callback();
-}
+exports.database.prototype.close = function (callback) {
+  this.db.close();
+  if (callback) callback();
+};
