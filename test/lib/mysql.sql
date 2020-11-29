@@ -59,9 +59,9 @@ DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `generate_data`()
 BEGIN
   DECLARE i INT DEFAULT 0;
-  WHILE i < 1000 DO
+  WHILE i < 1000000 DO
     INSERT INTO `store` (`key`,`value`) VALUES (
-      FROM_UNIXTIME(FLOOR(RAND()*31536000)+UNIX_TIMESTAMP('2014-01-01 01:00:00')+FLOOR(RAND()*31536000)),
+      i+RAND()+i+RAND()+i+RAND()+i,
       ROUND(RAND()*100,2)
     );
     SET i = i + 1;
