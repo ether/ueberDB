@@ -20,7 +20,7 @@ const async = require('async');
 exports.init = function (callback) {
   const testTableExists = "SELECT 1 as exists FROM pg_tables WHERE tablename = 'store'";
 
-  const createTable = 'CREATE TABLE store (' +
+  const createTable = 'CREATE TABLE IF NOT EXISTS store (' +
     '"key" character varying(100) NOT NULL, ' +
     '"value" text NOT NULL, ' +
     'CONSTRAINT store_pkey PRIMARY KEY (key))';
