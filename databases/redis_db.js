@@ -105,17 +105,19 @@ exports.database.prototype.doBulk = function (bulk, callback) {
   const multi = this.client.multi();
 
   for (const i in bulk) {
-    const matches = /^([^:]+):([^:]+)$/.exec(bulk[i].key);
-    if (bulk[i].type === 'set') {
-      if (matches) {
-        multi.sadd([`ueberDB:keys:${matches[1]}`, matches[0]]);
+    if (bulk[i]) {
+      const matches = /^([^:]+):([^:]+)$/.exec(bulk[i].key);
+      if (bulk[i].type === 'set') {
+        if (matches) {
+          multi.sadd([`ueberDB:keys:${matches[1]}`, matches[0]]);
+        }
+        multi.set(bulk[i].key, bulk[i].value);
+      } else if (bulk[i].type === 'remove') {
+        if (matches) {
+          multi.srem([`ueberDB:keys:${matches[1]}`, matches[0]]);
+        }
+        multi.del(bulk[i].key);
       }
-      multi.set(bulk[i].key, bulk[i].value);
-    } else if (bulk[i].type === 'remove') {
-      if (matches) {
-        multi.srem([`ueberDB:keys:${matches[1]}`, matches[0]]);
-      }
-      multi.del(bulk[i].key);
     }
   }
 

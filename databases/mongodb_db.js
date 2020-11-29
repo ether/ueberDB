@@ -168,8 +168,7 @@ exports.database.prototype._onMongoConnect = function (error, db) {
     };
 
     const mongoBulkOperations = [];
-    for (const i in bulkOperations) {
-      const eachUeberOperation = bulkOperations[i];
+    for (const eachUeberOperation of bulkOperations) {
       const mongoOperationType = operations[eachUeberOperation.type];
       const mongoOperationDetails = {
         filter: {key: eachUeberOperation.key},

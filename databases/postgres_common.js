@@ -169,8 +169,10 @@ exports.doBulk = function (bulk, callback) {
   const functions = [];
 
   for (const v in replaceVALs) {
-    const f = (callback) => _this.db.query(_this.upsertStatement, replaceVALs[v], callback);
-    functions.push(f);
+    if (replaceVALs[v]) {
+      const f = (callback) => _this.db.query(_this.upsertStatement, replaceVALs[v], callback);
+      functions.push(f);
+    }
   }
 
   const removeFunction = (callback) => {
