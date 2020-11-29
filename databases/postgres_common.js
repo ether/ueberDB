@@ -15,17 +15,17 @@
  * limitations under the License.
  */
 
-let async = require('async');
+const async = require('async');
 
 exports.init = function (callback) {
-  let testTableExists = "SELECT 1 as exists FROM pg_tables WHERE tablename = 'store'";
+  const testTableExists = "SELECT 1 as exists FROM pg_tables WHERE tablename = 'store'";
 
-  let createTable = 'CREATE TABLE store (' +
+  const createTable = 'CREATE TABLE store (' +
     '"key" character varying(100) NOT NULL, ' +
     '"value" text NOT NULL, ' +
     'CONSTRAINT store_pkey PRIMARY KEY (key))';
 
-  let _this = this;
+  const _this = this;
 
   // this variable will be given a value depending on the result of the
   // feature detection
@@ -40,22 +40,25 @@ exports.init = function (callback) {
    *   statement that needs to be used, based on the detection result
    * - calls the callback
    */
-  function detectUpsertMethod(callback) {
-    let upsertViaFunction = 'SELECT ueberdb_insert_or_update($1,$2)';
-    let upsertNatively = 'INSERT INTO store(key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = excluded.value';
-    let createFunc = 'CREATE OR REPLACE FUNCTION ueberdb_insert_or_update(character varying, text) ' +
+  const detectUpsertMethod = (callback) => {
+    const upsertViaFunction = 'SELECT ueberdb_insert_or_update($1,$2)';
+    const upsertNatively =
+    'INSERT INTO store(key, value) VALUES ($1, $2) ' +
+    'ON CONFLICT (key) DO UPDATE SET value = excluded.value';
+    const createFunc =
+    'CREATE OR REPLACE FUNCTION ueberdb_insert_or_update(character varying, text) ' +
       'RETURNS void AS $$ ' +
       'BEGIN ' +
       '  IF EXISTS( SELECT * FROM store WHERE key = $1 ) THEN ' +
       '    UPDATE store SET value = $2 WHERE key = $1; ' +
       '  ELSE ' +
       '    INSERT INTO store(key,value) VALUES( $1, $2 ); ' +
-      '  END IF; '+
+      '  END IF; ' +
       '  RETURN; ' +
       'END; ' +
       '$$ LANGUAGE plpgsql;';
 
-    let testNativeUpsert = 'EXPLAIN ' + upsertNatively;
+    const testNativeUpsert = `EXPLAIN ${upsertNatively}`;
 
     _this.db.query(testNativeUpsert, ['test-key', 'test-value'], (err) => {
       if (err) {
@@ -74,11 +77,11 @@ exports.init = function (callback) {
       _this.upsertStatement = upsertNatively;
       callback();
     });
-  }
+  };
 
   this.db.query(testTableExists, (err, result) => {
     if (err != null) return callback(err);
-    if (result.rows.length == 0) {
+    if (result.rows.length === 0) {
       _this.db.query(createTable, (err) => {
         if (err != null) return callback(err);
         detectUpsertMethod(callback);
@@ -90,10 +93,10 @@ exports.init = function (callback) {
 };
 
 exports.get = function (key, callback) {
-  this.db.query('SELECT value FROM store WHERE key=$1', [key], (err,results) => {
+  this.db.query('SELECT value FROM store WHERE key=$1', [key], (err, results) => {
     let value = null;
 
-    if (!err && results.rows.length == 1) {
+    if (!err && results.rows.length === 1) {
       value = results.rows[0].value;
     }
 
@@ -102,24 +105,23 @@ exports.get = function (key, callback) {
 };
 
 exports.findKeys = function (key, notKey, callback) {
-  let query = "SELECT key FROM store WHERE  key LIKE $1",
-     params = []
-  ;
+  let query = 'SELECT key FROM store WHERE key LIKE $1';
+  const params = [];
   // desired keys are %key:%, e.g. pad:%
   key = key.replace(/\*/g, '%');
   params.push(key);
 
-  if (notKey != null && notKey != undefined) {
+  if (notKey != null && notKey !== undefined) {
     // not desired keys are notKey:%, e.g. %:%:%
     notKey = notKey.replace(/\*/g, '%');
-    query += " AND key NOT LIKE $2";
+    query += ' AND key NOT LIKE $2';
     params.push(notKey);
   }
-  this.db.query(query, params, (err,results) => {
-    let value = [];
+  this.db.query(query, params, (err, results) => {
+    const value = [];
 
     if (!err && results.rows.length > 0) {
-      results.rows.forEach((val)=> {
+      results.rows.forEach((val) => {
         value.push(val.key);
       });
     }
@@ -129,6 +131,7 @@ exports.findKeys = function (key, notKey, callback) {
 };
 
 exports.set = function (key, value, callback) {
+  const _this = this;
   if (key.length > 100) {
     callback('Your Key can only be 100 chars');
   } else {
@@ -141,39 +144,38 @@ exports.remove = function (key, callback) {
 };
 
 exports.doBulk = function (bulk, callback) {
-  let _this = this;
+  const _this = this;
 
-  let replaceVALs = new Array();
-  let removeSQL = 'DELETE FROM store WHERE key IN ('
-  let removeVALs = new Array();
+  const replaceVALs = [];
+  let removeSQL = 'DELETE FROM store WHERE key IN (';
+  const removeVALs = [];
 
   let removeCount = 0;
 
-  for (let i in bulk) {
-    if (bulk[i].type == 'set') {
+  for (const i in bulk) {
+    if (bulk[i].type === 'set') {
       replaceVALs.push([bulk[i].key, bulk[i].value]);
-    } else if (bulk[i].type == 'remove') {
-      if (removeCount != 0) removeSQL += ",";
+    } else if (bulk[i].type === 'remove') {
+      if (removeCount !== 0) removeSQL += ',';
       removeCount += 1;
 
-      removeSQL += '$' + removeCount;
+      removeSQL += `$${removeCount}`;
       removeVALs.push(bulk[i].key);
     }
   }
 
-  removeSQL += ");";
+  removeSQL += ');';
 
   const functions = [];
 
   for (const v in replaceVALs) {
-    const f = function (callback) {
-      return _this.db.query(_this.upsertStatement, replaceVALs[v], callback);
-    };
-
-    functions.push(f);
+    if (replaceVALs[v]) {
+      const f = (callback) => _this.db.query(_this.upsertStatement, replaceVALs[v], callback);
+      functions.push(f);
+    }
   }
 
-  const removeFunction = function (callback) {
+  const removeFunction = (callback) => {
     if (!removeVALs.length < 1) _this.db.query(removeSQL, removeVALs, callback);
     else callback();
   };
