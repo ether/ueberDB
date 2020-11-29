@@ -51,8 +51,6 @@ exports.database = function (settings) {
   if (this.settings.api) {
     elasticsearchSettings.api = this.settings.api;
   }
-
-  // console.info("ElasticSearch DB will be used with these settings: " + JSON.stringify(elasticsearchSettings));
 };
 
 /**
@@ -110,7 +108,6 @@ exports.database.prototype.get = function (key, callback) {
  */
 exports.database.prototype.findKeys = function (key, notKey, callback) {
   const splitKey = key.split(':');
-  const splitNotKey = (notKey ? notKey.split(':') : []);
 
   client.search({
     index: elasticsearchSettings.base_index,

@@ -16,8 +16,6 @@
  */
 
 const dirty = require('dirty');
-const git = require('simple-git');
-const async = require('async');
 
 exports.database = function (settings) {
   this.db = null;

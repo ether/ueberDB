@@ -166,7 +166,6 @@ exports.database.prototype.remove = function (key, callback) {
 
 exports.database.prototype.doBulk = function (bulk, callback) {
   const db = this.db;
-  const _this = this;
   const keys = [];
   const revs = {};
   const setters = [];

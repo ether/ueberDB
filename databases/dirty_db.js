@@ -23,7 +23,6 @@
 */
 
 const dirty = require('dirty');
-const async = require('async');
 
 exports.database = function (settings) {
   this.db = null;

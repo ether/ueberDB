@@ -1,8 +1,6 @@
 'use strict';
-path = require('path'),
 fs = require('fs'),
 ueberdb = require('../index'),
-events = require('events'),
 assert = require('assert'),
 Randexp = require('randexp'),
 databases = require('./lib/databases').databases,

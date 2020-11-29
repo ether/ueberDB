@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-const mysql = require('mysql');
 const async = require('async');
 
 exports.database = function (settings) {
