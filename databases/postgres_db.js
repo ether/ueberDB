@@ -1,3 +1,4 @@
+'use strict';
 /**
  * 2011 Peter 'Pita' Martischka
  *
@@ -14,11 +15,10 @@
  * limitations under the License.
  */
 
-var pg = require("pg");
-var postgresCommon = require('./postgres_common');
+const pg = require('pg');
+const postgresCommon = require('./postgres_common');
 
-exports.database = function(settings)
-{
+exports.database = function (settings) {
   this.settings = settings;
 
   this.settings.cache = settings.cache || 1000;
@@ -27,7 +27,7 @@ exports.database = function(settings)
 
   this.db = new pg.Client(this.settings);
   this.db.connect();
-}
+};
 
 exports.database.prototype.init = postgresCommon.init;
 exports.database.prototype.get = postgresCommon.get;
@@ -36,12 +36,11 @@ exports.database.prototype.set = postgresCommon.set;
 exports.database.prototype.remove = postgresCommon.remove;
 exports.database.prototype.doBulk = postgresCommon.doBulk;
 
-exports.database.prototype.close = function(callback)
-{
-  var _this = this;
+exports.database.prototype.close = function (callback) {
+  const _this = this;
 
-  this.db.on('drain', function() {
-  	_this.db.end.bind(_this.db);
-  	callback(null);
+  this.db.on('drain', () => {
+    _this.db.end.bind(_this.db);
+    callback(null);
   });
-}
+};
