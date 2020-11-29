@@ -26,7 +26,7 @@ CREATE TABLE `store` (
   `key` varchar(100) COLLATE utf8mb4_bin NOT NULL,
   `value` longtext COLLATE utf8mb4_bin NOT NULL,
   PRIMARY KEY (`key`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+) ENGINE=InnoDB` DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

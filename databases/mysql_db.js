@@ -41,7 +41,7 @@ exports.database = function(settings)
   if(this.settings.charset != null)
     this.db.charset = this.settings.charset;
 
-  this.settings.engine = "MyISAM"
+  this.settings.engine = "InnoDB"
   this.settings.cache = 1000;
   this.settings.writeInterval = 100;
   this.settings.json = true;
@@ -133,12 +133,12 @@ exports.database.prototype.get = function (key, callback)
   this.db.query("SELECT `value` FROM `store` WHERE `key` = ? AND BINARY `key` = ?", [key, key], function(err,results)
   {
     var value = null;
-    
+
     if(!err && results.length == 1)
     {
       value = results[0].value;
     }
-  
+
     callback(err,value);
   });
 
@@ -150,11 +150,11 @@ exports.database.prototype.findKeys = function (key, notKey, callback)
   var query="SELECT `key` FROM `store` WHERE `key` LIKE ?"
     , params=[]
   ;
-  
+
   //desired keys are key, e.g. pad:%
   key=key.replace(/\*/g,'%');
   params.push(key);
-  
+
   if(notKey!=null && notKey != undefined){
     //not desired keys are notKey, e.g. %:%:%
     notKey=notKey.replace(/\*/g,'%');
@@ -164,14 +164,14 @@ exports.database.prototype.findKeys = function (key, notKey, callback)
   this.db.query(query, params, function(err,results)
   {
     var value = [];
-    
+
     if(!err && results.length > 0)
     {
       results.forEach(function(val){
         value.push(val.key);
       });
     }
-  
+
     callback(err,value);
   });
 
@@ -202,25 +202,25 @@ exports.database.prototype.remove = function (key, callback)
 }
 
 exports.database.prototype.doBulk = function (bulk, callback)
-{ 
+{
   var _this = this;
-  
+
   var replaceSQL = "REPLACE INTO `store` VALUES ";
-  
+
   // keysToDelete is a string of the form "(k1, k2, ..., kn)" painstakingly built by hand.
   let keysToDelete = "(";
 
   var firstReplace = true;
   var firstRemove = true;
-  
+
   for(var i in bulk)
-  {  
+  {
     if(bulk[i].type == "set")
     {
       if(!firstReplace)
         replaceSQL+=",";
       firstReplace = false;
-    
+
       replaceSQL+="(" + _this.db.escape(bulk[i].key) + ", " + _this.db.escape(bulk[i].value) + ")";
     }
     else if(bulk[i].type == "remove")
@@ -228,17 +228,17 @@ exports.database.prototype.doBulk = function (bulk, callback)
       if(!firstRemove)
         keysToDelete+=",";
       firstRemove = false;
-    
+
       keysToDelete+=_this.db.escape(bulk[i].key);
     }
   }
-  
+
   keysToDelete += ")";
 
   replaceSQL+=";";
 
   var removeSQL = "DELETE FROM `store` WHERE `key` IN " + keysToDelete + " AND BINARY `key` IN " + keysToDelete + ";";
-  
+
   async.parallel([
     function(callback)
     {
@@ -255,8 +255,8 @@ exports.database.prototype.doBulk = function (bulk, callback)
         callback();
     }
   ], callback);
- 
-  this.schedulePing(); 
+
+  this.schedulePing();
 }
 
 exports.database.prototype.close = function(callback)
@@ -264,4 +264,3 @@ exports.database.prototype.close = function(callback)
   this.clearPing();
   this.db.end(callback);
 }
-
