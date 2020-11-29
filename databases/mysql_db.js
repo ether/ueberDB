@@ -15,8 +15,7 @@
  * limitations under the License.
  */
 
-let mysql = require('mysql');
-let async = require('async');
+const async = require('async');
 
 exports.database = function (settings) {
   // temp hack needs a proper fix..
@@ -38,7 +37,7 @@ exports.database = function (settings) {
 
   if (this.settings.charset != null) this.db.charset = this.settings.charset;
 
-  this.settings.engine = 'InnoDB'
+  this.settings.engine = 'InnoDB';
   this.settings.cache = 1000;
   this.settings.writeInterval = 100;
   this.settings.json = true;
@@ -53,65 +52,65 @@ exports.database.prototype.clearPing = function () {
 exports.database.prototype.schedulePing = function () {
   this.clearPing();
 
-  let self = this;
-  this.interval = setInterval(()=> {
+  const self = this;
+  this.interval = setInterval(() => {
     self.db.query('SELECT 1');
   }, 10000);
 };
 
 exports.database.prototype.init = function (callback) {
-  let db = this.db;
-  let self = this;
+  const db = this.db;
+  const self = this;
 
-  let sqlCreate = 'CREATE TABLE IF NOT EXISTS `store` ( ' +
+  const sqlCreate = `${'CREATE TABLE IF NOT EXISTS `store` ( ' +
                   '`key` VARCHAR( 100 ) NOT NULL COLLATE utf8mb4_bin, ' +
                   '`value` LONGTEXT COLLATE utf8mb4_bin NOT NULL , ' +
                   'PRIMARY KEY ( `key` ) ' +
-                  ') ENGINE=' + this.settings.engine + ' CHARSET=utf8mb4 COLLATE=utf8mb4_bin;';
+                  ') ENGINE='}${this.settings.engine} CHARSET=utf8mb4 COLLATE=utf8mb4_bin;`;
 
-  let sqlAlter = 'ALTER TABLE store MODIFY `key` VARCHAR(100) COLLATE utf8mb4_bin;';
+  const sqlAlter = 'ALTER TABLE store MODIFY `key` VARCHAR(100) COLLATE utf8mb4_bin;';
 
-  db.query(sqlCreate, [], function (err) {
+  db.query(sqlCreate, [], (err) => {
     // call the main callback
     callback(err);
 
     // Checks for Database charset et al
-    let dbCharSet = `SELECT DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '${db.database}'`;
-    db.query(dbCharSet, function (err, result) {
+    const dbCharSet = `SELECT DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '${db.database}'`;
+    db.query(dbCharSet, (err, result) => {
       result = JSON.parse(JSON.stringify(result));
       if (result[0].DEFAULT_CHARACTER_SET_NAME !== db.charset) {
-        console.error('Database is not configured with charset '+db.charset + ' -- This may lead to crashes when certain characters are pasted in pads');
+        console.error(`Database is not configured with charset ${db.charset} -- This may lead to crashes when certain characters are pasted in pads`);
         console.log(result[0], db.charset);
       }
 
       if (result[0].DEFAULT_COLLATION_NAME.indexOf(db.charset) === -1) {
-        console.error('Database is not configured with collation name that includes '+db.charset + " -- This may lead to crashes when certain characters are pasted in pads");
+        console.error(`Database is not configured with collation name that includes ${db.charset} -- This may lead to crashes when certain characters are pasted in pads`);
         console.log(result[0], db.charset, result[0].DEFAULT_COLLATION_NAME);
       }
     });
 
-    let tableCharSet = `SELECT CCSA.character_set_name AS character_set_name FROM information_schema.\`TABLES\` T,information_schema.\`COLLATION_CHARACTER_SET_APPLICABILITY\` CCSA WHERE CCSA.collation_name = T.table_collation AND T.table_schema = '${db.database}' AND T.table_name = 'store'`;
-    db.query(tableCharSet, function (err, result, tf) {
+    const tableCharSet = `SELECT CCSA.character_set_name AS character_set_name FROM information_schema.\`TABLES\` T,information_schema.\`COLLATION_CHARACTER_SET_APPLICABILITY\` CCSA WHERE CCSA.collation_name = T.table_collation AND T.table_schema = '${db.database}' AND T.table_name = 'store'`;
+    db.query(tableCharSet, (err, result, tf) => {
       if (!result[0]) console.warn('Data has no character_set_name value -- This may lead to crashes when certain characters are pasted in pads');
       if (result[0] && (result[0].character_set_name !== db.charset)) {
-        console.error('table is not configured with charset '+db.charset + " -- This may lead to crashes when certain characters are pasted in pads");
+        console.error(`table is not configured with charset ${db.charset} -- This may lead to crashes when certain characters are pasted in pads`);
         console.log(result[0], db.charset);
       }
     });
 
     // check migration level, alter if not migrated
-    self.get('MYSQL_MIGRATION_LEVEL', (err, level)=> {
+    self.get('MYSQL_MIGRATION_LEVEL', (err, level) => {
       if (err) {
         throw err;
       }
 
       if (level !== '1') {
-        db.query(sqlAlter, [], function (err) {
+        db.query(sqlAlter, [], (err) => {
           if (err) {
             throw err;
           }
 
-          self.set('MYSQL_MIGRATION_LEVEL', "1", (err)=> {
+          self.set('MYSQL_MIGRATION_LEVEL', '1', (err) => {
             if (err) {
               throw err;
             }
@@ -125,10 +124,10 @@ exports.database.prototype.init = function (callback) {
 };
 
 exports.database.prototype.get = function (key, callback) {
-  this.db.query('SELECT `value` FROM `store` WHERE `key` = ? AND BINARY `key` = ?', [key, key], (err,results) => {
+  this.db.query('SELECT `value` FROM `store` WHERE `key` = ? AND BINARY `key` = ?', [key, key], (err, results) => {
     let value = null;
 
-    if (!err && results.length == 1) {
+    if (!err && results.length === 1) {
       value = results[0].value;
     }
 
@@ -139,25 +138,24 @@ exports.database.prototype.get = function (key, callback) {
 };
 
 exports.database.prototype.findKeys = function (key, notKey, callback) {
-  let query = "SELECT `key` FROM `store` WHERE `key` LIKE ?",
-     params = []
-  ;
+  let query = 'SELECT `key` FROM `store` WHERE `key` LIKE ?';
+  const params = [];
 
   // desired keys are key, e.g. pad:%
   key = key.replace(/\*/g, '%');
   params.push(key);
 
-  if (notKey != null && notKey != undefined) {
+  if (notKey != null && notKey !== undefined) {
     // not desired keys are notKey, e.g. %:%:%
     notKey = notKey.replace(/\*/g, '%');
-    query += " AND `key` NOT LIKE ?";
+    query += ' AND `key` NOT LIKE ?';
     params.push(notKey);
   }
-  this.db.query(query, params, (err,results) => {
-    let value = [];
+  this.db.query(query, params, (err, results) => {
+    const value = [];
 
     if (!err && results.length > 0) {
-      results.forEach((val)=> {
+      results.forEach((val) => {
         value.push(val.key);
       });
     }
@@ -172,7 +170,7 @@ exports.database.prototype.set = function (key, value, callback) {
   if (key.length > 100) {
     callback('Your Key can only be 100 chars');
   } else {
-    this.db.query('REPLACE INTO `store` VALUES (?,?)', [key, value], (err, info)=> {
+    this.db.query('REPLACE INTO `store` VALUES (?,?)', [key, value], (err, info) => {
       callback(err);
     });
   }
@@ -197,14 +195,14 @@ exports.database.prototype.doBulk = function (bulk, callback) {
   let firstReplace = true;
   let firstRemove = true;
 
-  for (let i in bulk) {
-    if (bulk[i].type == 'set') {
-      if (!firstReplace) replaceSQL += ",";
+  for (const i in bulk) {
+    if (bulk[i].type === 'set') {
+      if (!firstReplace) replaceSQL += ',';
       firstReplace = false;
 
-      replaceSQL += "(" + _this.db.escape(bulk[i].key) + ', ' + _this.db.escape(bulk[i].value) + ')';
-    } else if (bulk[i].type == 'remove') {
-      if (!firstRemove) keysToDelete += ",";
+      replaceSQL += `(${_this.db.escape(bulk[i].key)}, ${_this.db.escape(bulk[i].value)})`;
+    } else if (bulk[i].type === 'remove') {
+      if (!firstRemove) keysToDelete += ',';
       firstRemove = false;
 
       keysToDelete += _this.db.escape(bulk[i].key);
@@ -213,16 +211,16 @@ exports.database.prototype.doBulk = function (bulk, callback) {
 
   keysToDelete += ')';
 
-  replaceSQL += ";";
+  replaceSQL += ';';
 
-  let removeSQL = 'DELETE FROM `store` WHERE `key` IN ' + keysToDelete + ' AND BINARY `key` IN ' + keysToDelete + ';';
+  const removeSQL = `DELETE FROM \`store\` WHERE \`key\` IN ${keysToDelete} AND BINARY \`key\` IN ${keysToDelete};`;
 
   async.parallel([
-    function (callback) {
+    (callback) => {
       if (!firstReplace) _this.db.query(replaceSQL, callback);
       else callback();
     },
-    function (callback) {
+    (callback) => {
       if (!firstRemove) _this.db.query(removeSQL, callback);
       else callback();
     },
