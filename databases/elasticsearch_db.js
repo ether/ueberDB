@@ -51,8 +51,6 @@ exports.database = function (settings) {
   if (this.settings.api) {
     elasticsearchSettings.api = this.settings.api;
   }
-
-  // console.info("ElasticSearch DB will be used with these settings: " + JSON.stringify(elasticsearchSettings));
 };
 
 /**
@@ -110,7 +108,6 @@ exports.database.prototype.get = function (key, callback) {
  */
 exports.database.prototype.findKeys = function (key, notKey, callback) {
   const splitKey = key.split(':');
-  const splitNotKey = (notKey ? notKey.split(':') : []);
 
   client.search({
     index: elasticsearchSettings.base_index,
@@ -168,7 +165,7 @@ exports.database.prototype.set = function (key, value, callback) {
  *    completion of a successful database write.
  */
 exports.database.prototype.remove = function (key, callback) {
-  client.delete(getOptionsFromKey(key), (error, response) => {
+  client.delete(key, (error, response) => {
     parseResponse(error, response, callback);
   });
 };
@@ -236,7 +233,7 @@ exports.database.prototype.close = function (callback) {
  *  @param {String} key Key, of the format "test:test1" or, optionally, of the
  *    format "test:test1:check:check1"
  */
-function getIndexTypeId(key) {
+const getIndexTypeId = (key) => {
   const returnObject = {};
 
   const splitKey = key.split(':');
@@ -257,12 +254,12 @@ function getIndexTypeId(key) {
   }
 
   return returnObject;
-}
+};
 
 /**
  * Extract data from elasticsearch responses, handle errors, handle callbacks.
  */
-function parseResponse(error, response, callback) {
+const parseResponse = (error, response, callback) => {
   if (error) {
     // don't treat not found as an error (is this specific to etherpad?)
     if (error.message === 'Not Found' && !response.found) {
@@ -284,4 +281,4 @@ function parseResponse(error, response, callback) {
   }
 
   callback(error, response);
-}
+};

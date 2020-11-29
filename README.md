@@ -14,7 +14,6 @@
 * Crate
 * Dirty
 * Elasticsearch
-* Level
 * MySQL
 * Maria
 * Postgres (single connection and with connection pool)
@@ -164,12 +163,12 @@ You should create your database as utf8mb4_bin.
 
 # Redis TLS communication
 
-If you enabled TLS on your Redis database (available since Redis 6.0) you will need to change your connections parameters, here is an example: 
+If you enabled TLS on your Redis database (available since Redis 6.0) you will need to change your connections parameters, here is an example:
 
 ```
 settings:
     {
-      host: 
+      host:
       port: rediss://<redis_database_address>:<redis_database_port>
       socket:
       database:
