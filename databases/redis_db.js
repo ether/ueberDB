@@ -1,4 +1,6 @@
 'use strict';
+/* eslint new-cap: "warn"*/
+
 /**
  * 2011 Peter 'Pita' Martischka
  *
@@ -66,25 +68,27 @@ exports.database.prototype.findKeys = function (key, notKey, callback) {
   // As redis provides only limited support for getting a list of all
   // available keys we have to limit key and notKey here.
   // See http://redis.io/commands/keys
-  if (notKey == null || notKey == undefined) {
+  if (notKey == null || notKey === undefined) {
     this.client.KEYS(key, callback);
-  } else if (notKey == '*:*:*') {
+  } else if (notKey === '*:*:*') {
     // restrict key to format "text:*"
     const matches = /^([^:]+):\*$/.exec(key);
     if (matches) {
       this.client.SMEMBERS(`ueberDB:keys:${matches[1]}`, callback);
     } else {
-      callback(new customError('redis db only supports key patterns like pad:* when notKey is set to *:*:*', 'apierror'), null);
+      const msg = 'redis db only supports key patterns like pad:* when notKey is set to *:*:*';
+      callback(
+          new Error(msg, 'apierror'), null);
     }
   } else {
-    callback(new customError('redis db currently only supports *:*:* as notKey', 'apierror'), null);
+    callback(new Error('redis db currently only supports *:*:* as notKey', 'apierror'), null);
   }
 };
 
 exports.database.prototype.set = function (key, value, callback) {
   const matches = /^([^:]+):([^:]+)$/.exec(key);
   if (matches) {
-    this.client.sadd(new Array(`ueberDB:keys:${matches[1]}`, matches[0]));
+    this.client.sadd([`ueberDB:keys:${matches[1]}`, matches[0]]);
   }
   this.client.set(key, value, callback);
 };
@@ -92,7 +96,7 @@ exports.database.prototype.set = function (key, value, callback) {
 exports.database.prototype.remove = function (key, callback) {
   const matches = /^([^:]+):([^:]+)$/.exec(key);
   if (matches) {
-    this.client.srem(new Array(`ueberDB:keys:${matches[1]}`, matches[0]));
+    this.client.srem([`ueberDB:keys:${matches[1]}`, matches[0]]);
   }
   this.client.del(key, callback);
 };
@@ -101,17 +105,19 @@ exports.database.prototype.doBulk = function (bulk, callback) {
   const multi = this.client.multi();
 
   for (const i in bulk) {
-    const matches = /^([^:]+):([^:]+)$/.exec(bulk[i].key);
-    if (bulk[i].type == 'set') {
-      if (matches) {
-        multi.sadd(new Array(`ueberDB:keys:${matches[1]}`, matches[0]));
+    if (bulk[i]) {
+      const matches = /^([^:]+):([^:]+)$/.exec(bulk[i].key);
+      if (bulk[i].type === 'set') {
+        if (matches) {
+          multi.sadd([`ueberDB:keys:${matches[1]}`, matches[0]]);
+        }
+        multi.set(bulk[i].key, bulk[i].value);
+      } else if (bulk[i].type === 'remove') {
+        if (matches) {
+          multi.srem([`ueberDB:keys:${matches[1]}`, matches[0]]);
+        }
+        multi.del(bulk[i].key);
       }
-      multi.set(bulk[i].key, bulk[i].value);
-    } else if (bulk[i].type == 'remove') {
-      if (matches) {
-        multi.srem(new Array(`ueberDB:keys:${matches[1]}`, matches[0]));
-      }
-      multi.del(bulk[i].key);
     }
   }
 

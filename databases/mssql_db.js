@@ -1,4 +1,6 @@
 'use strict';
+/* eslint new-cap: "warn"*/
+
 /**
  * 2019 - exspecto@gmail.com
  *
@@ -77,7 +79,7 @@ exports.database.prototype.get = function (key, callback) {
   request.query('SELECT [value] FROM [store] WHERE [key] = @key', (err, results) => {
     let value = null;
 
-    if (!err && results.rowsAffected[0] == 1) {
+    if (!err && results.rowsAffected[0] === 1) {
       value = results.recordset[0].value;
     }
 
@@ -94,7 +96,7 @@ exports.database.prototype.findKeys = function (key, notKey, callback) {
 
   request.input('key', mssql.NVarChar(100), key);
 
-  if (notKey != null && notKey != undefined) {
+  if (notKey != null && notKey !== undefined) {
     // not desired keys are notKey, e.g. %:%:%
     notKey = notKey.replace(/\*/g, '%');
     request.input('notkey', mssql.NVarChar(100), notKey);
@@ -105,7 +107,7 @@ exports.database.prototype.findKeys = function (key, notKey, callback) {
     const value = [];
 
     if (!err && results.rowsAffected[0] > 0) {
-      for (i = 0; i < results.recordset.length; i++) {
+      for (let i = 0; i < results.recordset.length; i++) {
         value.push(results.recordset[i].key);
       }
     }
@@ -154,11 +156,12 @@ exports.database.prototype.doBulk = function (bulk, callback) {
       if (firstReplace) {
         replacements.push('BEGIN TRANSACTION;');
         firstReplace = false;
-      } else if (i % maxInserts == 0) {
+      } else if (i % maxInserts === 0) {
         replacements.push('\nCOMMIT TRANSACTION;\nBEGIN TRANSACTION;\n');
       }
 
-      replacements.push(`MERGE [store] t USING (SELECT '${bulk[i].key}' [key], '${bulk[i].value}' [value]) s
+      replacements.push(`MERGE [store] t USING (SELECT '${bulk[i].key}' [key],
+       '${bulk[i].value}' [value]) s
                    ON t.[key] = s.[key]
                    WHEN MATCHED AND s.[value] IS NOT NULL THEN UPDATE SET t.[value] = s.[value]
                    WHEN NOT MATCHED THEN INSERT ([key], [value]) VALUES (s.[key], s.[value]);`);
@@ -177,7 +180,7 @@ exports.database.prototype.doBulk = function (bulk, callback) {
 
   async.parallel(
       [
-        function (callback) {
+        (callback) => {
           if (!firstReplace) {
             request.batch(replacements.join('\n'), (err, results) => {
               if (err) {
@@ -189,7 +192,7 @@ exports.database.prototype.doBulk = function (bulk, callback) {
             callback();
           }
         },
-        function (callback) {
+        (callback) => {
           if (!firstRemove) {
             request.query(removeSQL, callback);
           } else {
