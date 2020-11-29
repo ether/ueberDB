@@ -19,6 +19,9 @@ var async = require("async");
 
 exports.database = function(settings)
 {
+  // temp hack needs a proper fix..
+  if(settings && !settings.charset) settings.charset = "utf8mb4";
+
   this.db = require('mysql').createConnection(settings);
 
   this.settings = settings;
@@ -82,6 +85,7 @@ exports.database.prototype.init = function(callback)
     // Checks for Database charset et al
     var dbCharSet = "SELECT DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '"+db.database+"'";
     db.query(dbCharSet,function(err, result){
+      result = JSON.parse(JSON.stringify(result));
       if (result[0].DEFAULT_CHARACTER_SET_NAME !== db.charset){
         console.error("Database is not configured with charset "+db.charset+ " -- This may lead to crashes when certain characters are pasted in pads");
         console.log(result[0], db.charset);
