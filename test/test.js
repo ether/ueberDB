@@ -103,7 +103,7 @@ async function ueberdbAPITests(database, dbSettings, cacheEnabled, done) {
           assert.equal(matches, true);
         });
         db.get(key, (err, output) => {
-          const matches = JSON.stringify(input) === JSON.stringify(output);
+          // const matches = JSON.stringify(input) === JSON.stringify(output);
           // assert.equal(matches, false); TODO this fails in dirty?
         });
       });
