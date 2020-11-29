@@ -11,7 +11,6 @@
 
 # Database Support
 * Couch
-* Crate
 * Dirty
 * Elasticsearch
 * MySQL
@@ -205,7 +204,7 @@ If you don't provide a certificate on the client side, you need to add the envir
 
 # What's changed from UeberDB?
 
-* Dropped broken Databases[Mongo/SQLite] (probably a breaking change for some people)
+* Dropped broken Databases[Mongo/SQLite/Crate/LevelDB and LMDB] (probably a breaking change for some people)
 * Introduced CI.
 * Introduced better testing.
 * Fixed broken database clients IE Redis.
