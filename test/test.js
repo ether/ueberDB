@@ -7,7 +7,7 @@ Randexp = require("randexp"),
 databases = require("./lib/databases").databases,
 clitable = require("cli-table");
 
-var exists = fs.exists;
+const exists = fs.stat;
 var db;
 
 // Basic speed settings, can be overriden on a per database setting
