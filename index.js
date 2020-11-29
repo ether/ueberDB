@@ -183,7 +183,9 @@ const clone = (obj) => {
   if (obj instanceof Object) {
     const copy = {};
     for (const attr in obj) {
-      if (obj.hasOwnProperty(attr)) copy[attr] = clone(obj[attr]);
+      if (Object.prototype.hasOwnProperty.call(obj, attr)) {
+        copy[attr] = clone(obj[attr]);
+      }
     }
     return copy;
   }
