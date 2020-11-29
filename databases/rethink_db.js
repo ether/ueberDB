@@ -59,7 +59,7 @@ exports.database.prototype.findKeys = function (key, notKey, callback) {
   const regex = this.createFindRegex(key, notKey);
   const that = this;
   r.filter((item) => {
-    if (item.id.search(regex) != -1) {
+    if (item.id.search(regex) !== -1) {
       keys.push(item.id);
     }
   }).run(that.connection, callback);
@@ -67,7 +67,10 @@ exports.database.prototype.findKeys = function (key, notKey, callback) {
 
 exports.database.prototype.set = function (key, value, callback) {
   const that = this;
-  r.table(that.table).insert({id: key, content: value}, {conflict: 'replace'}).run(that.connection, callback);
+  r.table(that.table).insert(
+      {id: key, content: value},
+      {conflict: 'replace'}
+  ).run(that.connection, callback);
 };
 
 exports.database.prototype.doBulk = function (bulk, callback) {
@@ -76,15 +79,20 @@ exports.database.prototype.doBulk = function (bulk, callback) {
   const _out = [];
 
   for (const i in bulk) {
-    if (bulk[i].type == 'set') {
+    if (bulk[i].type === 'set') {
       _in.push({id: bulk[i].key, content: bulk[i].value});
-    } else if (bulk[i].type == 'remove') {
+    } else if (bulk[i].type === 'remove') {
       _out.push(bulk[i].key);
     }
   }
   async.parallel([
-    function (cb) { r.table(that.table).insert(_in, {conflict: 'replace'}).run(that.connection, cb); },
-    function (cb) { r.table(that.table).getAll(_out).delete().run(that.connection, cb); },
+    (cb) => {
+      r.table(that.table).
+          insert(_in, {conflict: 'replace'}).run(that.connection, cb);
+    },
+    (cb) => {
+      r.table(that.table).getAll(_out).delete().run(that.connection, cb);
+    },
   ], callback);
 };
 exports.database.prototype.remove = function (key, callback) {
