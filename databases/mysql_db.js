@@ -75,25 +75,36 @@ exports.database.prototype.init = function (callback) {
     callback(err);
 
     // Checks for Database charset et al
-    const dbCharSet = `SELECT DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '${db.database}'`;
+    const dbCharSet = `SELECT DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME FROM
+    INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '${db.database}'`;
     db.query(dbCharSet, (err, result) => {
       result = JSON.parse(JSON.stringify(result));
       if (result[0].DEFAULT_CHARACTER_SET_NAME !== db.charset) {
-        console.error(`Database is not configured with charset ${db.charset} -- This may lead to crashes when certain characters are pasted in pads`);
+        console.error(`Database is not configured with charset ${db.charset} --
+          This may lead to crashes when certain characters are pasted in pads`);
         console.log(result[0], db.charset);
       }
 
       if (result[0].DEFAULT_COLLATION_NAME.indexOf(db.charset) === -1) {
-        console.error(`Database is not configured with collation name that includes ${db.charset} -- This may lead to crashes when certain characters are pasted in pads`);
+        console.error(`Database is not configured with collation name that includes ${db.charset} --
+           This may lead to crashes when certain characters are pasted in pads`);
         console.log(result[0], db.charset, result[0].DEFAULT_COLLATION_NAME);
       }
     });
 
-    const tableCharSet = `SELECT CCSA.character_set_name AS character_set_name FROM information_schema.\`TABLES\` T,information_schema.\`COLLATION_CHARACTER_SET_APPLICABILITY\` CCSA WHERE CCSA.collation_name = T.table_collation AND T.table_schema = '${db.database}' AND T.table_name = 'store'`;
+    const tableCharSet = `SELECT CCSA.character_set_name AS character_set_name FROM
+     information_schema.\`TABLES\` T,information_schema.\`COLLATION_CHARACTER_SET_APPLICABILITY\`
+     CCSA WHERE CCSA.collation_name = T.table_collation AND T.table_schema = '${db.database}'
+     AND T.table_name = 'store'`;
+    const crashMsg = 'This may lead to crashes when certain characters are pasted in pads';
     db.query(tableCharSet, (err, result, tf) => {
-      if (!result[0]) console.warn('Data has no character_set_name value -- This may lead to crashes when certain characters are pasted in pads');
+      if (!result[0]) {
+        console.warn('Data has no character_set_name value');
+        console.warn(crashMsg);
+      }
       if (result[0] && (result[0].character_set_name !== db.charset)) {
-        console.error(`table is not configured with charset ${db.charset} -- This may lead to crashes when certain characters are pasted in pads`);
+        console.error(`table is not configured with charset ${db.charset}`);
+        console.error(crashMsg);
         console.log(result[0], db.charset);
       }
     });
@@ -124,29 +135,30 @@ exports.database.prototype.init = function (callback) {
 };
 
 exports.database.prototype.get = function (key, callback) {
-  this.db.query('SELECT `value` FROM `store` WHERE `key` = ? AND BINARY `key` = ?', [key, key], (err, results) => {
-    let value = null;
+  this.db.query('SELECT `value` FROM `store` WHERE `key` = ? AND BINARY `key` = ?',
+      [key, key], (err, results) => {
+        let value = null;
 
-    if (!err && results.length == 1) {
-      value = results[0].value;
-    }
+        if (!err && results.length === 1) {
+          value = results[0].value;
+        }
 
-    callback(err, value);
-  });
+        callback(err, value);
+      }
+  );
 
   this.schedulePing();
 };
 
 exports.database.prototype.findKeys = function (key, notKey, callback) {
   let query = 'SELECT `key` FROM `store` WHERE `key` LIKE ?';
-  const params = []
-  ;
+  const params = [];
 
   // desired keys are key, e.g. pad:%
   key = key.replace(/\*/g, '%');
   params.push(key);
 
-  if (notKey != null && notKey != undefined) {
+  if (notKey != null && notKey !== undefined) {
     // not desired keys are notKey, e.g. %:%:%
     notKey = notKey.replace(/\*/g, '%');
     query += ' AND `key` NOT LIKE ?';
@@ -197,12 +209,12 @@ exports.database.prototype.doBulk = function (bulk, callback) {
   let firstRemove = true;
 
   for (const i in bulk) {
-    if (bulk[i].type == 'set') {
+    if (bulk[i].type === 'set') {
       if (!firstReplace) replaceSQL += ',';
       firstReplace = false;
 
       replaceSQL += `(${_this.db.escape(bulk[i].key)}, ${_this.db.escape(bulk[i].value)})`;
-    } else if (bulk[i].type == 'remove') {
+    } else if (bulk[i].type === 'remove') {
       if (!firstRemove) keysToDelete += ',';
       firstRemove = false;
 
@@ -214,14 +226,15 @@ exports.database.prototype.doBulk = function (bulk, callback) {
 
   replaceSQL += ';';
 
-  const removeSQL = `DELETE FROM \`store\` WHERE \`key\` IN ${keysToDelete} AND BINARY \`key\` IN ${keysToDelete};`;
+  const removeSQL = `DELETE FROM \`store\` WHERE \`key\` IN ${keysToDelete}
+      AND BINARY \`key\` IN ${keysToDelete};`;
 
   async.parallel([
-    function (callback) {
+    (callback) => {
       if (!firstReplace) _this.db.query(replaceSQL, callback);
       else callback();
     },
-    function (callback) {
+    (callback) => {
       if (!firstRemove) _this.db.query(removeSQL, callback);
       else callback();
     },

@@ -1,10 +1,13 @@
 'use strict';
-fs = require('fs'),
-ueberdb = require('../index'),
-assert = require('assert'),
-Randexp = require('randexp'),
-databases = require('./lib/databases').databases,
-clitable = require('cli-table');
+/* global before, after, describe, it */
+/* eslint new-cap: "warn" */
+
+const fs = require('fs');
+const ueberdb = require('../index');
+const assert = require('assert');
+const Randexp = require('randexp');
+const databases = require('./lib/databases').databases;
+const Clitable = require('cli-table');
 
 const exists = fs.stat;
 let db;
@@ -19,8 +22,13 @@ const CACHE_ON = true;
 const CACHE_OFF = false;
 const keys = Object.keys(databases);
 
-const table = new clitable({
-  head: ['Database', '# of items', 'Write(in seconds)', 'Read(scnds)', 'findKey(scnds)', 'remove(scnds)'],
+const table = new Clitable({
+  head: ['Database',
+    '# of items',
+    'Write(in seconds)',
+    'Read(scnds)',
+    'findKey(scnds)',
+    'remove(scnds)'],
   colWidths: [20, 10, 20, 15, 15, 15],
 });
 
@@ -30,7 +38,7 @@ keys.forEach(async (database) => {
   await ueberdbAPITests(database, dbSettings, CACHE_OFF);
 });
 
-after(function () {
+after(() => {
   if (databases.dirty && databases.dirty.filename) {
     exists(databases.dirty.filename, (doesExist) => {
       if (doesExist) {
@@ -45,14 +53,15 @@ after(function () {
 
 
 async function ueberdbAPITests(database, dbSettings, cacheEnabled, done) {
+  let cacheStatus;
   if (cacheEnabled) {
-    var cacheStatus = 'cache-on';
+    cacheStatus = 'cache-on';
   } else {
-    var cacheStatus = 'cache-off';
+    cacheStatus = 'cache-off';
   }
   describe(`ueberdb:${database}:${cacheStatus}`, function () {
     this.timeout(1000000);
-    function init(done) {
+    const init = (done) => {
       if (dbSettings.filename) {
         exists(dbSettings.filename, (doesExist) => {
           if (doesExist) {
@@ -66,16 +75,16 @@ async function ueberdbAPITests(database, dbSettings, cacheEnabled, done) {
         if (!cacheEnabled) db.cache = 0;
         done();
       });
-    }
+    };
 
     before(init);
 
-    describe('white space', function () {
+    describe('white space', () => {
       const input = {a: 1, b: new Randexp(/.+/).gen()};
-      var key = new Randexp(/.+/).gen();
+      let key = new Randexp(/.+/).gen();
 
       // set
-      it('Tries to get the value with an included space', function () {
+      it('Tries to get the value with an included space', () => {
         db.set(key, input);
         db.get(`${key} `, (err, output) => {
           const matches = JSON.stringify(input) !== JSON.stringify(output);
@@ -83,7 +92,7 @@ async function ueberdbAPITests(database, dbSettings, cacheEnabled, done) {
         });
       });
 
-      it('Gets the correct item when whitespace is in key', function () {
+      it('Gets the correct item when whitespace is in key', () => {
         // get the input object without whitespace
         db.get(key, (err, output) => {
           const matches = JSON.stringify(input) === JSON.stringify(output);
@@ -91,11 +100,11 @@ async function ueberdbAPITests(database, dbSettings, cacheEnabled, done) {
         });
       });
 
-      var key = new Randexp(/.+/).gen();
+      key = new Randexp(/.+/).gen();
       const keyWithSpace = `${key} `;
       // set
       // now we do the same but with whiteSpaceInKey
-      it('Tries to get the value with an included space', function () {
+      it('Tries to get the value with an included space', () => {
         db.set(`${keyWithSpace} `, input);
         // get the input object with whitespace (shouldn't get it)
         db.get(`${keyWithSpace} `, (err, output) => {
@@ -109,7 +118,7 @@ async function ueberdbAPITests(database, dbSettings, cacheEnabled, done) {
       });
     }); // end white space
 
-    it('basic read write', function () {
+    it('basic read write', () => {
       // Basic read/write operation
       const input = {a: 1, b: new Randexp(/.+/).gen()};
       const key = new Randexp(/.+/).gen();
@@ -117,14 +126,14 @@ async function ueberdbAPITests(database, dbSettings, cacheEnabled, done) {
       db.set(key, input);
       // get the object
       db.get(key, (err, output) => {
-        it('Does a basic write->read operation with a random key/value', function () {
+        it('Does a basic write->read operation with a random key/value', () => {
           const matches = JSON.stringify(input) === JSON.stringify(output);
           assert.equal(matches, true);
         });
       });
     }); // end basic read writes
 
-    it('Does a basic write->read operation with a random key/value', function () {
+    it('Does a basic write->read operation with a random key/value', () => {
       const input = {testLongString: new Randexp(/[a-f0-9]{50000}/).gen()};
       const key = new Randexp(/.+/).gen();
       // set long string
@@ -138,7 +147,7 @@ async function ueberdbAPITests(database, dbSettings, cacheEnabled, done) {
     });
 
     // Basic findKeys test functionality
-    it('Does a basic findKeys operation with a random key/value', function () {
+    it('Does a basic findKeys operation with a random key/value', () => {
       const input = {a: 1, b: new Randexp(/.+/).gen()};
       // TODO setting a key with non ascii chars
       // key = "TODO" + new Randexp(/.+/).gen();
@@ -158,7 +167,7 @@ async function ueberdbAPITests(database, dbSettings, cacheEnabled, done) {
       });
     });
 
-    it('Tests a key has been deleted', function () {
+    it('Tests a key has been deleted', () => {
       const input = {a: 1, b: new Randexp(/.+/).gen()};
       const key = new Randexp(/.+/).gen();
       db.set(key, input);
@@ -176,7 +185,7 @@ async function ueberdbAPITests(database, dbSettings, cacheEnabled, done) {
     });
 
     // Read/write operations with timers to catch events
-    it('Speed is acceptable', function () {
+    it('Speed is acceptable', () => {
       this.timeout(1000000);
       const input = {a: 1, b: new Randexp(/.+/).gen()};
       // var key =  new Randexp(/.+/).gen();
@@ -184,14 +193,15 @@ async function ueberdbAPITests(database, dbSettings, cacheEnabled, done) {
       const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
       const timers = {};
       timers.start = Date.now();
-      const numberOfWrites = (dbSettings.speeds && dbSettings.speeds.numberOfWrites) || defaultNumberOfWrites;
-      for (i = 0; i < numberOfWrites; i++) {
+      const numberOfWrites = (dbSettings.speeds && dbSettings.speeds.numberOfWrites) ||
+      defaultNumberOfWrites;
+      for (let i = 0; i < numberOfWrites; i++) {
         db.set(key + i, input);
       }
 
       timers.written = Date.now();
 
-      for (i = 0; i < numberOfWrites; i++) {
+      for (let i = 0; i < numberOfWrites; i++) {
         db.get(key + i, (err, output) => {
           if (err) throw new Error('Error .get');
         });
@@ -200,14 +210,14 @@ async function ueberdbAPITests(database, dbSettings, cacheEnabled, done) {
 
       // do a findKeys Event
 
-      for (i = 0; i < numberOfWrites; i++) {
+      for (let i = 0; i < numberOfWrites; i++) {
         db.findKeys(key + i, null, (err, output) => {
           if (err) throw new Error('Error .findKeys');
         });
       }
       timers.findKeys = Date.now();
 
-      for (i = 0; i < numberOfWrites; i++) {
+      for (let i = 0; i < numberOfWrites; i++) {
         db.remove(key + i, null, (err, output) => {
           if (err) throw new Error('Error .remove');
         });
@@ -227,21 +237,30 @@ async function ueberdbAPITests(database, dbSettings, cacheEnabled, done) {
       const timeToReadPerRecord = timeToRead / numberOfWrites;
       const timeToFindKeyPerRecord = timeToFindKey / numberOfWrites;
       const timeToRemovePerRecord = timeToRemove / numberOfWrites;
-      table.push([`${database}:${cacheStatus}`, numberOfWrites, timeToWritePerRecord, timeToReadPerRecord, timeToFindKeyPerRecord, timeToRemovePerRecord]);
+      table.push([`${database}:${cacheStatus}`,
+        numberOfWrites,
+        timeToWritePerRecord,
+        timeToReadPerRecord,
+        timeToFindKeyPerRecord,
+        timeToRemovePerRecord]);
 
-      const acceptableReadTime = (((dbSettings.speeds && dbSettings.speeds.read) || acceptableReads));
+      const acceptableReadTime = (((dbSettings.speeds && dbSettings.speeds.read) ||
+       acceptableReads));
       console.log('ART', acceptableReadTime, timeToReadPerRecord);
       const reads = acceptableReadTime >= timeToReadPerRecord;
 
-      const acceptableWriteTime = (((dbSettings.speeds && dbSettings.speeds.write) || acceptableWrites));
+      const acceptableWriteTime = (((dbSettings.speeds && dbSettings.speeds.write) ||
+       acceptableWrites));
       console.log('AWT', acceptableWriteTime, timeToWritePerRecord);
       const writes = acceptableWriteTime >= timeToWritePerRecord;
 
-      const acceptableFindKeysTime = (((dbSettings.speeds && dbSettings.speeds.findKey) || acceptableFindKeys));
+      const acceptableFindKeysTime = (((dbSettings.speeds && dbSettings.speeds.findKey) ||
+       acceptableFindKeys));
       console.log('AFKT', acceptableFindKeysTime, timeToFindKeyPerRecord);
       const findKeys = acceptableFindKeysTime >= timeToFindKeyPerRecord;
 
-      const acceptableRemoveTime = (((dbSettings.speeds && dbSettings.speeds.remove) || acceptableRemove));
+      const acceptableRemoveTime = (((dbSettings.speeds && dbSettings.speeds.remove) ||
+       acceptableRemove));
       console.log('ARemT', acceptableRemoveTime, timeToRemovePerRecord);
       const remove = acceptableRemoveTime >= timeToRemovePerRecord;
       assert.equal((reads === writes === findKeys === remove), true);

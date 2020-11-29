@@ -1,4 +1,6 @@
 'use strict';
+/* eslint new-cap: "warn" */
+
 /**
  * 2011 Peter 'Pita' Martischka
  * 2020 John McLear
@@ -20,7 +22,12 @@ const cacheAndBufferLayer = require('./lib/CacheAndBufferLayer');
 const channels = require('channels');
 const util = require('util');
 
-const defaultLogger = {debug() {}, info() {}, error() {}, warn() {}};
+const defaultLogger = {
+  debug: () => {},
+  info: () => {},
+  error: () => {},
+  warn: () => {},
+};
 
 /**
  The Constructor
@@ -34,7 +41,7 @@ exports.database = function (type, dbSettings, wrapperSettings, logger) {
 
   // saves all settings and require the db module
   this.type = type;
-  this.db_module = require(`./databases/${type}_db`);
+  this.dbModule = require(`./databases/${type}_db`);
   this.dbSettings = dbSettings;
   this.wrapperSettings = wrapperSettings;
   this.logger = logger || defaultLogger;
@@ -42,7 +49,7 @@ exports.database = function (type, dbSettings, wrapperSettings, logger) {
 };
 
 exports.database.prototype.init = function (callback) {
-  const db = new this.db_module.database(this.dbSettings);
+  const db = new this.dbModule.database(this.dbSettings);
   this.db = new cacheAndBufferLayer.database(db, this.wrapperSettings, this.logger);
   if (callback) {
     this.db.init(callback);
@@ -72,7 +79,9 @@ exports.database.prototype.remove = function (key, bufferCallback, writeCallback
 };
 
 exports.database.prototype.set = function (key, value, bufferCallback, writeCallback) {
-  this.channels.emit(key, {db: this.db, type: 'set', key, value: clone(value), bufferCallback, writeCallback});
+  this.channels.emit(key, {
+    db: this.db, type: 'set', key, value: clone(value), bufferCallback, writeCallback,
+  });
 };
 
 exports.database.prototype.getSub = function (key, sub, callback) {
@@ -80,11 +89,13 @@ exports.database.prototype.getSub = function (key, sub, callback) {
 };
 
 exports.database.prototype.setSub = function (key, sub, value, bufferCallback, writeCallback) {
-  this.channels.emit(key, {db: this.db, type: 'setsub', key, sub, value: clone(value), bufferCallback, writeCallback});
+  this.channels.emit(key, {
+    db: this.db, type: 'setsub', key, sub, value: clone(value), bufferCallback, writeCallback,
+  });
 };
 
-function doOperation(operation, callback) {
-  if (operation.type == 'get') {
+const doOperation = (operation, callback) => {
+  if (operation.type === 'get') {
     operation.db.get(operation.key, (err, value) => {
       // clone the value
       value = clone(value);
@@ -95,7 +106,7 @@ function doOperation(operation, callback) {
       // call the queue callback
       callback();
     });
-  } else if (operation.type == 'remove') {
+  } else if (operation.type === 'remove') {
     operation.db.remove(operation.key, (err) => {
       // call the queue callback
       callback();
@@ -103,7 +114,7 @@ function doOperation(operation, callback) {
       // call the caller callback
       if (operation.bufferCallback) operation.bufferCallback(err);
     }, operation.writeCallback);
-  } else if (operation.type == 'findKeys') {
+  } else if (operation.type === 'findKeys') {
     operation.db.findKeys(operation.key, operation.notKey, (err, value) => {
       // clone the value
       value = clone(value);
@@ -114,7 +125,7 @@ function doOperation(operation, callback) {
       // call the queue callback
       callback();
     });
-  } else if (operation.type == 'set') {
+  } else if (operation.type === 'set') {
     operation.db.set(operation.key, operation.value, (err) => {
       // call the queue callback
       callback();
@@ -122,7 +133,7 @@ function doOperation(operation, callback) {
       // call the caller callback
       if (operation.bufferCallback) operation.bufferCallback(err);
     }, operation.writeCallback);
-  } else if (operation.type == 'getsub') {
+  } else if (operation.type === 'getsub') {
     operation.db.getSub(operation.key, operation.sub, (err, value) => {
       // clone the value
       value = clone(value);
@@ -133,7 +144,7 @@ function doOperation(operation, callback) {
       // call the queue callback
       callback();
     });
-  } else if (operation.type == 'setsub') {
+  } else if (operation.type === 'setsub') {
     operation.db.setSub(operation.key, operation.sub, operation.value, (err) => {
       // call the queue callback
       callback();
@@ -142,26 +153,26 @@ function doOperation(operation, callback) {
       if (operation.bufferCallback) operation.bufferCallback(err);
     }, operation.writeCallback);
   }
-}
+};
 
 exports.database.prototype.close = function (callback) {
   this.db.close(callback);
 };
 
-function clone(obj) {
+const clone = (obj) => {
   // Handle the 3 simple types, and null or undefined
   if (null == obj || 'object' !== typeof obj) return obj;
 
   // Handle Date
   if (obj instanceof Date) {
-    var copy = new Date();
+    const copy = new Date();
     copy.setTime(obj.getTime());
     return copy;
   }
 
   // Handle Array
   if (obj instanceof Array) {
-    var copy = [];
+    const copy = [];
     for (let i = 0, len = obj.length; i < len; ++i) {
       copy[i] = clone(obj[i]);
     }
@@ -170,7 +181,7 @@ function clone(obj) {
 
   // Handle Object
   if (obj instanceof Object) {
-    var copy = {};
+    const copy = {};
     for (const attr in obj) {
       if (obj.hasOwnProperty(attr)) copy[attr] = clone(obj[attr]);
     }
@@ -178,4 +189,4 @@ function clone(obj) {
   }
 
   throw new Error("Unable to copy obj! Its type isn't supported.");
-}
+};

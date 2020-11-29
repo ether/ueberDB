@@ -40,7 +40,7 @@ exports.database.prototype.close = function (callback) {
   const _this = this;
 
   this.db.on('drain', () => {
-  	_this.db.end.bind(_this.db);
-  	callback(null);
+    _this.db.end.bind(_this.db);
+    callback(null);
   });
 };

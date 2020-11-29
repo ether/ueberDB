@@ -233,7 +233,7 @@ exports.database.prototype.close = function (callback) {
  *  @param {String} key Key, of the format "test:test1" or, optionally, of the
  *    format "test:test1:check:check1"
  */
-function getIndexTypeId(key) {
+const getIndexTypeId = (key) => {
   const returnObject = {};
 
   const splitKey = key.split(':');
@@ -254,12 +254,12 @@ function getIndexTypeId(key) {
   }
 
   return returnObject;
-}
+};
 
 /**
  * Extract data from elasticsearch responses, handle errors, handle callbacks.
  */
-function parseResponse(error, response, callback) {
+const parseResponse = (error, response, callback) => {
   if (error) {
     // don't treat not found as an error (is this specific to etherpad?)
     if (error.message === 'Not Found' && !response.found) {
@@ -281,4 +281,4 @@ function parseResponse(error, response, callback) {
   }
 
   callback(error, response);
-}
+};
