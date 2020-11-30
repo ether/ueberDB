@@ -21,11 +21,11 @@ const async = require('async');
 const DESIGN_NAME = 'ueberDb';
 const DESIGN_PATH = `_design/${DESIGN_NAME}`;
 
-const handleError = function handleError(er) {
+const handleError = (er) => {
   if (er) throw new Error(er);
 };
 
-exports.database = function (settings) {
+exports.Database = function (settings) {
   this.db = null;
   this.client = null;
   this.settings = settings;
@@ -37,7 +37,7 @@ exports.database = function (settings) {
   this.settings.json = false;
 };
 
-exports.database.prototype.init = function (callback) {
+exports.Database.prototype.init = function (callback) {
   const settings = this.settings;
   let client = null;
   let db = null;
@@ -55,14 +55,14 @@ exports.database.prototype.init = function (callback) {
     },
   };
 
-  const createDb = function createDb() {
+  const createDb = () => {
     client.db.create(settings.database, (er, body) => {
       if (er) return callback(er);
       return setDb();
     });
   };
 
-  var setDb = function setDb() {
+  const setDb = function setDb() {
     db = client.use(settings.database);
     checkUeberDbDesignDocument(db);
     this.client = client;
@@ -72,7 +72,7 @@ exports.database.prototype.init = function (callback) {
 
   // Always ensure that couchDb has at least an empty design doc for UeberDb use
   // this will be necessary for the `findKeys` method
-  var checkUeberDbDesignDocument = function checkUeberDbDesignDocument() {
+  const checkUeberDbDesignDocument = function checkUeberDbDesignDocument() {
     db.head(DESIGN_PATH, (er, _, header) => {
       if (er && er.statusCode === 404) return db.insert({views: {}}, DESIGN_PATH, handleError);
       if (er) throw new Error(er);
@@ -87,7 +87,7 @@ exports.database.prototype.init = function (callback) {
   });
 };
 
-exports.database.prototype.get = function (key, callback) {
+exports.Database.prototype.get = function (key, callback) {
   const db = this.db;
   db.get(key, (er, doc) => {
     if (er && er.statusCode !== 404) {
@@ -99,13 +99,13 @@ exports.database.prototype.get = function (key, callback) {
   });
 };
 
-exports.database.prototype.findKeys = function (key, notKey, callback) {
+exports.Database.prototype.findKeys = function (key, notKey, callback) {
   const regex = this.createFindRegex(key, notKey);
   const queryKey = `${key}__${notKey}`;
   const db = this.db;
 
   // always look up if the query haven't be done before
-  const checkQuery = function checkQuery() {
+  const checkQuery = () => {
     db.get(DESIGN_PATH, (er, doc) => {
       handleError(er);
       const queryExists = queryKey in doc.views;
@@ -115,7 +115,7 @@ exports.database.prototype.findKeys = function (key, notKey, callback) {
   };
 
   // Cache the query for faster reuse in the future
-  var createQuery = function createQuery(doc) {
+  const createQuery = (doc) => {
     const mapFunction = {
       map: `${'function(doc) {' +
         'if ('}${regex}.test(doc._id)) {` +
@@ -131,7 +131,7 @@ exports.database.prototype.findKeys = function (key, notKey, callback) {
   };
 
   // If this is the first time the request is used, this can take a while…
-  var makeQuery = function makeQuery(er) {
+  const makeQuery = (er) => {
     db.view(DESIGN_NAME, queryKey, (er, docs) => {
       handleError(er);
       docs = docs.rows.map((doc) => doc.key);
@@ -142,7 +142,7 @@ exports.database.prototype.findKeys = function (key, notKey, callback) {
   checkQuery();
 };
 
-exports.database.prototype.set = function (key, value, callback) {
+exports.Database.prototype.set = function (key, value, callback) {
   const db = this.db;
   db.get(key, (er, doc) => {
     if (doc == null) return db.insert({_id: key, value}, callback);
@@ -150,7 +150,7 @@ exports.database.prototype.set = function (key, value, callback) {
   });
 };
 
-exports.database.prototype.remove = function (key, callback) {
+exports.Database.prototype.remove = function (key, callback) {
   const db = this.db;
   db.head(key, (er, _, header) => {
     if (er && er.statusCode === 404) return callback(null);
@@ -164,20 +164,21 @@ exports.database.prototype.remove = function (key, callback) {
   });
 };
 
-exports.database.prototype.doBulk = function (bulk, callback) {
+exports.Database.prototype.doBulk = function (bulk, callback) {
   const db = this.db;
-  const _this = this;
   const keys = [];
   const revs = {};
   const setters = [];
   for (const i in bulk) {
-    keys.push(bulk[i].key);
+    if (bulk[i]) {
+      keys.push(bulk[i].key);
+    }
   }
   async.series([
-    function fetchRevs(callback) {
+    (callback) => {
       db.fetchRevs({keys}, (er, r) => {
         if (er) throw new Error(JSON.stringify(er));
-        rows = r.rows;
+        const rows = r.rows;
         for (const j in r.rows) {
           // couchDB will return error instead of value if key does not exist
           if (rows[j].value != null) revs[rows[j].key] = rows[j].value.rev;
@@ -185,14 +186,16 @@ exports.database.prototype.doBulk = function (bulk, callback) {
         callback();
       });
     },
-    function setActions(callback) {
+    (callback) => {
       for (const i in bulk) {
-        const item = bulk[i];
-        const set = {_id: item.key};
-        if (revs[item.key] != null) set._rev = revs[item.key];
-        if (item.type === 'set') set.value = item.value;
-        if (item.type === 'remove') set._deleted = true;
-        setters.push(set);
+        if (bulk[i]) {
+          const item = bulk[i];
+          const set = {_id: item.key};
+          if (revs[item.key] != null) set._rev = revs[item.key];
+          if (item.type === 'set') set.value = item.value;
+          if (item.type === 'remove') set._deleted = true;
+          setters.push(set);
+        }
       }
       callback();
     },
@@ -202,6 +205,6 @@ exports.database.prototype.doBulk = function (bulk, callback) {
   );
 };
 
-exports.database.prototype.close = function (callback) {
+exports.Database.prototype.close = function (callback) {
   if (callback) callback();
 };

@@ -1,5 +1,6 @@
 'use strict';
 /* global before, after, describe, it */
+/* eslint new-cap: "warn" */
 
 const fs = require('fs');
 const ueberdb = require('../index');
