@@ -30,5 +30,11 @@ exports.databases = {
   ,
   redis:{
     hostname: "127.0.0.1"
-  }
-}
+  },
+  /*
+  couch: {
+    host: '127.0.0.1',
+    port: 5984,
+  },
+  */
+};
