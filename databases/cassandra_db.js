@@ -171,11 +171,10 @@ exports.database.prototype.findKeys = function (key, notKey, callback) {
       });
     } else {
       const msg = 'Cassandra db only supports key patterns like pad:* when notKey is set to *:*:*';
-      return callback(new Error(msg, 'apierror'), null);
+      return callback(new Error(msg), null);
     }
   } else {
-    const msg = 'Cassandra db currently only supports *:*:* as notKey';
-    return callback(new Error(msg, 'apierror'), null);
+    return callback(new Error('Cassandra db currently only supports *:*:* as notKey'), null);
   }
 };
 
