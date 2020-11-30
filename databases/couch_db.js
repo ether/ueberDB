@@ -62,8 +62,6 @@ exports.database.prototype.init = function (callback) {
     this.db = db;
     callback();
   };
-  setDb.bind(this);
-
 
   const createDb = () => {
     client.db.create(settings.database, (er, body) => {
