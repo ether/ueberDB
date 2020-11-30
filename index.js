@@ -1,4 +1,6 @@
 'use strict';
+/* eslint new-cap: "warn" */
+
 /**
  * 2011 Peter 'Pita' Martischka
  * 2020 John McLear
@@ -50,7 +52,9 @@ const clone = (obj) => {
   if (obj instanceof Object) {
     const copy = {};
     for (const attr in obj) {
-      if (obj.hasOwnProperty(attr)) copy[attr] = clone(obj[attr]);
+      if (Object.prototype.hasOwnProperty.call(obj, attr)) {
+        copy[attr] = clone(obj[attr]);
+      }
     }
     return copy;
   }

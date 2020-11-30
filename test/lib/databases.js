@@ -1,7 +1,7 @@
 'use strict';
 
 exports.databases = {
-  dirty: {
+/*  dirty: {
     filename: '/tmp/test.db',
     speeds: {
       numberOfWrites: 1000,
@@ -30,4 +30,9 @@ exports.databases = {
   redis: {
     hostname: '127.0.0.1',
   },
+*/
+  couch: {
+    host: "127.0.0.1",
+    port: 5984
+  }
 };
