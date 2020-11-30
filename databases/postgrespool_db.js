@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-var pg = require("pg");
-var postgresCommon = require('./postgres_common')
+const pg = require('pg');
+const postgresCommon = require('./postgres_common');
 
-exports.database = function(settings) {
+exports.database = function (settings) {
   this.settings = settings;
 
   this.settings.cache = settings.cache || 1000;
@@ -30,8 +30,7 @@ exports.database = function(settings) {
   this.settings.idleTimeoutMillis = this.settings.idleTimeoutMillis || 1000;
 
   this.db = new pg.Pool(this.settings);
-
-}
+};
 
 exports.database.prototype.init = postgresCommon.init;
 exports.database.prototype.get = postgresCommon.get;
@@ -40,6 +39,6 @@ exports.database.prototype.set = postgresCommon.set;
 exports.database.prototype.remove = postgresCommon.remove;
 exports.database.prototype.doBulk = postgresCommon.doBulk;
 
-exports.database.prototype.close = function(callback) {
-  this.db.end(callback)
-}
+exports.database.prototype.close = function (callback) {
+  this.db.end(callback);
+};

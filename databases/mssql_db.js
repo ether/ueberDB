@@ -18,18 +18,17 @@
  *
  */
 
-var async = require("async");
-var mssql = require("mssql");
+const async = require('async');
+const mssql = require('mssql');
 
-exports.database = function(settings) {
-
+exports.database = function (settings) {
   settings = settings || {};
 
   if (settings.json != null) {
     settings.parseJSON = settings.json;
   }
 
-  //set the request timeout to 5 minutes
+  // set the request timeout to 5 minutes
   settings.requestTimeout = 300000;
 
   settings.server = settings.host;
@@ -42,44 +41,40 @@ exports.database = function(settings) {
   */
   this.settings.cache = 0;
   this.settings.writeInterval = 0;
-
 };
 
-exports.database.prototype.init = function(callback) {
-
-  var sqlCreate =
+exports.database.prototype.init = function (callback) {
+  const sqlCreate =
     "IF OBJECT_ID(N'dbo.store', N'U') IS NULL" +
-    "  BEGIN" +
-    "    CREATE TABLE [store] (" +
-    "      [key] NVARCHAR(100) PRIMARY KEY," +
-    "      [value] NTEXT NOT NULL" +
-    "    );" +
-    "  END";
+    '  BEGIN' +
+    '    CREATE TABLE [store] (' +
+    '      [key] NVARCHAR(100) PRIMARY KEY,' +
+    '      [value] NTEXT NOT NULL' +
+    '    );' +
+    '  END';
 
-  new mssql.ConnectionPool(this.settings).connect().then(pool => {
+  new mssql.ConnectionPool(this.settings).connect().then((pool) => {
     this.db = pool;
 
-    var request = new mssql.Request(this.db);
+    const request = new mssql.Request(this.db);
 
-    request.query(sqlCreate, function(err) {
+    request.query(sqlCreate, (err) => {
       callback(err);
     });
 
-    this.db.on("error", err => {
+    this.db.on('error', (err) => {
       console.log(err);
     });
   });
-
 };
 
-exports.database.prototype.get = function(key, callback) {
+exports.database.prototype.get = function (key, callback) {
+  const request = new mssql.Request(this.db);
 
-  var request = new mssql.Request(this.db);
+  request.input('key', mssql.NVarChar(100), key);
 
-  request.input("key", mssql.NVarChar(100), key);
-
-  request.query("SELECT [value] FROM [store] WHERE [key] = @key", function(err, results) {
-    var value = null;
+  request.query('SELECT [value] FROM [store] WHERE [key] = @key', (err, results) => {
+    let value = null;
 
     if (!err && results.rowsAffected[0] == 1) {
       value = results.recordset[0].value;
@@ -87,28 +82,26 @@ exports.database.prototype.get = function(key, callback) {
 
     callback(err, value);
   });
-
 };
 
-exports.database.prototype.findKeys = function(key, notKey, callback) {
+exports.database.prototype.findKeys = function (key, notKey, callback) {
+  const request = new mssql.Request(this.db);
+  let query = 'SELECT [key] FROM [store] WHERE [key] LIKE @key';
 
-  var request = new mssql.Request(this.db);
-  var query = "SELECT [key] FROM [store] WHERE [key] LIKE @key";
+  // desired keys are key, e.g. pad:%
+  key = key.replace(/\*/g, '%');
 
-  //desired keys are key, e.g. pad:%
-  key = key.replace(/\*/g, "%");
-
-  request.input("key", mssql.NVarChar(100), key);
+  request.input('key', mssql.NVarChar(100), key);
 
   if (notKey != null && notKey != undefined) {
-    //not desired keys are notKey, e.g. %:%:%
-    notKey = notKey.replace(/\*/g, "%");
-    request.input("notkey", mssql.NVarChar(100), notKey);
-    query += " AND [key] NOT LIKE @notkey";
+    // not desired keys are notKey, e.g. %:%:%
+    notKey = notKey.replace(/\*/g, '%');
+    request.input('notkey', mssql.NVarChar(100), notKey);
+    query += ' AND [key] NOT LIKE @notkey';
   }
 
-  request.query(query, function(err, results) {
-    var value = [];
+  request.query(query, (err, results) => {
+    const value = [];
 
     if (!err && results.rowsAffected[0] > 0) {
       for (i = 0; i < results.recordset.length; i++) {
@@ -118,116 +111,100 @@ exports.database.prototype.findKeys = function(key, notKey, callback) {
 
     callback(err, value);
   });
-
 };
 
-exports.database.prototype.set = function(key, value, callback) {
-
-  var request = new mssql.Request(this.db);
+exports.database.prototype.set = function (key, value, callback) {
+  const request = new mssql.Request(this.db);
 
   if (key.length > 100) {
-    callback("Your Key can only be 100 chars");
+    callback('Your Key can only be 100 chars');
   } else {
-    var query =
-      "MERGE [store] t USING (SELECT @key [key], @value [value]) s" +
-      " ON t.[key] = s.[key]" +
-      " WHEN MATCHED AND s.[value] IS NOT NULL THEN UPDATE SET t.[value] = s.[value]" +
-      " WHEN NOT MATCHED THEN INSERT ([key], [value]) VALUES (s.[key], s.[value]);";
+    const query =
+      'MERGE [store] t USING (SELECT @key [key], @value [value]) s' +
+      ' ON t.[key] = s.[key]' +
+      ' WHEN MATCHED AND s.[value] IS NOT NULL THEN UPDATE SET t.[value] = s.[value]' +
+      ' WHEN NOT MATCHED THEN INSERT ([key], [value]) VALUES (s.[key], s.[value]);';
 
-    request.input("key", mssql.NVarChar(100), key);
-    request.input("value", mssql.NText, value);
+    request.input('key', mssql.NVarChar(100), key);
+    request.input('value', mssql.NText, value);
 
-    request.query(query, function(err, info) {
+    request.query(query, (err, info) => {
       callback(err);
     });
   }
-
 };
 
-exports.database.prototype.remove = function(key, callback) {
-
-  var request = new mssql.Request(this.db);
-  request.input("key", mssql.NVarChar(100), key);
-  request.query("DELETE FROM [store] WHERE [key] = @key", callback);
-
+exports.database.prototype.remove = function (key, callback) {
+  const request = new mssql.Request(this.db);
+  request.input('key', mssql.NVarChar(100), key);
+  request.query('DELETE FROM [store] WHERE [key] = @key', callback);
 };
 
-exports.database.prototype.doBulk = function(bulk, callback) {
+exports.database.prototype.doBulk = function (bulk, callback) {
+  const maxInserts = 100;
+  const request = new mssql.Request(this.db);
+  let firstReplace = true;
+  let firstRemove = true;
+  const replacements = [];
+  let removeSQL = 'DELETE FROM [store] WHERE [key] IN (';
 
-  var maxInserts = 100;
-  var request = new mssql.Request(this.db);
-  var firstReplace = true;
-  var firstRemove = true;
-  var replacements = [];
-  var removeSQL = "DELETE FROM [store] WHERE [key] IN (";
-
-  for (var i in bulk) {
-
-    if (bulk[i].type === "set") {
-
+  for (const i in bulk) {
+    if (bulk[i].type === 'set') {
       if (firstReplace) {
-        replacements.push("BEGIN TRANSACTION;");
+        replacements.push('BEGIN TRANSACTION;');
         firstReplace = false;
       } else if (i % maxInserts == 0) {
-        replacements.push("\nCOMMIT TRANSACTION;\nBEGIN TRANSACTION;\n");
+        replacements.push('\nCOMMIT TRANSACTION;\nBEGIN TRANSACTION;\n');
       }
 
       replacements.push(`MERGE [store] t USING (SELECT '${bulk[i].key}' [key], '${bulk[i].value}' [value]) s
                    ON t.[key] = s.[key]
                    WHEN MATCHED AND s.[value] IS NOT NULL THEN UPDATE SET t.[value] = s.[value]
                    WHEN NOT MATCHED THEN INSERT ([key], [value]) VALUES (s.[key], s.[value]);`);
-
-    } else if (bulk[i].type === "remove") {
-
+    } else if (bulk[i].type === 'remove') {
       if (!firstRemove) {
-        removeSQL += ",";
+        removeSQL += ',';
       }
 
       firstRemove = false;
       removeSQL += `'${bulk[i].key}'`;
-
     }
-
   }
 
-  removeSQL += ");";
-  replacements.push("COMMIT TRANSACTION;");
+  removeSQL += ');';
+  replacements.push('COMMIT TRANSACTION;');
 
   async.parallel(
-    [
-      function(callback) {
-        if (!firstReplace) {
-          request.batch(replacements.join("\n"), function(err, results) {
-            if (err) {
-              callback(err);
-            }
-            callback(err, results);
-          });
-        } else {
-          callback();
+      [
+        function (callback) {
+          if (!firstReplace) {
+            request.batch(replacements.join('\n'), (err, results) => {
+              if (err) {
+                callback(err);
+              }
+              callback(err, results);
+            });
+          } else {
+            callback();
+          }
+        },
+        function (callback) {
+          if (!firstRemove) {
+            request.query(removeSQL, callback);
+          } else {
+            callback();
+          }
+        },
+      ],
+      (err, results) => {
+        if (err) {
+          callback(err);
         }
-      },
-      function(callback) {
-        if (!firstRemove) {
-          request.query(removeSQL, callback);
-        } else {
-          callback();
-        }
+        callback(err, results);
       }
-    ],
-    function(err, results) {
-      if (err) {
-        callback(err);
-      }
-      callback(err, results);
-    }
   );
-
 };
 
-exports.database.prototype.close = function(callback) {
-
+exports.database.prototype.close = function (callback) {
   this.db.close(callback);
-
 };
-

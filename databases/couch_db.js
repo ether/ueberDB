@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-var nano            = require('nano');
-var async           = require('async');
+const nano = require('nano');
+const async = require('async');
 
-var DESIGN_NAME     = 'ueberDb';
-var DESIGN_PATH     = '_design/' + DESIGN_NAME;
+const DESIGN_NAME = 'ueberDb';
+const DESIGN_PATH = `_design/${DESIGN_NAME}`;
 
-var handleError = function handleError(er) {
+const handleError = function handleError(er) {
   if (er) throw new Error(er);
 };
 
-exports.database = function(settings) {
-  this.db       = null;
-  this.client   = null;
+exports.database = function (settings) {
+  this.db = null;
+  this.client = null;
   this.settings = settings;
 
   // force some settings
@@ -36,26 +36,26 @@ exports.database = function(settings) {
   this.settings.json = false;
 };
 
-exports.database.prototype.init = function(callback) {
-  var settings  = this.settings;
-  var client    = null;
-  var db        = null;
+exports.database.prototype.init = function (callback) {
+  const settings = this.settings;
+  let client = null;
+  let db = null;
 
-  var config    = {
-    url: 'http://' + settings.host + ':' + settings.port,
+  const config = {
+    url: `http://${settings.host}:${settings.port}`,
     requestDefaults: {
       pool: {
         maxSockets: settings.maxListeners || 1,
       },
       auth: {
         user: settings.user,
-        pass: settings.password
+        pass: settings.password,
       },
     },
   };
 
-  var createDb = function createDb() {
-    client.db.create(settings.database, function(er, body) {
+  const createDb = function createDb() {
+    client.db.create(settings.database, (er, body) => {
       if (er) return callback(er);
       return setDb();
     });
@@ -65,49 +65,49 @@ exports.database.prototype.init = function(callback) {
     db = client.use(settings.database);
     checkUeberDbDesignDocument(db);
     this.client = client;
-    this.db     = db;
+    this.db = db;
     callback();
   }.bind(this);
 
   // Always ensure that couchDb has at least an empty design doc for UeberDb use
   // this will be necessary for the `findKeys` method
   var checkUeberDbDesignDocument = function checkUeberDbDesignDocument() {
-    db.head(DESIGN_PATH, function(er, _, header) {
+    db.head(DESIGN_PATH, (er, _, header) => {
       if (er && er.statusCode === 404) return db.insert({views: {}}, DESIGN_PATH, handleError);
       if (er) throw new Error(er);
     });
   };
 
   client = nano(config);
-  client.db.get(settings.database, function(er, body) {
+  client.db.get(settings.database, (er, body) => {
     if (er && er.statusCode === 404) return createDb();
     if (er) return callback(er);
     return setDb();
   });
 };
 
-exports.database.prototype.get = function(key, callback) {
-  var db = this.db;
-  db.get(key, function(er, doc) {
+exports.database.prototype.get = function (key, callback) {
+  const db = this.db;
+  db.get(key, (er, doc) => {
     if (er && er.statusCode !== 404) {
       console.log('GET');
       console.log(er);
-    };
+    }
     if (doc == null) return callback(null, null);
     callback(null, doc.value);
   });
 };
 
-exports.database.prototype.findKeys = function(key, notKey, callback) {
-  var regex     = this.createFindRegex(key, notKey);
-  var queryKey  = key + '__' + notKey;
-  var db        = this.db;
+exports.database.prototype.findKeys = function (key, notKey, callback) {
+  const regex = this.createFindRegex(key, notKey);
+  const queryKey = `${key}__${notKey}`;
+  const db = this.db;
 
   // always look up if the query haven't be done before
-  var checkQuery = function checkQuery() {
-    db.get(DESIGN_PATH, function(er, doc) {
+  const checkQuery = function checkQuery() {
+    db.get(DESIGN_PATH, (er, doc) => {
       handleError(er);
-      var queryExists = queryKey in doc.views;
+      const queryExists = queryKey in doc.views;
       if (!queryExists) return createQuery(doc);
       makeQuery();
     });
@@ -115,25 +115,25 @@ exports.database.prototype.findKeys = function(key, notKey, callback) {
 
   // Cache the query for faster reuse in the future
   var createQuery = function createQuery(doc) {
-    var mapFunction     = {
-      map: 'function(doc) {' +
-        'if (' + regex + '.test(doc._id)) {' +
+    const mapFunction = {
+      map: `${'function(doc) {' +
+        'if ('}${regex}.test(doc._id)) {` +
           'emit(doc._id, null);' +
         '}' +
       '}',
-    }
+    };
     doc.views[queryKey] = mapFunction;
-    db.insert(doc, DESIGN_PATH, function(er) {
+    db.insert(doc, DESIGN_PATH, (er) => {
       handleError(er);
       makeQuery();
-    })
+    });
   };
 
   // If this is the first time the request is used, this can take a while…
   var makeQuery = function makeQuery(er) {
-    db.view(DESIGN_NAME, queryKey, function(er, docs) {
+    db.view(DESIGN_NAME, queryKey, (er, docs) => {
       handleError(er);
-      docs = docs.rows.map(function(doc) { return doc.key; });
+      docs = docs.rows.map((doc) => doc.key);
       callback(null, docs);
     });
   };
@@ -141,44 +141,43 @@ exports.database.prototype.findKeys = function(key, notKey, callback) {
   checkQuery();
 };
 
-exports.database.prototype.set = function(key, value, callback) {
-  var db = this.db;
-  db.get(key, function(er, doc) {
-
-    if (doc == null) return db.insert({_id: key, value: value}, callback);
-    db.insert({_id: key, _rev: doc._rev, value: value}, callback);
+exports.database.prototype.set = function (key, value, callback) {
+  const db = this.db;
+  db.get(key, (er, doc) => {
+    if (doc == null) return db.insert({_id: key, value}, callback);
+    db.insert({_id: key, _rev: doc._rev, value}, callback);
   });
 };
 
-exports.database.prototype.remove = function(key, callback) {
-  var db = this.db;
-  db.head(key, function(er, _, header) {
+exports.database.prototype.remove = function (key, callback) {
+  const db = this.db;
+  db.head(key, (er, _, header) => {
     if (er && er.statusCode === 404) return callback(null);
-    if (er) return callback(er)
+    if (er) return callback(er);
     // etag has additional quotation marks, remove them
-    var etag = JSON.parse(header).etag;
-    db.destroy(key, etag, function(er, body) {
+    const etag = JSON.parse(header).etag;
+    db.destroy(key, etag, (er, body) => {
       if (er) return callback(er);
       callback(null);
     });
   });
 };
 
-exports.database.prototype.doBulk = function(bulk, callback) {
-  var db = this.db;
-  var _this = this;
-  var keys = [];
-  var revs = {};
-  var setters = [];
-  for (var i in bulk) {
+exports.database.prototype.doBulk = function (bulk, callback) {
+  const db = this.db;
+  const _this = this;
+  const keys = [];
+  const revs = {};
+  const setters = [];
+  for (const i in bulk) {
     keys.push(bulk[i].key);
   }
   async.series([
     function fetchRevs(callback) {
-      db.fetchRevs({keys: keys}, function (er, r) {
+      db.fetchRevs({keys}, (er, r) => {
         if (er) throw new Error(JSON.stringify(er));
         rows = r.rows;
-        for (var j in r.rows) {
+        for (const j in r.rows) {
           // couchDB will return error instead of value if key does not exist
           if (rows[j].value != null) revs[rows[j].key] = rows[j].value.rev;
         }
@@ -186,21 +185,22 @@ exports.database.prototype.doBulk = function(bulk, callback) {
       });
     },
     function setActions(callback) {
-      for (var i in bulk) {
-        var item = bulk[i];
-        var set = {_id: item.key};
+      for (const i in bulk) {
+        const item = bulk[i];
+        const set = {_id: item.key};
         if (revs[item.key] != null) set._rev = revs[item.key];
-        if (item.type === 'set')    set.value = item.value;
+        if (item.type === 'set') set.value = item.value;
         if (item.type === 'remove') set._deleted = true;
         setters.push(set);
       }
       callback();
-    }], function makeBulk(err) {
-      db.bulk({docs: setters}, callback);
-    }
+    },
+  ], (err) => {
+    db.bulk({docs: setters}, callback);
+  }
   );
 };
 
-exports.database.prototype.close = function(callback) {
+exports.database.prototype.close = function (callback) {
   if (callback) callback();
 };

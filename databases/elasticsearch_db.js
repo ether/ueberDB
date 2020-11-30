@@ -14,40 +14,40 @@
  * limitations under the License.
  */
 
-var es = require('elasticsearch');
+const es = require('elasticsearch');
 
 // initialize w/ default settings
-var elasticsearchSettings = {
-  hostname      : '127.0.0.1',
-  port          : '9200',
-  base_index    : 'ueberes',
-  
+const elasticsearchSettings = {
+  hostname: '127.0.0.1',
+  port: '9200',
+  base_index: 'ueberes',
+
   // for a list of valid API values see:
   // https://www.elastic.co/guide/en/elasticsearch/client/javascript-api/current/configuration.html#config-options
-  api           : '7.6'
+  api: '7.6',
 };
 
-var client;
+let client;
 
-exports.database = function(settings) {
+exports.database = function (settings) {
   this.db = null;
 
   this.settings = settings || {};
 
   // update settings if they were provided
-  if(this.settings.host) {
+  if (this.settings.host) {
     elasticsearchSettings.hostname = this.settings.host;
   }
 
-  if(this.settings.port) {
+  if (this.settings.port) {
     elasticsearchSettings.port = this.settings.port;
   }
 
-  if(this.settings.base_index) {
+  if (this.settings.base_index) {
     elasticsearchSettings.base_index = this.settings.base_index;
   }
 
-  if(this.settings.api) {
+  if (this.settings.api) {
     elasticsearchSettings.api = this.settings.api;
   }
 
@@ -58,20 +58,20 @@ exports.database = function(settings) {
  * Initialize the elasticsearch client, then ping the server to ensure that a
  * connection was made.
  */
-exports.database.prototype.init = function(callback) {
+exports.database.prototype.init = function (callback) {
   // create elasticsearch client
   client = new es.Client({
-      host: elasticsearchSettings.hostname + ":" + elasticsearchSettings.port,
-      apiVersion: elasticsearchSettings.api,
-      //log: "trace" // useful for debugging
+    host: `${elasticsearchSettings.hostname}:${elasticsearchSettings.port}`,
+    apiVersion: elasticsearchSettings.api,
+    // log: "trace" // useful for debugging
   });
 
   // test the connection
   client.ping({
-    requestTimeout: 3000
-  }, function (error) {
+    requestTimeout: 3000,
+  }, (error) => {
     if (error) {
-      console.error("unable to communicate with elasticsearch");
+      console.error('unable to communicate with elasticsearch');
     }
 
     callback(error);
@@ -87,7 +87,7 @@ exports.database.prototype.init = function(callback) {
  *    upon completion of a successful database retrieval.
  */
 exports.database.prototype.get = function (key, callback) {
-  client.get(getIndexTypeId(key), function(error, response) {
+  client.get(getIndexTypeId(key), (error, response) => {
     parseResponse(error, response, callback);
   });
 };
@@ -108,24 +108,24 @@ exports.database.prototype.get = function (key, callback) {
  *  @param callback First param is error, second is result
  */
 exports.database.prototype.findKeys = function (key, notKey, callback) {
-  var splitKey = key.split(':');
-  var splitNotKey = (notKey ? notKey.split(':') : []);
+  const splitKey = key.split(':');
+  const splitNotKey = (notKey ? notKey.split(':') : []);
 
   client.search({
     index: elasticsearchSettings.base_index,
     type: splitKey[0],
-    size: 100 // this is a pretty random threshold...
-  }, function(error, response) {
+    size: 100, // this is a pretty random threshold...
+  }, (error, response) => {
     if (error) {
-      console.error("findkeys", error);
+      console.error('findkeys', error);
       callback(error);
       return;
     }
 
     if (!error && response.hits) {
-      var keys = [];
-      for(var counter = 0; counter < response.hits.total; counter++) {
-        keys.push(splitKey[0] + ':' + response.hits.hits[counter]._id);
+      const keys = [];
+      for (let counter = 0; counter < response.hits.total; counter++) {
+        keys.push(`${splitKey[0]}:${response.hits.hits[counter]._id}`);
       }
       callback(null, keys);
     }
@@ -144,13 +144,13 @@ exports.database.prototype.findKeys = function (key, notKey, callback) {
  *    completion of a successful database write.
  */
 exports.database.prototype.set = function (key, value, callback) {
-  var options = getIndexTypeId(key);
+  const options = getIndexTypeId(key);
 
   options.body = {
-    val: value
+    val: value,
   };
 
-  client.index(options, function(error, response) {
+  client.index(options, (error, response) => {
     parseResponse(error, response, callback);
   });
 };
@@ -167,7 +167,7 @@ exports.database.prototype.set = function (key, value, callback) {
  *    completion of a successful database write.
  */
 exports.database.prototype.remove = function (key, callback) {
-  client.delete(key, function(error, response) {
+  client.delete(key, (error, response) => {
     parseResponse(error, response, callback);
   });
 };
@@ -187,23 +187,23 @@ exports.database.prototype.doBulk = function (bulk, callback) {
   // bulk is an array of JSON:
   // example: [{"type":"set", "key":"sessionstorage:{id}", "value":{"cookie":{...}}]
 
-  var operations = [];
+  const operations = [];
 
-  for (var counter = 0; counter < bulk.length; counter++) {
-    var indexTypeId = getIndexTypeId(bulk[counter].key);
-    var operationPayload = {
+  for (let counter = 0; counter < bulk.length; counter++) {
+    const indexTypeId = getIndexTypeId(bulk[counter].key);
+    const operationPayload = {
       _index: indexTypeId.index,
-      _type : indexTypeId.type,
-      _id   : indexTypeId.id
+      _type: indexTypeId.type,
+      _id: indexTypeId.id,
     };
 
-    switch(bulk[counter].type) {
-      case "set":
-        operations.push({"index": operationPayload});
-        operations.push({"val": JSON.parse(bulk[counter].value)});
+    switch (bulk[counter].type) {
+      case 'set':
+        operations.push({index: operationPayload});
+        operations.push({val: JSON.parse(bulk[counter].value)});
         break;
-      case "remove":
-        operations.push({"delete": operationPayload});
+      case 'remove':
+        operations.push({delete: operationPayload});
         break;
       default:
         continue;
@@ -212,17 +212,17 @@ exports.database.prototype.doBulk = function (bulk, callback) {
 
   // send bulk request
   client.bulk({
-    body: operations
-  }, function(error, response) {
+    body: operations,
+  }, (error, response) => {
     parseResponse(error, response, callback);
   });
 };
 
-exports.database.prototype.close = function(callback) {
+exports.database.prototype.close = function (callback) {
   callback(null);
 };
 
-/**************************
+/** ************************
  **** Helper functions ****
  **************************/
 
@@ -236,27 +236,23 @@ exports.database.prototype.close = function(callback) {
  *    format "test:test1:check:check1"
  */
 function getIndexTypeId(key) {
-  var returnObject = {};
+  const returnObject = {};
 
-  var splitKey = key.split(":");
+  const splitKey = key.split(':');
 
-  if(splitKey.length === 4) {
-
+  if (splitKey.length === 4) {
     /*
      * This is for keys like test:test1:check:check1.
      * These keys are stored at /base_index-test-check/test1/check1
      */
-    returnObject.index = elasticsearchSettings.base_index + '-' + splitKey[0] + '-' + splitKey[2];
+    returnObject.index = `${elasticsearchSettings.base_index}-${splitKey[0]}-${splitKey[2]}`;
     returnObject.type = encodeURIComponent(splitKey[1]);
     returnObject.id = splitKey[3];
-
   } else {
-
     // everything else ('test:test1') is stored /base_index/test/test1
     returnObject.index = elasticsearchSettings.base_index;
     returnObject.type = splitKey[0];
     returnObject.id = encodeURIComponent(splitKey[1]);
-
   }
 
   return returnObject;
@@ -266,19 +262,17 @@ function getIndexTypeId(key) {
  * Extract data from elasticsearch responses, handle errors, handle callbacks.
  */
 function parseResponse(error, response, callback) {
-  if(error) {
+  if (error) {
     // don't treat not found as an error (is this specific to etherpad?)
-    if (error.message === "Not Found" && !response.found) {
-
+    if (error.message === 'Not Found' && !response.found) {
       callback(null, null);
       return;
-
     } else {
-      console.error("elasticsearch_db: ", error);
+      console.error('elasticsearch_db: ', error);
     }
   }
 
-  if(!error && response) {
+  if (!error && response) {
     response = response._source;
 
     if (response) {
