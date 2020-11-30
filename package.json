@@ -40,6 +40,12 @@
     "simple-git": "^2.4.0"
   },
   "devDependencies": {
+    "eslint": "^7.15.0",
+    "eslint-config-etherpad": "^1.0.18",
+    "eslint-plugin-mocha": "^8.0.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prefer-arrow": "^1.2.2",
+    "eslint-plugin-promise": "^4.2.1",
     "expect.js": "0.3.1",
     "log4js": "^6.1.2"
   },
@@ -54,6 +60,8 @@
   },
   "homepage": "https://github.com/ether/ueberDB",
   "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
     "test": "mocha test/test*.js --timeout 1000000"
   },
   "_npmUser": {
@@ -65,5 +73,47 @@
       "name": "John McLear",
       "email": "john@mclear.co.uk"
     }
-  ]
+  ],
+  "eslintConfig": {
+    "overrides": [
+      {
+        "files": [
+          "**/.eslintrc.js"
+        ],
+        "extends": "etherpad/node"
+      },
+      {
+        "files": [
+          "**/*"
+        ],
+        "excludedFiles": [
+          "**/.eslintrc.js"
+        ],
+        "extends": "etherpad/node"
+      },
+      {
+        "files": [
+          "test/**/*"
+        ],
+        "excludedFiles": [
+          "**/.eslintrc.js"
+        ],
+        "extends": "etherpad/tests/backend",
+        "overrides": [
+          {
+            "files": [
+              "test/lib/**/*"
+            ],
+            "rules": {
+              "mocha/no-exports": "off"
+            }
+          }
+        ]
+      }
+    ],
+    "root": true
+  },
+  "engines": {
+    "node": ">=10.13.0"
+  }
 }
