@@ -111,10 +111,6 @@ async function ueberdbAPITests(database, dbSettings, cacheEnabled, done) {
           const matches = JSON.stringify(input) === JSON.stringify(output);
           assert.equal(matches, true);
         });
-        db.get(key, (err, output) => {
-          // const matches = JSON.stringify(input) === JSON.stringify(output);
-          // assert.equal(matches, false); TODO this fails in dirty?
-        });
       });
     }); // end white space
 
@@ -150,7 +146,6 @@ async function ueberdbAPITests(database, dbSettings, cacheEnabled, done) {
     it('Does a basic findKeys operation with a random key/value', () => {
       const input = {a: 1, b: new Randexp(/.+/).gen()};
       // TODO setting a key with non ascii chars
-      // key = "TODO" + new Randexp(/.+/).gen();
       const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
       // set two nested keys under the key
       db.set(`${key}:test2`, input);
@@ -190,7 +185,6 @@ async function ueberdbAPITests(database, dbSettings, cacheEnabled, done) {
     it('Speed is acceptable', () => {
       this.timeout(1000000);
       const input = {a: 1, b: new Randexp(/.+/).gen()};
-      // var key =  new Randexp(/.+/).gen();
       // TODO setting a key with non ascii chars
       const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
       const timers = {};
@@ -229,12 +223,6 @@ async function ueberdbAPITests(database, dbSettings, cacheEnabled, done) {
       const timeToRead = timers.read - timers.written;
       const timeToFindKey = timers.findKeys - timers.read;
       const timeToRemove = timers.remove - timers.findKeys;
-      /*
-      console.log("timeToWrite", timeToWrite);
-      console.log("timeToRead", timeToRead);
-      console.log("timeToFindKey", timeToFindKey);
-      console.log("timeToRemove", timeToRemove);
-*/
       const timeToWritePerRecord = timeToWrite / numberOfWrites;
       const timeToReadPerRecord = timeToRead / numberOfWrites;
       const timeToFindKeyPerRecord = timeToFindKey / numberOfWrites;

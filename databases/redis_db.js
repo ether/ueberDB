@@ -20,18 +20,6 @@
 const async = require('async');
 const redis = require('redis');
 
-/* settings:
-    {
-      host:
-      port:
-      socket:
-      database:
-      password:
-      client_options
-    }
-
-*/
-
 exports.database = function (settings) {
   this.client = null;
   this.settings = settings || {};
