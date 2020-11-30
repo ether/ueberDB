@@ -24,8 +24,7 @@
 var dirty = require("dirty");
 var async = require("async");
 
-exports.database = function(settings)
-{
+exports.database = function(settings) {
   this.db=null;
 
   if(!settings || !settings.filename)
@@ -41,22 +40,18 @@ exports.database = function(settings)
   this.settings.json = false;
 }
 
-exports.database.prototype.init = function(callback)
-{
+exports.database.prototype.init = function(callback) {
   this.db = new dirty(this.settings.filename);
-  this.db.on('load', function(err)
-  {
+  this.db.on('load', function(err) {
     callback();
   });
 }
 
-exports.database.prototype.get = function (key, callback)
-{
+exports.database.prototype.get = function (key, callback) {
   callback(null, this.db.get(key));
 }
 
-exports.database.prototype.findKeys = function (key, notKey, callback)
-{
+exports.database.prototype.findKeys = function (key, notKey, callback) {
   var keys=[]
     , regex=this.createFindRegex(key, notKey)
   ;
@@ -70,18 +65,15 @@ exports.database.prototype.findKeys = function (key, notKey, callback)
   callback(null, keys);
 }
 
-exports.database.prototype.set = function (key, value, callback)
-{
+exports.database.prototype.set = function (key, value, callback) {
   this.db.set(key,value,callback);
 }
 
-exports.database.prototype.remove = function (key, callback)
-{
+exports.database.prototype.remove = function (key, callback) {
   this.db.rm(key,callback);
 }
 
-exports.database.prototype.close = function(callback)
-{
+exports.database.prototype.close = function(callback) {
 	this.db.close();
   if(callback) callback();
 }

@@ -8,8 +8,7 @@ var crateSettings = {
 var insertSQL;
 var removeSQL;
 
-exports.database = function(settings)
-{
+exports.database = function(settings) {
   this.db = crate;
   this.settings = settings || {};
 
@@ -34,8 +33,7 @@ var crate = require("node-crate");
 /**
  * Initialize the crate client, then crate the table if it not exists
  */
-exports.database.prototype.init = function(callback)
-{
+exports.database.prototype.init = function(callback) {
   this.db.connect(crateSettings.hosts);
   insertSQL = 'INSERT INTO ' + crateSettings.fqn +' ("key","value") VALUES (?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)';
   removeSQL = 'DELETE FROM ' + crateSettings.fqn + ' WHERE key=? ';
@@ -52,8 +50,7 @@ exports.database.prototype.init = function(callback)
 /**
  * read from database
  */
-exports.database.prototype.get = function (key, callback)
-{
+exports.database.prototype.get = function (key, callback) {
     finish = function(log){
         if(!log.rows.length){
             callback(undefined, null);
@@ -69,8 +66,7 @@ exports.database.prototype.get = function (key, callback)
         .error(finishError);
 }
 
-exports.database.prototype.findKeys = function (key, notKey, callback)
-{
+exports.database.prototype.findKeys = function (key, notKey, callback) {
     var query = "SELECT key FROM "+ crateSettings.fqn +" where key LIKE ?", 
         params =[];
     key=key.replace(/\*/g,'%');
@@ -98,8 +94,7 @@ exports.database.prototype.findKeys = function (key, notKey, callback)
         });
 }
 
-exports.database.prototype.set = function (key, value, callback)
-{
+exports.database.prototype.set = function (key, value, callback) {
     crate.execute (insertSQL, [key, value]).
         success(refresh(function (log) {
             callback();
@@ -109,8 +104,7 @@ exports.database.prototype.set = function (key, value, callback)
         });
 }
 
-exports.database.prototype.remove = function (key, callback)
-{
+exports.database.prototype.remove = function (key, callback) {
     crate.execute (removeSQL, [key]).
         success(function (log) {
             callback();
@@ -120,8 +114,7 @@ exports.database.prototype.remove = function (key, callback)
         });
 }
 
-exports.database.prototype.doBulk = function (bulk, callback)
-{ 
+exports.database.prototype.doBulk = function (bulk, callback) { 
     var remove = [];
     var insert = [];
     for(var i in bulk) {
@@ -169,7 +162,6 @@ function refresh(callback) {
     );
 }
 
-exports.database.prototype.close = function(callback)
-{
+exports.database.prototype.close = function(callback) {
     callback();
 }

@@ -17,8 +17,7 @@
 var pg = require("pg");
 var postgresCommon = require('./postgres_common');
 
-exports.database = function(settings)
-{
+exports.database = function(settings) {
   this.settings = settings;
 
   this.settings.cache = settings.cache || 1000;
@@ -36,8 +35,7 @@ exports.database.prototype.set = postgresCommon.set;
 exports.database.prototype.remove = postgresCommon.remove;
 exports.database.prototype.doBulk = postgresCommon.doBulk;
 
-exports.database.prototype.close = function(callback)
-{
+exports.database.prototype.close = function(callback) {
   var _this = this;
 
   this.db.on('drain', function() {

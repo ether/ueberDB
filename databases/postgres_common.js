@@ -16,8 +16,7 @@
 
 var async = require("async");
 
-exports.init = function(callback)
-{
+exports.init = function(callback) {
   var testTableExists = "SELECT 1 as exists FROM pg_tables WHERE tablename = 'store'";
 
   var createTable = 'CREATE TABLE IF NOT EXISTS store (' +
@@ -89,10 +88,8 @@ exports.init = function(callback)
   });
 }
 
-exports.get = function(key, callback)
-{
-  this.db.query("SELECT value FROM store WHERE key=$1", [key], function(err,results)
-  {
+exports.get = function(key, callback) {
+  this.db.query("SELECT value FROM store WHERE key=$1", [key], function(err,results) {
     var value = null;
 
     if(!err && results.rows.length == 1)
@@ -104,8 +101,7 @@ exports.get = function(key, callback)
   });
 }
 
-exports.findKeys = function(key, notKey, callback)
-{
+exports.findKeys = function(key, notKey, callback) {
   var query="SELECT key FROM store WHERE  key LIKE $1"
     , params=[]
   ;
@@ -119,8 +115,7 @@ exports.findKeys = function(key, notKey, callback)
     query+=" AND key NOT LIKE $2"
     params.push(notKey);
   }
-  this.db.query(query, params, function(err,results)
-  {
+  this.db.query(query, params, function(err,results) {
     var value = [];
 
     if(!err && results.rows.length > 0)
@@ -134,8 +129,7 @@ exports.findKeys = function(key, notKey, callback)
   });
 }
 
-exports.set = function(key, value, callback)
-{
+exports.set = function(key, value, callback) {
   const _this = this;
   if(key.length > 100)
   {
@@ -147,13 +141,11 @@ exports.set = function(key, value, callback)
   }
 }
 
-exports.remove = function(key, callback)
-{
+exports.remove = function(key, callback) {
   this.db.query("DELETE FROM store WHERE key=$1", [key], callback);
 }
 
-exports.doBulk = function(bulk, callback)
-{
+exports.doBulk = function(bulk, callback) {
   var _this = this;
 
   var replaceVALs = new Array();

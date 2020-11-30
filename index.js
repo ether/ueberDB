@@ -24,8 +24,7 @@ var defaultLogger = {debug: function(){}, info: function(){}, error: function(){
 /**
  The Constructor
 */
-exports.database = function(type, dbSettings, wrapperSettings, logger)
-{
+exports.database = function(type, dbSettings, wrapperSettings, logger) {
   if(!type)
   {
     type = "sqlite";
@@ -42,8 +41,7 @@ exports.database = function(type, dbSettings, wrapperSettings, logger)
   this.channels = new channels.channels(doOperation);
 }
 
-exports.database.prototype.init = function(callback)
-{
+exports.database.prototype.init = function(callback) {
   var db = new this.db_module.database(this.dbSettings);
   this.db = new cacheAndBufferLayer.database(db, this.wrapperSettings, this.logger);
   if(callback){
@@ -57,47 +55,38 @@ exports.database.prototype.init = function(callback)
  Wrapper functions
 */
 
-exports.database.prototype.doShutdown = function(callback)
-{
+exports.database.prototype.doShutdown = function(callback) {
   this.db.doShutdown(callback);
 }
 
-exports.database.prototype.get = function (key, callback)
-{
+exports.database.prototype.get = function (key, callback) {
   this.channels.emit(key, {"db": this.db, "type": "get", "key": key, "callback": callback});
 }
 
-exports.database.prototype.findKeys = function (key, notKey, callback)
-{
+exports.database.prototype.findKeys = function (key, notKey, callback) {
   this.channels.emit(key, {"db": this.db, "type": "findKeys", "key": key, "notKey": notKey, "callback": callback});
 }
 
-exports.database.prototype.remove = function (key, bufferCallback, writeCallback)
-{
+exports.database.prototype.remove = function (key, bufferCallback, writeCallback) {
   this.channels.emit(key, {"db": this.db, "type": "remove", "key": key, "bufferCallback": bufferCallback, "writeCallback": writeCallback});
 }
 
-exports.database.prototype.set = function (key, value, bufferCallback, writeCallback)
-{
+exports.database.prototype.set = function (key, value, bufferCallback, writeCallback) {
   this.channels.emit(key, {"db": this.db, "type": "set", "key": key, "value": clone(value), "bufferCallback": bufferCallback, "writeCallback": writeCallback});
 }
 
-exports.database.prototype.getSub = function (key, sub, callback)
-{
+exports.database.prototype.getSub = function (key, sub, callback) {
   this.channels.emit(key, {"db": this.db, "type": "getsub", "key": key, "sub": sub, "callback": callback});
 }
 
-exports.database.prototype.setSub = function (key, sub, value, bufferCallback, writeCallback)
-{
+exports.database.prototype.setSub = function (key, sub, value, bufferCallback, writeCallback) {
   this.channels.emit(key, {"db": this.db, "type": "setsub", "key": key, "sub": sub, "value": clone(value), "bufferCallback": bufferCallback, "writeCallback": writeCallback});
 }
 
-function doOperation (operation, callback)
-{
+function doOperation (operation, callback) {
   if(operation.type == "get")
   {
-    operation.db.get(operation.key, function(err, value)
-    {
+    operation.db.get(operation.key, function(err, value) {
       //clone the value
       value = clone(value);
 
@@ -109,8 +98,7 @@ function doOperation (operation, callback)
     });
   }
   else if(operation.type == "remove"){
-    operation.db.remove(operation.key, function(err)
-    {
+    operation.db.remove(operation.key, function(err) {
       //call the queue callback
       callback();
 
@@ -120,8 +108,7 @@ function doOperation (operation, callback)
   }
   else if(operation.type == "findKeys")
   {
-    operation.db.findKeys(operation.key, operation.notKey, function(err, value)
-    {
+    operation.db.findKeys(operation.key, operation.notKey, function(err, value) {
       //clone the value
       value = clone(value);
 
@@ -134,8 +121,7 @@ function doOperation (operation, callback)
   }
   else if(operation.type == "set")
   {
-    operation.db.set(operation.key, operation.value, function(err)
-    {
+    operation.db.set(operation.key, operation.value, function(err) {
       //call the queue callback
       callback();
 
@@ -145,8 +131,7 @@ function doOperation (operation, callback)
   }
   else if(operation.type == "getsub")
   {
-    operation.db.getSub(operation.key, operation.sub, function(err, value)
-    {
+    operation.db.getSub(operation.key, operation.sub, function(err, value) {
       //clone the value
       value = clone(value);
 
@@ -159,8 +144,7 @@ function doOperation (operation, callback)
   }
   else if(operation.type == "setsub")
   {
-    operation.db.setSub(operation.key, operation.sub, operation.value, function(err)
-    {
+    operation.db.setSub(operation.key, operation.sub, operation.value, function(err) {
       //call the queue callback
       callback();
 
@@ -170,13 +154,11 @@ function doOperation (operation, callback)
   }
 }
 
-exports.database.prototype.close = function(callback)
-{
+exports.database.prototype.close = function(callback) {
   this.db.close(callback);
 }
 
-function clone(obj)
-{
+function clone(obj) {
   // Handle the 3 simple types, and null or undefined
   if (null == obj || "object" != typeof obj) return obj;
 

@@ -26,8 +26,7 @@ catch(e)
 
 var async = require("async");
 
-exports.database = function(settings)
-{
+exports.database = function(settings) {
   this.db=null; 
   
   if(!settings || !settings.filename)
@@ -52,33 +51,27 @@ exports.database = function(settings)
   }
 }
 
-exports.database.prototype.init = function(callback)
-{
+exports.database.prototype.init = function(callback) {
   var _this = this;
 
   async.waterfall([
-    function(callback)
-    {
+    function(callback) {
       _this.db = new sqlite3.Database(_this.settings.filename, callback);
     },
-    function(callback)
-    {
+    function(callback) {
       var sql = "CREATE TABLE IF NOT EXISTS store (key TEXT PRIMARY KEY,value TEXT)";
       _this.db.run(sql,callback);
     } 
   ],callback);
 }
 
-exports.database.prototype.get = function (key, callback)
-{
-  this.db.get("SELECT value FROM store WHERE key = ?", key, function(err,row)
-  {
+exports.database.prototype.get = function (key, callback) {
+  this.db.get("SELECT value FROM store WHERE key = ?", key, function(err,row) {
     callback(err,row ? row.value : null);
   });
 }
 
-exports.database.prototype.findKeys = function (key, notKey, callback)
-{
+exports.database.prototype.findKeys = function (key, notKey, callback) {
   var query="SELECT key FROM store WHERE key LIKE ?"
     , params=[]
   ;
@@ -93,8 +86,7 @@ exports.database.prototype.findKeys = function (key, notKey, callback)
     params.push(notKey);
   }
   
-  this.db.all(query, params, function(err,results)
-  {
+  this.db.all(query, params, function(err,results) {
     var value = [];
     
     if(!err && Object.keys(results).length > 0)
@@ -108,18 +100,15 @@ exports.database.prototype.findKeys = function (key, notKey, callback)
   });
 }
 
-exports.database.prototype.set = function (key, value, callback)
-{
+exports.database.prototype.set = function (key, value, callback) {
   this.db.run("REPLACE INTO store VALUES (?,?)", key, value, callback);
 }
 
-exports.database.prototype.remove = function (key, callback)
-{
+exports.database.prototype.remove = function (key, callback) {
   this.db.run("DELETE FROM store WHERE key = ?", key, callback);
 }
 
-exports.database.prototype.doBulk = function (bulk, callback)
-{ 
+exports.database.prototype.doBulk = function (bulk, callback) { 
   var sql = "BEGIN TRANSACTION;\n";
   for(var i in bulk)
   {
@@ -145,12 +134,10 @@ exports.database.prototype.doBulk = function (bulk, callback)
   });
 }
 
-exports.database.prototype.close = function(callback)
-{
+exports.database.prototype.close = function(callback) {
   this.db.close(callback);
 }
 
-function escape (val) 
-{
+function escape (val)  {
   return "'"+val.replace(/'/g, "''")+"'";
 };

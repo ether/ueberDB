@@ -41,8 +41,7 @@ catch(e)
 
 var async = require("async");
 
-exports.database = function(settings)
-{
+exports.database = function(settings) {
   this.db=null;
   
   if(!settings || !settings.directory)
@@ -66,25 +65,21 @@ exports.database.prototype.init = function(callback) {
   ],callback);
 }
 
-exports.database.prototype.get = function (key, callback)
-{
+exports.database.prototype.get = function (key, callback) {
   this.db.get(key, function(err, value) {
     callback(err, value ? value : null);
   });
 }
 
-exports.database.prototype.set = function (key, value, callback)
-{
+exports.database.prototype.set = function (key, value, callback) {
   this.db.put(key, value, callback);
 }
 
-exports.database.prototype.remove = function (key, callback)
-{
+exports.database.prototype.remove = function (key, callback) {
   this.db.del(key, callback);
 }
 
-exports.database.prototype.doBulk = function (bulk, callback)
-{
+exports.database.prototype.doBulk = function (bulk, callback) {
   //Batch not implemented
   var batch = this.db.batch();
   for(var i in bulk) {
@@ -98,8 +93,7 @@ exports.database.prototype.doBulk = function (bulk, callback)
   this.db.write(batch, callback);
 }
 
-exports.database.prototype.close = function(callback)
-{
+exports.database.prototype.close = function(callback) {
   delete this.db;
   callback(null)
 }
