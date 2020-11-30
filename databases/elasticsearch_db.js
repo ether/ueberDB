@@ -1,3 +1,4 @@
+'use strict';
 /**
  * 2015 Visionist, Inc.
  *

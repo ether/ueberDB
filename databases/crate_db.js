@@ -1,3 +1,4 @@
+'use strict';
 // initialize w/ default settings
 const crateSettings = {
   schema: 'doc',

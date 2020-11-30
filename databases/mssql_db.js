@@ -1,3 +1,4 @@
+'use strict';
 /**
  * 2019 - exspecto@gmail.com
  *

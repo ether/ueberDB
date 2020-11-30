@@ -1,3 +1,4 @@
+'use strict';
 /**
  * 2012 Max 'Azul' Wiehle
  *

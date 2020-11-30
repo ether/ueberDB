@@ -1,3 +1,4 @@
+'use strict';
 /**
  * 2011 Peter 'Pita' Martischka
  * 2012 Uli Koehler

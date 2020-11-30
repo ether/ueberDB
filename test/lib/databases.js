@@ -1,3 +1,5 @@
+'use strict';
+
 exports.databases = {
   dirty: {
     filename: '/tmp/ueberdb-test.db',

@@ -1,3 +1,4 @@
+'use strict';
 path = require('path'),
 fs = require('fs'),
 ueberdb = require('../index'),
