@@ -170,9 +170,7 @@ exports.database.prototype.doBulk = function (bulk, callback) {
   const revs = {};
   const setters = [];
   for (const i in bulk) {
-    if (bulk[i]) {
-      keys.push(bulk[i].key);
-    }
+    keys.push(bulk[i].key);
   }
   async.series([
     (callback) => {
@@ -188,14 +186,12 @@ exports.database.prototype.doBulk = function (bulk, callback) {
     },
     (callback) => {
       for (const i in bulk) {
-        if (bulk[i]) {
-          const item = bulk[i];
-          const set = {_id: item.key};
-          if (revs[item.key] != null) set._rev = revs[item.key];
-          if (item.type === 'set') set.value = item.value;
-          if (item.type === 'remove') set._deleted = true;
-          setters.push(set);
-        }
+        const item = bulk[i];
+        const set = {_id: item.key};
+        if (revs[item.key] != null) set._rev = revs[item.key];
+        if (item.type === 'set') set.value = item.value;
+        if (item.type === 'remove') set._deleted = true;
+        setters.push(set);
       }
       callback();
     },
