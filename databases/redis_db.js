@@ -1,5 +1,5 @@
 'use strict';
-/* eslint new-cap: "warn"*/
+/* eslint new-cap: "warn" */
 
 /**
  * 2011 Peter 'Pita' Martischka
@@ -56,7 +56,7 @@ exports.database.prototype.findKeys = function (key, notKey, callback) {
   // As redis provides only limited support for getting a list of all
   // available keys we have to limit key and notKey here.
   // See http://redis.io/commands/keys
-  if (notKey == null || notKey === undefined) {
+  if (notKey == null) {
     this.client.KEYS(key, callback);
   } else if (notKey === '*:*:*') {
     // restrict key to format "text:*"

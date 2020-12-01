@@ -67,10 +67,9 @@ exports.database.prototype.findKeys = function (key, notKey, callback) {
 
 exports.database.prototype.set = function (key, value, callback) {
   const that = this;
-  r.table(that.table).insert(
-      {id: key, content: value},
-      {conflict: 'replace'}
-  ).run(that.connection, callback);
+  r.table(that.table)
+      .insert({id: key, content: value}, {conflict: 'replace'})
+      .run(that.connection, callback);
 };
 
 exports.database.prototype.doBulk = function (bulk, callback) {
@@ -86,13 +85,8 @@ exports.database.prototype.doBulk = function (bulk, callback) {
     }
   }
   async.parallel([
-    (cb) => {
-      r.table(that.table).
-          insert(_in, {conflict: 'replace'}).run(that.connection, cb);
-    },
-    (cb) => {
-      r.table(that.table).getAll(_out).delete().run(that.connection, cb);
-    },
+    (cb) => { r.table(that.table).insert(_in, {conflict: 'replace'}).run(that.connection, cb); },
+    (cb) => { r.table(that.table).getAll(_out).delete().run(that.connection, cb); },
   ], callback);
 };
 exports.database.prototype.remove = function (key, callback) {

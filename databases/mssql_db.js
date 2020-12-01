@@ -1,5 +1,5 @@
 'use strict';
-/* eslint new-cap: "warn"*/
+/* eslint new-cap: "warn" */
 
 /**
  * 2019 - exspecto@gmail.com
@@ -96,7 +96,7 @@ exports.database.prototype.findKeys = function (key, notKey, callback) {
 
   request.input('key', mssql.NVarChar(100), key);
 
-  if (notKey != null && notKey !== undefined) {
+  if (notKey != null) {
     // not desired keys are notKey, e.g. %:%:%
     notKey = notKey.replace(/\*/g, '%');
     request.input('notkey', mssql.NVarChar(100), notKey);
@@ -160,11 +160,11 @@ exports.database.prototype.doBulk = function (bulk, callback) {
         replacements.push('\nCOMMIT TRANSACTION;\nBEGIN TRANSACTION;\n');
       }
 
-      replacements.push(`MERGE [store] t USING (SELECT '${bulk[i].key}' [key],
-       '${bulk[i].value}' [value]) s
-                   ON t.[key] = s.[key]
-                   WHEN MATCHED AND s.[value] IS NOT NULL THEN UPDATE SET t.[value] = s.[value]
-                   WHEN NOT MATCHED THEN INSERT ([key], [value]) VALUES (s.[key], s.[value]);`);
+      replacements.push(
+          `MERGE [store] t USING (SELECT '${bulk[i].key}' [key], '${bulk[i].value}' [value]) s`,
+          'ON t.[key] = s.[key]',
+          'WHEN MATCHED AND s.[value] IS NOT NULL THEN UPDATE SET t.[value] = s.[value]',
+          'WHEN NOT MATCHED THEN INSERT ([key], [value]) VALUES (s.[key], s.[value]);');
     } else if (bulk[i].type === 'remove') {
       if (!firstRemove) {
         removeSQL += ',';

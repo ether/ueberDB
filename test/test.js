@@ -1,13 +1,12 @@
 'use strict';
-/* global before, after, describe, it */
 /* eslint new-cap: "warn" */
 
+const Clitable = require('cli-table');
+const Randexp = require('randexp');
+const assert = require('assert');
+const databases = require('./lib/databases').databases;
 const fs = require('fs');
 const ueberdb = require('../index');
-const assert = require('assert');
-const Randexp = require('randexp');
-const databases = require('./lib/databases').databases;
-const Clitable = require('cli-table');
 
 const exists = fs.stat;
 let db;
@@ -23,12 +22,14 @@ const CACHE_OFF = false;
 const keys = Object.keys(databases);
 
 const table = new Clitable({
-  head: ['Database',
+  head: [
+    'Database',
     '# of items',
     'Write(in seconds)',
     'Read(scnds)',
     'findKey(scnds)',
-    'remove(scnds)'],
+    'remove(scnds)',
+  ],
   colWidths: [20, 10, 20, 15, 15, 15],
 });
 
@@ -38,7 +39,7 @@ keys.forEach(async (database) => {
   await ueberdbAPITests(database, dbSettings, CACHE_OFF);
 });
 
-after(() => {
+after(function () {
   if (databases.dirty && databases.dirty.filename) {
     exists(databases.dirty.filename, (doesExist) => {
       if (doesExist) {
@@ -53,12 +54,7 @@ after(() => {
 
 
 async function ueberdbAPITests(database, dbSettings, cacheEnabled, done) {
-  let cacheStatus;
-  if (cacheEnabled) {
-    cacheStatus = 'cache-on';
-  } else {
-    cacheStatus = 'cache-off';
-  }
+  const cacheStatus = cacheEnabled ? 'cache-on' : 'cache-off';
   describe(`ueberdb:${database}:${cacheStatus}`, function () {
     this.timeout(1000000);
     const init = (done) => {
@@ -79,12 +75,12 @@ async function ueberdbAPITests(database, dbSettings, cacheEnabled, done) {
 
     before(init);
 
-    describe('white space', () => {
+    describe('white space', function () {
       const input = {a: 1, b: new Randexp(/.+/).gen()};
       let key = new Randexp(/.+/).gen();
 
       // set
-      it('Tries to get the value with an included space', () => {
+      it('Tries to get the value with an included space', function () {
         db.set(key, input);
         db.get(`${key} `, (err, output) => {
           const matches = JSON.stringify(input) !== JSON.stringify(output);
@@ -92,7 +88,7 @@ async function ueberdbAPITests(database, dbSettings, cacheEnabled, done) {
         });
       });
 
-      it('Gets the correct item when whitespace is in key', () => {
+      it('Gets the correct item when whitespace is in key', function () {
         // get the input object without whitespace
         db.get(key, (err, output) => {
           const matches = JSON.stringify(input) === JSON.stringify(output);
@@ -104,7 +100,7 @@ async function ueberdbAPITests(database, dbSettings, cacheEnabled, done) {
       const keyWithSpace = `${key} `;
       // set
       // now we do the same but with whiteSpaceInKey
-      it('Tries to get the value with an included space', () => {
+      it('Tries to get the value with an included space', function () {
         db.set(`${keyWithSpace} `, input);
         // get the input object with whitespace (shouldn't get it)
         db.get(`${keyWithSpace} `, (err, output) => {
@@ -114,7 +110,7 @@ async function ueberdbAPITests(database, dbSettings, cacheEnabled, done) {
       });
     }); // end white space
 
-    it('basic read write', () => {
+    it('basic read write', function () {
       // Basic read/write operation
       const input = {a: 1, b: new Randexp(/.+/).gen()};
       const key = new Randexp(/.+/).gen();
@@ -122,14 +118,14 @@ async function ueberdbAPITests(database, dbSettings, cacheEnabled, done) {
       db.set(key, input);
       // get the object
       db.get(key, (err, output) => {
-        it('Does a basic write->read operation with a random key/value', () => {
+        it('Does a basic write->read operation with a random key/value', function () {
           const matches = JSON.stringify(input) === JSON.stringify(output);
           assert.equal(matches, true);
         });
       });
     }); // end basic read writes
 
-    it('Does a basic write->read operation with a random key/value', () => {
+    it('Does a basic write->read operation with a random key/value', function () {
       const input = {testLongString: new Randexp(/[a-f0-9]{50000}/).gen()};
       const key = new Randexp(/.+/).gen();
       // set long string
@@ -143,7 +139,7 @@ async function ueberdbAPITests(database, dbSettings, cacheEnabled, done) {
     });
 
     // Basic findKeys test functionality
-    it('Does a basic findKeys operation with a random key/value', () => {
+    it('Does a basic findKeys operation with a random key/value', function () {
       const input = {a: 1, b: new Randexp(/.+/).gen()};
       // TODO setting a key with non ascii chars
       const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
@@ -162,7 +158,7 @@ async function ueberdbAPITests(database, dbSettings, cacheEnabled, done) {
       });
     });
 
-    it('Tests a key has been deleted', () => {
+    it('Tests a key has been deleted', function () {
       const input = {a: 1, b: new Randexp(/.+/).gen()};
       const key = new Randexp(/.+/).gen();
       db.set(key, input);
@@ -180,15 +176,15 @@ async function ueberdbAPITests(database, dbSettings, cacheEnabled, done) {
     });
 
     // Read/write operations with timers to catch events
-    it('Speed is acceptable', () => {
+    it('Speed is acceptable', function () {
       this.timeout(1000000);
       const input = {a: 1, b: new Randexp(/.+/).gen()};
       // TODO setting a key with non ascii chars
       const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
       const timers = {};
       timers.start = Date.now();
-      const numberOfWrites = (dbSettings.speeds && dbSettings.speeds.numberOfWrites) ||
-      defaultNumberOfWrites;
+      const numberOfWrites =
+          (dbSettings.speeds && dbSettings.speeds.numberOfWrites) || defaultNumberOfWrites;
       for (let i = 0; i < numberOfWrites; i++) {
         db.set(key + i, input);
       }
@@ -225,30 +221,32 @@ async function ueberdbAPITests(database, dbSettings, cacheEnabled, done) {
       const timeToReadPerRecord = timeToRead / numberOfWrites;
       const timeToFindKeyPerRecord = timeToFindKey / numberOfWrites;
       const timeToRemovePerRecord = timeToRemove / numberOfWrites;
-      table.push([`${database}:${cacheStatus}`,
+      table.push([
+        `${database}:${cacheStatus}`,
         numberOfWrites,
         timeToWritePerRecord,
         timeToReadPerRecord,
         timeToFindKeyPerRecord,
-        timeToRemovePerRecord]);
+        timeToRemovePerRecord,
+      ]);
 
-      const acceptableReadTime = (((dbSettings.speeds && dbSettings.speeds.read) ||
-       acceptableReads));
+      const acceptableReadTime =
+          (((dbSettings.speeds && dbSettings.speeds.read) || acceptableReads));
       console.log('ART', acceptableReadTime, timeToReadPerRecord);
       const reads = acceptableReadTime >= timeToReadPerRecord;
 
-      const acceptableWriteTime = (((dbSettings.speeds && dbSettings.speeds.write) ||
-       acceptableWrites));
+      const acceptableWriteTime =
+          (((dbSettings.speeds && dbSettings.speeds.write) || acceptableWrites));
       console.log('AWT', acceptableWriteTime, timeToWritePerRecord);
       const writes = acceptableWriteTime >= timeToWritePerRecord;
 
-      const acceptableFindKeysTime = (((dbSettings.speeds && dbSettings.speeds.findKey) ||
-       acceptableFindKeys));
+      const acceptableFindKeysTime =
+          (((dbSettings.speeds && dbSettings.speeds.findKey) || acceptableFindKeys));
       console.log('AFKT', acceptableFindKeysTime, timeToFindKeyPerRecord);
       const findKeys = acceptableFindKeysTime >= timeToFindKeyPerRecord;
 
-      const acceptableRemoveTime = (((dbSettings.speeds && dbSettings.speeds.remove) ||
-       acceptableRemove));
+      const acceptableRemoveTime =
+          (((dbSettings.speeds && dbSettings.speeds.remove) || acceptableRemove));
       console.log('ARemT', acceptableRemoveTime, timeToRemovePerRecord);
       const remove = acceptableRemoveTime >= timeToRemovePerRecord;
       assert.equal((reads === writes === findKeys === remove), true);

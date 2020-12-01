@@ -79,9 +79,8 @@ exports.database.prototype.remove = function (key, bufferCallback, writeCallback
 };
 
 exports.database.prototype.set = function (key, value, bufferCallback, writeCallback) {
-  this.channels.emit(key, {
-    db: this.db, type: 'set', key, value: clone(value), bufferCallback, writeCallback,
-  });
+  this.channels.emit(key,
+      {db: this.db, type: 'set', key, value: clone(value), bufferCallback, writeCallback});
 };
 
 exports.database.prototype.getSub = function (key, sub, callback) {
@@ -89,9 +88,8 @@ exports.database.prototype.getSub = function (key, sub, callback) {
 };
 
 exports.database.prototype.setSub = function (key, sub, value, bufferCallback, writeCallback) {
-  this.channels.emit(key, {
-    db: this.db, type: 'setsub', key, sub, value: clone(value), bufferCallback, writeCallback,
-  });
+  this.channels.emit(key,
+      {db: this.db, type: 'setsub', key, sub, value: clone(value), bufferCallback, writeCallback});
 };
 
 const doOperation = (operation, callback) => {

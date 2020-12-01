@@ -53,7 +53,6 @@ exports.database.prototype.get = function (key, callback) {
 exports.database.prototype.findKeys = function (key, notKey, callback) {
   const keys = [];
   const regex = this.createFindRegex(key, notKey);
-
   this.db.forEach((key, val) => {
     if (key.search(regex) !== -1) {
       keys.push(key);

@@ -43,20 +43,20 @@ exports.init = function (callback) {
   const detectUpsertMethod = (callback) => {
     const upsertViaFunction = 'SELECT ueberdb_insert_or_update($1,$2)';
     const upsertNatively =
-    'INSERT INTO store(key, value) VALUES ($1, $2) ' +
-    'ON CONFLICT (key) DO UPDATE SET value = excluded.value';
+        'INSERT INTO store(key, value) VALUES ($1, $2) ' +
+        'ON CONFLICT (key) DO UPDATE SET value = excluded.value';
     const createFunc =
-    'CREATE OR REPLACE FUNCTION ueberdb_insert_or_update(character varying, text) ' +
-      'RETURNS void AS $$ ' +
-      'BEGIN ' +
-      '  IF EXISTS( SELECT * FROM store WHERE key = $1 ) THEN ' +
-      '    UPDATE store SET value = $2 WHERE key = $1; ' +
-      '  ELSE ' +
-      '    INSERT INTO store(key,value) VALUES( $1, $2 ); ' +
-      '  END IF; ' +
-      '  RETURN; ' +
-      'END; ' +
-      '$$ LANGUAGE plpgsql;';
+        'CREATE OR REPLACE FUNCTION ueberdb_insert_or_update(character varying, text) ' +
+        'RETURNS void AS $$ ' +
+        'BEGIN ' +
+        '  IF EXISTS( SELECT * FROM store WHERE key = $1 ) THEN ' +
+        '    UPDATE store SET value = $2 WHERE key = $1; ' +
+        '  ELSE ' +
+        '    INSERT INTO store(key,value) VALUES( $1, $2 ); ' +
+        '  END IF; ' +
+        '  RETURN; ' +
+        'END; ' +
+        '$$ LANGUAGE plpgsql;';
 
     const testNativeUpsert = `EXPLAIN ${upsertNatively}`;
 
@@ -111,7 +111,7 @@ exports.findKeys = function (key, notKey, callback) {
   key = key.replace(/\*/g, '%');
   params.push(key);
 
-  if (notKey != null && notKey !== undefined) {
+  if (notKey != null) {
     // not desired keys are notKey:%, e.g. %:%:%
     notKey = notKey.replace(/\*/g, '%');
     query += ' AND key NOT LIKE $2';

@@ -19,15 +19,15 @@ const util = require('util');
 /**
  * Cassandra DB constructor.
  *
- * @param  {Object}     settings
- * The required settings object to initiate the Cassandra database
- * @param  {String[]}   settings.clientOptions
- * See http://www.datastax.com/drivers/nodejs/2.0/global.html#ClientOptions for a full set of options that can be used
- * @param  {String}     settings.columnFamily
-* The column family that should be used to store data.
-* The column family will be created if it doesn't exist
- * @param  {Function}   [settings.logger]
- * Function that will be used to pass on log events emitted by the Cassandra driver. See https://github.com/datastax/nodejs-driver#logging for more information
+ * @param {Object} settings The required settings object to initiate the Cassandra database
+ * @param {String[]} settings.clientOptions See
+ *     http://www.datastax.com/drivers/nodejs/2.0/global.html#ClientOptions for a full set of
+ *     options that can be used
+ * @param {String} settings.columnFamily The column family that should be used to store data. The
+ *     column family will be created if it doesn't exist
+ * @param {Function} [settings.logger] Function that will be used to pass on log events emitted by
+ *     the Cassandra driver. See https://github.com/datastax/nodejs-driver#logging for more
+ *     information
  */
 exports.database = function (settings) {
   const self = this;
@@ -46,8 +46,8 @@ exports.database = function (settings) {
 };
 
 /**
- * Initializes the Cassandra client, connects to Cassandra
- * and creates the CF if it didn't exist already
+ * Initializes the Cassandra client, connects to Cassandra and creates the CF if it didn't exist
+ * already
  *
  * @param  {Function}   callback        Standard callback method.
  * @param  {Error}      callback.err    An error object (if any.)
@@ -64,30 +64,32 @@ exports.database.prototype.init = function (callback) {
   }
 
   // Check whether our column family already exists and create it if necessary
-  self.client.
-      execute('SELECT columnfamily_name FROM system.schema_columnfamilies WHERE keyspace_name = ?',
-          [self.settings.clientOptions.keyspace], (err, result) => {
-            if (err) {
-              return callback(err);
-            }
+  self.client.execute(
+      'SELECT columnfamily_name FROM system.schema_columnfamilies WHERE keyspace_name = ?',
+      [self.settings.clientOptions.keyspace],
+      (err, result) => {
+        if (err) {
+          return callback(err);
+        }
 
-            let isDefined = false;
-            const length = result.rows.length;
-            for (let i = 0; i < length; i++) {
-              if (result.rows[i].columnfamily_name === self.settings.columnFamily) {
-                isDefined = true;
-                break;
-              }
-            }
+        let isDefined = false;
+        const length = result.rows.length;
+        for (let i = 0; i < length; i++) {
+          if (result.rows[i].columnfamily_name === self.settings.columnFamily) {
+            isDefined = true;
+            break;
+          }
+        }
 
-            if (isDefined) {
-              return callback(null);
-            } else {
-              const cql = util.format('CREATE COLUMNFAMILY "%s" (key text PRIMARY KEY, data text)',
-                  self.settings.columnFamily);
-              self.client.execute(cql, callback);
-            }
-          });
+        if (isDefined) {
+          return callback(null);
+        } else {
+          const cql = util.format(
+              'CREATE COLUMNFAMILY "%s" (key text PRIMARY KEY, data text)',
+              self.settings.columnFamily);
+          self.client.execute(cql, callback);
+        }
+      });
 };
 
 
@@ -116,10 +118,9 @@ exports.database.prototype.get = function (key, callback) {
 };
 
 /**
- * Cassandra has no native `findKeys` method.
- * This function implements a naive filter by retrieving *all* the keys and filtering those.
- * This should obviously be used with the utmost care and is probably not something
- * you want to run in production.
+ * Cassandra has no native `findKeys` method. This function implements a naive filter by retrieving
+ * *all* the keys and filtering those. This should obviously be used with the utmost care and is
+ * probably not something you want to run in production.
  *
  * @param  {String}     key               The filter for keys that should match
  * @param  {String}     [notKey]          The filter for keys that shouldn't match
