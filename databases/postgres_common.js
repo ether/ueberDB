@@ -77,6 +77,7 @@ exports.init = function(callback)
   }
 
   this.db.query(testTableExists, function(err, result) {
+    if (err != null) return callback(err);
     if (result.rows.length == 0) {
       _this.db.query(createTable, detectUpsertMethod(callback));
     } else {
