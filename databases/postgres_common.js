@@ -166,12 +166,7 @@ exports.doBulk = function (bulk, callback) {
 
   removeSQL += ');';
 
-  const functions = [];
-
-  for (const v in replaceVALs) {
-    const f = (callback) => _this.db.query(_this.upsertStatement, replaceVALs[v], callback);
-    functions.push(f);
-  }
+  const functions = replaceVALs.map((v) => (cb) => this.db.query(this.upsertStatement, v, cb));
 
   const removeFunction = (callback) => {
     if (!removeVALs.length < 1) _this.db.query(removeSQL, removeVALs, callback);

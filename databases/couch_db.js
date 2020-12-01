@@ -166,12 +166,9 @@ exports.database.prototype.remove = function (key, callback) {
 
 exports.database.prototype.doBulk = function (bulk, callback) {
   const db = this.db;
-  const keys = [];
+  const keys = bulk.map((op) => op.key);
   const revs = {};
   const setters = [];
-  for (const i in bulk) {
-    keys.push(bulk[i].key);
-  }
   async.series([
     (callback) => {
       db.fetchRevs({keys}, (er, r) => {
@@ -185,8 +182,7 @@ exports.database.prototype.doBulk = function (bulk, callback) {
       });
     },
     (callback) => {
-      for (const i in bulk) {
-        const item = bulk[i];
+      for (const item of bulk) {
         const set = {_id: item.key};
         if (revs[item.key] != null) set._rev = revs[item.key];
         if (item.type === 'set') set.value = item.value;

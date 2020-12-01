@@ -152,9 +152,9 @@ async function ueberdbAPITests(database, dbSettings, cacheEnabled, done) {
       db.set(`${key}:test`, input);
       // get the keys of each value
       db.findKeys(`${key}:*`, null, (err, output) => {
-        for (const keyVal in output) {
+        for (const keyVal of output) {
           // get each value
-          db.get(output[keyVal], (e, output) => {
+          db.get(keyVal, (e, output) => {
             const matches = JSON.stringify(input) === JSON.stringify(output);
             assert.equal(matches, true);
           });
