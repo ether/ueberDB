@@ -131,11 +131,10 @@ exports.findKeys = function (key, notKey, callback) {
 };
 
 exports.set = function (key, value, callback) {
-  const _this = this;
   if (key.length > 100) {
     callback('Your Key can only be 100 chars');
   } else {
-    this.db.query(_this.upsertStatement, [key, value], callback);
+    this.db.query(this.upsertStatement, [key, value], callback);
   }
 };
 
