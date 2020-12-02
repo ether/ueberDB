@@ -1,5 +1,5 @@
 'use strict';
-/* eslint new-cap: "warn" */
+/* eslint new-cap: ["error", {"capIsNewExceptions": ["mssql.NVarChar"]}] */
 
 /**
  * 2019 - exspecto@gmail.com

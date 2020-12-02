@@ -1,5 +1,5 @@
 'use strict';
-/* eslint new-cap: "warn" */
+/* eslint new-cap: ["error", {"capIsNewExceptions": ["KEYS", "SMEMBERS"]}] */
 
 /**
  * 2011 Peter 'Pita' Martischka

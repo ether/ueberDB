@@ -1,5 +1,5 @@
 'use strict';
-/* eslint new-cap: "warn" */
+/* eslint new-cap: ["error", {"newIsCapExceptions": ["database"]}] */
 
 const Clitable = require('cli-table');
 const Randexp = require('randexp');
