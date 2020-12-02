@@ -59,7 +59,7 @@ DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `generate_data`()
 BEGIN
   DECLARE i INT DEFAULT 0;
-  WHILE i < 1000000 DO
+  WHILE i < 1000 DO
     INSERT INTO `store` (`key`,`value`) VALUES (
       i+RAND()+i+RAND()+i+RAND()+i,
       ROUND(RAND()*100,2)
