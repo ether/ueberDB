@@ -1,4 +1,7 @@
 'use strict';
+
+const crate = require('node-crate');
+
 // initialize w/ default settings
 const crateSettings = {
   schema: 'doc',
@@ -29,22 +32,22 @@ exports.database = function (settings) {
   crateSettings.fqn = `"${crateSettings.schema}"."${crateSettings.table}"`;
 };
 
-var crate = require('node-crate');
-
 /**
  * Initialize the crate client, then crate the table if it not exists
  */
 exports.database.prototype.init = function (callback) {
   this.db.connect(crateSettings.hosts);
-  insertSQL = `INSERT INTO ${crateSettings.fqn} ("key","value") VALUES (?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)`;
+  insertSQL =
+      `INSERT INTO ${crateSettings.fqn} ("key", "value") VALUES (?, ?) ` +
+      'ON DUPLICATE KEY UPDATE value = VALUES(value)';
   removeSQL = `DELETE FROM ${crateSettings.fqn} WHERE key=? `;
 
-  finish = function (log) {
+  const finish = (log) => {
     callback();
   };
 
-  const stmt = `CREATE TABLE IF NOT EXISTS ${crateSettings.fqn
-  } (key string primary key, value string) `;
+  const stmt =
+      `CREATE TABLE IF NOT EXISTS ${crateSettings.fqn} (key string primary key, value string) `;
   crate.execute(stmt).success(finish).error(finish);
 };
 
@@ -52,14 +55,14 @@ exports.database.prototype.init = function (callback) {
  * read from database
  */
 exports.database.prototype.get = function (key, callback) {
-  finish = function (log) {
+  const finish = (log) => {
     if (!log.rows.length) {
       callback(undefined, null);
     } else {
       callback(undefined, log.rows[0][0]);
     }
   };
-  finishError = function (log) {
+  const finishError = (log) => {
     callback(log, null);
   };
   crate.execute(`select value from ${crateSettings.fqn} where key = ?`, [key])
@@ -72,7 +75,7 @@ exports.database.prototype.findKeys = function (key, notKey, callback) {
   const params = [];
   key = key.replace(/\*/g, '%');
   params.push(key);
-  if (notKey != null && notKey != undefined) {
+  if (notKey != null) {
     // not desired keys are notKey, e.g. %:%:%
     notKey = notKey.replace(/\*/g, '%');
     query += ' AND key NOT LIKE ?';
@@ -83,7 +86,7 @@ exports.database.prototype.findKeys = function (key, notKey, callback) {
         if (!log.rows.length) {
           callback(undefined, []);
         } else {
-          res = [];
+          const res = [];
           for (let i = 0; i < log.rows.length; i++) {
             res[i] = log.rows[i][0];
           }
@@ -119,17 +122,17 @@ exports.database.prototype.doBulk = function (bulk, callback) {
   const remove = [];
   const insert = [];
   for (const i in bulk) {
-    if (bulk[i].type == 'set') {
+    if (bulk[i].type === 'set') {
       insert.push([bulk[i].key, bulk[i].value]);
-    } else if (bulk[i].type == 'remove') {
+    } else if (bulk[i].type === 'remove') {
       remove.push([bulk[i].key]);
     }
   }
-  error = function (log) {
+  const error = (log) => {
     console.error(`error: ${log}`);
     callback(log, null);
   };
-  finishUpdate = function (log) {
+  const finishUpdate = (log) => {
     if (remove.length) {
       crate.executeBulk(removeSQL, remove)
           .success(refresh((log) => {
@@ -154,13 +157,13 @@ exports.database.prototype.doBulk = function (bulk, callback) {
   }
 };
 
-function refresh(callback) {
+const refresh = (callback) => {
   crate.execute(`refresh table ${crateSettings.fqn}`).success(callback).error(
       (log) => {
         console.error(`error: ${log}`);
       }
   );
-}
+};
 
 exports.database.prototype.close = function (callback) {
   callback();

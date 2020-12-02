@@ -31,11 +31,12 @@
  *   compression: Whether to compress the LevelDB using Snappy. Defaults to true.
  */
 
+let lmdb;
 try {
-  var lmdb = require('uberlevel') || require('level-lmdb');
+  lmdb = require('uberlevel') || require('level-lmdb');
 } catch (e) {
-  console.error('FATAL: The lmdb dependency could not be found. Please install using npm install uberlevel.');
-  process.exit(1);
+  throw new Error('The lmdb dependency could not be found. ' +
+                  'Please install using npm install uberlevel.');
 }
 
 const async = require('async');
@@ -51,14 +52,12 @@ exports.database = function (settings) {
 };
 
 exports.database.prototype.init = function (callback) {
-  const _this = this;
   async.waterfall([
-    function (callback) {
-      lmdb.open(_this.settings.directory, {create_if_missing: true},
-          (err, db) => {
-            _this.db = db;
-            callback(err);
-	 });
+    (callback) => {
+      lmdb.open(this.settings.directory, {create_if_missing: true}, (err, db) => {
+        this.db = db;
+        callback(err);
+      });
     },
   ], callback);
 };
@@ -80,9 +79,9 @@ exports.database.prototype.remove = function (key, callback) {
 exports.database.prototype.doBulk = function (bulk, callback) {
   const batch = this.db.batch();
   bulk.forEach((entity) => {
-    if (entity.type == 'set') {
+    if (entity.type === 'set') {
       batch.put(entity.key, entity.value);
-    } else if (entity.type == 'remove') {
+    } else if (entity.type === 'remove') {
       batch.del(entity.key);
     }
   });

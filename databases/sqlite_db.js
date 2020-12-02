@@ -15,14 +15,19 @@
  * limitations under the License.
  */
 
+let sqlite3;
 try {
-  var sqlite3 = require('sqlite3');
-} catch (e) {
-  console.error("FATAL: The sqlite dependency could not be loaded. We removed it from the dependencies since it caused problems on several Platforms to compile it. If you still want to use sqlite, do a 'npm install sqlite3' in your etherpad-lite root folder");
-  process.exit(1);
+  sqlite3 = require('sqlite3');
+} catch (err) {
+  throw new Error(
+      'sqlite3 not found. It was removed from ueberdb\'s dependencies because it requires ' +
+      'compilation which fails on several systems. If you still want to use sqlite, run ' +
+      '"npm install sqlite3" in your etherpad-lite root folder.');
 }
 
 const async = require('async');
+
+const escape = (val) => `'${val.replace(/'/g, "''")}'`;
 
 exports.database = function (settings) {
   this.db = null;
@@ -34,7 +39,7 @@ exports.database = function (settings) {
   this.settings = settings;
 
   // set settings for the dbWrapper
-  if (settings.filename == ':memory:') {
+  if (settings.filename === ':memory:') {
     this.settings.cache = 0;
     this.settings.writeInterval = 0;
     this.settings.json = true;
@@ -46,15 +51,10 @@ exports.database = function (settings) {
 };
 
 exports.database.prototype.init = function (callback) {
-  const _this = this;
-
   async.waterfall([
-    function (callback) {
-      _this.db = new sqlite3.Database(_this.settings.filename, callback);
-    },
-    function (callback) {
-      const sql = 'CREATE TABLE IF NOT EXISTS store (key TEXT PRIMARY KEY,value TEXT)';
-      _this.db.run(sql, callback);
+    (callback) => { this.db = new sqlite3.Database(this.settings.filename, callback); },
+    (callback) => {
+      this.db.run('CREATE TABLE IF NOT EXISTS store (key TEXT PRIMARY KEY, value TEXT)', callback);
     },
   ], callback);
 };
@@ -67,13 +67,12 @@ exports.database.prototype.get = function (key, callback) {
 
 exports.database.prototype.findKeys = function (key, notKey, callback) {
   let query = 'SELECT key FROM store WHERE key LIKE ?';
-  const params = []
-  ;
+  const params = [];
   // desired keys are %key:%, e.g. pad:%
   key = key.replace(/\*/g, '%');
   params.push(key);
 
-  if (notKey != null && notKey != undefined) {
+  if (notKey != null) {
     // not desired keys are notKey:%, e.g. %:%:%
     notKey = notKey.replace(/\*/g, '%');
     query += ' AND key NOT LIKE ?';
@@ -104,9 +103,9 @@ exports.database.prototype.remove = function (key, callback) {
 exports.database.prototype.doBulk = function (bulk, callback) {
   let sql = 'BEGIN TRANSACTION;\n';
   for (const i in bulk) {
-    if (bulk[i].type == 'set') {
+    if (bulk[i].type === 'set') {
       sql += `REPLACE INTO store VALUES (${escape(bulk[i].key)}, ${escape(bulk[i].value)});\n`;
-    } else if (bulk[i].type == 'remove') {
+    } else if (bulk[i].type === 'remove') {
       sql += `DELETE FROM store WHERE key = ${escape(bulk[i].key)};\n`;
     }
   }
@@ -125,7 +124,3 @@ exports.database.prototype.doBulk = function (bulk, callback) {
 exports.database.prototype.close = function (callback) {
   this.db.close(callback);
 };
-
-function escape(val) {
-  return `'${val.replace(/'/g, "''")}'`;
-}

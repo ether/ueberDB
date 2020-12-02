@@ -45,11 +45,11 @@ const MongoClient = require('mongodb').MongoClient;
  */
 exports.database = function (settings) {
   const assertions = {
-    exist(v) { return v !== undefined && v !== null; },
-    isString(v) { return typeof v === 'string'; },
-    isNumber(v) { return typeof v === 'number'; },
+    exist: (v) => v != null,
+    isString: (v) => typeof v === 'string',
+    isNumber: (v) => typeof v === 'number',
   };
-  const assert = function (value, assertion, message) { if (!assertion(value)) throw message; };
+  const assert = (value, assertion, message) => { if (!assertion(value)) throw message; };
 
   assert(settings, assertions.exist, 'you need to inform the settings');
 
@@ -61,7 +61,8 @@ exports.database = function (settings) {
   }
 
   this.settings = settings;
-  this.settings.collectionName = assertions.isString(this.settings.collectionName) ? this.settings.collectionName : 'store';
+  this.settings.collectionName =
+      assertions.isString(this.settings.collectionName) ? this.settings.collectionName : 'store';
 
   // these values are used by CacheAndBufferLayer
   this.settings.cache = 1000;
@@ -108,16 +109,17 @@ exports.database.prototype._buildExtraSettings = function (extraSettings) {
 };
 
 // Builds basic connection urls. Examples:
-// var basicUrl = 'mongodb://<HOST>:<PORT>/<DB>';
-// var urlWithAuthentication = 'mongodb://<USER>:<PASSWORD>@<HOST>:<PORT>/<DB>';
+// const basicUrl = 'mongodb://<HOST>:<PORT>/<DB>';
+// const urlWithAuthentication = 'mongodb://<USER>:<PASSWORD>@<HOST>:<PORT>/<DB>';
 exports.database.prototype._buildUrl = function (settings) {
   const protocol = 'mongodb://';
-  const authentication = settings.user && settings.password ? `${settings.user}:${settings.password}@` : '';
+  const authentication =
+      settings.user && settings.password ? `${settings.user}:${settings.password}@` : '';
   return `${protocol + authentication + settings.host}:${settings.port}/${settings.dbname}`;
 };
 
 exports.database.prototype.init = function (callback) {
-  this.onMongoReady = callback || function () {};
+  this.onMongoReady = callback || (() => {});
 
   const url = this.settings.url || this._buildUrl(this.settings);
   const options = this._buildExtraSettings(this.settings.extra);
@@ -125,16 +127,17 @@ exports.database.prototype.init = function (callback) {
 };
 
 exports.database.prototype._onMongoConnect = function (error, db) {
-  if (error) { throw `an error occurred [${error}] on mongo connect`; }
+  if (error) { throw new Error(`an error occurred [${error}] on mongo connect`); }
 
   this.db = db;
   this.collection = this.db.collection(this.settings.collectionName);
-  this.db.ensureIndex(this.settings.collectionName, {key: 1}, {unique: true, background: true}, (err, indexName) => {
-    if (err) {
-      console.error('Error creating index');
-      console.error(err.stack ? err.stack : err);
-    }
-  });
+  this.db.ensureIndex(this.settings.collectionName, {key: 1}, {unique: true, background: true},
+      (err, indexName) => {
+        if (err) {
+          console.error('Error creating index');
+          console.error(err.stack ? err.stack : err);
+        }
+      });
 
   exports.database.prototype.set = function (key, value, callback) {
     this.collection.update({key}, {key, val: value}, {safe: true, upsert: true}, callback);

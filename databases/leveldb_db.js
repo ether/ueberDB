@@ -30,11 +30,11 @@
  *   block_size: The LevelDB blocksize. Defaults to 4 kibibytes
  *   compression: Whether to compress the LevelDB using Snappy. Defaults to true.
  */
+let leveldb;
 try {
-  var leveldb = require('leveldb');
+  leveldb = require('leveldb');
 } catch (e) {
-  console.error('FATAL: The leveldb dependency could not be loaded.');
-  process.exit(1);
+  throw new Error('The leveldb dependency could not be loaded.');
 }
 
 const async = require('async');
@@ -50,14 +50,12 @@ exports.database = function (settings) {
 };
 
 exports.database.prototype.init = function (callback) {
-  const _this = this;
   async.waterfall([
-    function (callback) {
-      leveldb.open(_this.settings.directory, {create_if_missing: true},
-          (err, db) => {
-            _this.db = db;
-            callback(err);
-	 });
+    (callback) => {
+      leveldb.open(this.settings.directory, {create_if_missing: true}, (err, db) => {
+        this.db = db;
+        callback(err);
+      });
     },
   ], callback);
 };
@@ -80,9 +78,9 @@ exports.database.prototype.doBulk = function (bulk, callback) {
   // Batch not implemented
   const batch = this.db.batch();
   for (const i in bulk) {
-    if (bulk[i].type == 'set') {
+    if (bulk[i].type === 'set') {
       batch.put(bulk[i].key, bulk[i].value);
-    } else if (bulk[i].type == 'remove') {
+    } else if (bulk[i].type === 'remove') {
       batch.del(bulk[i].key);
     }
   }
