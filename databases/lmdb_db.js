@@ -53,7 +53,7 @@ exports.database.prototype.init = function(callback) {
   var _this = this;
   async.waterfall([
     function(callback) {
-      leveldb.open(_this.settings.directory, { create_if_missing: true },
+      lmdb.open(_this.settings.directory, { create_if_missing: true },
          function(err, db) {
            _this.db = db;
            callback(err);
