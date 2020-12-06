@@ -17,6 +17,7 @@
 
 var cacheAndBufferLayer = require("./lib/CacheAndBufferLayer");
 var channels = require("channels");
+const util = require('util');
 
 var defaultLogger = {debug: function(){}, info: function(){}, error: function(){}, warn: function(){}};
 
@@ -48,11 +49,7 @@ exports.database.prototype.init = function(callback)
   if(callback){
     this.db.init(callback)
   }else{
-    return new Promise((resolve, reject) => {
-      this.db.init(function(){
-        resolve();
-      });
-    });
+    return util.promisify(this.db.init.bind(this.db))();
   };
 }
 
