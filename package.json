@@ -40,6 +40,7 @@
     "simple-git": "^2.4.0"
   },
   "optionalDependencies": {
+    "mongodb": "2.0.x",
     "node-crate": "^2.0.6",
     "sqlite3": "^5.0.0"
   },
