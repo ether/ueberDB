@@ -157,7 +157,7 @@ exports.database.prototype.doBulk = function (bulk, callback)
             .success(refresh(function (log) {
                 callback();
             }))
-            .error(errorRemove);
+            .error(error);
     }
 }
 
