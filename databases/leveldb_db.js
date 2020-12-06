@@ -37,8 +37,6 @@ try {
   throw new Error('The leveldb dependency could not be loaded.');
 }
 
-const async = require('async');
-
 exports.database = function (settings) {
   this.db = null;
 
@@ -50,14 +48,10 @@ exports.database = function (settings) {
 };
 
 exports.database.prototype.init = function (callback) {
-  async.waterfall([
-    (callback) => {
-      leveldb.open(this.settings.directory, {create_if_missing: true}, (err, db) => {
-        this.db = db;
-        callback(err);
-      });
-    },
-  ], callback);
+  leveldb.open(this.settings.directory, {create_if_missing: true}, (err, db) => {
+    this.db = db;
+    callback(err);
+  });
 };
 
 exports.database.prototype.get = function (key, callback) {

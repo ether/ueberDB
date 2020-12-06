@@ -39,8 +39,6 @@ try {
                   'Please install using npm install uberlevel.');
 }
 
-const async = require('async');
-
 exports.database = function (settings) {
   this.db = null;
 
@@ -52,14 +50,10 @@ exports.database = function (settings) {
 };
 
 exports.database.prototype.init = function (callback) {
-  async.waterfall([
-    (callback) => {
-      lmdb.open(this.settings.directory, {create_if_missing: true}, (err, db) => {
-        this.db = db;
-        callback(err);
-      });
-    },
-  ], callback);
+  lmdb.open(this.settings.directory, {create_if_missing: true}, (err, db) => {
+    this.db = db;
+    callback(err);
+  });
 };
 
 exports.database.prototype.get = function (key, callback) {

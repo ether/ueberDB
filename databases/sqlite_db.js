@@ -25,7 +25,7 @@ try {
       '"npm install sqlite3" in your etherpad-lite root folder.');
 }
 
-const async = require('async');
+const util = require('util');
 
 const escape = (val) => `'${val.replace(/'/g, "''")}'`;
 
@@ -51,12 +51,18 @@ exports.database = function (settings) {
 };
 
 exports.database.prototype.init = function (callback) {
-  async.waterfall([
-    (callback) => { this.db = new sqlite3.Database(this.settings.filename, callback); },
-    (callback) => {
-      this.db.run('CREATE TABLE IF NOT EXISTS store (key TEXT PRIMARY KEY, value TEXT)', callback);
-    },
-  ], callback);
+  util.callbackify(async () => {
+    this.db = await new Promise((resolve, reject) => {
+      new sqlite3.Database(this.settings.filename, function (err) {
+        if (err != null) return reject(err);
+        // The use of `this` relies on an undocumented feature of sqlite3:
+        // https://github.com/mapbox/node-sqlite3/issues/1408
+        resolve(this);
+      });
+    });
+    await util.promisify(this.db.run.bind(this.db))(
+        'CREATE TABLE IF NOT EXISTS store (key TEXT PRIMARY KEY, value TEXT)');
+  })(callback);
 };
 
 exports.database.prototype.get = function (key, callback) {
