@@ -147,8 +147,7 @@ exports.database.prototype.doBulk = function (bulk, callback)
 
 exports.database.prototype.close = function(callback)
 {
-  this.db.close();
-  callback(null)
+  this.db.close(callback);
 }
 
 function escape (val) 
