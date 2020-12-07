@@ -15,10 +15,8 @@ writes are done in a bulk. This can be turned off.
 ## Database Support
 
 * Couch
-* Crate
 * Dirty
 * Elasticsearch
-* Level
 * Maria
 * MsSQL
 * MySQL
@@ -126,11 +124,9 @@ example(db);
 |--------|-----|-----|----------|--------|--------|--------|--------|--------|
 |  cassandra |  ✓  |  ✓  |    *     |   ✓    |   ✓    |   ✓    |   ✓    |
 |  couchdb |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
-|  crate |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
 |  dirty |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |        |   ✓   |
 |  dirty_git |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |        |
 |  elasticsearch |  ✓  |  ✓  |    *     |   ✓    |   ✓    |   ✓    |   ✓    |
-|  level |  ✓  |  ✓  |          |   ✓    |   ✓    |   ✓    |   ✓    |
 |  maria |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
 |  mysql |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |   ✓   |
 |  postgres  |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |   ✓   |
@@ -227,8 +223,7 @@ environment variable `NODE_TLS_REJECT_UNAUTHORIZED = 0` and add the flag
 
 ## Dropped Databases and Why.
 
-* MongoDB was dropped due to an API break in the client, the old client is still
-  in the database folder.
+* MongoDB was dropped due to an API break in the client.
 
 ## License
 
@@ -236,7 +231,8 @@ environment variable `NODE_TLS_REJECT_UNAUTHORIZED = 0` and add the flag
 
 ## What's changed from UeberDB?
 
-* Dropped broken databases: MongoDB (probably a breaking change for some people)
+* Dropped broken databases: CrateDB, LevelDB, LMDB, and MongoDB (probably a
+  breaking change for some people)
 * Introduced CI.
 * Introduced better testing.
 * Fixed broken database clients IE Redis.
