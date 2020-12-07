@@ -17,7 +17,6 @@ writes are done in a bulk. This can be turned off.
 * Couch
 * Dirty
 * Elasticsearch
-* Level
 * Maria
 * MsSQL
 * MySQL
@@ -128,7 +127,6 @@ example(db);
 |  dirty |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |        |   ✓   |
 |  dirty_git |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |        |
 |  elasticsearch |  ✓  |  ✓  |    *     |   ✓    |   ✓    |   ✓    |   ✓    |
-|  level |  ✓  |  ✓  |          |   ✓    |   ✓    |   ✓    |   ✓    |
 |  maria |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
 |  mysql |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |   ✓   |
 |  postgres  |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |   ✓   |
@@ -233,8 +231,8 @@ environment variable `NODE_TLS_REJECT_UNAUTHORIZED = 0` and add the flag
 
 ## What's changed from UeberDB?
 
-* Dropped broken databases: CrateDB and MongoDB (probably a breaking change for
-  some people)
+* Dropped broken databases: CrateDB, LevelDB, and MongoDB (probably a breaking
+  change for some people)
 * Introduced CI.
 * Introduced better testing.
 * Fixed broken database clients IE Redis.
