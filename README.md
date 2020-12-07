@@ -15,7 +15,6 @@ writes are done in a bulk. This can be turned off.
 ## Database Support
 
 * Couch
-* Crate
 * Dirty
 * Elasticsearch
 * Level
@@ -126,7 +125,6 @@ example(db);
 |--------|-----|-----|----------|--------|--------|--------|--------|--------|
 |  cassandra |  ✓  |  ✓  |    *     |   ✓    |   ✓    |   ✓    |   ✓    |
 |  couchdb |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
-|  crate |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
 |  dirty |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |        |   ✓   |
 |  dirty_git |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |        |
 |  elasticsearch |  ✓  |  ✓  |    *     |   ✓    |   ✓    |   ✓    |   ✓    |
@@ -235,7 +233,8 @@ environment variable `NODE_TLS_REJECT_UNAUTHORIZED = 0` and add the flag
 
 ## What's changed from UeberDB?
 
-* Dropped broken databases: MongoDB (probably a breaking change for some people)
+* Dropped broken databases: CrateDB and MongoDB (probably a breaking change for
+  some people)
 * Introduced CI.
 * Introduced better testing.
 * Fixed broken database clients IE Redis.
