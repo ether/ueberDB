@@ -59,7 +59,7 @@ exports.database.prototype.init = function(callback)
   async.waterfall([
     function(callback)
     {
-      _this.db = new sqlite3.cached.Database(_this.settings.filename, callback);
+      _this.db = new sqlite3.Database(_this.settings.filename, callback);
     },
     function(callback)
     {
