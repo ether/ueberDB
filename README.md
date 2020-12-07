@@ -86,6 +86,54 @@ async function exampleFK(db){
 }
 ```
 
+## Using setSub and getSub to get subKeys
+Sometimes you wont want to overwrite the entire item but just make a change to an item
+
+Ror example you might want to change:
+
+```
+epic:{
+  gainz: 10
+}
+```
+
+to 
+
+```
+epic:{
+  gainz: 10,
+  painz: 0
+}
+```
+
+setSub and getSub will be your helpers to do this.
+
+### setSub usage
+```
+const key = 'group';
+const subKey = 'mySpecialGroup';
+await db.setSub(`${key}:${subKey}`, ['pads'], ['somePadData']);
+```
+
+If you need to know about buffer and write callbacks an alternative approach is to use this approach
+```
+db.setSub(`${key}:${subKey}`, ['pads'], ['somePadData'], function(){
+  // buffer call back
+},
+function(){
+  // write call back
+}
+);
+```
+
+### getSub usage
+```
+const key = 'group';
+const subKey = 'mySpecialGroup';
+let pads = db.getSub(`${key}:${world}`, ['pads']);
+// pads is ['somePadData'];
+```
+
 ## Disabling Cache for real time read/write
 Set ``db.cache = 0;`` to disable Caching of Read / Writes.
 
