@@ -10,6 +10,16 @@ exports.databases = {
       findKeyMax: 0.5,
     },
   },
+  sqlite: {
+    filename: '/tmp/ueberdb-test.sqlite',
+    speeds: {
+      count: 1000,
+      setMax: 0.6,
+      getMax: 0.5,
+      findKeyMax: 2.5,
+      removeMax: 0.5,
+    },
+  },
   mysql: {
     user: 'ueberdb',
     host: 'localhost',
