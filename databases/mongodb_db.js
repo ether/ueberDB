@@ -1,3 +1,4 @@
+'use strict';
 /**
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -11,8 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var fs = require('fs');
-var MongoClient = require('mongodb').MongoClient;
+const fs = require('fs');
+const MongoClient = require('mongodb').MongoClient;
 
 /**
  * "settings" must be an object with the following properties:
@@ -42,13 +43,13 @@ var MongoClient = require('mongodb').MongoClient;
  *    }
  * }
  */
-exports.database = function(settings) {
-  var assertions = {
-    exist: function(v) {return v !== undefined && v !== null},
-    isString: function(v) {return typeof v === 'string'},
-    isNumber: function(v) {return typeof v === 'number'},
-  }
-  var assert = function(value, assertion, message) { if (!assertion(value)) throw message }
+exports.database = function (settings) {
+  const assertions = {
+    exist: (v) => v != null,
+    isString: (v) => typeof v === 'string',
+    isNumber: (v) => typeof v === 'number',
+  };
+  const assert = (value, assertion, message) => { if (!assertion(value)) throw message; };
 
   assert(settings, assertions.exist, 'you need to inform the settings');
 
@@ -60,17 +61,18 @@ exports.database = function(settings) {
   }
 
   this.settings = settings;
-  this.settings.collectionName = assertions.isString(this.settings.collectionName) ? this.settings.collectionName : 'store';
+  this.settings.collectionName =
+      assertions.isString(this.settings.collectionName) ? this.settings.collectionName : 'store';
 
   // these values are used by CacheAndBufferLayer
   this.settings.cache = 1000;
   this.settings.writeInterval = 100;
   this.settings.json = true;
-}
+};
 
-exports.database.prototype._loadSslCertificatesIntoSettings = function(rootSettings) {
-  ['sslCA', 'sslKey', 'sslCert'].forEach(function(setting) {
-    var settingPath = rootSettings[setting + 'Path'];
+exports.database.prototype._loadSslCertificatesIntoSettings = function (rootSettings) {
+  ['sslCA', 'sslKey', 'sslCert'].forEach((setting) => {
+    const settingPath = rootSettings[`${setting}Path`];
 
     if (settingPath) {
       rootSettings[setting] = fs.readFileSync(settingPath);
@@ -78,15 +80,15 @@ exports.database.prototype._loadSslCertificatesIntoSettings = function(rootSetti
       // "sslCA" property needs to be replicated into a "ca" property on mongo 2.0
       // https://www.compose.com/articles/one-missing-key-and-how-it-broke-node-js-and-mongodb/
       if (setting === 'sslCA') {
-        rootSettings['ca'] = rootSettings[setting];
+        rootSettings.ca = rootSettings[setting];
       }
     }
   });
-}
+};
 
-exports.database.prototype._buildExtraSettings = function(extraSettings) {
+exports.database.prototype._buildExtraSettings = function (extraSettings) {
   extraSettings = extraSettings || {};
-  var loadSslCertificates = this._loadSslCertificatesIntoSettings;
+  const loadSslCertificates = this._loadSslCertificatesIntoSettings;
 
   [
     // mongodb 2.2: SSL settings are on root
@@ -97,93 +99,94 @@ exports.database.prototype._buildExtraSettings = function(extraSettings) {
     extraSettings.server,
     extraSettings.replset,
     extraSettings.mongos,
-  ].forEach(function(rootSettings) {
+  ].forEach((rootSettings) => {
     if (rootSettings) {
       loadSslCertificates(rootSettings);
     }
   });
 
   return extraSettings;
-}
+};
 
 // Builds basic connection urls. Examples:
-// var basicUrl = 'mongodb://<HOST>:<PORT>/<DB>';
-// var urlWithAuthentication = 'mongodb://<USER>:<PASSWORD>@<HOST>:<PORT>/<DB>';
-exports.database.prototype._buildUrl = function(settings) {
-  var protocol = 'mongodb://';
-  var authentication = settings.user && settings.password ? settings.user + ':' + settings.password + '@' : '';
-  return protocol + authentication + settings.host + ':' + settings.port + '/' + settings.dbname
-}
+// const basicUrl = 'mongodb://<HOST>:<PORT>/<DB>';
+// const urlWithAuthentication = 'mongodb://<USER>:<PASSWORD>@<HOST>:<PORT>/<DB>';
+exports.database.prototype._buildUrl = function (settings) {
+  const protocol = 'mongodb://';
+  const authentication =
+      settings.user && settings.password ? `${settings.user}:${settings.password}@` : '';
+  return `${protocol + authentication + settings.host}:${settings.port}/${settings.dbname}`;
+};
 
-exports.database.prototype.init = function(callback) {
-  this.onMongoReady = callback || function(){};
+exports.database.prototype.init = function (callback) {
+  this.onMongoReady = callback || (() => {});
 
-  var url = this.settings.url || this._buildUrl(this.settings);
-  var options = this._buildExtraSettings(this.settings.extra);
+  const url = this.settings.url || this._buildUrl(this.settings);
+  const options = this._buildExtraSettings(this.settings.extra);
   MongoClient.connect(url, options, this._onMongoConnect.bind(this));
-}
+};
 
-exports.database.prototype._onMongoConnect = function(error, db) {
-  if (error) {throw 'an error occurred [' + error + '] on mongo connect'}
+exports.database.prototype._onMongoConnect = function (error, db) {
+  if (error) { throw new Error(`an error occurred [${error}] on mongo connect`); }
 
   this.db = db;
   this.collection = this.db.collection(this.settings.collectionName);
-  this.db.ensureIndex(this.settings.collectionName, {key: 1}, {unique:true, background:true}, function(err, indexName) {
-    if (err) {
-      console.error('Error creating index');
-      console.error(err.stack ? err.stack : err);
-    }
-  });
+  this.db.ensureIndex(this.settings.collectionName, {key: 1}, {unique: true, background: true},
+      (err, indexName) => {
+        if (err) {
+          console.error('Error creating index');
+          console.error(err.stack ? err.stack : err);
+        }
+      });
 
   exports.database.prototype.set = function (key, value, callback) {
-    this.collection.update({key: key}, {key: key, val: value}, {safe: true, upsert: true}, callback);
-  }
+    this.collection.update({key}, {key, val: value}, {safe: true, upsert: true}, callback);
+  };
 
   exports.database.prototype.get = function (key, callback) {
-    this.collection.findOne({key: key}, function(err, doc) {
-      var value = doc ? doc.val : doc;
+    this.collection.findOne({key}, (err, doc) => {
+      const value = doc ? doc.val : doc;
       callback(err, value);
     });
-  }
+  };
 
   exports.database.prototype.remove = function (key, callback) {
-    this.collection.remove({key: key}, {safe: true}, callback);
-  }
+    this.collection.remove({key}, {safe: true}, callback);
+  };
 
   exports.database.prototype.findKeys = function (key, notKey, callback) {
-    var findRegex = this.createFindRegex(key, notKey);
-    this.collection.find({key: findRegex}).toArray(function(err, docs) {
+    const findRegex = this.createFindRegex(key, notKey);
+    this.collection.find({key: findRegex}).toArray((err, docs) => {
       docs = docs || [];
-      var keys = docs.map(function(doc) { return doc.key });
+      const keys = docs.map((doc) => doc.key);
 
       callback(err, keys);
     });
-  }
+  };
 
   exports.database.prototype.doBulk = function (bulkOperations, callback) {
-    var operations = {
-      'set': 'updateOne',
-      'remove': 'deleteOne',
-    }
+    const operations = {
+      set: 'updateOne',
+      remove: 'deleteOne',
+    };
 
-    var mongoBulkOperations = [];
-    for (var i in bulkOperations) {
-      var eachUeberOperation = bulkOperations[i];
-      var mongoOperationType = operations[eachUeberOperation.type];
-      var mongoOperationDetails = {
-        filter: { key: eachUeberOperation.key } ,
-        update: { $set: { val: eachUeberOperation.value } },
+    const mongoBulkOperations = [];
+    for (const eachUeberOperation of bulkOperations) {
+      const mongoOperationType = operations[eachUeberOperation.type];
+      const mongoOperationDetails = {
+        filter: {key: eachUeberOperation.key},
+        update: {$set: {val: eachUeberOperation.value}},
         upsert: true,
       };
-      var eachBulk = {}
+      const eachBulk = {};
       eachBulk[mongoOperationType] = mongoOperationDetails;
       mongoBulkOperations.push(eachBulk);
     }
 
     this.collection.bulkWrite(mongoBulkOperations, callback);
-  }
+  };
 
-  exports.database.prototype.close = function (callback) {this.db.close(callback)}
+  exports.database.prototype.close = function (callback) { this.db.close(callback); };
 
   this.onMongoReady(error, this);
-}
+};

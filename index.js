@@ -1,3 +1,6 @@
+'use strict';
+/* eslint new-cap: ["error", {"newIsCapExceptions": ["channels", "database"]}] */
+
 /**
  * 2011 Peter 'Pita' Martischka
  * 2020 John McLear
@@ -15,200 +18,173 @@
  * limitations under the License.
  */
 
-var cacheAndBufferLayer = require("./lib/CacheAndBufferLayer");
-var channels = require("channels");
+const cacheAndBufferLayer = require('./lib/CacheAndBufferLayer');
+const channels = require('channels');
 const util = require('util');
 
-var defaultLogger = {debug: function(){}, info: function(){}, error: function(){}, warn: function(){}};
+const defaultLogger = {
+  debug: () => {},
+  info: () => {},
+  error: () => {},
+  warn: () => {},
+};
 
 /**
  The Constructor
 */
-exports.database = function(type, dbSettings, wrapperSettings, logger)
-{
-  if(!type)
-  {
-    type = "sqlite";
+exports.database = function (type, dbSettings, wrapperSettings, logger) {
+  if (!type) {
+    type = 'sqlite';
     dbSettings = null;
     wrapperSettings = null;
   }
 
-  //saves all settings and require the db module
+  // saves all settings and require the db module
   this.type = type;
-  this.db_module = require("./databases/" + type + "_db");
+  this.dbModule = require(`./databases/${type}_db`);
   this.dbSettings = dbSettings;
   this.wrapperSettings = wrapperSettings;
   this.logger = logger || defaultLogger;
   this.channels = new channels.channels(doOperation);
-}
+};
 
-exports.database.prototype.init = function(callback)
-{
-  var db = new this.db_module.database(this.dbSettings);
+exports.database.prototype.init = function (callback) {
+  const db = new this.dbModule.database(this.dbSettings);
   this.db = new cacheAndBufferLayer.database(db, this.wrapperSettings, this.logger);
-  if(callback){
-    this.db.init(callback)
-  }else{
+  if (callback) {
+    this.db.init(callback);
+  } else {
     return util.promisify(this.db.init.bind(this.db))();
-  };
-}
+  }
+};
 
 /**
  Wrapper functions
 */
 
-exports.database.prototype.doShutdown = function(callback)
-{
+exports.database.prototype.doShutdown = function (callback) {
   this.db.doShutdown(callback);
-}
+};
 
-exports.database.prototype.get = function (key, callback)
-{
-  this.channels.emit(key, {"db": this.db, "type": "get", "key": key, "callback": callback});
-}
+exports.database.prototype.get = function (key, callback) {
+  this.channels.emit(key, {db: this.db, type: 'get', key, callback});
+};
 
-exports.database.prototype.findKeys = function (key, notKey, callback)
-{
-  this.channels.emit(key, {"db": this.db, "type": "findKeys", "key": key, "notKey": notKey, "callback": callback});
-}
+exports.database.prototype.findKeys = function (key, notKey, callback) {
+  this.channels.emit(key, {db: this.db, type: 'findKeys', key, notKey, callback});
+};
 
-exports.database.prototype.remove = function (key, bufferCallback, writeCallback)
-{
-  this.channels.emit(key, {"db": this.db, "type": "remove", "key": key, "bufferCallback": bufferCallback, "writeCallback": writeCallback});
-}
+exports.database.prototype.remove = function (key, bufferCallback, writeCallback) {
+  this.channels.emit(key, {db: this.db, type: 'remove', key, bufferCallback, writeCallback});
+};
 
-exports.database.prototype.set = function (key, value, bufferCallback, writeCallback)
-{
-  this.channels.emit(key, {"db": this.db, "type": "set", "key": key, "value": clone(value), "bufferCallback": bufferCallback, "writeCallback": writeCallback});
-}
+exports.database.prototype.set = function (key, value, bufferCallback, writeCallback) {
+  this.channels.emit(key,
+      {db: this.db, type: 'set', key, value: clone(value), bufferCallback, writeCallback});
+};
 
-exports.database.prototype.getSub = function (key, sub, callback)
-{
-  this.channels.emit(key, {"db": this.db, "type": "getsub", "key": key, "sub": sub, "callback": callback});
-}
+exports.database.prototype.getSub = function (key, sub, callback) {
+  this.channels.emit(key, {db: this.db, type: 'getsub', key, sub, callback});
+};
 
-exports.database.prototype.setSub = function (key, sub, value, bufferCallback, writeCallback)
-{
-  this.channels.emit(key, {"db": this.db, "type": "setsub", "key": key, "sub": sub, "value": clone(value), "bufferCallback": bufferCallback, "writeCallback": writeCallback});
-}
+exports.database.prototype.setSub = function (key, sub, value, bufferCallback, writeCallback) {
+  this.channels.emit(key,
+      {db: this.db, type: 'setsub', key, sub, value: clone(value), bufferCallback, writeCallback});
+};
 
-function doOperation (operation, callback)
-{
-  if(operation.type == "get")
-  {
-    operation.db.get(operation.key, function(err, value)
-    {
-      //clone the value
+const doOperation = (operation, callback) => {
+  if (operation.type === 'get') {
+    operation.db.get(operation.key, (err, value) => {
+      // clone the value
       value = clone(value);
 
-      //call the caller callback
+      // call the caller callback
       operation.callback(err, value);
 
-      //call the queue callback
+      // call the queue callback
       callback();
     });
-  }
-  else if(operation.type == "remove"){
-    operation.db.remove(operation.key, function(err)
-    {
-      //call the queue callback
+  } else if (operation.type === 'remove') {
+    operation.db.remove(operation.key, (err) => {
+      // call the queue callback
       callback();
 
-      //call the caller callback
-      if(operation.bufferCallback) operation.bufferCallback(err);
+      // call the caller callback
+      if (operation.bufferCallback) operation.bufferCallback(err);
     }, operation.writeCallback);
-  }
-  else if(operation.type == "findKeys")
-  {
-    operation.db.findKeys(operation.key, operation.notKey, function(err, value)
-    {
-      //clone the value
+  } else if (operation.type === 'findKeys') {
+    operation.db.findKeys(operation.key, operation.notKey, (err, value) => {
+      // clone the value
       value = clone(value);
 
-      //call the caller callback
+      // call the caller callback
       operation.callback(err, value);
 
-      //call the queue callback
+      // call the queue callback
       callback();
     });
-  }
-  else if(operation.type == "set")
-  {
-    operation.db.set(operation.key, operation.value, function(err)
-    {
-      //call the queue callback
+  } else if (operation.type === 'set') {
+    operation.db.set(operation.key, operation.value, (err) => {
+      // call the queue callback
       callback();
 
-      //call the caller callback
-      if(operation.bufferCallback) operation.bufferCallback(err);
+      // call the caller callback
+      if (operation.bufferCallback) operation.bufferCallback(err);
     }, operation.writeCallback);
-  }
-  else if(operation.type == "getsub")
-  {
-    operation.db.getSub(operation.key, operation.sub, function(err, value)
-    {
-      //clone the value
+  } else if (operation.type === 'getsub') {
+    operation.db.getSub(operation.key, operation.sub, (err, value) => {
+      // clone the value
       value = clone(value);
 
-      //call the caller callback
+      // call the caller callback
       operation.callback(err, value);
 
-      //call the queue callback
+      // call the queue callback
       callback();
     });
-  }
-  else if(operation.type == "setsub")
-  {
-    operation.db.setSub(operation.key, operation.sub, operation.value, function(err)
-    {
-      //call the queue callback
+  } else if (operation.type === 'setsub') {
+    operation.db.setSub(operation.key, operation.sub, operation.value, (err) => {
+      // call the queue callback
       callback();
 
-      //call the caller callback
-      if(operation.bufferCallback) operation.bufferCallback(err);
+      // call the caller callback
+      if (operation.bufferCallback) operation.bufferCallback(err);
     }, operation.writeCallback);
   }
-}
+};
 
-exports.database.prototype.close = function(callback)
-{
+exports.database.prototype.close = function (callback) {
   this.db.close(callback);
-}
+};
 
-function clone(obj)
-{
+const clone = (obj) => {
   // Handle the 3 simple types, and null or undefined
-  if (null == obj || "object" != typeof obj) return obj;
+  if (null == obj || 'object' !== typeof obj) return obj;
 
   // Handle Date
-  if (obj instanceof Date)
-  {
-    var copy = new Date();
+  if (obj instanceof Date) {
+    const copy = new Date();
     copy.setTime(obj.getTime());
     return copy;
   }
 
   // Handle Array
-  if (obj instanceof Array)
-  {
-    var copy = [];
-    for (var i = 0, len = obj.length; i < len; ++i)
-    {
+  if (obj instanceof Array) {
+    const copy = [];
+    for (let i = 0, len = obj.length; i < len; ++i) {
       copy[i] = clone(obj[i]);
     }
     return copy;
   }
 
   // Handle Object
-  if (obj instanceof Object)
-  {
-    var copy = {};
-    for (var attr in obj)
-    {
-      if (obj.hasOwnProperty(attr)) copy[attr] = clone(obj[attr]);
+  if (obj instanceof Object) {
+    const copy = {};
+    for (const attr in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, attr)) copy[attr] = clone(obj[attr]);
     }
     return copy;
   }
 
   throw new Error("Unable to copy obj! Its type isn't supported.");
-}
+};
