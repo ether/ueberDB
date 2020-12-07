@@ -25,6 +25,7 @@ writes are done in a bulk. This can be turned off.
 * Postgres (single connection and with connection pool)
 * Redis
 * Rethink
+* SQLite
 
 ## Install
 
@@ -135,6 +136,7 @@ example(db);
 |  postgres  |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |   ✓   |
 |  redis |  ✓  |  ✓  |    *     |   ✓    |   ✓    |   ✓    |   ✓    |   ✓   |
 |  rethinkdb |  ✓  |  ✓  |    *     |   ✓    |   ✓    |   ✓    |   ✓    |
+|  sqlite | ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |   ✓    |
 
 ## Limitations
 
@@ -227,7 +229,6 @@ environment variable `NODE_TLS_REJECT_UNAUTHORIZED = 0` and add the flag
 
 * MongoDB was dropped due to an API break in the client, the old client is still
   in the database folder.
-* SQLite was dropped due to broken SQL and a broken build process.
 
 ## License
 
@@ -235,8 +236,7 @@ environment variable `NODE_TLS_REJECT_UNAUTHORIZED = 0` and add the flag
 
 ## What's changed from UeberDB?
 
-* Dropped broken databases: MongoDB and SQLite (probably a breaking change for
-  some people)
+* Dropped broken databases: MongoDB (probably a breaking change for some people)
 * Introduced CI.
 * Introduced better testing.
 * Fixed broken database clients IE Redis.
