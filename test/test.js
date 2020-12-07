@@ -5,7 +5,7 @@ const Clitable = require('cli-table');
 const Randexp = require('randexp');
 const assert = require('assert').strict;
 const databases = require('./lib/databases').databases;
-const fs = require('fs/promises');
+const fs = require('fs').promises;
 const ueberdb = require('../index');
 const util = require('util');
 
