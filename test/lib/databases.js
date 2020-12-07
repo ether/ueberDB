@@ -1,6 +1,6 @@
 exports.databases = {
   dirty:{
-    "filename": "/tmp/test.db",
+    filename: '/tmp/ueberdb-test.db',
     "speeds":{
       numberOfWrites: 1000,
       write: 1,
