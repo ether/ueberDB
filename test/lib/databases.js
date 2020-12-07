@@ -4,10 +4,10 @@ exports.databases = {
   dirty: {
     filename: '/tmp/ueberdb-test.db',
     speeds: {
-      numberOfWrites: 1000,
-      write: 1,
-      read: 0.1,
-      findKey: 0.5,
+      count: 1000,
+      setMax: 1,
+      getMax: 0.1,
+      findKeyMax: 0.5,
     },
   },
   mysql: {
@@ -17,7 +17,7 @@ exports.databases = {
     database: 'ueberdb',
     charset: 'utf8mb4',
     speeds: {
-      numberOfpreloadedEntries: 1000000,
+      count: 1000000,
     },
   },
   postgres: {
