@@ -227,8 +227,7 @@ environment variable `NODE_TLS_REJECT_UNAUTHORIZED = 0` and add the flag
 
 ## Dropped Databases and Why.
 
-* MongoDB was dropped due to an API break in the client, the old client is still
-  in the database folder.
+* MongoDB was dropped due to an API break in the client.
 
 ## License
 
