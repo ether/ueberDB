@@ -54,7 +54,10 @@ exports.database.prototype.schedulePing = function () {
 
   const self = this;
   this.interval = setInterval(() => {
-    self.db.query('SELECT 1');
+    self.db.query({
+      sql: 'SELECT 1',
+      timeout: 60000,
+    });
   }, 10000);
 };
 
@@ -70,7 +73,10 @@ exports.database.prototype.init = function (callback) {
 
   const sqlAlter = 'ALTER TABLE store MODIFY `key` VARCHAR(100) COLLATE utf8mb4_bin;';
 
-  db.query(sqlCreate, [], (err) => {
+  db.query({
+    sql: sqlCreate,
+    timeout: 60000,
+  }, [], (err) => {
     // call the main callback
     callback(err);
 
@@ -78,7 +84,10 @@ exports.database.prototype.init = function (callback) {
     const dbCharSet =
         'SELECT DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME ' +
         `FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '${db.database}'`;
-    db.query(dbCharSet, (err, result) => {
+    db.query({
+      sql: dbCharSet,
+      timeout: 60000,
+    }, (err, result) => {
       result = JSON.parse(JSON.stringify(result));
       if (result[0].DEFAULT_CHARACTER_SET_NAME !== db.charset) {
         console.error(`Database is not configured with charset ${db.charset} -- ` +
@@ -101,7 +110,10 @@ exports.database.prototype.init = function (callback) {
         'WHERE CCSA.collation_name = T.table_collation ' +
         `AND T.table_schema = '${db.database}' ` +
         "AND T.table_name = 'store'";
-    db.query(tableCharSet, (err, result, tf) => {
+    db.query({
+      sql: tableCharSet,
+      timeout: 60000,
+    }, (err, result, tf) => {
       if (!result[0]) {
         console.warn('Data has no character_set_name value -- ' +
                      'This may lead to crashes when certain characters are pasted in pads');
@@ -120,7 +132,10 @@ exports.database.prototype.init = function (callback) {
       }
 
       if (level !== '1') {
-        db.query(sqlAlter, [], (err) => {
+        db.query({
+          sql: sqlAlter,
+          timeout: 60000,
+        }, [], (err) => {
           if (err) {
             throw err;
           }
@@ -139,18 +154,19 @@ exports.database.prototype.init = function (callback) {
 };
 
 exports.database.prototype.get = function (key, callback) {
-  this.db.query(
-      'SELECT `value` FROM `store` WHERE `key` = ? AND BINARY `key` = ?',
-      [key, key],
-      (err, results) => {
-        let value = null;
+  this.db.query({
+    sql: 'SELECT `value` FROM `store` WHERE `key` = ? AND BINARY `key` = ?',
+    timeout: 60000,
+  }, [key, key],
+  (err, results) => {
+    let value = null;
 
-        if (!err && results.length === 1) {
-          value = results[0].value;
-        }
+    if (!err && results.length === 1) {
+      value = results[0].value;
+    }
 
-        callback(err, value);
-      });
+    callback(err, value);
+  });
 
   this.schedulePing();
 };
@@ -169,17 +185,21 @@ exports.database.prototype.findKeys = function (key, notKey, callback) {
     query += ' AND `key` NOT LIKE ?';
     params.push(notKey);
   }
-  this.db.query(query, params, (err, results) => {
-    const value = [];
+  this.db.query(
+      {
+        sql: query,
+        timeout: 60000,
+      }, params, (err, results) => {
+        const value = [];
 
-    if (!err && results.length > 0) {
-      results.forEach((val) => {
-        value.push(val.key);
+        if (!err && results.length > 0) {
+          results.forEach((val) => {
+            value.push(val.key);
+          });
+        }
+
+        callback(err, value);
       });
-    }
-
-    callback(err, value);
-  });
 
   this.schedulePing();
 };
@@ -188,7 +208,10 @@ exports.database.prototype.set = function (key, value, callback) {
   if (key.length > 100) {
     callback('Your Key can only be 100 chars');
   } else {
-    this.db.query('REPLACE INTO `store` VALUES (?,?)', [key, value], (err, info) => {
+    this.db.query({
+      sql: 'REPLACE INTO `store` VALUES (?,?)',
+      timeout: 60000,
+    }, [key, value], (err, info) => {
       callback(err);
     });
   }
@@ -197,8 +220,10 @@ exports.database.prototype.set = function (key, value, callback) {
 };
 
 exports.database.prototype.remove = function (key, callback) {
-  this.db.query('DELETE FROM `store` WHERE `key` = ? AND BINARY `key` = ?', [key, key], callback);
-
+  this.db.query({
+    sql: 'DELETE FROM `store` WHERE `key` = ? AND BINARY `key` = ?',
+    timeout: 60000,
+  }, [key, key], callback);
   this.schedulePing();
 };
 
@@ -237,12 +262,26 @@ exports.database.prototype.doBulk = function (bulk, callback) {
 
   async.parallel([
     (callback) => {
-      if (!firstReplace) _this.db.query(replaceSQL, callback);
-      else callback();
+      if (!firstReplace) {
+        _this.db.query({
+          sql: replaceSQL,
+          timeout: 60000,
+        },
+        callback);
+      } else {
+        callback();
+      }
     },
     (callback) => {
-      if (!firstRemove) _this.db.query(removeSQL, callback);
-      else callback();
+      if (!firstRemove) {
+        _this.db.query({
+          sql: removeSQL,
+          timeout: 60000,
+        },
+        callback);
+      } else {
+        callback();
+      }
     },
   ], callback);
 
