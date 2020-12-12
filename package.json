@@ -37,7 +37,8 @@
     "redis": "^3.0.2",
     "rethinkdb": "^2.4.2",
     "rimraf": "^3.0.2",
-    "simple-git": "^2.4.0"
+    "simple-git": "^2.4.0",
+    "sqlite3": "^5.0.0"
   },
   "optionalDependencies": {
     "sqlite3": "^5.0.0"
@@ -57,7 +58,7 @@
     "url": "https://github.com/ether/ueberDB.git"
   },
   "main": "./index",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "bugs": {
     "url": "https://github.com/ether/ueberDB/issues"
   },
