@@ -38,8 +38,8 @@ exports.database = function (settings) {
   if (this.settings.charset != null) this.db.charset = this.settings.charset;
 
   this.settings.engine = 'InnoDB';
-  this.settings.cache = 1000;
-  this.settings.writeInterval = 100;
+  this.settings.cache = 10000;
+  this.settings.writeInterval = 1000;
   this.settings.json = true;
 };
 
