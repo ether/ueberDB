@@ -38,8 +38,15 @@ exports.database = function (settings) {
   if (this.settings.charset != null) this.db.charset = this.settings.charset;
 
   this.settings.engine = 'InnoDB';
-  this.settings.cache = 10000;
-  this.settings.writeInterval = 1000;
+  this.settings.cache = 500; 
+  // This was changed from 1000 to 500.  Testing higer values found that certain queries
+  // were becomming quite large in length causing MySQL Lock to fire which is not terrible
+  // but not ideal if you have a lot of new pads.
+  // Essentially we learned that a lower cache value is better due to concatanated SQL query
+  // length where lots of pads are active.
+  // I actually "think" better values would be cache @ 200 and writeInterval @ 100 but that
+  // would be an overly agressive change for now so 500, 100 seems fine until I can test further
+  this.settings.writeInterval = 100;
   this.settings.json = true;
 };
 
