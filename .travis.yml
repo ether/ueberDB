@@ -12,6 +12,7 @@ services:
   - redis
   - cassandra
   - elasticsearch
+  - mongodb
   - rethinkdb
 
 before_install:
