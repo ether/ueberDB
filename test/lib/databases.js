@@ -40,9 +40,9 @@ exports.databases = {
   redis: {
     hostname: '127.0.0.1',
   },
-  /*mongodb: {
-    url: 'mongodb://localhost:3334',
-    dbName: 'meteor',
+  mongodb: {
+    url: 'mongodb://127.0.0.1:27017',
+    dbName: 'mydb_test',
     speeds: {
       count: 2000,
       setMax: 0.2,
@@ -50,7 +50,7 @@ exports.databases = {
       findKeyMax: 1,
       removeMax: 0.3,
     },
-  },*/
+  },
   /*
   couch: {
     host: '127.0.0.1',
