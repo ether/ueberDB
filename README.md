@@ -91,6 +91,46 @@ async function example(db){
 
 example(db);
 ```
+### Getting and setting subkeys
+
+``.get`` is useful for getting
+```
+"foo" : {
+  ...all of this...
+}
+```
+``.getsub`` is useful for getting
+```
+"foo:bar" : {
+  "pads" : {
+    ...all of this...
+  }
+}
+```
+``setSub`` sets the subkeys of keys IE 
+
+```
+"foo:bar" : {
+  "pads" : {
+    ...all of this...
+  }
+}
+```
+### ``getSub``
+``key`` is the key[string] IE "foo:bar"
+``subkey`` is an array of subkeys you want to get IE ``['pads','someothersubkey'];``
+
+Example:
+``const result = await db.getSub(key, subkey); // returns an array of responses``
+
+### ``setSub`` 
+``key`` is the key[string] IE "foo:bar"
+``subkey`` is an array of subkeys you want to set IE ``['pads','someothersubkey'];``
+``value`` is a value[string] to set IE "hello world"
+
+Example:
+``db.setSub(key, subkey, value);``
+
 
 ### Disabling Cache for real-time read/write
 
@@ -220,10 +260,6 @@ environment variable `NODE_TLS_REJECT_UNAUTHORIZED = 0` and add the flag
    request including the changes which should include **1 new and 3 modified
    files**.
 1. Once merged we really need you to be on top of maintaining your code.
-
-## Dropped Databases and Why.
-
-* MongoDB was dropped due to an API break in the client.
 
 ## License
 
