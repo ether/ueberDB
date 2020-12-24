@@ -20,15 +20,15 @@ exports.databases = {
   },
   mysql: {
     user: 'ueberdb',
-    host: 'localhost',
+    host: '127.0.0.1',
     password: 'ueberdb',
     database: 'ueberdb',
     charset: 'utf8mb4',
   },
   postgres: {
-    user: 'postgres',
+    user: 'ueberdb',
     host: 'localhost',
-    password: '',
+    password: 'ueberdb',
     database: 'ueberdb',
     charset: 'utf8mb4',
   },
