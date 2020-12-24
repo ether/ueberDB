@@ -32,10 +32,8 @@ exports.database.prototype.clearPing = function () {
 
 exports.database.prototype.schedulePing = function () {
   this.clearPing();
-
-  const self = this;
   this.interval = setInterval(() => {
-    self.database.command({
+    this.database.command({
       ping: 1,
     });
   }, 10000);

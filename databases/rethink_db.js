@@ -33,23 +33,21 @@ exports.database = function (settings) {
 };
 
 exports.database.prototype.init = function (callback) {
-  const that = this;
-  r.connect(that, (err, conn) => {
+  r.connect(this, (err, conn) => {
     if (err) throw err;
-    that.connection = conn;
+    this.connection = conn;
 
-    r.table(that.table).run(that.connection, (err, cursor) => {
+    r.table(this.table).run(this.connection, (err, cursor) => {
       if (err) {
         // assuming table does not exists
-        r.tableCreate(that.table).run(that.connection, callback);
+        r.tableCreate(this.table).run(this.connection, callback);
       } else if (callback) { callback(null, cursor); }
     });
   });
 };
 
 exports.database.prototype.get = function (key, callback) {
-  const that = this;
-  r.table(that.table).get(key).run(that.connection, (err, item) => {
+  r.table(this.table).get(key).run(this.connection, (err, item) => {
     callback(err, (item ? item.content : item));
   });
 };
@@ -57,23 +55,20 @@ exports.database.prototype.get = function (key, callback) {
 exports.database.prototype.findKeys = function (key, notKey, callback) {
   const keys = [];
   const regex = this.createFindRegex(key, notKey);
-  const that = this;
   r.filter((item) => {
     if (item.id.search(regex) !== -1) {
       keys.push(item.id);
     }
-  }).run(that.connection, callback);
+  }).run(this.connection, callback);
 };
 
 exports.database.prototype.set = function (key, value, callback) {
-  const that = this;
-  r.table(that.table)
+  r.table(this.table)
       .insert({id: key, content: value}, {conflict: 'replace'})
-      .run(that.connection, callback);
+      .run(this.connection, callback);
 };
 
 exports.database.prototype.doBulk = function (bulk, callback) {
-  const that = this;
   const _in = [];
   const _out = [];
 
@@ -85,13 +80,12 @@ exports.database.prototype.doBulk = function (bulk, callback) {
     }
   }
   async.parallel([
-    (cb) => { r.table(that.table).insert(_in, {conflict: 'replace'}).run(that.connection, cb); },
-    (cb) => { r.table(that.table).getAll(_out).delete().run(that.connection, cb); },
+    (cb) => { r.table(this.table).insert(_in, {conflict: 'replace'}).run(this.connection, cb); },
+    (cb) => { r.table(this.table).getAll(_out).delete().run(this.connection, cb); },
   ], callback);
 };
 exports.database.prototype.remove = function (key, callback) {
-  const that = this;
-  r.table(that.table).get(key).delete().run(that.connection, callback);
+  r.table(this.table).get(key).delete().run(this.connection, callback);
 };
 
 exports.database.prototype.close = function (callback) {
