@@ -42,6 +42,7 @@ jobs:
         with:
           node-version: 12
       - run: npm ci
+      - run: sudo /etc/init.d/mysql start
       # Verify databases are reachable.
       - name: Verify MySQL connection
         run: |
