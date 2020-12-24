@@ -10,16 +10,56 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo
+        ports:
+          - 27017:27017
+      mysql:
+        # The default authentication used in MySQL 8.0 isn't supported by the
+        # mysql npm package: https://github.com/mysqljs/mysql/issues/2002
+        image: mariadb
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_USER: ueberdb
+          MYSQL_PASSWORD: ueberdb
+          MYSQL_DATABASE: ueberdb
+      postgres:
+        image: postgres
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: ueberdb
+          POSTGRES_PASSWORD: ueberdb
+          POSTGRES_DB: ueberdb
+        options: >-
+          --health-cmd="pg_isready -d postgresql://ueberdb:ueberdb@127.0.0.1/ueberdb"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
           node-version: 12
-      - name: Start MongoDB
-        uses: supercharge/mongodb-github-action@1.3.0
-        with:
-          mongodb-version: 4.2
       - run: npm ci
+
+      # Verify databases are reachable.
+      - name: MySQL client and server check
+        run: |
+          mysql --version &&
+          mysql -h 127.0.0.1 -u ueberdb -pueberdb -e "SHOW TABLES;" ueberdb
+      - name: PostgreSQL client and server check
+        run: |
+          psql --version &&
+          psql -d postgresql://ueberdb:ueberdb@127.0.0.1/ueberdb -c '\dt'
+
       - run: npm test
       - run: npm run lint
 
