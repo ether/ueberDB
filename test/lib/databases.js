@@ -45,10 +45,13 @@ exports.databases = {
       removeMax: 0.3,
     },
   },
-  /*
+  /* Disabled due to "Document update conflict" error in findKeys()
   couch: {
     host: '127.0.0.1',
     port: 5984,
+    database: 'ueberdb',
+    user: 'ueberdb',
+    password: 'ueberdb',
   },
   */
 };

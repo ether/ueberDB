@@ -11,6 +11,13 @@ jobs:
   test:
     runs-on: ubuntu-latest
     services:
+      couchdb:
+        image: couchdb
+        ports:
+          - 5984:5984
+        env:
+          COUCHDB_USER: ueberdb
+          COUCHDB_PASSWORD: ueberdb
       mongo:
         image: mongo
         ports:
