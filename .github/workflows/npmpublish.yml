@@ -20,16 +20,14 @@ jobs:
         ports:
           - 27017:27017
       mysql:
-        image: mysql
-        ports:
-          - 3306:3306
+        image: mysql:5.7
         env:
-          MYSQL_ROOT_PASSWORD: password
-        options: >-
-          --health-cmd="mysqladmin ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_ROOT_PASSWORD: ueberdb
+          MYSQL_DATABASE: ueberdb
+        ports:
+          - 3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
       postgres:
         image: postgres
         ports:
