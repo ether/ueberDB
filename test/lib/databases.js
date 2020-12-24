@@ -51,10 +51,8 @@ exports.databases = {
       removeMax: 0.3,
     },
   },
-  /*
   couch: {
     host: '127.0.0.1',
     port: 5984,
   },
-  */
 };

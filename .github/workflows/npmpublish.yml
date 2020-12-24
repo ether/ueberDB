@@ -11,6 +11,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
     services:
+      couchdb:
+        image: couchdb
+        ports:
+          - 5984:5984
       mongo:
         image: mongo
         ports:
