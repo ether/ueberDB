@@ -134,7 +134,7 @@ describe(__filename, function () {
               removeMax = 1,
             } = {}} = dbSettings || {};
 
-            this.timeout(1000000);
+            this.timeout(300);
 
             const input = {a: 1, b: new Randexp(/.+/).gen()};
             // TODO setting a key with non ascii chars
