@@ -134,6 +134,8 @@ describe(__filename, function () {
           });
 
           it('speed is acceptable', async function () {
+            this.timeout(60000);
+
             const {speeds: {
               count = 1000,
               setMax = 3,
@@ -141,8 +143,6 @@ describe(__filename, function () {
               findKeyMax = 1,
               removeMax = 1,
             } = {}} = dbSettings || {};
-
-            this.timeout(1000000);
 
             const input = {a: 1, b: new Randexp(/.+/).gen()};
             // TODO setting a key with non ascii chars

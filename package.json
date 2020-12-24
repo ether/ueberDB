@@ -67,7 +67,7 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "test": "mocha test/test*.js --timeout 1000000"
+    "test": "mocha test/test*.js"
   },
   "_npmUser": {
     "name": "johnyma22",
