@@ -59,9 +59,8 @@ exports.database.prototype.clearPing = function () {
 exports.database.prototype.schedulePing = function () {
   this.clearPing();
 
-  const self = this;
   this.interval = setInterval(() => {
-    self.db.query({
+    this.db.query({
       sql: 'SELECT 1',
       timeout: 60000,
     });
@@ -70,7 +69,6 @@ exports.database.prototype.schedulePing = function () {
 
 exports.database.prototype.init = function (callback) {
   const db = this.db;
-  const self = this;
 
   const sqlCreate = `${'CREATE TABLE IF NOT EXISTS `store` ( ' +
                   '`key` VARCHAR( 100 ) NOT NULL COLLATE utf8mb4_bin, ' +
@@ -133,7 +131,7 @@ exports.database.prototype.init = function (callback) {
     });
 
     // check migration level, alter if not migrated
-    self.get('MYSQL_MIGRATION_LEVEL', (err, level) => {
+    this.get('MYSQL_MIGRATION_LEVEL', (err, level) => {
       if (err) {
         throw err;
       }
@@ -147,7 +145,7 @@ exports.database.prototype.init = function (callback) {
             throw err;
           }
 
-          self.set('MYSQL_MIGRATION_LEVEL', '1', (err) => {
+          this.set('MYSQL_MIGRATION_LEVEL', '1', (err) => {
             if (err) {
               throw err;
             }
@@ -235,8 +233,6 @@ exports.database.prototype.remove = function (key, callback) {
 };
 
 exports.database.prototype.doBulk = function (bulk, callback) {
-  const _this = this;
-
   let replaceSQL = 'REPLACE INTO `store` VALUES ';
 
   // keysToDelete is a string of the form "(k1, k2, ..., kn)" painstakingly built by hand.
@@ -250,12 +246,12 @@ exports.database.prototype.doBulk = function (bulk, callback) {
       if (!firstReplace) replaceSQL += ',';
       firstReplace = false;
 
-      replaceSQL += `(${_this.db.escape(bulk[i].key)}, ${_this.db.escape(bulk[i].value)})`;
+      replaceSQL += `(${this.db.escape(bulk[i].key)}, ${this.db.escape(bulk[i].value)})`;
     } else if (bulk[i].type === 'remove') {
       if (!firstRemove) keysToDelete += ',';
       firstRemove = false;
 
-      keysToDelete += _this.db.escape(bulk[i].key);
+      keysToDelete += this.db.escape(bulk[i].key);
     }
   }
 
@@ -270,7 +266,7 @@ exports.database.prototype.doBulk = function (bulk, callback) {
   async.parallel([
     (callback) => {
       if (!firstReplace) {
-        _this.db.query({
+        this.db.query({
           sql: replaceSQL,
           timeout: 60000,
         },
@@ -281,7 +277,7 @@ exports.database.prototype.doBulk = function (bulk, callback) {
     },
     (callback) => {
       if (!firstRemove) {
-        _this.db.query({
+        this.db.query({
           sql: removeSQL,
           timeout: 60000,
         },

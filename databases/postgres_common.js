@@ -25,18 +25,16 @@ exports.init = function (callback) {
     '"value" text NOT NULL, ' +
     'CONSTRAINT store_pkey PRIMARY KEY (key))';
 
-  const _this = this;
-
   // this variable will be given a value depending on the result of the
   // feature detection
-  _this.upsertStatement = null;
+  this.upsertStatement = null;
 
   /*
    * - Detects if this Postgres version supports INSERT .. ON CONFLICT
    *   UPDATE (PostgreSQL >= 9.5 and CockroachDB)
    * - If upsert is not supported natively, creates in the DB a pl/pgsql
    *   function that emulates it
-   * - Performs a side effect, setting _this.upsertStatement to the sql
+   * - Performs a side effect, setting this.upsertStatement to the sql
    *   statement that needs to be used, based on the detection result
    * - calls the callback
    */
@@ -60,21 +58,21 @@ exports.init = function (callback) {
 
     const testNativeUpsert = `EXPLAIN ${upsertNatively}`;
 
-    _this.db.query(testNativeUpsert, ['test-key', 'test-value'], (err) => {
+    this.db.query(testNativeUpsert, ['test-key', 'test-value'], (err) => {
       if (err) {
         // the UPSERT statement failed: we will have to emulate it via
         // an sql function
-        _this.upsertStatement = upsertViaFunction;
+        this.upsertStatement = upsertViaFunction;
 
         // actually create the emulation function
-        _this.db.query(createFunc, [], callback);
+        this.db.query(createFunc, [], callback);
 
         return;
       }
 
       // if we get here, the EXPLAIN UPSERT succeeded, and we can use a
       // native UPSERT
-      _this.upsertStatement = upsertNatively;
+      this.upsertStatement = upsertNatively;
       callback();
     });
   };
@@ -82,7 +80,7 @@ exports.init = function (callback) {
   this.db.query(testTableExists, (err, result) => {
     if (err != null) return callback(err);
     if (result.rows.length === 0) {
-      _this.db.query(createTable, (err) => {
+      this.db.query(createTable, (err) => {
         if (err != null) return callback(err);
         detectUpsertMethod(callback);
       });
@@ -143,8 +141,6 @@ exports.remove = function (key, callback) {
 };
 
 exports.doBulk = function (bulk, callback) {
-  const _this = this;
-
   const replaceVALs = [];
   let removeSQL = 'DELETE FROM store WHERE key IN (';
   const removeVALs = [];
@@ -168,7 +164,7 @@ exports.doBulk = function (bulk, callback) {
   const functions = replaceVALs.map((v) => (cb) => this.db.query(this.upsertStatement, v, cb));
 
   const removeFunction = (callback) => {
-    if (!removeVALs.length < 1) _this.db.query(removeSQL, removeVALs, callback);
+    if (!removeVALs.length < 1) this.db.query(removeSQL, removeVALs, callback);
     else callback();
   };
   functions.push(removeFunction);
