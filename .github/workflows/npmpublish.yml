@@ -45,7 +45,7 @@ jobs:
       # Verify databases are reachable.
       - name: Verify MySQL connection
         run: |
-          mysql -h localhost -u root -ppassword -e "SHOW DATABASES"
+          mysql -h localhost -uroot -pueberdb -e "SHOW DATABASES"
       - run: npm test
       - run: npm run lint
 
