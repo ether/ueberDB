@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-const async = require('async');
-
 exports.Database = function (settings) {
   // temp hack needs a proper fix..
   if (settings && !settings.charset) settings.charset = 'utf8mb4';
@@ -50,6 +48,14 @@ exports.Database = function (settings) {
   this.settings.json = true;
 };
 
+exports.Database.prototype.isAsync = true;
+
+exports.Database.prototype._query = async function (...args) {
+  return await new Promise((resolve, reject) => {
+    this.db.query(...args, (err, ...args) => err != null ? reject(err) : resolve(args));
+  });
+};
+
 exports.Database.prototype.clearPing = function () {
   if (this.interval) {
     clearInterval(this.interval);
@@ -67,7 +73,7 @@ exports.Database.prototype.schedulePing = function () {
   }, 10000);
 };
 
-exports.Database.prototype.init = function (callback) {
+exports.Database.prototype.init = async function () {
   const db = this.db;
 
   const sqlCreate = `${'CREATE TABLE IF NOT EXISTS `store` ( ' +
@@ -78,105 +84,79 @@ exports.Database.prototype.init = function (callback) {
 
   const sqlAlter = 'ALTER TABLE store MODIFY `key` VARCHAR(100) COLLATE utf8mb4_bin;';
 
-  db.query({
+  await this._query({
     sql: sqlCreate,
     timeout: 60000,
-  }, [], (err) => {
-    // call the main callback
-    callback(err);
+  }, []);
 
-    // Checks for Database charset et al
-    const dbCharSet =
-        'SELECT DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME ' +
-        `FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '${db.database}'`;
-    db.query({
-      sql: dbCharSet,
-      timeout: 60000,
-    }, (err, result) => {
-      result = JSON.parse(JSON.stringify(result));
-      if (result[0].DEFAULT_CHARACTER_SET_NAME !== db.charset) {
-        console.error(`Database is not configured with charset ${db.charset} -- ` +
-                      'This may lead to crashes when certain characters are pasted in pads');
-        console.log(result[0], db.charset);
-      }
-
-      if (result[0].DEFAULT_COLLATION_NAME.indexOf(db.charset) === -1) {
-        console.error(
-            `Database is not configured with collation name that includes ${db.charset} -- ` +
-            'This may lead to crashes when certain characters are pasted in pads');
-        console.log(result[0], db.charset, result[0].DEFAULT_COLLATION_NAME);
-      }
-    });
-
-    const tableCharSet =
-        'SELECT CCSA.character_set_name AS character_set_name ' +
-        'FROM information_schema.`TABLES` ' +
-        'T,information_schema.`COLLATION_CHARACTER_SET_APPLICABILITY` CCSA ' +
-        'WHERE CCSA.collation_name = T.table_collation ' +
-        `AND T.table_schema = '${db.database}' ` +
-        "AND T.table_name = 'store'";
-    db.query({
-      sql: tableCharSet,
-      timeout: 60000,
-    }, (err, result, tf) => {
-      if (!result[0]) {
-        console.warn('Data has no character_set_name value -- ' +
-                     'This may lead to crashes when certain characters are pasted in pads');
-      }
-      if (result[0] && (result[0].character_set_name !== db.charset)) {
-        console.error(`table is not configured with charset ${db.charset} -- ` +
-                      'This may lead to crashes when certain characters are pasted in pads');
-        console.log(result[0], db.charset);
-      }
-    });
-
-    // check migration level, alter if not migrated
-    this.get('MYSQL_MIGRATION_LEVEL', (err, level) => {
-      if (err) {
-        throw err;
-      }
-
-      if (level !== '1') {
-        db.query({
-          sql: sqlAlter,
-          timeout: 60000,
-        }, [], (err) => {
-          if (err) {
-            throw err;
-          }
-
-          this.set('MYSQL_MIGRATION_LEVEL', '1', (err) => {
-            if (err) {
-              throw err;
-            }
-          });
-        });
-      }
-    });
+  // Checks for Database charset et al
+  const dbCharSet =
+      'SELECT DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME ' +
+      `FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '${db.database}'`;
+  let [result] = await this._query({
+    sql: dbCharSet,
+    timeout: 60000,
   });
+
+  result = JSON.parse(JSON.stringify(result));
+  if (result[0].DEFAULT_CHARACTER_SET_NAME !== db.charset) {
+    console.error(`Database is not configured with charset ${db.charset} -- ` +
+                  'This may lead to crashes when certain characters are pasted in pads');
+    console.log(result[0], db.charset);
+  }
+
+  if (result[0].DEFAULT_COLLATION_NAME.indexOf(db.charset) === -1) {
+    console.error(
+        `Database is not configured with collation name that includes ${db.charset} -- ` +
+          'This may lead to crashes when certain characters are pasted in pads');
+    console.log(result[0], db.charset, result[0].DEFAULT_COLLATION_NAME);
+  }
+
+  const tableCharSet =
+      'SELECT CCSA.character_set_name AS character_set_name ' +
+      'FROM information_schema.`TABLES` ' +
+      'T,information_schema.`COLLATION_CHARACTER_SET_APPLICABILITY` CCSA ' +
+      'WHERE CCSA.collation_name = T.table_collation ' +
+      `AND T.table_schema = '${db.database}' ` +
+      "AND T.table_name = 'store'";
+  [result] = await this._query({
+    sql: tableCharSet,
+    timeout: 60000,
+  });
+  if (!result[0]) {
+    console.warn('Data has no character_set_name value -- ' +
+                 'This may lead to crashes when certain characters are pasted in pads');
+  }
+  if (result[0] && (result[0].character_set_name !== db.charset)) {
+    console.error(`table is not configured with charset ${db.charset} -- ` +
+                  'This may lead to crashes when certain characters are pasted in pads');
+    console.log(result[0], db.charset);
+  }
+
+  // check migration level, alter if not migrated
+  const level = await this.get('MYSQL_MIGRATION_LEVEL');
+
+  if (level !== '1') {
+    await this._query({
+      sql: sqlAlter,
+      timeout: 60000,
+    }, []);
+    await this.set('MYSQL_MIGRATION_LEVEL', '1');
+  }
 
   this.schedulePing();
 };
 
-exports.Database.prototype.get = function (key, callback) {
-  this.db.query({
+exports.Database.prototype.get = async function (key) {
+  const [results] = await this._query({
     sql: 'SELECT `value` FROM `store` WHERE `key` = ? AND BINARY `key` = ?',
     timeout: 60000,
-  }, [key, key],
-  (err, results) => {
-    let value = null;
-
-    if (!err && results.length === 1) {
-      value = results[0].value;
-    }
-
-    callback(err, value);
-  });
-
+  }, [key, key]);
   this.schedulePing();
+  return results.length === 1 ? results[0].value : null;
 };
 
-exports.Database.prototype.findKeys = function (key, notKey, callback) {
+exports.Database.prototype.findKeys = async function (key, notKey) {
   let query = 'SELECT `key` FROM `store` WHERE `key` LIKE ?';
   const params = [];
 
@@ -190,49 +170,32 @@ exports.Database.prototype.findKeys = function (key, notKey, callback) {
     query += ' AND `key` NOT LIKE ?';
     params.push(notKey);
   }
-  this.db.query(
-      {
-        sql: query,
-        timeout: 60000,
-      }, params, (err, results) => {
-        const value = [];
+  const [results] = await this._query({
+    sql: query,
+    timeout: 60000,
+  }, params);
+  this.schedulePing();
+  return results.map((val) => val.key);
+};
 
-        if (!err && results.length > 0) {
-          results.forEach((val) => {
-            value.push(val.key);
-          });
-        }
-
-        callback(err, value);
-      });
-
+exports.Database.prototype.set = async function (key, value) {
+  if (key.length > 100) throw new Error('Your Key can only be 100 chars');
+  await this._query({
+    sql: 'REPLACE INTO `store` VALUES (?,?)',
+    timeout: 60000,
+  }, [key, value]);
   this.schedulePing();
 };
 
-exports.Database.prototype.set = function (key, value, callback) {
-  if (key.length > 100) {
-    callback('Your Key can only be 100 chars');
-  } else {
-    this.db.query({
-      sql: 'REPLACE INTO `store` VALUES (?,?)',
-      timeout: 60000,
-    }, [key, value], (err, info) => {
-      callback(err);
-    });
-  }
-
-  this.schedulePing();
-};
-
-exports.Database.prototype.remove = function (key, callback) {
-  this.db.query({
+exports.Database.prototype.remove = async function (key) {
+  await this._query({
     sql: 'DELETE FROM `store` WHERE `key` = ? AND BINARY `key` = ?',
     timeout: 60000,
-  }, [key, key], callback);
+  }, [key, key]);
   this.schedulePing();
 };
 
-exports.Database.prototype.doBulk = function (bulk, callback) {
+exports.Database.prototype.doBulk = async function (bulk) {
   let replaceSQL = 'REPLACE INTO `store` VALUES ';
 
   // keysToDelete is a string of the form "(k1, k2, ..., kn)" painstakingly built by hand.
@@ -263,30 +226,10 @@ exports.Database.prototype.doBulk = function (bulk, callback) {
       `DELETE FROM \`store\` WHERE \`key\` IN ${keysToDelete} ` +
       `AND BINARY \`key\` IN ${keysToDelete};`;
 
-  async.parallel([
-    (callback) => {
-      if (!firstReplace) {
-        this.db.query({
-          sql: replaceSQL,
-          timeout: 60000,
-        },
-        callback);
-      } else {
-        callback();
-      }
-    },
-    (callback) => {
-      if (!firstRemove) {
-        this.db.query({
-          sql: removeSQL,
-          timeout: 60000,
-        },
-        callback);
-      } else {
-        callback();
-      }
-    },
-  ], callback);
+  await Promise.all([
+    firstReplace ? null : this._query({sql: replaceSQL, timeout: 60000}),
+    firstRemove ? null : this._query({sql: removeSQL, timeout: 60000}),
+  ]);
 
   this.schedulePing();
 };
