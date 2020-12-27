@@ -136,8 +136,8 @@ describe(__filename, function () {
           it('speed is acceptable', async function () {
             const {speeds: {
               count = 1000,
-              getMax = 0.1,
               setMax = 3,
+              getMax = 0.1,
               findKeyMax = 1,
               removeMax = 1,
             } = {}} = dbSettings || {};
@@ -195,8 +195,8 @@ describe(__filename, function () {
                 ['remove', removeMax, timePerOp.remove]);
             console.log(acceptableTable.toString());
 
-            assert(getMax >= timePerOp.get);
             assert(setMax >= timePerOp.set);
+            assert(getMax >= timePerOp.get);
             assert(findKeyMax >= timePerOp.findKey);
             assert(removeMax >= timePerOp.remove);
           });
