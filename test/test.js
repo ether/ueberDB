@@ -1,6 +1,8 @@
 'use strict';
 /* eslint new-cap: ["error", {"newIsCapExceptions": ["database"]}] */
 
+const wtfnode = require('wtfnode'); // This should be first so that it can instrument everything.
+
 const Clitable = require('cli-table');
 const Randexp = require('randexp');
 const assert = require('assert').strict;
@@ -8,6 +10,18 @@ const databases = require('./lib/databases').databases;
 const fs = require('fs').promises;
 const ueberdb = require('../index');
 const util = require('util');
+
+// eslint-disable-next-line mocha/no-top-level-hooks
+after(async function () {
+  // Add a timeout to forcibly exit if something is keeping node from exiting cleanly.
+  // The timeout is unref()ed so that it doesn't prevent node from exiting when done.
+  setTimeout(() => {
+    console.error('node should have exited by now but something is keeping it open ' +
+                  'such as an open connection or active timer');
+    wtfnode.dump();
+    process.exit(1); // eslint-disable-line no-process-exit
+  }, 5000).unref();
+});
 
 describe(__filename, function () {
   let speedTable;
