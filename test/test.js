@@ -135,7 +135,7 @@ describe(__filename, function () {
 
           it('speed is acceptable', async function () {
             const {speeds: {
-              count = 20000,
+              count = 1000,
               getMax = 0.1,
               setMax = 3,
               findKeyMax = 1,
