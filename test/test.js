@@ -154,7 +154,7 @@ describe(__filename, function () {
               count = 1000,
               setMax = 3,
               getMax = 0.1,
-              findKeyMax = 1,
+              findKeyMax = 3,
               removeMax = 1,
             } = {}} = dbSettings || {};
 

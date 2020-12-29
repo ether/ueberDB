@@ -41,7 +41,6 @@ exports.databases = {
     speeds: {
       setMax: 0.2,
       getMax: 0.05,
-      findKeyMax: 1,
       removeMax: 0.3,
     },
   },
