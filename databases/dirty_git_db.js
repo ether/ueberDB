@@ -17,7 +17,7 @@
 
 const Dirty = require('dirty');
 
-exports.database = function (settings) {
+exports.Database = function (settings) {
   this.db = null;
 
   if (!settings || !settings.filename) {
@@ -32,18 +32,18 @@ exports.database = function (settings) {
   this.settings.json = false;
 };
 
-exports.database.prototype.init = function (callback) {
+exports.Database.prototype.init = function (callback) {
   this.db = new Dirty(this.settings.filename);
   this.db.on('load', (err) => {
     callback();
   });
 };
 
-exports.database.prototype.get = function (key, callback) {
+exports.Database.prototype.get = function (key, callback) {
   callback(null, this.db.get(key));
 };
 
-exports.database.prototype.findKeys = function (key, notKey, callback) {
+exports.Database.prototype.findKeys = function (key, notKey, callback) {
   const keys = [];
   const regex = this.createFindRegex(key, notKey);
   this.db.forEach((key, val) => {
@@ -54,7 +54,7 @@ exports.database.prototype.findKeys = function (key, notKey, callback) {
   callback(null, keys);
 };
 
-exports.database.prototype.set = function (key, value, callback) {
+exports.Database.prototype.set = function (key, value, callback) {
   this.db.set(key, value, callback);
   const databasePath = require('path').dirname(this.settings.filename);
   require('simple-git')(databasePath)
@@ -64,11 +64,11 @@ exports.database.prototype.set = function (key, value, callback) {
       .push(['-u', 'origin', 'master'], () => console.debug('Stored git commit'));
 };
 
-exports.database.prototype.remove = function (key, callback) {
+exports.Database.prototype.remove = function (key, callback) {
   this.db.rm(key, callback);
 };
 
-exports.database.prototype.close = function (callback) {
+exports.Database.prototype.close = function (callback) {
   this.db.close();
   if (callback) callback();
 };

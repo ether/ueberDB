@@ -20,22 +20,22 @@
 const async = require('async');
 const redis = require('redis');
 
-exports.database = function (settings) {
+exports.Database = function (settings) {
   this.client = null;
   this.settings = settings || {};
 };
 
-exports.database.prototype.auth = function (callback) {
+exports.Database.prototype.auth = function (callback) {
   if (this.settings.password) this.client.auth(this.settings.password, callback);
   callback();
 };
 
-exports.database.prototype.select = function (callback) {
+exports.Database.prototype.select = function (callback) {
   if (this.settings.database) return this.client.select(this.settings.database, callback);
   callback();
 };
 
-exports.database.prototype.init = function (callback) {
+exports.Database.prototype.init = function (callback) {
   if (this.settings.socket) {
     this.client = redis.createClient(this.settings.socket,
         this.settings.client_options);
@@ -48,11 +48,11 @@ exports.database.prototype.init = function (callback) {
   async.waterfall([this.auth.bind(this), this.select.bind(this)], callback);
 };
 
-exports.database.prototype.get = function (key, callback) {
+exports.Database.prototype.get = function (key, callback) {
   this.client.get(key, callback);
 };
 
-exports.database.prototype.findKeys = function (key, notKey, callback) {
+exports.Database.prototype.findKeys = function (key, notKey, callback) {
   // As redis provides only limited support for getting a list of all
   // available keys we have to limit key and notKey here.
   // See http://redis.io/commands/keys
@@ -72,7 +72,7 @@ exports.database.prototype.findKeys = function (key, notKey, callback) {
   }
 };
 
-exports.database.prototype.set = function (key, value, callback) {
+exports.Database.prototype.set = function (key, value, callback) {
   const matches = /^([^:]+):([^:]+)$/.exec(key);
   if (matches) {
     this.client.sadd([`ueberDB:keys:${matches[1]}`, matches[0]]);
@@ -80,7 +80,7 @@ exports.database.prototype.set = function (key, value, callback) {
   this.client.set(key, value, callback);
 };
 
-exports.database.prototype.remove = function (key, callback) {
+exports.Database.prototype.remove = function (key, callback) {
   const matches = /^([^:]+):([^:]+)$/.exec(key);
   if (matches) {
     this.client.srem([`ueberDB:keys:${matches[1]}`, matches[0]]);
@@ -88,7 +88,7 @@ exports.database.prototype.remove = function (key, callback) {
   this.client.del(key, callback);
 };
 
-exports.database.prototype.doBulk = function (bulk, callback) {
+exports.Database.prototype.doBulk = function (bulk, callback) {
   const multi = this.client.multi();
 
   for (const {key, type, value} of bulk) {
@@ -109,7 +109,7 @@ exports.database.prototype.doBulk = function (bulk, callback) {
   multi.exec(callback);
 };
 
-exports.database.prototype.close = function (callback) {
+exports.Database.prototype.close = function (callback) {
   this.client.quit(() => {
     callback();
   });

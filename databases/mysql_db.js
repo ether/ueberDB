@@ -17,7 +17,7 @@
 
 const async = require('async');
 
-exports.database = function (settings) {
+exports.Database = function (settings) {
   // temp hack needs a proper fix..
   if (settings && !settings.charset) settings.charset = 'utf8mb4';
 
@@ -50,13 +50,13 @@ exports.database = function (settings) {
   this.settings.json = true;
 };
 
-exports.database.prototype.clearPing = function () {
+exports.Database.prototype.clearPing = function () {
   if (this.interval) {
     clearInterval(this.interval);
   }
 };
 
-exports.database.prototype.schedulePing = function () {
+exports.Database.prototype.schedulePing = function () {
   this.clearPing();
 
   this.interval = setInterval(() => {
@@ -67,7 +67,7 @@ exports.database.prototype.schedulePing = function () {
   }, 10000);
 };
 
-exports.database.prototype.init = function (callback) {
+exports.Database.prototype.init = function (callback) {
   const db = this.db;
 
   const sqlCreate = `${'CREATE TABLE IF NOT EXISTS `store` ( ' +
@@ -158,7 +158,7 @@ exports.database.prototype.init = function (callback) {
   this.schedulePing();
 };
 
-exports.database.prototype.get = function (key, callback) {
+exports.Database.prototype.get = function (key, callback) {
   this.db.query({
     sql: 'SELECT `value` FROM `store` WHERE `key` = ? AND BINARY `key` = ?',
     timeout: 60000,
@@ -176,7 +176,7 @@ exports.database.prototype.get = function (key, callback) {
   this.schedulePing();
 };
 
-exports.database.prototype.findKeys = function (key, notKey, callback) {
+exports.Database.prototype.findKeys = function (key, notKey, callback) {
   let query = 'SELECT `key` FROM `store` WHERE `key` LIKE ?';
   const params = [];
 
@@ -209,7 +209,7 @@ exports.database.prototype.findKeys = function (key, notKey, callback) {
   this.schedulePing();
 };
 
-exports.database.prototype.set = function (key, value, callback) {
+exports.Database.prototype.set = function (key, value, callback) {
   if (key.length > 100) {
     callback('Your Key can only be 100 chars');
   } else {
@@ -224,7 +224,7 @@ exports.database.prototype.set = function (key, value, callback) {
   this.schedulePing();
 };
 
-exports.database.prototype.remove = function (key, callback) {
+exports.Database.prototype.remove = function (key, callback) {
   this.db.query({
     sql: 'DELETE FROM `store` WHERE `key` = ? AND BINARY `key` = ?',
     timeout: 60000,
@@ -232,7 +232,7 @@ exports.database.prototype.remove = function (key, callback) {
   this.schedulePing();
 };
 
-exports.database.prototype.doBulk = function (bulk, callback) {
+exports.Database.prototype.doBulk = function (bulk, callback) {
   let replaceSQL = 'REPLACE INTO `store` VALUES ';
 
   // keysToDelete is a string of the form "(k1, k2, ..., kn)" painstakingly built by hand.
@@ -291,7 +291,7 @@ exports.database.prototype.doBulk = function (bulk, callback) {
   this.schedulePing();
 };
 
-exports.database.prototype.close = function (callback) {
+exports.Database.prototype.close = function (callback) {
   this.clearPing();
   this.db.end(callback);
 };

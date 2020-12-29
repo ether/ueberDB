@@ -18,7 +18,7 @@
 const r = require('rethinkdb');
 const async = require('async');
 
-exports.database = function (settings) {
+exports.Database = function (settings) {
   if (!settings) settings = {};
   if (!settings.host) { settings.host = 'localhost'; }
   if (!settings.port) { settings.port = 28015; }
@@ -32,7 +32,7 @@ exports.database = function (settings) {
   this.connection = null;
 };
 
-exports.database.prototype.init = function (callback) {
+exports.Database.prototype.init = function (callback) {
   r.connect(this, (err, conn) => {
     if (err) throw err;
     this.connection = conn;
@@ -46,13 +46,13 @@ exports.database.prototype.init = function (callback) {
   });
 };
 
-exports.database.prototype.get = function (key, callback) {
+exports.Database.prototype.get = function (key, callback) {
   r.table(this.table).get(key).run(this.connection, (err, item) => {
     callback(err, (item ? item.content : item));
   });
 };
 
-exports.database.prototype.findKeys = function (key, notKey, callback) {
+exports.Database.prototype.findKeys = function (key, notKey, callback) {
   const keys = [];
   const regex = this.createFindRegex(key, notKey);
   r.filter((item) => {
@@ -62,13 +62,13 @@ exports.database.prototype.findKeys = function (key, notKey, callback) {
   }).run(this.connection, callback);
 };
 
-exports.database.prototype.set = function (key, value, callback) {
+exports.Database.prototype.set = function (key, value, callback) {
   r.table(this.table)
       .insert({id: key, content: value}, {conflict: 'replace'})
       .run(this.connection, callback);
 };
 
-exports.database.prototype.doBulk = function (bulk, callback) {
+exports.Database.prototype.doBulk = function (bulk, callback) {
   const _in = [];
   const _out = [];
 
@@ -84,10 +84,10 @@ exports.database.prototype.doBulk = function (bulk, callback) {
     (cb) => { r.table(this.table).getAll(_out).delete().run(this.connection, cb); },
   ], callback);
 };
-exports.database.prototype.remove = function (key, callback) {
+exports.Database.prototype.remove = function (key, callback) {
   r.table(this.table).get(key).delete().run(this.connection, callback);
 };
 
-exports.database.prototype.close = function (callback) {
+exports.Database.prototype.close = function (callback) {
   this.connection.close(callback);
 };

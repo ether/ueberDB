@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-exports.database = function (settings) {
+exports.Database = function (settings) {
   this.settings = settings;
 
   if (!this.settings.url) throw new Error('You must specify a mongodb url');
@@ -24,13 +24,13 @@ exports.database = function (settings) {
   if (!this.settings.collection) this.settings.collection = 'ueberdb';
 };
 
-exports.database.prototype.clearPing = function () {
+exports.Database.prototype.clearPing = function () {
   if (this.interval) {
     clearInterval(this.interval);
   }
 };
 
-exports.database.prototype.schedulePing = function () {
+exports.Database.prototype.schedulePing = function () {
   this.clearPing();
   this.interval = setInterval(() => {
     this.database.command({
@@ -39,7 +39,7 @@ exports.database.prototype.schedulePing = function () {
   }, 10000);
 };
 
-exports.database.prototype.init = function (callback) {
+exports.Database.prototype.init = function (callback) {
   const MongoClient = require('mongodb').MongoClient;
 
   MongoClient.connect(this.settings.url, (err, client) => {
@@ -55,7 +55,7 @@ exports.database.prototype.init = function (callback) {
   this.schedulePing();
 };
 
-exports.database.prototype.get = function (key, callback) {
+exports.Database.prototype.get = function (key, callback) {
   this.collection.findOne({_id: key}, (err, document) => {
     if (err) callback(err);
     else callback(null, document ? document.value : null);
@@ -64,7 +64,7 @@ exports.database.prototype.get = function (key, callback) {
   this.schedulePing();
 };
 
-exports.database.prototype.findKeys = function (key, notKey, callback) {
+exports.Database.prototype.findKeys = function (key, notKey, callback) {
   const selector = {
     $and: [
       {_id: {$regex: `${key.replace(/\*/g, '')}`}},
@@ -88,7 +88,7 @@ exports.database.prototype.findKeys = function (key, notKey, callback) {
   this.schedulePing();
 };
 
-exports.database.prototype.set = function (key, value, callback) {
+exports.Database.prototype.set = function (key, value, callback) {
   if (key.length > 100) {
     callback('Your Key can only be 100 chars');
   } else {
@@ -98,13 +98,13 @@ exports.database.prototype.set = function (key, value, callback) {
   this.schedulePing();
 };
 
-exports.database.prototype.remove = function (key, callback) {
+exports.Database.prototype.remove = function (key, callback) {
   this.collection.remove({_id: key}, callback);
 
   this.schedulePing();
 };
 
-exports.database.prototype.doBulk = function (bulk, callback) {
+exports.Database.prototype.doBulk = function (bulk, callback) {
   const bulkMongo = this.collection.initializeOrderedBulkOp();
 
   for (const i in bulk) {
@@ -124,7 +124,7 @@ exports.database.prototype.doBulk = function (bulk, callback) {
   this.schedulePing();
 };
 
-exports.database.prototype.close = function (callback) {
+exports.Database.prototype.close = function (callback) {
   this.clearPing();
   this.client.close(callback);
 };
