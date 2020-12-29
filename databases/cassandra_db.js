@@ -14,7 +14,6 @@
  */
 
 const cassandra = require('cassandra-driver');
-const util = require('util');
 
 /**
  * Cassandra DB constructor.
@@ -80,9 +79,9 @@ exports.Database.prototype.init = function (callback) {
         if (isDefined) {
           return callback(null);
         } else {
-          const cql = util.format(
-              'CREATE COLUMNFAMILY "%s" (key text PRIMARY KEY, data text)',
-              this.settings.columnFamily);
+          const cql =
+              `CREATE COLUMNFAMILY "${this.settings.columnFamily}" ` +
+              '(key text PRIMARY KEY, data text)';
           this.client.execute(cql, callback);
         }
       });
@@ -98,7 +97,7 @@ exports.Database.prototype.init = function (callback) {
  * @param  {String}     callback.value    The value for the given key (if any)
  */
 exports.Database.prototype.get = function (key, callback) {
-  const cql = util.format('SELECT data FROM "%s" WHERE key = ?', this.settings.columnFamily);
+  const cql = `SELECT data FROM "${this.settings.columnFamily}" WHERE key = ?`;
   this.client.execute(cql, [key], (err, result) => {
     if (err) {
       return callback(err);
@@ -127,7 +126,7 @@ exports.Database.prototype.findKeys = function (key, notKey, callback) {
   let cql = null;
   if (!notKey) {
     // Get all the keys
-    cql = util.format('SELECT key FROM "%s"', this.settings.columnFamily);
+    cql = `SELECT key FROM "${this.settings.columnFamily}"`;
     this.client.execute(cql, (err, result) => {
       if (err) {
         return callback(err);
@@ -151,7 +150,7 @@ exports.Database.prototype.findKeys = function (key, notKey, callback) {
     if (matches) {
       // Get the 'text' bit out of the key and get all those keys from a special column.
       // We can retrieve them from this column as we're duplicating them on .set/.remove
-      cql = util.format('SELECT * from "%s" WHERE key = ?', this.settings.columnFamily);
+      cql = `SELECT * from "${this.settings.columnFamily}" WHERE key = ?`;
       this.client.execute(cql, [`ueberdb:keys:${matches[1]}`], (err, result) => {
         if (err) {
           return callback(err);
@@ -210,25 +209,25 @@ exports.Database.prototype.doBulk = function (bulk, callback) {
     const matches = /^([^:]+):([^:]+)$/.exec(operation.key);
     if (operation.type === 'set') {
       queries.push({
-        query: util.format('UPDATE "%s" SET data = ? WHERE key = ?', this.settings.columnFamily),
+        query: `UPDATE "${this.settings.columnFamily}" SET data = ? WHERE key = ?`,
         params: [operation.value, operation.key],
       });
 
       if (matches) {
         queries.push({
-          query: util.format('UPDATE "%s" SET data = ? WHERE key = ?', this.settings.columnFamily),
+          query: `UPDATE "${this.settings.columnFamily}" SET data = ? WHERE key = ?`,
           params: ['1', `ueberdb:keys:${matches[1]}`],
         });
       }
     } else if (operation.type === 'remove') {
       queries.push({
-        query: util.format('DELETE FROM "%s" WHERE key=?', this.settings.columnFamily),
+        query: `DELETE FROM "${this.settings.columnFamily}" WHERE key=?`,
         params: [operation.key],
       });
 
       if (matches) {
         queries.push({
-          query: util.format('DELETE FROM "%s" WHERE key = ?', this.settings.columnFamily),
+          query: `DELETE FROM "${this.settings.columnFamily}" WHERE key = ?`,
           params: [`ueberdb:keys:${matches[1]}`],
         });
       }
