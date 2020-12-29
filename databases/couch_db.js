@@ -117,11 +117,7 @@ exports.database.prototype.findKeys = function (key, notKey, callback) {
   // Cache the query for faster reuse in the future
   const createQuery = (doc) => {
     const mapFunction = {
-      map: `${'function(doc) {' +
-        'if ('}${regex}.test(doc._id)) {` +
-          'emit(doc._id, null);' +
-        '}' +
-      '}',
+      map: `function (doc) { if (${regex}.test(doc._id)) { emit(doc._id, null); } }`,
     };
     doc.views[queryKey] = mapFunction;
     db.insert(doc, DESIGN_PATH, (er) => {
