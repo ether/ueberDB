@@ -39,7 +39,7 @@ npm install ueberdb2
 const ueberdb = require('ueberdb2');
 
 // mysql
-const db = new ueberdb.database('mysql', {
+const db = new ueberdb.Database('mysql', {
   user: 'root',
   host: 'localhost',
   password: '',
@@ -48,7 +48,7 @@ const db = new ueberdb.database('mysql', {
 });
 
 // dirty to file system
-//const db = new ueberdb.database('dirty', {filename: 'var/dirty.db'});
+//const db = new ueberdb.Database('dirty', {filename: 'var/dirty.db'});
 
 async function example(db) {
   await db.init();
@@ -71,7 +71,7 @@ example(db);
 
 ```javascript
 const ueberdb = require('ueberdb2');
-const db = new ueberdb.database('dirty', {filename: 'var/dirty.db'});
+const db = new ueberdb.Database('dirty', {filename: 'var/dirty.db'});
 
 async function example(db){
   await db.init();
@@ -138,7 +138,7 @@ Set `db.cache = 0;` to disable caching of reads and writes.
 
 ```javascript
 const ueberdb = require('ueberdb2');
-const db = new ueberdb.database('dirty', {filename: 'var/dirty.db'});
+const db = new ueberdb.Database('dirty', {filename: 'var/dirty.db'});
 
 // going cacheless
 async function example(db){

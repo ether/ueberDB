@@ -29,7 +29,7 @@ const util = require('util');
 
 const escape = (val) => `'${val.replace(/'/g, "''")}'`;
 
-exports.database = function (settings) {
+exports.Database = function (settings) {
   this.db = null;
 
   if (!settings || !settings.filename) {
@@ -50,7 +50,7 @@ exports.database = function (settings) {
   }
 };
 
-exports.database.prototype.init = function (callback) {
+exports.Database.prototype.init = function (callback) {
   util.callbackify(async () => {
     this.db = await new Promise((resolve, reject) => {
       new sqlite3.Database(this.settings.filename, function (err) {
@@ -65,13 +65,13 @@ exports.database.prototype.init = function (callback) {
   })(callback);
 };
 
-exports.database.prototype.get = function (key, callback) {
+exports.Database.prototype.get = function (key, callback) {
   this.db.get('SELECT value FROM store WHERE key = ?', key, (err, row) => {
     callback(err, row ? row.value : null);
   });
 };
 
-exports.database.prototype.findKeys = function (key, notKey, callback) {
+exports.Database.prototype.findKeys = function (key, notKey, callback) {
   let query = 'SELECT key FROM store WHERE key LIKE ?';
   const params = [];
   // desired keys are %key:%, e.g. pad:%
@@ -98,15 +98,15 @@ exports.database.prototype.findKeys = function (key, notKey, callback) {
   });
 };
 
-exports.database.prototype.set = function (key, value, callback) {
+exports.Database.prototype.set = function (key, value, callback) {
   this.db.run('REPLACE INTO store VALUES (?,?)', key, value, callback);
 };
 
-exports.database.prototype.remove = function (key, callback) {
+exports.Database.prototype.remove = function (key, callback) {
   this.db.run('DELETE FROM store WHERE key = ?', key, callback);
 };
 
-exports.database.prototype.doBulk = function (bulk, callback) {
+exports.Database.prototype.doBulk = function (bulk, callback) {
   let sql = 'BEGIN TRANSACTION;\n';
   for (const i in bulk) {
     if (bulk[i].type === 'set') {
@@ -127,6 +127,6 @@ exports.database.prototype.doBulk = function (bulk, callback) {
   });
 };
 
-exports.database.prototype.close = function (callback) {
+exports.Database.prototype.close = function (callback) {
   this.db.close(callback);
 };

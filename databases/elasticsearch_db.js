@@ -30,7 +30,7 @@ const elasticsearchSettings = {
 
 let client;
 
-exports.database = function (settings) {
+exports.Database = function (settings) {
   this.db = null;
 
   this.settings = settings || {};
@@ -57,7 +57,7 @@ exports.database = function (settings) {
  * Initialize the elasticsearch client, then ping the server to ensure that a
  * connection was made.
  */
-exports.database.prototype.init = function (callback) {
+exports.Database.prototype.init = function (callback) {
   // create elasticsearch client
   client = new es.Client({
     host: `${elasticsearchSettings.hostname}:${elasticsearchSettings.port}`,
@@ -85,7 +85,7 @@ exports.database.prototype.init = function (callback) {
  *  @param {function} callback Function will be called in the event of an error or
  *    upon completion of a successful database retrieval.
  */
-exports.database.prototype.get = function (key, callback) {
+exports.Database.prototype.get = function (key, callback) {
   client.get(getIndexTypeId(key), (error, response) => {
     parseResponse(error, response, callback);
   });
@@ -106,7 +106,7 @@ exports.database.prototype.get = function (key, callback) {
  *  @param notKey Used to filter the result set
  *  @param callback First param is error, second is result
  */
-exports.database.prototype.findKeys = function (key, notKey, callback) {
+exports.Database.prototype.findKeys = function (key, notKey, callback) {
   const splitKey = key.split(':');
 
   client.search({
@@ -141,7 +141,7 @@ exports.database.prototype.findKeys = function (key, notKey, callback) {
  *  @param {function} callback Function will be called in the event of an error or on
  *    completion of a successful database write.
  */
-exports.database.prototype.set = function (key, value, callback) {
+exports.Database.prototype.set = function (key, value, callback) {
   const options = getIndexTypeId(key);
 
   options.body = {
@@ -164,7 +164,7 @@ exports.database.prototype.set = function (key, value, callback) {
  *  @param {function} callback Function will be called in the event of an error or on
  *    completion of a successful database write.
  */
-exports.database.prototype.remove = function (key, callback) {
+exports.Database.prototype.remove = function (key, callback) {
   client.delete(key, (error, response) => {
     parseResponse(error, response, callback);
   });
@@ -181,7 +181,7 @@ exports.database.prototype.remove = function (key, callback) {
  *  @param {function} callback This function will be called on an error or upon the
  *      successful completion of the database write.
  */
-exports.database.prototype.doBulk = function (bulk, callback) {
+exports.Database.prototype.doBulk = function (bulk, callback) {
   // bulk is an array of JSON:
   // example: [{"type":"set", "key":"sessionstorage:{id}", "value":{"cookie":{...}}]
 
@@ -216,7 +216,7 @@ exports.database.prototype.doBulk = function (bulk, callback) {
   });
 };
 
-exports.database.prototype.close = function (callback) {
+exports.Database.prototype.close = function (callback) {
   callback(null);
 };
 

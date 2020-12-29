@@ -25,7 +25,7 @@ const handleError = (er) => {
   if (er) throw new Error(er);
 };
 
-exports.database = function (settings) {
+exports.Database = function (settings) {
   this.db = null;
   this.client = null;
   this.settings = settings;
@@ -37,7 +37,7 @@ exports.database = function (settings) {
   this.settings.json = false;
 };
 
-exports.database.prototype.init = function (callback) {
+exports.Database.prototype.init = function (callback) {
   const settings = this.settings;
   let client = null;
   let db = null;
@@ -87,7 +87,7 @@ exports.database.prototype.init = function (callback) {
   });
 };
 
-exports.database.prototype.get = function (key, callback) {
+exports.Database.prototype.get = function (key, callback) {
   const db = this.db;
   db.get(key, (er, doc) => {
     if (er && er.statusCode !== 404) {
@@ -99,7 +99,7 @@ exports.database.prototype.get = function (key, callback) {
   });
 };
 
-exports.database.prototype.findKeys = function (key, notKey, callback) {
+exports.Database.prototype.findKeys = function (key, notKey, callback) {
   const regex = this.createFindRegex(key, notKey);
   const queryKey = `${key}__${notKey}`;
   const db = this.db;
@@ -138,7 +138,7 @@ exports.database.prototype.findKeys = function (key, notKey, callback) {
   checkQuery();
 };
 
-exports.database.prototype.set = function (key, value, callback) {
+exports.Database.prototype.set = function (key, value, callback) {
   const db = this.db;
   db.get(key, (er, doc) => {
     if (doc == null) return db.insert({_id: key, value}, callback);
@@ -146,7 +146,7 @@ exports.database.prototype.set = function (key, value, callback) {
   });
 };
 
-exports.database.prototype.remove = function (key, callback) {
+exports.Database.prototype.remove = function (key, callback) {
   const db = this.db;
   db.head(key, (er, _, header) => {
     if (er && er.statusCode === 404) return callback(null);
@@ -160,7 +160,7 @@ exports.database.prototype.remove = function (key, callback) {
   });
 };
 
-exports.database.prototype.doBulk = function (bulk, callback) {
+exports.Database.prototype.doBulk = function (bulk, callback) {
   const db = this.db;
   const keys = bulk.map((op) => op.key);
   const revs = {};
@@ -193,6 +193,6 @@ exports.database.prototype.doBulk = function (bulk, callback) {
   );
 };
 
-exports.database.prototype.close = function (callback) {
+exports.Database.prototype.close = function (callback) {
   if (callback) callback();
 };

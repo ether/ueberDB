@@ -1,5 +1,5 @@
 'use strict';
-/* eslint new-cap: ["error", {"newIsCapExceptions": ["channels", "database"]}] */
+/* eslint new-cap: ["error", {"newIsCapExceptions": ["channels"]}] */
 
 /**
  * 2011 Peter 'Pita' Martischka
@@ -32,7 +32,7 @@ const defaultLogger = {
 /**
  The Constructor
 */
-exports.database = function (type, dbSettings, wrapperSettings, logger) {
+exports.Database = function (type, dbSettings, wrapperSettings, logger) {
   if (!type) {
     type = 'sqlite';
     dbSettings = null;
@@ -48,9 +48,9 @@ exports.database = function (type, dbSettings, wrapperSettings, logger) {
   this.channels = new channels.channels(doOperation);
 };
 
-exports.database.prototype.init = function (callback) {
-  const db = new this.dbModule.database(this.dbSettings);
-  this.db = new cacheAndBufferLayer.database(db, this.wrapperSettings, this.logger);
+exports.Database.prototype.init = function (callback) {
+  const db = new this.dbModule.Database(this.dbSettings);
+  this.db = new cacheAndBufferLayer.Database(db, this.wrapperSettings, this.logger);
   if (callback) {
     this.db.init(callback);
   } else {
@@ -62,32 +62,32 @@ exports.database.prototype.init = function (callback) {
  Wrapper functions
 */
 
-exports.database.prototype.doShutdown = function (callback) {
+exports.Database.prototype.doShutdown = function (callback) {
   this.db.doShutdown(callback);
 };
 
-exports.database.prototype.get = function (key, callback) {
+exports.Database.prototype.get = function (key, callback) {
   this.channels.emit(key, {db: this.db, type: 'get', key, callback});
 };
 
-exports.database.prototype.findKeys = function (key, notKey, callback) {
+exports.Database.prototype.findKeys = function (key, notKey, callback) {
   this.channels.emit(key, {db: this.db, type: 'findKeys', key, notKey, callback});
 };
 
-exports.database.prototype.remove = function (key, bufferCallback, writeCallback) {
+exports.Database.prototype.remove = function (key, bufferCallback, writeCallback) {
   this.channels.emit(key, {db: this.db, type: 'remove', key, bufferCallback, writeCallback});
 };
 
-exports.database.prototype.set = function (key, value, bufferCallback, writeCallback) {
+exports.Database.prototype.set = function (key, value, bufferCallback, writeCallback) {
   this.channels.emit(key,
       {db: this.db, type: 'set', key, value: clone(value), bufferCallback, writeCallback});
 };
 
-exports.database.prototype.getSub = function (key, sub, callback) {
+exports.Database.prototype.getSub = function (key, sub, callback) {
   this.channels.emit(key, {db: this.db, type: 'getsub', key, sub, callback});
 };
 
-exports.database.prototype.setSub = function (key, sub, value, bufferCallback, writeCallback) {
+exports.Database.prototype.setSub = function (key, sub, value, bufferCallback, writeCallback) {
   this.channels.emit(key,
       {db: this.db, type: 'setsub', key, sub, value: clone(value), bufferCallback, writeCallback});
 };
@@ -153,7 +153,7 @@ const doOperation = (operation, callback) => {
   }
 };
 
-exports.database.prototype.close = function (callback) {
+exports.Database.prototype.close = function (callback) {
   this.db.close(callback);
 };
 
@@ -188,3 +188,8 @@ const clone = (obj) => {
 
   throw new Error("Unable to copy obj! Its type isn't supported.");
 };
+
+/**
+ * Deprecated synonym of Database.
+ */
+exports.database = exports.Database;

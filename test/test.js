@@ -1,5 +1,4 @@
 'use strict';
-/* eslint new-cap: ["error", {"newIsCapExceptions": ["database"]}] */
 
 const wtfnode = require('wtfnode'); // This should be first so that it can instrument everything.
 
@@ -59,7 +58,7 @@ describe(__filename, function () {
 
           before(async function () {
             if (dbSettings.filename) await fs.unlink(dbSettings.filename).catch(() => {});
-            db = new ueberdb.database(database, dbSettings);
+            db = new ueberdb.Database(database, dbSettings);
             await util.promisify(db.init.bind(db))();
             if (!cacheEnabled) db.cache = 0;
           });

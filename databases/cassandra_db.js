@@ -29,7 +29,7 @@ const util = require('util');
  *     the Cassandra driver. See https://github.com/datastax/nodejs-driver#logging for more
  *     information
  */
-exports.database = function (settings) {
+exports.Database = function (settings) {
   if (!settings.clientOptions) {
     throw new Error('The Cassandra client options should be defined');
   }
@@ -50,7 +50,7 @@ exports.database = function (settings) {
  * @param  {Function}   callback        Standard callback method.
  * @param  {Error}      callback.err    An error object (if any.)
  */
-exports.database.prototype.init = function (callback) {
+exports.Database.prototype.init = function (callback) {
   // Create a client
   this.client = new cassandra.Client(this.settings.clientOptions);
 
@@ -97,7 +97,7 @@ exports.database.prototype.init = function (callback) {
  * @param  {Error}      callback.err      An error object, if any
  * @param  {String}     callback.value    The value for the given key (if any)
  */
-exports.database.prototype.get = function (key, callback) {
+exports.Database.prototype.get = function (key, callback) {
   const cql = util.format('SELECT data FROM "%s" WHERE key = ?', this.settings.columnFamily);
   this.client.execute(cql, [key], (err, result) => {
     if (err) {
@@ -123,7 +123,7 @@ exports.database.prototype.get = function (key, callback) {
  * @param  {Error}      callback.err      An error object, if any
  * @param  {String[]}   callback.keys     An array of keys that match the specified filters
  */
-exports.database.prototype.findKeys = function (key, notKey, callback) {
+exports.Database.prototype.findKeys = function (key, notKey, callback) {
   let cql = null;
   if (!notKey) {
     // Get all the keys
@@ -181,7 +181,7 @@ exports.database.prototype.findKeys = function (key, notKey, callback) {
  * @param  {Function}   callback        Standard callback method
  * @param  {Error}      callback.err    An error object, if any
  */
-exports.database.prototype.set = function (key, value, callback) {
+exports.Database.prototype.set = function (key, value, callback) {
   this.doBulk([{type: 'set', key, value}], callback);
 };
 
@@ -192,7 +192,7 @@ exports.database.prototype.set = function (key, value, callback) {
  * @param  {Function}   callback        Standard callback method
  * @param  {Error}      callback.err    An error object, if any
  */
-exports.database.prototype.remove = function (key, callback) {
+exports.Database.prototype.remove = function (key, callback) {
   this.doBulk([{type: 'remove', key}], callback);
 };
 
@@ -203,7 +203,7 @@ exports.database.prototype.remove = function (key, callback) {
  * @param  {Function}   callback        Standard callback method
  * @param  {Error}      callback.err    An error object, if any
  */
-exports.database.prototype.doBulk = function (bulk, callback) {
+exports.Database.prototype.doBulk = function (bulk, callback) {
   const queries = [];
   bulk.forEach((operation) => {
     // We support finding keys of the form `test:*`. If anything matches, we will try and save this
@@ -243,6 +243,6 @@ exports.database.prototype.doBulk = function (bulk, callback) {
  * @param  {Function}   callback        Standard callback method
  * @param  {Error}      callback.err    Error object in case something goes wrong
  */
-exports.database.prototype.close = function (callback) {
+exports.Database.prototype.close = function (callback) {
   this.pool.shutdown(callback);
 };

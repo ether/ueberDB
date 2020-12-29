@@ -18,7 +18,7 @@
 const pg = require('pg');
 const postgresCommon = require('./postgres_common');
 
-exports.database = function (settings) {
+exports.Database = function (settings) {
   this.settings = settings;
 
   this.settings.cache = settings.cache || 1000;
@@ -29,10 +29,10 @@ exports.database = function (settings) {
   this.db.connect();
 };
 
-exports.database.prototype.init = postgresCommon.init;
-exports.database.prototype.get = postgresCommon.get;
-exports.database.prototype.findKeys = postgresCommon.findKeys;
-exports.database.prototype.set = postgresCommon.set;
-exports.database.prototype.remove = postgresCommon.remove;
-exports.database.prototype.doBulk = postgresCommon.doBulk;
-exports.database.prototype.close = postgresCommon.close;
+exports.Database.prototype.init = postgresCommon.init;
+exports.Database.prototype.get = postgresCommon.get;
+exports.Database.prototype.findKeys = postgresCommon.findKeys;
+exports.Database.prototype.set = postgresCommon.set;
+exports.Database.prototype.remove = postgresCommon.remove;
+exports.Database.prototype.doBulk = postgresCommon.doBulk;
+exports.Database.prototype.close = postgresCommon.close;

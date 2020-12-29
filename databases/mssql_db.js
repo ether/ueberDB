@@ -24,7 +24,7 @@
 const async = require('async');
 const mssql = require('mssql');
 
-exports.database = function (settings) {
+exports.Database = function (settings) {
   settings = settings || {};
 
   if (settings.json != null) {
@@ -46,7 +46,7 @@ exports.database = function (settings) {
   this.settings.writeInterval = 0;
 };
 
-exports.database.prototype.init = function (callback) {
+exports.Database.prototype.init = function (callback) {
   const sqlCreate =
     "IF OBJECT_ID(N'dbo.store', N'U') IS NULL" +
     '  BEGIN' +
@@ -71,7 +71,7 @@ exports.database.prototype.init = function (callback) {
   });
 };
 
-exports.database.prototype.get = function (key, callback) {
+exports.Database.prototype.get = function (key, callback) {
   const request = new mssql.Request(this.db);
 
   request.input('key', mssql.NVarChar(100), key);
@@ -87,7 +87,7 @@ exports.database.prototype.get = function (key, callback) {
   });
 };
 
-exports.database.prototype.findKeys = function (key, notKey, callback) {
+exports.Database.prototype.findKeys = function (key, notKey, callback) {
   const request = new mssql.Request(this.db);
   let query = 'SELECT [key] FROM [store] WHERE [key] LIKE @key';
 
@@ -116,7 +116,7 @@ exports.database.prototype.findKeys = function (key, notKey, callback) {
   });
 };
 
-exports.database.prototype.set = function (key, value, callback) {
+exports.Database.prototype.set = function (key, value, callback) {
   const request = new mssql.Request(this.db);
 
   if (key.length > 100) {
@@ -137,13 +137,13 @@ exports.database.prototype.set = function (key, value, callback) {
   }
 };
 
-exports.database.prototype.remove = function (key, callback) {
+exports.Database.prototype.remove = function (key, callback) {
   const request = new mssql.Request(this.db);
   request.input('key', mssql.NVarChar(100), key);
   request.query('DELETE FROM [store] WHERE [key] = @key', callback);
 };
 
-exports.database.prototype.doBulk = function (bulk, callback) {
+exports.Database.prototype.doBulk = function (bulk, callback) {
   const maxInserts = 100;
   const request = new mssql.Request(this.db);
   let firstReplace = true;
@@ -209,6 +209,6 @@ exports.database.prototype.doBulk = function (bulk, callback) {
   );
 };
 
-exports.database.prototype.close = function (callback) {
+exports.Database.prototype.close = function (callback) {
   this.db.close(callback);
 };
