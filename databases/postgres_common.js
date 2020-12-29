@@ -175,3 +175,7 @@ exports.doBulk = function (bulk, callback) {
 
   async.parallel(functions, callback);
 };
+
+exports.close = function (callback) {
+  this.db.end(callback);
+};

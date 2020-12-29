@@ -35,12 +35,4 @@ exports.database.prototype.findKeys = postgresCommon.findKeys;
 exports.database.prototype.set = postgresCommon.set;
 exports.database.prototype.remove = postgresCommon.remove;
 exports.database.prototype.doBulk = postgresCommon.doBulk;
-
-exports.database.prototype.close = function (callback) {
-  const _this = this;
-
-  this.db.on('drain', () => {
-    _this.db.end.bind(_this.db);
-    callback(null);
-  });
-};
+exports.database.prototype.close = postgresCommon.close;
