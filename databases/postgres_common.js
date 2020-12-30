@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
+const AbstractDatabase = require('../lib/AbstractDatabase');
 const async = require('async');
 
-exports.Database = class {
+exports.Database = class extends AbstractDatabase {
   init(callback) {
     const testTableExists = "SELECT 1 as exists FROM pg_tables WHERE tablename = 'store'";
 

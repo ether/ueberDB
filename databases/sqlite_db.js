@@ -25,12 +25,14 @@ try {
       '"npm install sqlite3" in your etherpad-lite root folder.');
 }
 
+const AbstractDatabase = require('../lib/AbstractDatabase');
 const util = require('util');
 
 const escape = (val) => `'${val.replace(/'/g, "''")}'`;
 
-exports.Database = class {
+exports.Database = class extends AbstractDatabase {
   constructor(settings) {
+    super();
     this.db = null;
 
     if (!settings || !settings.filename) {

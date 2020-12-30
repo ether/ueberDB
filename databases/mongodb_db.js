@@ -15,8 +15,11 @@
  * limitations under the License.
  */
 
-exports.Database = class {
+const AbstractDatabase = require('../lib/AbstractDatabase');
+
+exports.Database = class extends AbstractDatabase {
   constructor(settings) {
+    super();
     this.settings = settings;
 
     if (!this.settings.url) throw new Error('You must specify a mongodb url');

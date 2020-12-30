@@ -15,10 +15,12 @@
  * limitations under the License.
  */
 
+const AbstractDatabase = require('../lib/AbstractDatabase');
 const Dirty = require('dirty');
 
-exports.Database = class {
+exports.Database = class extends AbstractDatabase {
   constructor(settings) {
+    super();
     this.db = null;
 
     if (!settings || !settings.filename) {

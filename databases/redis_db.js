@@ -17,11 +17,13 @@
  * limitations under the License.
  */
 
+const AbstractDatabase = require('../lib/AbstractDatabase');
 const async = require('async');
 const redis = require('redis');
 
-exports.Database = class {
+exports.Database = class extends AbstractDatabase {
   constructor(settings) {
+    super();
     this.client = null;
     this.settings = settings || {};
   }

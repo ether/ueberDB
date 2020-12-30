@@ -15,11 +15,13 @@
  * limitations under the License.
  */
 
+const AbstractDatabase = require('../lib/AbstractDatabase');
 const mysql = require('mysql');
 const util = require('util');
 
-exports.Database = class {
+exports.Database = class extends AbstractDatabase {
   constructor(settings) {
+    super();
     this.logger = console;
     this._mysqlSettings = {
       charset: 'utf8mb4', // temp hack needs a proper fix..

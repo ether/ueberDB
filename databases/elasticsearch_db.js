@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+const AbstractDatabase = require('../lib/AbstractDatabase');
 const es = require('elasticsearch');
 
 // initialize w/ default settings
@@ -30,8 +31,9 @@ const elasticsearchSettings = {
 
 let client;
 
-exports.Database = class {
+exports.Database = class extends AbstractDatabase {
   constructor(settings) {
+    super();
     this.db = null;
 
     this.settings = settings || {};

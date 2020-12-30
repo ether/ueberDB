@@ -313,22 +313,18 @@ environment variable `NODE_TLS_REJECT_UNAUTHORIZED = 0` and add the flag
 
 ## How to add support for another database
 
-1. Add your database to `packages.json`, this will happen automatically if you
-   run `npm install %yourdatabase%`
-1. Add some example settings to `test/lib/databases.js` for your database.
-1. Look at `databases/mysql_db.js`, your module have to provide the same
-   functions. Call it `DATABASENAME_db.js` and reimplement the functions for
-   your database. Most of your work here will be copy/paste from other databases
-   so don't be scared.
-1. Add your database Travis setup steps to `.travis.yml`, see the
-   `before_install` section and MySQL example. Note that MySQL has a preloaded
-   script (comes from mysql.sql) which preloads the database with 1M records. If
-   you can, you should do the same.
-1. Run `npm test` and ensure it's working.
-1. Branch from master `git checkout -b my-awesome-database` and submit a pull
-   request including the changes which should include **1 new and 3 modified
-   files**.
-1. Once merged we really need you to be on top of maintaining your code.
+1. Add the database driver to `packages.json`, this will happen automatically if
+   you run `npm install %yourdatabase%`
+1. Create `databases/DATABASENAME_db.js` and have it export a `Database` class
+   that derives from `lib/AbstractDatabase.js`. Implement the required
+   functions.
+1. Add a service for the database to the test job in
+   `.github/workflows/npmpublish.yml`.
+1. Add an entry to `test/lib/databases.js` for your database and configure it to
+   work with the service added to the GitHub workflow.
+1. Install and start the database server and configure it to work with the
+   settings in your `test/lib/databases.js` entry.
+1. Run `npm test` to ensure that it works.
 
 ## License
 

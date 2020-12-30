@@ -13,9 +13,10 @@
  * limitations under the License.
  */
 
+const AbstractDatabase = require('../lib/AbstractDatabase');
 const cassandra = require('cassandra-driver');
 
-exports.Database = class {
+exports.Database = class extends AbstractDatabase {
   /**
    * @param {Object} settings The required settings object to initiate the Cassandra database
    * @param {String[]} settings.clientOptions See
@@ -28,6 +29,7 @@ exports.Database = class {
    *     information
    */
   constructor(settings) {
+    super();
     if (!settings.clientOptions) {
       throw new Error('The Cassandra client options should be defined');
     }

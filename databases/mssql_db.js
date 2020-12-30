@@ -21,11 +21,13 @@
  *
  */
 
+const AbstractDatabase = require('../lib/AbstractDatabase');
 const async = require('async');
 const mssql = require('mssql');
 
-exports.Database = class {
+exports.Database = class extends AbstractDatabase {
   constructor(settings) {
+    super();
     settings = settings || {};
 
     if (settings.json != null) {

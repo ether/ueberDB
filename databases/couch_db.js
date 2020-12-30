@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+const AbstractDatabase = require('../lib/AbstractDatabase');
 const nano = require('nano');
 const async = require('async');
 
@@ -25,8 +26,9 @@ const handleError = (er) => {
   if (er) throw new Error(er);
 };
 
-exports.Database = class {
+exports.Database = class extends AbstractDatabase {
   constructor(settings) {
+    super();
     this.db = null;
     this.client = null;
     this.settings = settings;

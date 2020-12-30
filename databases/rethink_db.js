@@ -15,11 +15,13 @@
  * limitations under the License.
  */
 
+const AbstractDatabase = require('../lib/AbstractDatabase');
 const r = require('rethinkdb');
 const async = require('async');
 
-exports.Database = class {
+exports.Database = class extends AbstractDatabase {
   constructor(settings) {
+    super();
     if (!settings) settings = {};
     if (!settings.host) { settings.host = 'localhost'; }
     if (!settings.port) { settings.port = 28015; }
