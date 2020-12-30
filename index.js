@@ -37,117 +37,120 @@ const normalizeLogger = (logger) => {
   return logger;
 };
 
-/**
- * The Constructor
- * @param logger Optional logger object. If no logger object is provided no logging will occur. The
- *     logger object is expected to be a log4js logger object or `console`. A logger object from
- *     another logging library should also work, but performance may be reduced if the logger object
- *     does not have is${Level}Enabled() methods (isDebugEnabled(), etc.).
- */
-exports.Database = function (type, dbSettings, wrapperSettings, logger = null) {
-  if (!type) {
-    type = 'sqlite';
-    dbSettings = null;
-    wrapperSettings = null;
-  }
-
-  // saves all settings and require the db module
-  this.type = type;
-  this.dbModule = require(`./databases/${type}_db`);
-  this.dbSettings = dbSettings;
-  this.wrapperSettings = wrapperSettings;
-  this.logger = normalizeLogger(logger);
-  const db = new this.dbModule.Database(this.dbSettings);
-  this.db = new cacheAndBufferLayer.Database(db, this.wrapperSettings, this.logger);
-
-  // Expose the cache wrapper's metrics to the user. See lib/CacheAndBufferLayer.js for details.
-  //
-  // WARNING: This feature is EXPERIMENTAL -- do not assume it will continue to exist in its current
-  // form in a future version.
-  this.metrics = this.db.metrics;
-};
-
-exports.Database.prototype.init = function (callback) {
-  if (callback) {
-    util.callbackify(this.db.init.bind(this.db))(callback);
-  } else {
-    return this.db.init();
-  }
-};
-
-/**
- Wrapper functions
-*/
-
-/**
- * Deprecated synonym of flush().
- */
-exports.Database.prototype.doShutdown = function (callback) {
-  this.flush(callback);
-};
-
-/**
- * Writes any unsaved changes to the underlying database.
- */
-exports.Database.prototype.flush = function (callback) {
-  util.callbackify(this.db.flush.bind(this.db))(callback);
-};
-
-exports.Database.prototype.get = function (key, callback) {
-  util.callbackify(this.db.get.bind(this.db))(key, (err, val) => callback(err, clone(val)));
-};
-
-exports.Database.prototype.findKeys = function (key, notKey, callback) {
-  util.callbackify(this.db.findKeys.bind(this.db))(key, notKey, (e, v) => callback(e, clone(v)));
-};
-
 const makeDoneCallback = (callback, deprecated) => (err) => {
   if (callback) callback(err);
   if (deprecated) deprecated(err);
   if (err != null && callback == null && deprecated == null) throw err;
 };
 
-/**
- * Removes an entry from the database if present.
- *
- * @param cb Called when the write has been committed to the underlying database driver.
- * @param deprecated Deprecated callback that is called just after cb.
- */
-exports.Database.prototype.remove = function (key, cb, deprecated = null) {
-  util.callbackify(this.db.remove.bind(this.db))(key, makeDoneCallback(cb, deprecated));
-};
+exports.Database = class {
+  /**
+   * @param logger Optional logger object. If no logger object is provided no logging will occur.
+   *     The logger object is expected to be a log4js logger object or `console`. A logger object
+   *     from another logging library should also work, but performance may be reduced if the logger
+   *     object does not have is${Level}Enabled() methods (isDebugEnabled(), etc.).
+   */
+  constructor(type, dbSettings, wrapperSettings, logger = null) {
+    if (!type) {
+      type = 'sqlite';
+      dbSettings = null;
+      wrapperSettings = null;
+    }
 
-/**
- * Adds or changes the value of an entry.
- *
- * @param cb Called when the write has been committed to the underlying database driver.
- * @param deprecated Deprecated callback that is called just after cb.
- */
-exports.Database.prototype.set = function (key, value, cb, deprecated = null) {
-  util.callbackify(this.db.set.bind(this.db))(key, clone(value), makeDoneCallback(cb, deprecated));
-};
+    // saves all settings and require the db module
+    this.type = type;
+    this.dbModule = require(`./databases/${type}_db`);
+    this.dbSettings = dbSettings;
+    this.wrapperSettings = wrapperSettings;
+    this.logger = normalizeLogger(logger);
+    const db = new this.dbModule.Database(this.dbSettings);
+    this.db = new cacheAndBufferLayer.Database(db, this.wrapperSettings, this.logger);
 
-exports.Database.prototype.getSub = function (key, sub, callback) {
-  util.callbackify(this.db.getSub.bind(this.db))(key, sub, (err, val) => callback(err, clone(val)));
-};
+    // Expose the cache wrapper's metrics to the user. See lib/CacheAndBufferLayer.js for details.
+    //
+    // WARNING: This feature is EXPERIMENTAL -- do not assume it will continue to exist in its
+    // current form in a future version.
+    this.metrics = this.db.metrics;
+  }
 
-/**
- * Adds or changes a subvalue of an entry.
- *
- * @param cb Called when the write has been committed to the underlying database driver.
- * @param deprecated Deprecated callback that is called just after cb.
- */
-exports.Database.prototype.setSub = function (key, sub, value, cb, deprecated = null) {
-  util.callbackify(this.db.setSub.bind(this.db))(
-      key, sub, clone(value), makeDoneCallback(cb, deprecated));
-};
+  init(callback) {
+    if (callback) {
+      util.callbackify(this.db.init.bind(this.db))(callback);
+    } else {
+      return this.db.init();
+    }
+  }
 
-/**
- * Flushes unwritten changes then closes the connection to the underlying database. After this
- * returns, any future call to a method on this object may result in an error.
- */
-exports.Database.prototype.close = function (callback) {
-  util.callbackify(this.db.close.bind(this.db))(callback);
+  /**
+   * Wrapper functions
+   */
+
+  /**
+   * Deprecated synonym of flush().
+   */
+  doShutdown(callback) {
+    this.flush(callback);
+  }
+
+  /**
+   * Writes any unsaved changes to the underlying database.
+   */
+  flush(callback) {
+    util.callbackify(this.db.flush.bind(this.db))(callback);
+  }
+
+  get(key, callback) {
+    util.callbackify(this.db.get.bind(this.db))(key, (err, val) => callback(err, clone(val)));
+  }
+
+  findKeys(key, notKey, callback) {
+    util.callbackify(this.db.findKeys.bind(this.db))(key, notKey, (e, v) => callback(e, clone(v)));
+  }
+
+  /**
+   * Removes an entry from the database if present.
+   *
+   * @param cb Called when the write has been committed to the underlying database driver.
+   * @param deprecated Deprecated callback that is called just after cb.
+   */
+  remove(key, cb, deprecated = null) {
+    util.callbackify(this.db.remove.bind(this.db))(key, makeDoneCallback(cb, deprecated));
+  }
+
+  /**
+   * Adds or changes the value of an entry.
+   *
+   * @param cb Called when the write has been committed to the underlying database driver.
+   * @param deprecated Deprecated callback that is called just after cb.
+   */
+  set(key, value, cb, deprecated = null) {
+    util.callbackify(this.db.set.bind(this.db))(
+        key, clone(value), makeDoneCallback(cb, deprecated));
+  }
+
+  getSub(key, sub, callback) {
+    util.callbackify(this.db.getSub.bind(this.db))(
+        key, sub, (err, val) => callback(err, clone(val)));
+  }
+
+  /**
+   * Adds or changes a subvalue of an entry.
+   *
+   * @param cb Called when the write has been committed to the underlying database driver.
+   * @param deprecated Deprecated callback that is called just after cb.
+   */
+  setSub(key, sub, value, cb, deprecated = null) {
+    util.callbackify(this.db.setSub.bind(this.db))(
+        key, sub, clone(value), makeDoneCallback(cb, deprecated));
+  }
+
+  /**
+   * Flushes unwritten changes then closes the connection to the underlying database. After this
+   * returns, any future call to a method on this object may result in an error.
+   */
+  close(callback) {
+    util.callbackify(this.db.close.bind(this.db))(callback);
+  }
 };
 
 const clone = (obj) => {

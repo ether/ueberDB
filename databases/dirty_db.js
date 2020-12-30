@@ -24,53 +24,55 @@
 
 const Dirty = require('dirty');
 
-exports.Database = function (settings) {
-  this.db = null;
+exports.Database = class {
+  constructor(settings) {
+    this.db = null;
 
-  if (!settings || !settings.filename) {
-    settings = {filename: null};
+    if (!settings || !settings.filename) {
+      settings = {filename: null};
+    }
+
+    this.settings = settings;
+
+    // set default settings
+    this.settings.cache = 0;
+    this.settings.writeInterval = 0;
+    this.settings.json = false;
   }
 
-  this.settings = settings;
+  init(callback) {
+    this.db = new Dirty(this.settings.filename);
+    this.db.on('load', (err) => {
+      callback();
+    });
+  }
 
-  // set default settings
-  this.settings.cache = 0;
-  this.settings.writeInterval = 0;
-  this.settings.json = false;
-};
+  get(key, callback) {
+    callback(null, this.db.get(key));
+  }
 
-exports.Database.prototype.init = function (callback) {
-  this.db = new Dirty(this.settings.filename);
-  this.db.on('load', (err) => {
-    callback();
-  });
-};
+  findKeys(key, notKey, callback) {
+    const keys = [];
+    const regex = this.createFindRegex(key, notKey);
+    this.db.forEach((key, val) => {
+      if (key.search(regex) !== -1) {
+        keys.push(key);
+      }
+    });
+    callback(null, keys);
+  }
 
-exports.Database.prototype.get = function (key, callback) {
-  callback(null, this.db.get(key));
-};
+  set(key, value, callback) {
+    this.db.set(key, value, callback);
+  }
 
-exports.Database.prototype.findKeys = function (key, notKey, callback) {
-  const keys = [];
-  const regex = this.createFindRegex(key, notKey);
-  this.db.forEach((key, val) => {
-    if (key.search(regex) !== -1) {
-      keys.push(key);
-    }
-  });
-  callback(null, keys);
-};
+  remove(key, callback) {
+    this.db.rm(key, callback);
+  }
 
-exports.Database.prototype.set = function (key, value, callback) {
-  this.db.set(key, value, callback);
-};
-
-exports.Database.prototype.remove = function (key, callback) {
-  this.db.rm(key, callback);
-};
-
-exports.Database.prototype.close = function (callback) {
-  this.db.close();
-  this.db = null;
-  if (callback) callback();
+  close(callback) {
+    this.db.close();
+    this.db = null;
+    if (callback) callback();
+  }
 };

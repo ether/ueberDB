@@ -18,76 +18,79 @@
 const r = require('rethinkdb');
 const async = require('async');
 
-exports.Database = function (settings) {
-  if (!settings) settings = {};
-  if (!settings.host) { settings.host = 'localhost'; }
-  if (!settings.port) { settings.port = 28015; }
-  if (!settings.db) { settings.db = 'test'; }
-  if (!settings.table) { settings.table = 'test'; }
+exports.Database = class {
+  constructor(settings) {
+    if (!settings) settings = {};
+    if (!settings.host) { settings.host = 'localhost'; }
+    if (!settings.port) { settings.port = 28015; }
+    if (!settings.db) { settings.db = 'test'; }
+    if (!settings.table) { settings.table = 'test'; }
 
-  this.host = settings.host;
-  this.db = settings.db;
-  this.port = settings.port;
-  this.table = settings.table;
-  this.connection = null;
-};
-
-exports.Database.prototype.init = function (callback) {
-  r.connect(this, (err, conn) => {
-    if (err) throw err;
-    this.connection = conn;
-
-    r.table(this.table).run(this.connection, (err, cursor) => {
-      if (err) {
-        // assuming table does not exists
-        r.tableCreate(this.table).run(this.connection, callback);
-      } else if (callback) { callback(null, cursor); }
-    });
-  });
-};
-
-exports.Database.prototype.get = function (key, callback) {
-  r.table(this.table).get(key).run(this.connection, (err, item) => {
-    callback(err, (item ? item.content : item));
-  });
-};
-
-exports.Database.prototype.findKeys = function (key, notKey, callback) {
-  const keys = [];
-  const regex = this.createFindRegex(key, notKey);
-  r.filter((item) => {
-    if (item.id.search(regex) !== -1) {
-      keys.push(item.id);
-    }
-  }).run(this.connection, callback);
-};
-
-exports.Database.prototype.set = function (key, value, callback) {
-  r.table(this.table)
-      .insert({id: key, content: value}, {conflict: 'replace'})
-      .run(this.connection, callback);
-};
-
-exports.Database.prototype.doBulk = function (bulk, callback) {
-  const _in = [];
-  const _out = [];
-
-  for (const i in bulk) {
-    if (bulk[i].type === 'set') {
-      _in.push({id: bulk[i].key, content: bulk[i].value});
-    } else if (bulk[i].type === 'remove') {
-      _out.push(bulk[i].key);
-    }
+    this.host = settings.host;
+    this.db = settings.db;
+    this.port = settings.port;
+    this.table = settings.table;
+    this.connection = null;
   }
-  async.parallel([
-    (cb) => { r.table(this.table).insert(_in, {conflict: 'replace'}).run(this.connection, cb); },
-    (cb) => { r.table(this.table).getAll(_out).delete().run(this.connection, cb); },
-  ], callback);
-};
-exports.Database.prototype.remove = function (key, callback) {
-  r.table(this.table).get(key).delete().run(this.connection, callback);
-};
 
-exports.Database.prototype.close = function (callback) {
-  this.connection.close(callback);
+  init(callback) {
+    r.connect(this, (err, conn) => {
+      if (err) throw err;
+      this.connection = conn;
+
+      r.table(this.table).run(this.connection, (err, cursor) => {
+        if (err) {
+          // assuming table does not exists
+          r.tableCreate(this.table).run(this.connection, callback);
+        } else if (callback) { callback(null, cursor); }
+      });
+    });
+  }
+
+  get(key, callback) {
+    r.table(this.table).get(key).run(this.connection, (err, item) => {
+      callback(err, (item ? item.content : item));
+    });
+  }
+
+  findKeys(key, notKey, callback) {
+    const keys = [];
+    const regex = this.createFindRegex(key, notKey);
+    r.filter((item) => {
+      if (item.id.search(regex) !== -1) {
+        keys.push(item.id);
+      }
+    }).run(this.connection, callback);
+  }
+
+  set(key, value, callback) {
+    r.table(this.table)
+        .insert({id: key, content: value}, {conflict: 'replace'})
+        .run(this.connection, callback);
+  }
+
+  doBulk(bulk, callback) {
+    const _in = [];
+    const _out = [];
+
+    for (const i in bulk) {
+      if (bulk[i].type === 'set') {
+        _in.push({id: bulk[i].key, content: bulk[i].value});
+      } else if (bulk[i].type === 'remove') {
+        _out.push(bulk[i].key);
+      }
+    }
+    async.parallel([
+      (cb) => { r.table(this.table).insert(_in, {conflict: 'replace'}).run(this.connection, cb); },
+      (cb) => { r.table(this.table).getAll(_out).delete().run(this.connection, cb); },
+    ], callback);
+  }
+
+  remove(key, callback) {
+    r.table(this.table).get(key).delete().run(this.connection, callback);
+  }
+
+  close(callback) {
+    this.connection.close(callback);
+  }
 };

@@ -15,116 +15,118 @@
  * limitations under the License.
  */
 
-exports.Database = function (settings) {
-  this.settings = settings;
+exports.Database = class {
+  constructor(settings) {
+    this.settings = settings;
 
-  if (!this.settings.url) throw new Error('You must specify a mongodb url');
-  if (!this.settings.dbName) throw new Error('You must specify a mongodb database');
+    if (!this.settings.url) throw new Error('You must specify a mongodb url');
+    if (!this.settings.dbName) throw new Error('You must specify a mongodb database');
 
-  if (!this.settings.collection) this.settings.collection = 'ueberdb';
-};
-
-exports.Database.prototype.clearPing = function () {
-  if (this.interval) {
-    clearInterval(this.interval);
+    if (!this.settings.collection) this.settings.collection = 'ueberdb';
   }
-};
 
-exports.Database.prototype.schedulePing = function () {
-  this.clearPing();
-  this.interval = setInterval(() => {
-    this.database.command({
-      ping: 1,
-    });
-  }, 10000);
-};
-
-exports.Database.prototype.init = function (callback) {
-  const MongoClient = require('mongodb').MongoClient;
-
-  MongoClient.connect(this.settings.url, (err, client) => {
-    if (!err) {
-      this.client = client;
-      this.database = client.db(this.settings.dbName);
-      this.collection = this.database.collection(this.settings.collection);
+  clearPing() {
+    if (this.interval) {
+      clearInterval(this.interval);
     }
-
-    callback(err);
-  });
-
-  this.schedulePing();
-};
-
-exports.Database.prototype.get = function (key, callback) {
-  this.collection.findOne({_id: key}, (err, document) => {
-    if (err) callback(err);
-    else callback(null, document ? document.value : null);
-  });
-
-  this.schedulePing();
-};
-
-exports.Database.prototype.findKeys = function (key, notKey, callback) {
-  const selector = {
-    $and: [
-      {_id: {$regex: `${key.replace(/\*/g, '')}`}},
-    ],
-  };
-
-  if (notKey) {
-    selector.$and.push({_id: {$not: {$regex: `${notKey.replace(/\*/g, '')}`}}});
   }
 
-  this.collection.find(selector, async (err, res) => {
-    if (err) {
+  schedulePing() {
+    this.clearPing();
+    this.interval = setInterval(() => {
+      this.database.command({
+        ping: 1,
+      });
+    }, 10000);
+  }
+
+  init(callback) {
+    const MongoClient = require('mongodb').MongoClient;
+
+    MongoClient.connect(this.settings.url, (err, client) => {
+      if (!err) {
+        this.client = client;
+        this.database = client.db(this.settings.dbName);
+        this.collection = this.database.collection(this.settings.collection);
+      }
+
       callback(err);
+    });
+
+    this.schedulePing();
+  }
+
+  get(key, callback) {
+    this.collection.findOne({_id: key}, (err, document) => {
+      if (err) callback(err);
+      else callback(null, document ? document.value : null);
+    });
+
+    this.schedulePing();
+  }
+
+  findKeys(key, notKey, callback) {
+    const selector = {
+      $and: [
+        {_id: {$regex: `${key.replace(/\*/g, '')}`}},
+      ],
+    };
+
+    if (notKey) {
+      selector.$and.push({_id: {$not: {$regex: `${notKey.replace(/\*/g, '')}`}}});
+    }
+
+    this.collection.find(selector, async (err, res) => {
+      if (err) {
+        callback(err);
+      } else {
+        const data = await res.toArray();
+
+        callback(null, data.map((i) => i._id));
+      }
+    });
+
+    this.schedulePing();
+  }
+
+  set(key, value, callback) {
+    if (key.length > 100) {
+      callback('Your Key can only be 100 chars');
     } else {
-      const data = await res.toArray();
-
-      callback(null, data.map((i) => i._id));
+      this.collection.update({_id: key}, {$set: {value}}, {upsert: true}, callback);
     }
-  });
 
-  this.schedulePing();
-};
-
-exports.Database.prototype.set = function (key, value, callback) {
-  if (key.length > 100) {
-    callback('Your Key can only be 100 chars');
-  } else {
-    this.collection.update({_id: key}, {$set: {value}}, {upsert: true}, callback);
+    this.schedulePing();
   }
 
-  this.schedulePing();
-};
+  remove(key, callback) {
+    this.collection.remove({_id: key}, callback);
 
-exports.Database.prototype.remove = function (key, callback) {
-  this.collection.remove({_id: key}, callback);
-
-  this.schedulePing();
-};
-
-exports.Database.prototype.doBulk = function (bulk, callback) {
-  const bulkMongo = this.collection.initializeOrderedBulkOp();
-
-  for (const i in bulk) {
-    if (bulk[i].type === 'set') {
-      bulkMongo.find({_id: bulk[i].key}).upsert().updateOne({$set: {value: bulk[i].value}});
-    } else if (bulk[i].type === 'remove') {
-      bulkMongo.find({_id: bulk[i].key}).deleteOne();
-    }
+    this.schedulePing();
   }
 
-  bulkMongo.execute().then((res) => {
-    callback(null, res);
-  }).catch((error) => {
-    callback(error);
-  });
+  doBulk(bulk, callback) {
+    const bulkMongo = this.collection.initializeOrderedBulkOp();
 
-  this.schedulePing();
-};
+    for (const i in bulk) {
+      if (bulk[i].type === 'set') {
+        bulkMongo.find({_id: bulk[i].key}).upsert().updateOne({$set: {value: bulk[i].value}});
+      } else if (bulk[i].type === 'remove') {
+        bulkMongo.find({_id: bulk[i].key}).deleteOne();
+      }
+    }
 
-exports.Database.prototype.close = function (callback) {
-  this.clearPing();
-  this.client.close(callback);
+    bulkMongo.execute().then((res) => {
+      callback(null, res);
+    }).catch((error) => {
+      callback(error);
+    });
+
+    this.schedulePing();
+  }
+
+  close(callback) {
+    this.clearPing();
+    this.client.close(callback);
+  }
 };

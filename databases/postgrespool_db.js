@@ -18,25 +18,20 @@
 const pg = require('pg');
 const postgresCommon = require('./postgres_common');
 
-exports.Database = function (settings) {
-  this.settings = settings;
+exports.Database = class extends postgresCommon.Database {
+  constructor(settings) {
+    super();
+    this.settings = settings;
 
-  this.settings.cache = settings.cache || 1000;
-  this.settings.writeInterval = 100;
-  this.settings.json = true;
+    this.settings.cache = settings.cache || 1000;
+    this.settings.writeInterval = 100;
+    this.settings.json = true;
 
-  // Pool specific defaults
-  this.settings.max = this.settings.max || 20;
-  this.settings.min = this.settings.min || 4;
-  this.settings.idleTimeoutMillis = this.settings.idleTimeoutMillis || 1000;
+    // Pool specific defaults
+    this.settings.max = this.settings.max || 20;
+    this.settings.min = this.settings.min || 4;
+    this.settings.idleTimeoutMillis = this.settings.idleTimeoutMillis || 1000;
 
-  this.db = new pg.Pool(this.settings);
+    this.db = new pg.Pool(this.settings);
+  }
 };
-
-exports.Database.prototype.init = postgresCommon.init;
-exports.Database.prototype.get = postgresCommon.get;
-exports.Database.prototype.findKeys = postgresCommon.findKeys;
-exports.Database.prototype.set = postgresCommon.set;
-exports.Database.prototype.remove = postgresCommon.remove;
-exports.Database.prototype.doBulk = postgresCommon.doBulk;
-exports.Database.prototype.close = postgresCommon.close;

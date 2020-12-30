@@ -18,21 +18,16 @@
 const pg = require('pg');
 const postgresCommon = require('./postgres_common');
 
-exports.Database = function (settings) {
-  this.settings = settings;
+exports.Database = class extends postgresCommon.Database {
+  constructor(settings) {
+    super();
+    this.settings = settings;
 
-  this.settings.cache = settings.cache || 1000;
-  this.settings.writeInterval = 100;
-  this.settings.json = true;
+    this.settings.cache = settings.cache || 1000;
+    this.settings.writeInterval = 100;
+    this.settings.json = true;
 
-  this.db = new pg.Client(this.settings);
-  this.db.connect();
+    this.db = new pg.Client(this.settings);
+    this.db.connect();
+  }
 };
-
-exports.Database.prototype.init = postgresCommon.init;
-exports.Database.prototype.get = postgresCommon.get;
-exports.Database.prototype.findKeys = postgresCommon.findKeys;
-exports.Database.prototype.set = postgresCommon.set;
-exports.Database.prototype.remove = postgresCommon.remove;
-exports.Database.prototype.doBulk = postgresCommon.doBulk;
-exports.Database.prototype.close = postgresCommon.close;

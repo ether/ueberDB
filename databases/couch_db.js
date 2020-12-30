@@ -25,174 +25,175 @@ const handleError = (er) => {
   if (er) throw new Error(er);
 };
 
-exports.Database = function (settings) {
-  this.db = null;
-  this.client = null;
-  this.settings = settings;
+exports.Database = class {
+  constructor(settings) {
+    this.db = null;
+    this.client = null;
+    this.settings = settings;
 
-  // force some settings
-  // used by CacheAndBufferLayer.js
-  this.settings.cache = 1000;
-  this.settings.writeInterval = 100;
-  this.settings.json = false;
-};
+    // force some settings
+    // used by CacheAndBufferLayer.js
+    this.settings.cache = 1000;
+    this.settings.writeInterval = 100;
+    this.settings.json = false;
+  }
 
-exports.Database.prototype.init = function (callback) {
-  const settings = this.settings;
-  let client = null;
-  let db = null;
+  init(callback) {
+    const settings = this.settings;
+    let client = null;
+    let db = null;
 
-  const config = {
-    url: `http://${settings.host}:${settings.port}`,
-    requestDefaults: {
-      pool: {
-        maxSockets: settings.maxListeners || 1,
+    const config = {
+      url: `http://${settings.host}:${settings.port}`,
+      requestDefaults: {
+        pool: {
+          maxSockets: settings.maxListeners || 1,
+        },
+        auth: {
+          user: settings.user,
+          pass: settings.password,
+        },
       },
-      auth: {
-        user: settings.user,
-        pass: settings.password,
-      },
-    },
-  };
+    };
 
-  const createDb = () => {
-    client.db.create(settings.database, (er, body) => {
+    const createDb = () => {
+      client.db.create(settings.database, (er, body) => {
+        if (er) return callback(er);
+        return setDb();
+      });
+    };
+
+    const setDb = () => {
+      db = client.use(settings.database);
+      checkUeberDbDesignDocument(db);
+      this.client = client;
+      this.db = db;
+      callback();
+    };
+
+    // Always ensure that couchDb has at least an empty design doc for UeberDb use
+    // this will be necessary for the `findKeys` method
+    const checkUeberDbDesignDocument = () => {
+      db.head(DESIGN_PATH, (er, _, header) => {
+        if (er && er.statusCode === 404) return db.insert({views: {}}, DESIGN_PATH, handleError);
+        if (er) throw new Error(er);
+      });
+    };
+
+    client = nano(config);
+    client.db.get(settings.database, (er, body) => {
+      if (er && er.statusCode === 404) return createDb();
       if (er) return callback(er);
       return setDb();
     });
-  };
+  }
 
-  const setDb = () => {
-    db = client.use(settings.database);
-    checkUeberDbDesignDocument(db);
-    this.client = client;
-    this.db = db;
-    callback();
-  };
-
-  // Always ensure that couchDb has at least an empty design doc for UeberDb use
-  // this will be necessary for the `findKeys` method
-  const checkUeberDbDesignDocument = () => {
-    db.head(DESIGN_PATH, (er, _, header) => {
-      if (er && er.statusCode === 404) return db.insert({views: {}}, DESIGN_PATH, handleError);
-      if (er) throw new Error(er);
+  get(key, callback) {
+    const db = this.db;
+    db.get(key, (er, doc) => {
+      if (er && er.statusCode !== 404) {
+        console.log('GET');
+        console.log(er);
+      }
+      if (doc == null) return callback(null, null);
+      callback(null, doc.value);
     });
-  };
+  }
 
-  client = nano(config);
-  client.db.get(settings.database, (er, body) => {
-    if (er && er.statusCode === 404) return createDb();
-    if (er) return callback(er);
-    return setDb();
-  });
-};
+  findKeys(key, notKey, callback) {
+    const regex = this.createFindRegex(key, notKey);
+    const queryKey = `${key}__${notKey}`;
+    const db = this.db;
 
-exports.Database.prototype.get = function (key, callback) {
-  const db = this.db;
-  db.get(key, (er, doc) => {
-    if (er && er.statusCode !== 404) {
-      console.log('GET');
-      console.log(er);
-    }
-    if (doc == null) return callback(null, null);
-    callback(null, doc.value);
-  });
-};
-
-exports.Database.prototype.findKeys = function (key, notKey, callback) {
-  const regex = this.createFindRegex(key, notKey);
-  const queryKey = `${key}__${notKey}`;
-  const db = this.db;
-
-  // always look up if the query haven't be done before
-  const checkQuery = () => {
-    db.get(DESIGN_PATH, (er, doc) => {
-      handleError(er);
-      const queryExists = queryKey in doc.views;
-      if (!queryExists) return createQuery(doc);
-      makeQuery();
-    });
-  };
-
-  // Cache the query for faster reuse in the future
-  const createQuery = (doc) => {
-    const mapFunction = {
-      map: `function (doc) { if (${regex}.test(doc._id)) { emit(doc._id, null); } }`,
+    // always look up if the query haven't be done before
+    const checkQuery = () => {
+      db.get(DESIGN_PATH, (er, doc) => {
+        handleError(er);
+        const queryExists = queryKey in doc.views;
+        if (!queryExists) return createQuery(doc);
+        makeQuery();
+      });
     };
-    doc.views[queryKey] = mapFunction;
-    db.insert(doc, DESIGN_PATH, (er) => {
-      handleError(er);
-      makeQuery();
+
+    // Cache the query for faster reuse in the future
+    const createQuery = (doc) => {
+      const mapFunction = {
+        map: `function (doc) { if (${regex}.test(doc._id)) { emit(doc._id, null); } }`,
+      };
+      doc.views[queryKey] = mapFunction;
+      db.insert(doc, DESIGN_PATH, (er) => {
+        handleError(er);
+        makeQuery();
+      });
+    };
+
+    // If this is the first time the request is used, this can take a while…
+    const makeQuery = (er) => {
+      db.view(DESIGN_NAME, queryKey, (er, docs) => {
+        handleError(er);
+        docs = docs.rows.map((doc) => doc.key);
+        callback(null, docs);
+      });
+    };
+
+    checkQuery();
+  }
+
+  set(key, value, callback) {
+    const db = this.db;
+    db.get(key, (er, doc) => {
+      if (doc == null) return db.insert({_id: key, value}, callback);
+      db.insert({_id: key, _rev: doc._rev, value}, callback);
     });
-  };
+  }
 
-  // If this is the first time the request is used, this can take a while…
-  const makeQuery = (er) => {
-    db.view(DESIGN_NAME, queryKey, (er, docs) => {
-      handleError(er);
-      docs = docs.rows.map((doc) => doc.key);
-      callback(null, docs);
-    });
-  };
-
-  checkQuery();
-};
-
-exports.Database.prototype.set = function (key, value, callback) {
-  const db = this.db;
-  db.get(key, (er, doc) => {
-    if (doc == null) return db.insert({_id: key, value}, callback);
-    db.insert({_id: key, _rev: doc._rev, value}, callback);
-  });
-};
-
-exports.Database.prototype.remove = function (key, callback) {
-  const db = this.db;
-  db.head(key, (er, _, header) => {
-    if (er && er.statusCode === 404) return callback(null);
-    if (er) return callback(er);
-    // etag has additional quotation marks, remove them
-    const etag = JSON.parse(header).etag;
-    db.destroy(key, etag, (er, body) => {
+  remove(key, callback) {
+    const db = this.db;
+    db.head(key, (er, _, header) => {
+      if (er && er.statusCode === 404) return callback(null);
       if (er) return callback(er);
-      callback(null);
+      // etag has additional quotation marks, remove them
+      const etag = JSON.parse(header).etag;
+      db.destroy(key, etag, (er, body) => {
+        if (er) return callback(er);
+        callback(null);
+      });
     });
-  });
-};
+  }
 
-exports.Database.prototype.doBulk = function (bulk, callback) {
-  const db = this.db;
-  const keys = bulk.map((op) => op.key);
-  const revs = {};
-  const setters = [];
-  async.series([
-    (callback) => {
-      db.fetchRevs({keys}, (er, r) => {
-        if (er) throw new Error(JSON.stringify(er));
-        const rows = r.rows;
-        for (const j in r.rows) {
-          // couchDB will return error instead of value if key does not exist
-          if (rows[j].value != null) revs[rows[j].key] = rows[j].value.rev;
+  doBulk(bulk, callback) {
+    const db = this.db;
+    const keys = bulk.map((op) => op.key);
+    const revs = {};
+    const setters = [];
+    async.series([
+      (callback) => {
+        db.fetchRevs({keys}, (er, r) => {
+          if (er) throw new Error(JSON.stringify(er));
+          const rows = r.rows;
+          for (const j in r.rows) {
+            // couchDB will return error instead of value if key does not exist
+            if (rows[j].value != null) revs[rows[j].key] = rows[j].value.rev;
+          }
+          callback();
+        });
+      },
+      (callback) => {
+        for (const item of bulk) {
+          const set = {_id: item.key};
+          if (revs[item.key] != null) set._rev = revs[item.key];
+          if (item.type === 'set') set.value = item.value;
+          if (item.type === 'remove') set._deleted = true;
+          setters.push(set);
         }
         callback();
-      });
-    },
-    (callback) => {
-      for (const item of bulk) {
-        const set = {_id: item.key};
-        if (revs[item.key] != null) set._rev = revs[item.key];
-        if (item.type === 'set') set.value = item.value;
-        if (item.type === 'remove') set._deleted = true;
-        setters.push(set);
-      }
-      callback();
-    },
-  ], (err) => {
-    db.bulk({docs: setters}, callback);
+      },
+    ], (err) => {
+      db.bulk({docs: setters}, callback);
+    });
   }
-  );
-};
 
-exports.Database.prototype.close = function (callback) {
-  if (callback) callback();
+  close(callback) {
+    if (callback) callback();
+  }
 };
