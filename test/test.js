@@ -27,8 +27,17 @@ describe(__filename, function () {
 
   before(async function () {
     speedTable = new Clitable({
-      head: ['Database', '#', 'ms/set', 'ms/get', 'ms/findKeys', 'ms/remove'],
-      colWidths: [25, 8, 13, 13, 13, 13],
+      head: [
+        'Database',
+        '#',
+        'ms/set',
+        'ms/get',
+        'ms/findKeys',
+        'ms/remove',
+        'total ms',
+        'total ms/#',
+      ],
+      colWidths: [25, 8, 13, 13, 13, 13, 13, 13],
     });
   });
 
@@ -195,6 +204,8 @@ describe(__filename, function () {
               timePerOp.get,
               timePerOp.findKey,
               timePerOp.remove,
+              timers.remove - timers.start,
+              (timers.remove - timers.start) / count,
             ]);
 
             const acceptableTable = new Clitable({
