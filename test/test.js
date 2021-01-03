@@ -24,6 +24,19 @@ after(async function () {
 
 describe(__filename, function () {
   let speedTable;
+  let db;
+  const get = async (db, k) => await util.promisify(db.get.bind(db))(k);
+  const findKeys = async (db, k, nk) => await util.promisify(db.findKeys.bind(db))(k, nk);
+  // When modifying, only wait until the operation has been cached, not until it has been written.
+  // If write caching is enabled then the callback after write won't be called until the periodic
+  // flush fires and completes, which can be up to 100ms by default. That delay can really throw off
+  // performance numbers.
+  const set = async (db, k, v) => await new Promise((resolve, reject) => {
+    db.set(k, v, (err) => { if (err != null) return reject(err); resolve(); });
+  });
+  const remove = async (db, k) => await new Promise((resolve, reject) => {
+    db.remove(k, (err) => { if (err != null) return reject(err); resolve(); });
+  });
 
   before(async function () {
     speedTable = new Clitable({
@@ -51,20 +64,6 @@ describe(__filename, function () {
       for (const cacheEnabled of [false, true]) {
         const cacheStatus = cacheEnabled ? 'with cache' : 'without cache';
         describe(cacheStatus, function () {
-          let db;
-          const get = async (db, k) => await util.promisify(db.get.bind(db))(k);
-          const findKeys = async (db, k, nk) => await util.promisify(db.findKeys.bind(db))(k, nk);
-          // When modifying, only wait until the operation has been cached, not until it has been
-          // written. If write caching is enabled then the callback after write won't be called
-          // until the periodic flush fires and completes, which can be up to 100ms by default. That
-          // delay can really throw off performance numbers.
-          const set = async (db, k, v) => await new Promise((resolve, reject) => {
-            db.set(k, v, (err) => { if (err != null) return reject(err); resolve(); });
-          });
-          const remove = async (db, k) => await new Promise((resolve, reject) => {
-            db.remove(k, (err) => { if (err != null) return reject(err); resolve(); });
-          });
-
           before(async function () {
             if (dbSettings.filename) await fs.unlink(dbSettings.filename).catch(() => {});
             db = new ueberdb.Database(database, dbSettings);
