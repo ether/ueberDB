@@ -61,14 +61,13 @@ describe(__filename, function () {
   for (const database of Object.keys(databases)) {
     const dbSettings = databases[database];
     describe(database, function () {
-      for (const cacheEnabled of [false, true]) {
-        const cacheStatus = cacheEnabled ? 'with cache' : 'without cache';
-        describe(cacheStatus, function () {
+      for (const readCache of [false, true]) {
+        const readCacheStatus = `${readCache ? '' : 'no '}read cache`;
+        describe(readCacheStatus, function () {
           before(async function () {
             if (dbSettings.filename) await fs.unlink(dbSettings.filename).catch(() => {});
-            db = new ueberdb.Database(database, dbSettings);
+            db = new ueberdb.Database(database, dbSettings, readCache ? {} : {cache: 0});
             await util.promisify(db.init.bind(db))();
-            if (!cacheEnabled) db.cache = 0;
           });
 
           after(async function () {
@@ -197,7 +196,7 @@ describe(__filename, function () {
               remove: (timers.remove - timers.findKeys) / count,
             };
             speedTable.push([
-              `${database} ${cacheStatus}`,
+              `${database} ${readCacheStatus}`,
               count,
               timePerOp.set,
               timePerOp.get,
