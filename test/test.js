@@ -87,22 +87,22 @@ describe(__filename, function () {
                 before(async function () {
                   input = {a: 1, b: new Randexp(/.+/).gen()};
                   key = new Randexp(/.+/).gen() + (space ? ' ' : '');
-                  await util.promisify(db.set.bind(db))(key, input);
+                  await set(db, key, input);
                 });
 
                 it('get(key) -> record', async function () {
-                  const output = await util.promisify(db.get.bind(db))(key);
+                  const output = await get(db, key);
                   assert.equal(JSON.stringify(output), JSON.stringify(input));
                 });
 
                 it('get(`${key} `) -> nullish', async function () {
-                  const output = await util.promisify(db.get.bind(db))(`${key} `);
+                  const output = await get(db, `${key} `);
                   assert(output == null);
                 });
 
                 if (space) {
                   it('get(key.slice(0, -1)) -> nullish', async function () {
-                    const output = await util.promisify(db.get.bind(db))(key.slice(0, -1));
+                    const output = await get(db, key.slice(0, -1));
                     assert(output == null);
                   });
                 }
