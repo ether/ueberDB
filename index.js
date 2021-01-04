@@ -22,17 +22,31 @@ const cacheAndBufferLayer = require('./lib/CacheAndBufferLayer');
 const channels = require('channels');
 const util = require('util');
 
-const defaultLogger = {
-  debug: () => {},
-  info: () => {},
-  error: () => {},
-  warn: () => {},
+// Returns a logger derived from the given logger (which may be null) that has debug() and
+// isDebugEnabled() methods.
+const normalizeLogger = (logger) => {
+  const logLevelsUsed = ['debug'];
+  logger = Object.create(logger || {});
+  for (const level of logLevelsUsed) {
+    const enabledFnName = `is${level.charAt(0).toUpperCase() + level.slice(1)}Enabled`;
+    if (typeof logger[level] !== 'function') {
+      logger[level] = () => {};
+      logger[enabledFnName] = () => false;
+    } else if (typeof logger[enabledFnName] !== 'function') {
+      logger[enabledFnName] = () => true;
+    }
+  }
+  return logger;
 };
 
 /**
- The Constructor
-*/
-exports.Database = function (type, dbSettings, wrapperSettings, logger) {
+ * The Constructor
+ * @param logger Optional logger object. If no logger object is provided no logging will occur. The
+ *     logger object is expected to be a log4js logger object or `console`. A logger object from
+ *     another logging library should also work, but performance may be reduced if the logger object
+ *     does not have is${Level}Enabled() methods (isDebugEnabled(), etc.).
+ */
+exports.Database = function (type, dbSettings, wrapperSettings, logger = null) {
   if (!type) {
     type = 'sqlite';
     dbSettings = null;
@@ -44,7 +58,7 @@ exports.Database = function (type, dbSettings, wrapperSettings, logger) {
   this.dbModule = require(`./databases/${type}_db`);
   this.dbSettings = dbSettings;
   this.wrapperSettings = wrapperSettings;
-  this.logger = logger || defaultLogger;
+  this.logger = normalizeLogger(logger);
   this.channels = new channels.channels(doOperation);
 };
 
