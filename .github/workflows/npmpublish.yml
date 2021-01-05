@@ -87,7 +87,7 @@ jobs:
       - run: git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
       - run: npm ci
       - run: npm version patch
+      - run: git push --follow-tags
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-      - run: git push --follow-tags
