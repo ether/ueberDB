@@ -132,30 +132,49 @@ Example:
 ``db.setSub(key, subkey, value);``
 
 
-### Disabling Cache for real-time read/write
+### Disable the read cache
 
-Set `db.cache = 0;` to disable caching of reads and writes.
+Set the `cache` wrapper option to 0 to force every read operation to go directly
+to the database driver (except for reads of written values that have not yet
+been committed to the database):
 
 ```javascript
 const ueberdb = require('ueberdb2');
-const db = new ueberdb.Database('dirty', {filename: 'var/dirty.db'});
 
-// going cacheless
-async function example(db){
+(async () => {
+  const db = new ueberdb.Database(
+      'dirty', {filename: 'var/dirty.db'}, {cache: 0});
   await db.init();
-
-  db.cache = 0; // kill the cache
-
   db.set('valueA', {a: 1, b: 2});
-
-  db.get('valueA', function (err, value) {
-    db.close(function () {
+  db.get('valueA', (err, value) => {
+    console.log(JSON.stringify(value));
+    db.close(() => {
       process.exit(0);
     });
   });
-}
+})();
+```
 
-example(db);
+### Disable write buffering
+
+Set the `writeInterval` wrapper option to 0 to force writes to go directly to
+the database driver:
+
+```javascript
+const ueberdb = require('ueberdb2');
+
+(async () => {
+  const db = new ueberdb.Database(
+      'dirty', {filename: 'var/dirty.db'}, {writeInterval: 0});
+  await db.init();
+  db.set('valueA', {a: 1, b: 2});
+  db.get('valueA', (err, value) => {
+    console.log(JSON.stringify(value));
+    db.close(() => {
+      process.exit(0);
+    });
+  });
+})();
 ```
 
 ## Feature support
