@@ -30,7 +30,7 @@
     "elasticsearch": "^16.7.1",
     "mocha": "^7.1.2",
     "mongodb": "^3.6.3",
-    "mssql": "^6.2.3",
+    "mssql": "7.0.0-alpha.4",
     "mysql": "2.18.1",
     "nano": "^8.2.2",
     "pg": "^8.0.3",
