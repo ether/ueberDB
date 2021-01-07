@@ -245,10 +245,12 @@ describe(__filename, function () {
                 ['remove', removeMax, timePerOp.remove]);
             console.log(acceptableTable.toString());
 
-            assert(setMax >= timePerOp.set);
-            assert(getMax >= timePerOp.get);
-            assert(findKeysMax >= timePerOp.findKeys);
-            assert(removeMax >= timePerOp.remove);
+            if (readCache) {
+              assert(setMax >= timePerOp.set);
+              assert(getMax >= timePerOp.get);
+              assert(findKeysMax >= timePerOp.findKeys);
+              assert(removeMax >= timePerOp.remove);
+            }
           });
         });
       }
