@@ -99,7 +99,6 @@ describe(__filename, function () {
               });
 
               after(async function () {
-                await util.promisify(db.doShutdown.bind(db))();
                 await util.promisify(db.close.bind(db))();
                 if (dbSettings.filename) await fs.unlink(dbSettings.filename).catch(() => {});
               });

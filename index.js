@@ -167,6 +167,10 @@ const doOperation = (operation, callback) => {
   }
 };
 
+/**
+ * Flushes unwritten changes then closes the connection to the underlying database. After this
+ * returns, any future call to a method on this object may result in an error.
+ */
 exports.Database.prototype.close = function (callback) {
   this.db.close(callback);
 };
