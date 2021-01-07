@@ -6,7 +6,7 @@ exports.databases = {
     speeds: {
       setMax: 1,
       getMax: 0.1,
-      findKeyMax: 0.5,
+      findKeysMax: 0.5,
     },
   },
   sqlite: {
@@ -14,7 +14,7 @@ exports.databases = {
     speeds: {
       setMax: 0.6,
       getMax: 0.5,
-      findKeyMax: 2.5,
+      findKeysMax: 2.5,
       removeMax: 0.5,
     },
   },
