@@ -2,6 +2,8 @@
 
 ## v1.1.11
 
+* The `close()` method now flushes unwritten entries before closing the database
+  connection.
 * Bug fix: `null`/`undefined` is no longer cached if there is an error reading
   from the database.
 
