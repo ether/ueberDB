@@ -24,6 +24,9 @@ exports.databases = {
     password: 'ueberdb',
     database: 'ueberdb',
     charset: 'utf8mb4',
+    speeds: {
+      getMax: 1,
+    },
   },
   postgres: {
     user: 'ueberdb',
