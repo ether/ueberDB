@@ -10,6 +10,9 @@ const fs = require('fs').promises;
 const ueberdb = require('../index');
 const util = require('util');
 
+const maxKeyLength = 100;
+const randomString = (length = maxKeyLength) => new Randexp(new RegExp(`.{${length}}`)).gen();
+
 // eslint-disable-next-line mocha/no-top-level-hooks
 after(async function () {
   // Add a timeout to forcibly exit if something is keeping node from exiting cleanly.
@@ -109,7 +112,7 @@ describe(__filename, function () {
 
                     before(async function () {
                       input = {a: 1, b: new Randexp(/.+/).gen()};
-                      key = new Randexp(/.+/).gen() + (space ? ' ' : '');
+                      key = randomString(maxKeyLength - 1) + (space ? ' ' : '');
                       await set(key, input);
                     });
 
@@ -134,13 +137,13 @@ describe(__filename, function () {
               });
 
               it('get of unknown key -> nullish', async function () {
-                const key = new Randexp(/.+/).gen();
+                const key = randomString();
                 assert(await get(key) == null);
               });
 
               it('set+get works', async function () {
                 const input = {a: 1, b: new Randexp(/.+/).gen()};
-                const key = new Randexp(/.+/).gen();
+                const key = randomString();
                 await set(key, input);
                 const output = await get(key);
                 assert.equal(JSON.stringify(output), JSON.stringify(input));
@@ -148,7 +151,7 @@ describe(__filename, function () {
 
               it('set+get with random key/value works', async function () {
                 const input = {testLongString: new Randexp(/[a-f0-9]{50000}/).gen()};
-                const key = new Randexp(/.+/).gen();
+                const key = randomString();
                 await set(key, input);
                 const output = await get(key);
                 assert.equal(JSON.stringify(output), JSON.stringify(input));
@@ -171,7 +174,7 @@ describe(__filename, function () {
 
               it('remove works', async function () {
                 const input = {a: 1, b: new Randexp(/.+/).gen()};
-                const key = new Randexp(/.+/).gen();
+                const key = randomString();
                 await set(key, input);
                 assert.equal(JSON.stringify(await get(key)), JSON.stringify(input));
                 await remove(key);
