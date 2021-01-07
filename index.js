@@ -77,7 +77,7 @@ exports.Database.prototype.init = function (callback) {
 */
 
 exports.Database.prototype.doShutdown = function (callback) {
-  this.db.doShutdown(callback);
+  this.db.flush(callback);
 };
 
 exports.Database.prototype.get = function (key, callback) {
