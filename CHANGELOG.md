@@ -1,5 +1,10 @@
 # Notable Changes
 
+## v1.1.11
+
+* Bug fix: `null`/`undefined` is no longer cached if there is an error reading
+  from the database.
+
 ## v1.1.10
 
 * Major performance improvement: The caching logic was rewritten with much more
