@@ -50,6 +50,29 @@ exports.Database = function (settings) {
   }
 };
 
+exports.Database.prototype._query = async function (sql, params = []) {
+  // It is unclear how util.promisify() deals with variadic functions, so it is not used here.
+  return await new Promise((resolve, reject) => {
+    // According to sqlite3's documentation, .run() method (and maybe .all() and .get(); the
+    // documentation is unclear) might call the callback multiple times. That's OK -- ECMAScript
+    // guarantees that it is safe to call a Promise executor's resolve and reject functions multiple
+    // times. The subsequent calls are ignored, except Node.js's 'process' object emits a
+    // 'multipleResolves' event to aid in debugging.
+    this.db.all(sql, params, (err, rows) => {
+      if (err != null) return reject(err);
+      resolve(rows);
+    });
+  });
+};
+
+// Temporary callbackified version of _query. This will be removed once all database objects are
+// asyncified.
+exports.Database.prototype._queryCb = function (sql, params, callback) {
+  // It is unclear how util.callbackify() handles optional parameters, so it is not used here.
+  const p = this._query(sql, params);
+  if (callback) p.then((rows) => callback(null, rows), (err) => callback(err || new Error(err)));
+};
+
 exports.Database.prototype.init = function (callback) {
   util.callbackify(async () => {
     this.db = await new Promise((resolve, reject) => {
@@ -60,15 +83,14 @@ exports.Database.prototype.init = function (callback) {
         resolve(this);
       });
     });
-    await util.promisify(this.db.run.bind(this.db))(
-        'CREATE TABLE IF NOT EXISTS store (key TEXT PRIMARY KEY, value TEXT)');
+    await this._query('CREATE TABLE IF NOT EXISTS store (key TEXT PRIMARY KEY, value TEXT)');
   })(callback);
 };
 
 exports.Database.prototype.get = function (key, callback) {
-  this.db.get('SELECT value FROM store WHERE key = ?', key, (err, row) => {
-    callback(err, row ? row.value : null);
-  });
+  this._queryCb(
+      'SELECT value FROM store WHERE key = ?', [key],
+      (err, rows) => callback(err, err == null && rows && rows.length ? rows[0].value : null));
 };
 
 exports.Database.prototype.findKeys = function (key, notKey, callback) {
@@ -85,7 +107,7 @@ exports.Database.prototype.findKeys = function (key, notKey, callback) {
     params.push(notKey);
   }
 
-  this.db.all(query, params, (err, results) => {
+  this._queryCb(query, params, (err, results) => {
     const value = [];
 
     if (!err && Object.keys(results).length > 0) {
@@ -99,11 +121,11 @@ exports.Database.prototype.findKeys = function (key, notKey, callback) {
 };
 
 exports.Database.prototype.set = function (key, value, callback) {
-  this.db.run('REPLACE INTO store VALUES (?,?)', key, value, callback);
+  this._queryCb('REPLACE INTO store VALUES (?,?)', [key, value], callback);
 };
 
 exports.Database.prototype.remove = function (key, callback) {
-  this.db.run('DELETE FROM store WHERE key = ?', key, callback);
+  this._queryCb('DELETE FROM store WHERE key = ?', [key], callback);
 };
 
 exports.Database.prototype.doBulk = function (bulk, callback) {
