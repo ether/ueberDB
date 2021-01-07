@@ -25,18 +25,7 @@ after(async function () {
 describe(__filename, function () {
   let speedTable;
   let db;
-  const get = async (db, k) => await util.promisify(db.get.bind(db))(k);
-  const findKeys = async (db, k, nk) => await util.promisify(db.findKeys.bind(db))(k, nk);
-  // When modifying, only wait until the operation has been cached, not until it has been written.
-  // If write caching is enabled then the callback after write won't be called until the periodic
-  // flush fires and completes, which can be up to 100ms by default. That delay can really throw off
-  // performance numbers.
-  const set = async (db, k, v) => await new Promise((resolve, reject) => {
-    db.set(k, v, (err) => { if (err != null) return reject(err); resolve(); });
-  });
-  const remove = async (db, k) => await new Promise((resolve, reject) => {
-    db.remove(k, (err) => { if (err != null) return reject(err); resolve(); });
-  });
+  let get, findKeys, set, remove;
 
   before(async function () {
     speedTable = new Clitable({
@@ -68,6 +57,14 @@ describe(__filename, function () {
             if (dbSettings.filename) await fs.unlink(dbSettings.filename).catch(() => {});
             db = new ueberdb.Database(database, dbSettings, readCache ? {} : {cache: 0});
             await util.promisify(db.init.bind(db))();
+            get = util.promisify(db.get.bind(db));
+            findKeys = util.promisify(db.findKeys.bind(db));
+            // When modifying, only wait until the operation has been cached, not until it has been
+            // written. If write caching is enabled then the callback after write won't be called
+            // until the periodic flush fires and completes, which can be up to 100ms by default.
+            // That delay can really throw off performance numbers.
+            set = util.promisify((k, v, cb) => db.set(k, v, cb));
+            remove = util.promisify((k, cb) => db.remove(k, cb));
           });
 
           after(async function () {
@@ -85,22 +82,22 @@ describe(__filename, function () {
                 before(async function () {
                   input = {a: 1, b: new Randexp(/.+/).gen()};
                   key = new Randexp(/.+/).gen() + (space ? ' ' : '');
-                  await set(db, key, input);
+                  await set(key, input);
                 });
 
                 it('get(key) -> record', async function () {
-                  const output = await get(db, key);
+                  const output = await get(key);
                   assert.equal(JSON.stringify(output), JSON.stringify(input));
                 });
 
                 it('get(`${key} `) -> nullish', async function () {
-                  const output = await get(db, `${key} `);
+                  const output = await get(`${key} `);
                   assert(output == null);
                 });
 
                 if (space) {
                   it('get(key.slice(0, -1)) -> nullish', async function () {
-                    const output = await get(db, key.slice(0, -1));
+                    const output = await get(key.slice(0, -1));
                     assert(output == null);
                   });
                 }
@@ -110,22 +107,22 @@ describe(__filename, function () {
 
           it('get of unknown key -> nullish', async function () {
             const key = new Randexp(/.+/).gen();
-            assert(await get(db, key) == null);
+            assert(await get(key) == null);
           });
 
           it('set+get works', async function () {
             const input = {a: 1, b: new Randexp(/.+/).gen()};
             const key = new Randexp(/.+/).gen();
-            await set(db, key, input);
-            const output = await get(db, key);
+            await set(key, input);
+            const output = await get(key);
             assert.equal(JSON.stringify(output), JSON.stringify(input));
           });
 
           it('set+get with random key/value works', async function () {
             const input = {testLongString: new Randexp(/[a-f0-9]{50000}/).gen()};
             const key = new Randexp(/.+/).gen();
-            await set(db, key, input);
-            const output = await get(db, key);
+            await set(key, input);
+            const output = await get(key);
             assert.equal(JSON.stringify(output), JSON.stringify(input));
           });
 
@@ -134,12 +131,12 @@ describe(__filename, function () {
             // TODO setting a key with non ascii chars
             const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
             await Promise.all([
-              set(db, `${key}:test2`, input),
-              set(db, `${key}:test`, input),
+              set(`${key}:test2`, input),
+              set(`${key}:test`, input),
             ]);
-            const output = await findKeys(db, `${key}:*`, null);
+            const output = await findKeys(`${key}:*`, null);
             for (const keyVal of output) {
-              const output = await get(db, keyVal);
+              const output = await get(keyVal);
               assert.equal(JSON.stringify(output), JSON.stringify(input));
             }
           });
@@ -147,10 +144,10 @@ describe(__filename, function () {
           it('remove works', async function () {
             const input = {a: 1, b: new Randexp(/.+/).gen()};
             const key = new Randexp(/.+/).gen();
-            await set(db, key, input);
-            assert.equal(JSON.stringify(await get(db, key)), JSON.stringify(input));
-            await remove(db, key);
-            assert(await get(db, key) == null);
+            await set(key, input);
+            assert.equal(JSON.stringify(await get(key)), JSON.stringify(input));
+            await remove(key);
+            assert(await get(key) == null);
           });
 
           it('speed is acceptable', async function () {
@@ -173,19 +170,19 @@ describe(__filename, function () {
 
             const timers = {start: Date.now()};
 
-            for (let i = 0; i < count; ++i) promises[i] = set(db, key + i, input);
+            for (let i = 0; i < count; ++i) promises[i] = set(key + i, input);
             await Promise.all(promises);
             timers.set = Date.now();
 
-            for (let i = 0; i < count; ++i) promises[i] = get(db, key + i);
+            for (let i = 0; i < count; ++i) promises[i] = get(key + i);
             await Promise.all(promises);
             timers.get = Date.now();
 
-            for (let i = 0; i < count; ++i) promises[i] = findKeys(db, key + i, null);
+            for (let i = 0; i < count; ++i) promises[i] = findKeys(key + i, null);
             await Promise.all(promises);
             timers.findKeys = Date.now();
 
-            for (let i = 0; i < count; ++i) promises[i] = remove(db, key + i);
+            for (let i = 0; i < count; ++i) promises[i] = remove(key + i);
             await Promise.all(promises);
             timers.remove = Date.now();
 
