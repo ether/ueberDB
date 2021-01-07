@@ -160,7 +160,7 @@ describe(__filename, function () {
               count = 1000,
               setMax = 3,
               getMax = 0.1,
-              findKeyMax = 3,
+              findKeysMax = 3,
               removeMax = 1,
             } = {}} = dbSettings || {};
 
@@ -192,7 +192,7 @@ describe(__filename, function () {
             const timePerOp = {
               set: (timers.set - timers.start) / count,
               get: (timers.get - timers.set) / count,
-              findKey: (timers.findKeys - timers.get) / count,
+              findKeys: (timers.findKeys - timers.get) / count,
               remove: (timers.remove - timers.findKeys) / count,
             };
             speedTable.push([
@@ -200,7 +200,7 @@ describe(__filename, function () {
               count,
               timePerOp.set,
               timePerOp.get,
-              timePerOp.findKey,
+              timePerOp.findKeys,
               timePerOp.remove,
               timers.remove - timers.start,
               (timers.remove - timers.start) / count,
@@ -213,13 +213,13 @@ describe(__filename, function () {
             acceptableTable.push(
                 ['set', setMax, timePerOp.set],
                 ['get', getMax, timePerOp.get],
-                ['findKey', findKeyMax, timePerOp.findKey],
+                ['findKeys', findKeysMax, timePerOp.findKeys],
                 ['remove', removeMax, timePerOp.remove]);
             console.log(acceptableTable.toString());
 
             assert(setMax >= timePerOp.set);
             assert(getMax >= timePerOp.get);
-            assert(findKeyMax >= timePerOp.findKey);
+            assert(findKeysMax >= timePerOp.findKeys);
             assert(removeMax >= timePerOp.remove);
           });
         });
