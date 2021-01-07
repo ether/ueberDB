@@ -25,7 +25,7 @@ after(async function () {
 describe(__filename, function () {
   let speedTable;
   let db;
-  let get, findKeys, set, remove;
+  let get, findKeys, set, remove, flush;
 
   before(async function () {
     speedTable = new Clitable({
@@ -59,12 +59,32 @@ describe(__filename, function () {
             await util.promisify(db.init.bind(db))();
             get = util.promisify(db.get.bind(db));
             findKeys = util.promisify(db.findKeys.bind(db));
-            // When modifying, only wait until the operation has been cached, not until it has been
-            // written. If write caching is enabled then the callback after write won't be called
-            // until the periodic flush fires and completes, which can be up to 100ms by default.
-            // That delay can really throw off performance numbers.
-            set = util.promisify((k, v, cb) => db.set(k, v, cb));
-            remove = util.promisify((k, cb) => db.remove(k, cb));
+            set = (k, v) => {
+              let bp;
+              const wp = new Promise((resolve, reject) => {
+                const wCb = (err) => { if (err != null) return reject(err); resolve(); };
+                bp = new Promise((resolve, reject) => {
+                  const bCb = (err) => { if (err != null) return reject(err); resolve(); };
+                  db.set(k, v, bCb, wCb);
+                });
+              });
+              wp.buffered = bp;
+              return wp;
+            };
+            remove = (k) => {
+              let bp;
+              const wp = new Promise((resolve, reject) => {
+                const wCb = (err) => { if (err != null) return reject(err); resolve(); };
+                bp = new Promise((resolve, reject) => {
+                  const bCb = (err) => { if (err != null) return reject(err); resolve(); };
+                  db.remove(k, bCb, wCb);
+                });
+              });
+              wp.buffered = bp;
+              return wp;
+            };
+            // TODO: Add a flush() method to ueberdb.Database.
+            flush = util.promisify(db.db.flush.bind(db.db));
           });
 
           after(async function () {
@@ -166,11 +186,17 @@ describe(__filename, function () {
             const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
             // Pre-allocate an array before starting the timer so that time spent growing the array
             // doesn't throw off the benchmarks.
-            const promises = [...Array(count)].map(() => null);
+            const promises = [...Array(count + 1)].map(() => null);
+            const bufferedPromises = [...Array(count)].map(() => null);
 
             const timers = {start: Date.now()};
 
-            for (let i = 0; i < count; ++i) promises[i] = set(key + i, input);
+            for (let i = 0; i < count; ++i) {
+              promises[i] = set(key + i, input);
+              bufferedPromises[i] = promises[i].buffered;
+            }
+            await Promise.all(bufferedPromises);
+            promises[count] = flush();
             await Promise.all(promises);
             timers.set = Date.now();
 
@@ -182,7 +208,12 @@ describe(__filename, function () {
             await Promise.all(promises);
             timers.findKeys = Date.now();
 
-            for (let i = 0; i < count; ++i) promises[i] = remove(key + i);
+            for (let i = 0; i < count; ++i) {
+              promises[i] = remove(key + i);
+              bufferedPromises[i] = promises[i].buffered;
+            }
+            await Promise.all(bufferedPromises);
+            promises[count] = flush();
             await Promise.all(promises);
             timers.remove = Date.now();
 
