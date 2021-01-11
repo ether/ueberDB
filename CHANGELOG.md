@@ -3,6 +3,7 @@
 ## v1.2.1
 
 * New `flush()` method.
+* The `doShutdown()` method is deprecated. Use `flush()` instead.
 * The `close()` method now flushes unwritten entries before closing the database
   connection.
 * Bug fix: `null`/`undefined` is no longer cached if there is an error reading
