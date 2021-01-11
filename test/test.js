@@ -94,8 +94,7 @@ describe(__filename, function () {
                   wp.buffered = bp;
                   return wp;
                 };
-                // TODO: Add a flush() method to ueberdb.Database.
-                flush = util.promisify(db.db.flush.bind(db.db));
+                flush = util.promisify(db.flush.bind(db));
               });
 
               after(async function () {
