@@ -11,6 +11,8 @@ jobs:
   test:
     runs-on: ubuntu-latest
     services:
+      kafka:
+        image: kafka
       couchdb:
         image: couchdb
         ports:
