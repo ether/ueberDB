@@ -76,6 +76,9 @@ exports.Database.prototype.init = function (callback) {
  Wrapper functions
 */
 
+/**
+ * Deprecated synonym of flush().
+ */
 exports.Database.prototype.doShutdown = function (callback) {
   this.flush(callback);
 };
