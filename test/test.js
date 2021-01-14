@@ -25,36 +25,37 @@ after(async function () {
   }, 5000).unref();
 });
 
+// Like util.promisify, but converts a function that takes two callbacks:
+//   * change has been buffered callback (2nd to last arg)
+//   * change has been written callback (last arg)
+// Returns a Promise that resolves when the written callback is called. The returned Promise has a
+// .buffered property that is a Promise that resolves when the buffered callback is called.
+const promisifyBufferedFn = (fn) => {
+  const pfn = function (...args) {
+    let bp;
+    const wp = new Promise((resolve, reject) => {
+      const wCb = (err) => { if (err != null) return reject(err); resolve(); };
+      bp = new Promise((resolve, reject) => {
+        const bCb = (err) => { if (err != null) return reject(err); resolve(); };
+        args.push(bCb, wCb);
+        Reflect.apply(fn, this, args);
+      });
+    });
+    wp.buffered = bp;
+    return wp;
+  };
+  Object.setPrototypeOf(pfn, Object.getPrototypeOf(fn));
+  return Object.defineProperties(pfn, Object.getOwnPropertyDescriptors(fn));
+};
+
 // Returns an object with promisified equivalents of ueberdb.Database methods.
 const promisifyDb = (db) => ({
   init: util.promisify(db.init.bind(db)),
   close: util.promisify(db.close.bind(db)),
   get: util.promisify(db.get.bind(db)),
   findKeys: util.promisify(db.findKeys.bind(db)),
-  set: (k, v) => {
-    let bp;
-    const wp = new Promise((resolve, reject) => {
-      const wCb = (err) => { if (err != null) return reject(err); resolve(); };
-      bp = new Promise((resolve, reject) => {
-        const bCb = (err) => { if (err != null) return reject(err); resolve(); };
-        db.set(k, v, bCb, wCb);
-      });
-    });
-    wp.buffered = bp;
-    return wp;
-  },
-  remove: (k) => {
-    let bp;
-    const wp = new Promise((resolve, reject) => {
-      const wCb = (err) => { if (err != null) return reject(err); resolve(); };
-      bp = new Promise((resolve, reject) => {
-        const bCb = (err) => { if (err != null) return reject(err); resolve(); };
-        db.remove(k, bCb, wCb);
-      });
-    });
-    wp.buffered = bp;
-    return wp;
-  },
+  set: promisifyBufferedFn(db.set.bind(db)),
+  remove: promisifyBufferedFn(db.remove.bind(db)),
   flush: util.promisify(db.flush.bind(db)),
 });
 
