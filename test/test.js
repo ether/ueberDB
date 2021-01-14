@@ -25,10 +25,43 @@ after(async function () {
   }, 5000).unref();
 });
 
+// Returns an object with promisified equivalents of ueberdb.Database methods.
+const promisifyDb = (db) => ({
+  init: util.promisify(db.init.bind(db)),
+  close: util.promisify(db.close.bind(db)),
+  get: util.promisify(db.get.bind(db)),
+  findKeys: util.promisify(db.findKeys.bind(db)),
+  set: (k, v) => {
+    let bp;
+    const wp = new Promise((resolve, reject) => {
+      const wCb = (err) => { if (err != null) return reject(err); resolve(); };
+      bp = new Promise((resolve, reject) => {
+        const bCb = (err) => { if (err != null) return reject(err); resolve(); };
+        db.set(k, v, bCb, wCb);
+      });
+    });
+    wp.buffered = bp;
+    return wp;
+  },
+  remove: (k) => {
+    let bp;
+    const wp = new Promise((resolve, reject) => {
+      const wCb = (err) => { if (err != null) return reject(err); resolve(); };
+      bp = new Promise((resolve, reject) => {
+        const bCb = (err) => { if (err != null) return reject(err); resolve(); };
+        db.remove(k, bCb, wCb);
+      });
+    });
+    wp.buffered = bp;
+    return wp;
+  },
+  flush: util.promisify(db.flush.bind(db)),
+});
+
 describe(__filename, function () {
   let speedTable;
   let db;
-  let get, findKeys, set, remove, flush;
+  let pdb;
 
   before(async function () {
     speedTable = new Clitable({
@@ -67,38 +100,12 @@ describe(__filename, function () {
                   ...(readCache ? {} : {cache: 0}),
                   ...(writeBuffer ? {} : {writeInterval: 0}),
                 });
-                await util.promisify(db.init.bind(db))();
-                get = util.promisify(db.get.bind(db));
-                findKeys = util.promisify(db.findKeys.bind(db));
-                set = (k, v) => {
-                  let bp;
-                  const wp = new Promise((resolve, reject) => {
-                    const wCb = (err) => { if (err != null) return reject(err); resolve(); };
-                    bp = new Promise((resolve, reject) => {
-                      const bCb = (err) => { if (err != null) return reject(err); resolve(); };
-                      db.set(k, v, bCb, wCb);
-                    });
-                  });
-                  wp.buffered = bp;
-                  return wp;
-                };
-                remove = (k) => {
-                  let bp;
-                  const wp = new Promise((resolve, reject) => {
-                    const wCb = (err) => { if (err != null) return reject(err); resolve(); };
-                    bp = new Promise((resolve, reject) => {
-                      const bCb = (err) => { if (err != null) return reject(err); resolve(); };
-                      db.remove(k, bCb, wCb);
-                    });
-                  });
-                  wp.buffered = bp;
-                  return wp;
-                };
-                flush = util.promisify(db.flush.bind(db));
+                pdb = promisifyDb(db);
+                await pdb.init();
               });
 
               after(async function () {
-                await util.promisify(db.close.bind(db))();
+                await pdb.close();
                 if (dbSettings.filename) await fs.unlink(dbSettings.filename).catch(() => {});
               });
 
@@ -111,22 +118,22 @@ describe(__filename, function () {
                     before(async function () {
                       input = {a: 1, b: new Randexp(/.+/).gen()};
                       key = randomString(maxKeyLength - 1) + (space ? ' ' : '');
-                      await set(key, input);
+                      await pdb.set(key, input);
                     });
 
                     it('get(key) -> record', async function () {
-                      const output = await get(key);
+                      const output = await pdb.get(key);
                       assert.equal(JSON.stringify(output), JSON.stringify(input));
                     });
 
                     it('get(`${key} `) -> nullish', async function () {
-                      const output = await get(`${key} `);
+                      const output = await pdb.get(`${key} `);
                       assert(output == null);
                     });
 
                     if (space) {
                       it('get(key.slice(0, -1)) -> nullish', async function () {
-                        const output = await get(key.slice(0, -1));
+                        const output = await pdb.get(key.slice(0, -1));
                         assert(output == null);
                       });
                     }
@@ -136,22 +143,22 @@ describe(__filename, function () {
 
               it('get of unknown key -> nullish', async function () {
                 const key = randomString();
-                assert(await get(key) == null);
+                assert(await pdb.get(key) == null);
               });
 
               it('set+get works', async function () {
                 const input = {a: 1, b: new Randexp(/.+/).gen()};
                 const key = randomString();
-                await set(key, input);
-                const output = await get(key);
+                await pdb.set(key, input);
+                const output = await pdb.get(key);
                 assert.equal(JSON.stringify(output), JSON.stringify(input));
               });
 
               it('set+get with random key/value works', async function () {
                 const input = {testLongString: new Randexp(/[a-f0-9]{50000}/).gen()};
                 const key = randomString();
-                await set(key, input);
-                const output = await get(key);
+                await pdb.set(key, input);
+                const output = await pdb.get(key);
                 assert.equal(JSON.stringify(output), JSON.stringify(input));
               });
 
@@ -160,12 +167,12 @@ describe(__filename, function () {
                 // TODO setting a key with non ascii chars
                 const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
                 await Promise.all([
-                  set(`${key}:test2`, input),
-                  set(`${key}:test`, input),
+                  pdb.set(`${key}:test2`, input),
+                  pdb.set(`${key}:test`, input),
                 ]);
-                const output = await findKeys(`${key}:*`, null);
+                const output = await pdb.findKeys(`${key}:*`, null);
                 for (const keyVal of output) {
-                  const output = await get(keyVal);
+                  const output = await pdb.get(keyVal);
                   assert.equal(JSON.stringify(output), JSON.stringify(input));
                 }
               });
@@ -173,10 +180,10 @@ describe(__filename, function () {
               it('remove works', async function () {
                 const input = {a: 1, b: new Randexp(/.+/).gen()};
                 const key = randomString();
-                await set(key, input);
-                assert.equal(JSON.stringify(await get(key)), JSON.stringify(input));
-                await remove(key);
-                assert(await get(key) == null);
+                await pdb.set(key, input);
+                assert.equal(JSON.stringify(await pdb.get(key)), JSON.stringify(input));
+                await pdb.remove(key);
+                assert(await pdb.get(key) == null);
               });
 
               it('speed is acceptable', async function () {
@@ -201,28 +208,28 @@ describe(__filename, function () {
                 const timers = {start: Date.now()};
 
                 for (let i = 0; i < count; ++i) {
-                  promises[i] = set(key + i, input);
+                  promises[i] = pdb.set(key + i, input);
                   bufferedPromises[i] = promises[i].buffered;
                 }
                 await Promise.all(bufferedPromises);
-                promises[count] = flush();
+                promises[count] = pdb.flush();
                 await Promise.all(promises);
                 timers.set = Date.now();
 
-                for (let i = 0; i < count; ++i) promises[i] = get(key + i);
+                for (let i = 0; i < count; ++i) promises[i] = pdb.get(key + i);
                 await Promise.all(promises);
                 timers.get = Date.now();
 
-                for (let i = 0; i < count; ++i) promises[i] = findKeys(key + i, null);
+                for (let i = 0; i < count; ++i) promises[i] = pdb.findKeys(key + i, null);
                 await Promise.all(promises);
                 timers.findKeys = Date.now();
 
                 for (let i = 0; i < count; ++i) {
-                  promises[i] = remove(key + i);
+                  promises[i] = pdb.remove(key + i);
                   bufferedPromises[i] = promises[i].buffered;
                 }
                 await Promise.all(bufferedPromises);
-                promises[count] = flush();
+                promises[count] = pdb.flush();
                 await Promise.all(promises);
                 timers.remove = Date.now();
 
