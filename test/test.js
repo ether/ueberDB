@@ -54,8 +54,10 @@ const promisifyDb = (db) => ({
   init: util.promisify(db.init.bind(db)),
   close: util.promisify(db.close.bind(db)),
   get: util.promisify(db.get.bind(db)),
+  getSub: util.promisify(db.getSub.bind(db)),
   findKeys: util.promisify(db.findKeys.bind(db)),
   set: promisifyBufferedFn(db.set.bind(db)),
+  setSub: promisifyBufferedFn(db.setSub.bind(db)),
   remove: promisifyBufferedFn(db.remove.bind(db)),
   flush: util.promisify(db.flush.bind(db)),
 });
@@ -186,6 +188,44 @@ describe(__filename, function () {
                 assert.equal(JSON.stringify(await pdb.get(key)), JSON.stringify(input));
                 await pdb.remove(key);
                 assert(await pdb.get(key) == null);
+              });
+
+              it('getSub of existing property works', async function () {
+                await pdb.set('k', {sub1: {sub2: 'v'}});
+                assert.equal(await pdb.getSub('k', ['sub1', 'sub2']), 'v');
+                assert.deepEqual(await pdb.getSub('k', ['sub1']), {sub2: 'v'});
+                assert.deepEqual(await pdb.getSub('k', []), {sub1: {sub2: 'v'}});
+              });
+
+              it('getSub of missing property returns nullish', async function () {
+                await pdb.set('k', {sub1: {}});
+                assert(await pdb.getSub('k', ['sub1', 'sub2']) == null);
+
+                await pdb.set('k', {});
+                assert(await pdb.getSub('k', ['sub1', 'sub2']) == null);
+                assert(await pdb.getSub('k', ['sub1']) == null);
+
+                await pdb.remove('k');
+                assert(await pdb.getSub('k', ['sub1', 'sub2']) == null);
+                assert(await pdb.getSub('k', ['sub1']) == null);
+                assert(await pdb.getSub('k', []) == null);
+              });
+
+              it('setSub can modify an existing property', async function () {
+                await pdb.set('k', {sub1: {sub2: 'v'}});
+                await pdb.setSub('k', ['sub1', 'sub2'], 'v2');
+                assert.deepEqual(await pdb.get('k'), {sub1: {sub2: 'v2'}});
+
+                await pdb.setSub('k', ['sub1'], 'v2');
+                assert.deepEqual(await pdb.get('k'), {sub1: 'v2'});
+              });
+
+              it('setSub can add a new property', async function () {
+                await pdb.set('k', {});
+                await pdb.setSub('k', ['sub1'], {});
+                assert.deepEqual(await pdb.get('k'), {sub1: {}});
+                await pdb.setSub('k', ['sub1', 'sub2'], 'v');
+                assert.deepEqual(await pdb.get('k'), {sub1: {sub2: 'v'}});
               });
 
               it('speed is acceptable', async function () {
