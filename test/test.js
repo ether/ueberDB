@@ -218,14 +218,34 @@ describe(__filename, function () {
 
                 await pdb.setSub('k', ['sub1'], 'v2');
                 assert.deepEqual(await pdb.get('k'), {sub1: 'v2'});
+
+                await pdb.setSub('k', [], 'v3');
+                assert.equal(await pdb.get('k'), 'v3');
               });
 
               it('setSub can add a new property', async function () {
-                await pdb.set('k', {});
+                await pdb.remove('k');
+                await pdb.setSub('k', [], {});
+                assert.deepEqual(await pdb.get('k'), {});
                 await pdb.setSub('k', ['sub1'], {});
                 assert.deepEqual(await pdb.get('k'), {sub1: {}});
                 await pdb.setSub('k', ['sub1', 'sub2'], 'v');
                 assert.deepEqual(await pdb.get('k'), {sub1: {sub2: 'v'}});
+
+                await pdb.remove('k');
+                await pdb.setSub('k', ['sub1', 'sub2'], 'v');
+                assert.deepEqual(await pdb.get('k'), {sub1: {sub2: 'v'}});
+              });
+
+              it('setSub rejects attempts to set properties on primitives', async function () {
+                for (const v of ['hello world', 42, true]) {
+                  await pdb.set('k', v);
+                  assert.rejects(pdb.setSub('k', ['sub'], 'x'), {
+                    name: 'TypeError',
+                    message: /property "sub" on non-object/,
+                  });
+                  assert.deepEqual(await pdb.get('k'), v);
+                }
               });
 
               it('speed is acceptable', async function () {
