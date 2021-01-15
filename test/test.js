@@ -245,15 +245,22 @@ describe(__filename, function () {
                   (timers.remove - timers.start) / count,
                 ]);
 
+                // Removes the "Acceptable ms/op" column if there is no enforced limit.
+                const filterColumn = (row) => {
+                  if (readCache && writeBuffer) return row;
+                  row.splice(1, 1);
+                  return row;
+                };
                 const acceptableTable = new Clitable({
-                  head: ['op', 'Acceptable ms/op', 'Actual ms/op'],
-                  colWidths: [10, 18, 18],
+                  head: filterColumn(['op', 'Acceptable ms/op', 'Actual ms/op']),
+                  colWidths: filterColumn([10, 18, 18]),
                 });
-                acceptableTable.push(
-                    ['set', setMax, timePerOp.set],
-                    ['get', getMax, timePerOp.get],
-                    ['findKeys', findKeysMax, timePerOp.findKeys],
-                    ['remove', removeMax, timePerOp.remove]);
+                acceptableTable.push(...[
+                  ['set', setMax, timePerOp.set],
+                  ['get', getMax, timePerOp.get],
+                  ['findKeys', findKeysMax, timePerOp.findKeys],
+                  ['remove', removeMax, timePerOp.remove],
+                ].map(filterColumn));
                 console.log(acceptableTable.toString());
 
                 if (readCache && writeBuffer) {
