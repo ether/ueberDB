@@ -29,20 +29,21 @@ after(async function () {
 //   * change has been buffered callback (2nd to last arg)
 //   * change has been written callback (last arg)
 // Returns a Promise that resolves when the written callback is called. The returned Promise has a
-// .buffered property that is a Promise that resolves when the buffered callback is called.
+// buffered() method that returns a Promise that resolves when the buffered callback is called.
 const promisifyBufferedFn = (fn) => {
   const pfn = function (...args) {
-    let bp;
-    const wp = new Promise((resolve, reject) => {
-      const wCb = (err) => { if (err != null) return reject(err); resolve(); };
-      bp = new Promise((resolve, reject) => {
-        const bCb = (err) => { if (err != null) return reject(err); resolve(); };
-        args.push(bCb, wCb);
-        Reflect.apply(fn, this, args);
-      });
+    const toCb = (resolve, reject) => (err) => { if (err != null) return reject(err); resolve(); };
+    const bufferedPromise = new Promise((resolve, reject) => args.push(toCb(resolve, reject)));
+    const writtenPromise = new Promise((resolve, reject) => args.push(toCb(resolve, reject)));
+    bufferedPromise.catch(() => {}); // Suppress unhandled bufferedPromise rejection by default.
+    writtenPromise.buffered = () => bufferedPromise.catch((err) => {
+      // Suppress unhandled writtenPromise rejection, but only if bufferedPromise rejects.
+      writtenPromise.catch(() => {});
+      // Unsuppress unhandled bufferedPromise rejection.
+      throw err;
     });
-    wp.buffered = bp;
-    return wp;
+    Reflect.apply(fn, this, args);
+    return writtenPromise;
   };
   Object.setPrototypeOf(pfn, Object.getPrototypeOf(fn));
   return Object.defineProperties(pfn, Object.getOwnPropertyDescriptors(fn));
@@ -210,7 +211,7 @@ describe(__filename, function () {
 
                 for (let i = 0; i < count; ++i) {
                   promises[i] = pdb.set(key + i, input);
-                  bufferedPromises[i] = promises[i].buffered;
+                  bufferedPromises[i] = promises[i].buffered();
                 }
                 await Promise.all(bufferedPromises);
                 promises[count] = pdb.flush();
@@ -227,7 +228,7 @@ describe(__filename, function () {
 
                 for (let i = 0; i < count; ++i) {
                   promises[i] = pdb.remove(key + i);
-                  bufferedPromises[i] = promises[i].buffered;
+                  bufferedPromises[i] = promises[i].buffered();
                 }
                 await Promise.all(bufferedPromises);
                 promises[count] = pdb.flush();
