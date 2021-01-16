@@ -24,25 +24,22 @@
     "async": "^3.2.0",
     "cassandra-driver": "^4.5.1",
     "channels": "0.0.4",
-    "cli-table": "^0.3.1",
     "dirty": "^1.1.0",
     "elasticsearch": "^16.7.1",
-    "mocha": "^7.1.2",
     "mongodb": "^3.6.3",
     "mssql": "^7.0.0-beta.2",
     "mysql": "2.18.1",
     "nano": "^8.2.2",
     "pg": "^8.0.3",
-    "randexp": "^0.5.3",
     "redis": "^3.0.2",
     "rethinkdb": "^2.4.2",
-    "simple-git": "^2.4.0",
-    "wtfnode": "^0.8.4"
+    "simple-git": "^2.4.0"
   },
   "optionalDependencies": {
     "sqlite3": "^5.0.1"
   },
   "devDependencies": {
+    "cli-table": "^0.3.1",
     "eslint": "^7.18.0",
     "eslint-config-etherpad": "^1.0.23",
     "eslint-plugin-eslint-comments": "^3.2.0",
@@ -50,7 +47,10 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prefer-arrow": "^1.2.2",
     "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-you-dont-need-lodash-underscore": "^6.10.0"
+    "eslint-plugin-you-dont-need-lodash-underscore": "^6.10.0",
+    "mocha": "^7.1.2",
+    "randexp": "^0.5.3",
+    "wtfnode": "^0.8.4"
   },
   "repository": {
     "type": "git",
