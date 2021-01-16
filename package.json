@@ -23,7 +23,6 @@
   "dependencies": {
     "async": "^3.2.0",
     "cassandra-driver": "^4.5.1",
-    "chai": "^4.2.0",
     "channels": "0.0.4",
     "cli-table": "^0.3.1",
     "dirty": "^1.1.0",
@@ -37,7 +36,6 @@
     "randexp": "^0.5.3",
     "redis": "^3.0.2",
     "rethinkdb": "^2.4.2",
-    "rimraf": "^3.0.2",
     "simple-git": "^2.4.0",
     "wtfnode": "^0.8.4"
   },
@@ -52,9 +50,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prefer-arrow": "^1.2.2",
     "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-you-dont-need-lodash-underscore": "^6.10.0",
-    "expect.js": "0.3.1",
-    "log4js": "^6.1.2"
+    "eslint-plugin-you-dont-need-lodash-underscore": "^6.10.0"
   },
   "repository": {
     "type": "git",
