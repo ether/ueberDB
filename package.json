@@ -30,7 +30,7 @@
     "elasticsearch": "^16.7.1",
     "mocha": "^7.1.2",
     "mongodb": "^3.6.3",
-    "mssql": "^7.0.0-beta.1",
+    "mssql": "^7.0.0-beta.2",
     "mysql": "2.18.1",
     "nano": "^8.2.2",
     "pg": "^8.0.3",
@@ -42,11 +42,11 @@
     "wtfnode": "^0.8.4"
   },
   "optionalDependencies": {
-    "sqlite3": "^5.0.0"
+    "sqlite3": "^5.0.1"
   },
   "devDependencies": {
-    "eslint": "^7.17.0",
-    "eslint-config-etherpad": "^1.0.22",
+    "eslint": "^7.18.0",
+    "eslint-config-etherpad": "^1.0.23",
     "eslint-plugin-eslint-comments": "^3.2.0",
     "eslint-plugin-mocha": "^8.0.0",
     "eslint-plugin-node": "^11.1.0",
