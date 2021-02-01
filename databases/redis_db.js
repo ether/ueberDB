@@ -40,8 +40,7 @@ exports.Database.prototype.init = function (callback) {
     this.client = redis.createClient(this.settings.socket,
         this.settings.client_options);
   } else {
-    this.client = redis.createClient(this.settings.port,
-        this.settings.host, this.settings.client_options);
+    this.client = redis.createClient(this.settings);
   }
 
   this.client.database = this.settings.database;
