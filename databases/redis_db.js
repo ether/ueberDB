@@ -26,13 +26,13 @@ exports.Database = function (settings) {
 };
 
 exports.Database.prototype.auth = function (callback) {
-  if (this.settings.password) return this.client.auth(this.settings.password, callback);
-  callback();
+  if (!this.settings.password) return callback();
+  this.client.auth(this.settings.password, callback);
 };
 
 exports.Database.prototype.select = function (callback) {
-  if (this.settings.database) return this.client.select(this.settings.database, callback);
-  callback();
+  if (!this.settings.database) return callback();
+  this.client.select(this.settings.database, callback);
 };
 
 exports.Database.prototype.init = function (callback) {
