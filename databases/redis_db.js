@@ -37,11 +37,16 @@ exports.Database.prototype.select = function (callback) {
 
 exports.Database.prototype.init = function (callback) {
   if (this.settings.socket) {
+    // Deprecated, but kept for backwards compatibility.
     this.client = redis.createClient(this.settings.socket,
         this.settings.client_options);
-  } else {
+  } else if (this.settings.client_options) {
+    // Deprecated, but kept for backwards compatibility.
     this.client = redis.createClient(this.settings.port,
         this.settings.host, this.settings.client_options);
+  } else {
+    // This is the preferred way to configure the client.
+    this.client = redis.createClient(this.settings);
   }
 
   this.client.database = this.settings.database;
