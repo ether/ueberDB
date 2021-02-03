@@ -26,7 +26,7 @@ exports.Database = function (settings) {
 };
 
 exports.Database.prototype.auth = function (callback) {
-  if (this.settings.password) this.client.auth(this.settings.password, callback);
+  if (this.settings.password) return this.client.auth(this.settings.password, callback);
   callback();
 };
 
