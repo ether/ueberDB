@@ -18,6 +18,7 @@ writes are done in a bulk. This can be turned off.
 * Dirty
 * Elasticsearch
 * Maria
+* Mongo
 * MsSQL
 * MySQL
 * Postgres (single connection and with connection pool)
@@ -286,7 +287,7 @@ environment variable `NODE_TLS_REJECT_UNAUTHORIZED = 0` and add the flag
 
 ## What's changed from UeberDB?
 
-* Dropped broken databases: CrateDB, LevelDB, LMDB, and MongoDB (probably a
+* Dropped broken databases: CrateDB, LevelDB, LMDB (probably a
   breaking change for some people)
 * Introduced CI.
 * Introduced better testing.
