@@ -87,7 +87,7 @@ exports.Database.prototype.doShutdown = function (callback) {
  * Writes any unsaved changes to the underlying database.
  */
 exports.Database.prototype.flush = function (callback) {
-  this.db.flush(callback);
+  util.callbackify(this.db.flush.bind(this.db))(callback);
 };
 
 exports.Database.prototype.get = function (key, callback) {
