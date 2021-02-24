@@ -183,7 +183,7 @@ const doOperation = (operation, callback) => {
  * returns, any future call to a method on this object may result in an error.
  */
 exports.Database.prototype.close = function (callback) {
-  this.db.close(callback);
+  util.callbackify(this.db.close.bind(this.db))(callback);
 };
 
 const clone = (obj) => {
