@@ -119,7 +119,7 @@ exports.Database.prototype.setSub = function (key, sub, value, bufferCallback, w
 const doOperation = (operation, callback) => {
   const db = operation.db;
   if (operation.type === 'get') {
-    db.get(operation.key, (err, value) => {
+    util.callbackify(db.get.bind(db))(operation.key, (err, value) => {
       // clone the value
       value = clone(value);
 
