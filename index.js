@@ -138,7 +138,7 @@ const doOperation = (operation, callback) => {
       if (operation.bufferCallback) operation.bufferCallback(err);
     }, operation.writeCallback);
   } else if (operation.type === 'findKeys') {
-    db.findKeys(operation.key, operation.notKey, (err, value) => {
+    util.callbackify(db.findKeys.bind(db))(operation.key, operation.notKey, (err, value) => {
       // clone the value
       value = clone(value);
 
