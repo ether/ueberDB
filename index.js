@@ -157,7 +157,7 @@ const doOperation = (operation, callback) => {
       if (operation.bufferCallback) operation.bufferCallback(err);
     }, operation.writeCallback);
   } else if (operation.type === 'getsub') {
-    db.getSub(operation.key, operation.sub, (err, value) => {
+    util.callbackify(db.getSub.bind(db))(operation.key, operation.sub, (err, value) => {
       // clone the value
       value = clone(value);
 
