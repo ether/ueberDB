@@ -117,8 +117,9 @@ exports.Database.prototype.setSub = function (key, sub, value, bufferCallback, w
 };
 
 const doOperation = (operation, callback) => {
+  const db = operation.db;
   if (operation.type === 'get') {
-    operation.db.get(operation.key, (err, value) => {
+    db.get(operation.key, (err, value) => {
       // clone the value
       value = clone(value);
 
@@ -129,7 +130,7 @@ const doOperation = (operation, callback) => {
       callback();
     });
   } else if (operation.type === 'remove') {
-    operation.db.remove(operation.key, (err) => {
+    db.remove(operation.key, (err) => {
       // call the queue callback
       callback();
 
@@ -137,7 +138,7 @@ const doOperation = (operation, callback) => {
       if (operation.bufferCallback) operation.bufferCallback(err);
     }, operation.writeCallback);
   } else if (operation.type === 'findKeys') {
-    operation.db.findKeys(operation.key, operation.notKey, (err, value) => {
+    db.findKeys(operation.key, operation.notKey, (err, value) => {
       // clone the value
       value = clone(value);
 
@@ -148,7 +149,7 @@ const doOperation = (operation, callback) => {
       callback();
     });
   } else if (operation.type === 'set') {
-    operation.db.set(operation.key, operation.value, (err) => {
+    db.set(operation.key, operation.value, (err) => {
       // call the queue callback
       callback();
 
@@ -156,7 +157,7 @@ const doOperation = (operation, callback) => {
       if (operation.bufferCallback) operation.bufferCallback(err);
     }, operation.writeCallback);
   } else if (operation.type === 'getsub') {
-    operation.db.getSub(operation.key, operation.sub, (err, value) => {
+    db.getSub(operation.key, operation.sub, (err, value) => {
       // clone the value
       value = clone(value);
 
@@ -167,7 +168,7 @@ const doOperation = (operation, callback) => {
       callback();
     });
   } else if (operation.type === 'setsub') {
-    operation.db.setSub(operation.key, operation.sub, operation.value, (err) => {
+    db.setSub(operation.key, operation.sub, operation.value, (err) => {
       // call the queue callback
       callback();
 
