@@ -36,7 +36,6 @@ exports.databases = {
     charset: 'utf8mb4',
   },
   redis: {
-    hostname: '127.0.0.1',
   },
   mongodb: {
     url: 'mongodb://127.0.0.1:27017',
