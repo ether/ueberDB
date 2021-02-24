@@ -1,5 +1,39 @@
 # Notable Changes
 
+## v1.2.9
+
+* `dirty`: Workaround for a bug in the upstream `dirty` driver.
+
+## v1.2.7
+
+* `redis`: Experimental support for passing the settings object directly to the
+  `redis` package.
+
+## v1.2.6
+
+* `redis`: Fixed "Callback was already called" exception during init.
+
+## v1.2.5
+
+* All: Fixed a major bug introduced in v1.1.10 that caused `setSub()` to
+  silently discard changes.
+* All: Fixed a bug that prevented cache entries from being marked as most
+  recently used.
+
+## v1.2.4
+
+* `mssql`: Updated `mssql` dependency.
+* `dirty_git`: Updated `simple-git` dependency.
+* `sqlite`: Updated `sqlite3` dependency.
+
+## v1.2.3
+
+* `mssql`: Updated `mssql` dependency.
+
+## v1.2.2
+
+* All: Fixed minor `setSub()` corner cases.
+
 ## v1.2.1
 
 * New `flush()` method.
