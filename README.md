@@ -94,44 +94,94 @@ example(db);
 ```
 ### Getting and setting subkeys
 
-``.get`` is useful for getting
-```
-"foo" : {
-  ...all of this...
-}
-```
-``.getsub`` is useful for getting
-```
-"foo:bar" : {
-  "pads" : {
-    ...all of this...
-  }
-}
-```
-``setSub`` sets the subkeys of keys IE 
+ueberDB can store complex JSON objects. Sometimes you only want to get or set a
+specific (sub-)property of the stored object. The `.getSub()` and `.setSub()`
+methods make this easier.
 
+#### `getSub`
+
+```javascript
+db.getSub(key, propertyPath, callback);
 ```
-"foo:bar" : {
-  "pads" : {
-    ...all of this...
-  }
-}
+
+Fetches the object stored at `key`, walks the property path given in
+`propertyPath`, and returns the value at that location. `propertyPath` must be
+an array. If `propertyPath` is an empty array then `getSub()` is equivalent to
+`get()`. Returns a nullish value (`null` or `undefined`) if the record does not
+exist or if the given property path does not exist.
+
+Examples:
+
+```javascript
+db.set(key, {prop1: {prop2: ['value']}}, (err) => {
+  if (err != null) throw err;
+
+  db.getSub(key, ['prop1', 'prop2', '0'], (err, val) => {
+    if (err != null) throw err;
+    console.log('1.', val); // prints "1. value"
+  });
+
+  db.getSub(key, ['prop1', 'prop2'], (err, val) => {
+    if (err != null) throw err;
+    console.log('2.', val); // prints "2. [ 'value' ]"
+  });
+
+  db.getSub(key, ['prop1'], (err, val) => {
+    if (err != null) throw err;
+    console.log('3.', val); // prints "3. { prop2: [ 'value' ] }"
+  });
+
+  db.getSub(key, [], (err, val) => {
+    if (err != null) throw err;
+    console.log('4.', val); // prints "4. { prop1: { prop2: [ 'value' ] } }"
+  });
+
+  db.getSub(key, ['does', 'not', 'exist'], (err, val) => {
+    if (err != null) throw err;
+    console.log('5.', val); // prints "5. null" or "5. undefined"
+  });
+});
 ```
-### ``getSub``
-``key`` is the key[string] IE "foo:bar"
-``subkey`` is an array of subkeys you want to get IE ``['pads','someothersubkey'];``
 
-Example:
-``const result = await db.getSub(key, subkey); // returns an array of responses``
+#### `setSub`
 
-### ``setSub`` 
-``key`` is the key[string] IE "foo:bar"
-``subkey`` is an array of subkeys you want to set IE ``['pads','someothersubkey'];``
-``value`` is a value[string] to set IE "hello world"
+```javascript
+db.setSub(key, propertyPath, value, bufferedCallback, writtenCallback);
+```
 
-Example:
-``db.setSub(key, subkey, value);``
+Fetches the object stored at `key`, walks the property path given in
+`propertyPath`, and sets the value at that location to `value`. `propertyPath`
+must be an array. If `propertyPath` is an empty array then `setSub()` is
+equivalent to `set()`. Empty objects are created as needed if the property path
+does not exist (including if `key` does not exist in the database). It is an
+error to attempt to set a property on a non-object. `bufferedCallback` is
+optional and is called when the change has been buffered. `writtenCallback` is
+optional and is called when the database driver has reported that the change has
+been written.
 
+Examples:
+
+```javascript
+// Assumption: The database does not yet have any records.
+
+// Equivalent to db.set('key1', 'value', cb):
+db.setSub('key1', [], 'value', cb);
+
+// Equivalent to db.set('key2', {prop1: {prop2: {0: 'value'}}}, cb):
+db.setSub('key2', ['prop1', 'prop2', '0'], 'value', cb):
+
+db.set('key3', {prop1: 'value'}, (err) => {
+  if (err != null) return cb(err);
+  // Equivalent to db.set('key3', {prop1: 'value', prop2: 'other value'}, cb):
+  db.setSub('key3', ['prop2'], 'other value', cb);
+});
+
+db.set('key3', {prop1: 'value'}, (err) => {
+  if (err != null) return cb(err);
+  // TypeError: Cannot set property "badProp" on non-object "value":
+  db.setSub('key3', ['prop1', 'badProp'], 'foo', cb);
+});
+```
 
 ### Disable the read cache
 
