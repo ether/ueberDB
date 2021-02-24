@@ -1,5 +1,13 @@
 # Notable Changes
 
+## v1.3.1
+
+* `redis`: The database config object is now passed directly to the `redis`
+  package. For details, see
+  https://www.npmjs.com/package/redis/v/3.0.2#options-object-properties.
+  Old-style settings objects (where the `redis` options are in the
+  `client_options` property) are still supported but deprecated.
+
 ## v1.2.9
 
 * `dirty`: Workaround for a bug in the upstream `dirty` driver.
