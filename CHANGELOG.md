@@ -1,5 +1,9 @@
 # Notable Changes
 
+## v1.3.2
+
+* `dirty`: Updated `dirty` dependency.
+
 ## v1.3.1
 
 * `redis`: The database config object is now passed directly to the `redis`

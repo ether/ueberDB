@@ -24,7 +24,7 @@
     "async": "^3.2.0",
     "cassandra-driver": "^4.5.1",
     "channels": "0.0.4",
-    "dirty": "^1.1.0",
+    "dirty": "^1.1.1",
     "elasticsearch": "^16.7.1",
     "mongodb": "^3.6.3",
     "mssql": "^7.0.0-beta.2",

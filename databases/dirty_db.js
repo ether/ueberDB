@@ -70,9 +70,6 @@ exports.Database.prototype.remove = function (key, callback) {
 };
 
 exports.Database.prototype.close = function (callback) {
-  // Sleep a bit before closing to work around https://github.com/ether/etherpad-lite/issues/4684.
-  setTimeout(() => {
-    this.db.close();
-    if (callback) callback();
-  }, 500);
+  this.db.close();
+  if (callback) callback();
 };
