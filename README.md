@@ -92,6 +92,7 @@ async function example(db){
 
 example(db);
 ```
+
 ### Getting and setting subkeys
 
 ueberDB can store complex JSON objects. Sometimes you only want to get or set a
@@ -146,7 +147,7 @@ db.set(key, {prop1: {prop2: ['value']}}, (err) => {
 #### `setSub`
 
 ```javascript
-db.setSub(key, propertyPath, value, bufferedCallback, writtenCallback);
+db.setSub(key, propertyPath, value, cb);
 ```
 
 Fetches the object stored at `key`, walks the property path given in
@@ -154,10 +155,8 @@ Fetches the object stored at `key`, walks the property path given in
 must be an array. If `propertyPath` is an empty array then `setSub()` is
 equivalent to `set()`. Empty objects are created as needed if the property path
 does not exist (including if `key` does not exist in the database). It is an
-error to attempt to set a property on a non-object. `bufferedCallback` is
-optional and is called when the change has been buffered. `writtenCallback` is
-optional and is called when the database driver has reported that the change has
-been written.
+error to attempt to set a property on a non-object. `cb` is optional and is
+called when the database driver has reported that the change has been written.
 
 Examples:
 

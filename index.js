@@ -101,20 +101,44 @@ exports.Database.prototype.findKeys = function (key, notKey, callback) {
   util.callbackify(this.db.findKeys.bind(this.db))(key, notKey, (e, v) => callback(e, clone(v)));
 };
 
-exports.Database.prototype.remove = function (key, bufferCallback, writeCallback) {
-  this.db.remove(key, bufferCallback, writeCallback);
+const makeDoneCallback = (callback, deprecated) => (err) => {
+  if (callback) callback(err);
+  if (deprecated) deprecated(err);
+  if (err != null && callback == null && deprecated == null) throw err;
 };
 
-exports.Database.prototype.set = function (key, value, bufferCallback, writeCallback) {
-  this.db.set(key, clone(value), bufferCallback, writeCallback);
+/**
+ * Removes an entry from the database if present.
+ *
+ * @param cb Called when the write has been committed to the underlying database driver.
+ * @param deprecated Deprecated callback that is called just after cb.
+ */
+exports.Database.prototype.remove = function (key, cb, deprecated = null) {
+  this.db.remove(key, makeDoneCallback(cb, deprecated));
+};
+
+/**
+ * Adds or changes the value of an entry.
+ *
+ * @param cb Called when the write has been committed to the underlying database driver.
+ * @param deprecated Deprecated callback that is called just after cb.
+ */
+exports.Database.prototype.set = function (key, value, cb, deprecated = null) {
+  this.db.set(key, clone(value), makeDoneCallback(cb, deprecated));
 };
 
 exports.Database.prototype.getSub = function (key, sub, callback) {
   util.callbackify(this.db.getSub.bind(this.db))(key, sub, (err, val) => callback(err, clone(val)));
 };
 
-exports.Database.prototype.setSub = function (key, sub, value, bufferCallback, writeCallback) {
-  this.db.setSub(key, sub, clone(value), bufferCallback, writeCallback);
+/**
+ * Adds or changes a subvalue of an entry.
+ *
+ * @param cb Called when the write has been committed to the underlying database driver.
+ * @param deprecated Deprecated callback that is called just after cb.
+ */
+exports.Database.prototype.setSub = function (key, sub, value, cb, deprecated = null) {
+  this.db.setSub(key, sub, clone(value), makeDoneCallback(cb, deprecated));
 };
 
 /**

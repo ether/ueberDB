@@ -26,12 +26,8 @@ describe(__filename, function () {
     const udb = new ueberdb.Database('mock', settings);
     mock = settings.mock;
     db = {metrics: udb.metrics};
-    for (const fn of ['init', 'close', 'get', 'getSub', 'findKeys', 'flush']) {
-      db[fn] = util.promisify(udb[fn].bind(udb));
-    }
-    for (const fn of ['set', 'setSub', 'remove']) {
-      db[fn] = util.promisify((...args) => udb[fn](...args.slice(0, -1), null, ...args.slice(-1)));
-    }
+    const fns = ['init', 'close', 'get', 'getSub', 'findKeys', 'flush', 'remove', 'set', 'setSub'];
+    for (const fn of fns) db[fn] = util.promisify(udb[fn].bind(udb));
     mock.once('init', (cb) => cb());
     await db.init();
   });
@@ -146,7 +142,6 @@ describe(__filename, function () {
           const writeFinished = db.set(key, {s: 'v'});
           const flushed = db.flush(); // Speed up the tests.
           await writeStarted;
-          await new Promise((resolve) => setImmediate(resolve));
           mock.once('get', (key, cb) => { assert.fail('value should be cached'); });
           const before = {...db.metrics};
           assert.equal(await db.getSub(key, ['s']), 'v');
@@ -198,7 +193,6 @@ describe(__filename, function () {
             const writeFinished = tc.f(key);
             const flushed = db.flush(); // Speed up the tests.
             await writeStarted;
-            await new Promise((resolve) => setImmediate(resolve));
             assert.deepEqual(diffMetrics(before, db.metrics), {
               lockAcquires: tc.nOps,
               lockReleases: tc.nOps,

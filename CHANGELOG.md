@@ -1,5 +1,13 @@
 # Notable Changes
 
+## v1.4.1
+
+* The two callback arguments in `remove()`, `set()`, and `setSub()` have
+  changed: Instead of a callback that is called after the write is buffered and
+  another callback that is called after the write is committed, both callbacks
+  are now called after the write is committed. Futhermore, the second callback
+  argument is now deprecated.
+
 ## v1.3.2
 
 * `dirty`: Updated `dirty` dependency.

@@ -25,42 +25,13 @@ after(async function () {
   }, 5000).unref();
 });
 
-// Like util.promisify, but converts a function that takes two callbacks:
-//   * change has been buffered callback (2nd to last arg)
-//   * change has been written callback (last arg)
-// Returns a Promise that resolves when the written callback is called. The returned Promise has a
-// buffered() method that returns a Promise that resolves when the buffered callback is called.
-const promisifyBufferedFn = (fn) => {
-  const pfn = function (...args) {
-    const toCb = (resolve, reject) => (err) => { if (err != null) return reject(err); resolve(); };
-    const bufferedPromise = new Promise((resolve, reject) => args.push(toCb(resolve, reject)));
-    const writtenPromise = new Promise((resolve, reject) => args.push(toCb(resolve, reject)));
-    bufferedPromise.catch(() => {}); // Suppress unhandled bufferedPromise rejection by default.
-    writtenPromise.buffered = () => bufferedPromise.catch((err) => {
-      // Suppress unhandled writtenPromise rejection, but only if bufferedPromise rejects.
-      writtenPromise.catch(() => {});
-      // Unsuppress unhandled bufferedPromise rejection.
-      throw err;
-    });
-    Reflect.apply(fn, this, args);
-    return writtenPromise;
-  };
-  Object.setPrototypeOf(pfn, Object.getPrototypeOf(fn));
-  return Object.defineProperties(pfn, Object.getOwnPropertyDescriptors(fn));
-};
-
 // Returns an object with promisified equivalents of ueberdb.Database methods.
-const promisifyDb = (db) => ({
-  init: util.promisify(db.init.bind(db)),
-  close: util.promisify(db.close.bind(db)),
-  get: util.promisify(db.get.bind(db)),
-  getSub: util.promisify(db.getSub.bind(db)),
-  findKeys: util.promisify(db.findKeys.bind(db)),
-  set: promisifyBufferedFn(db.set.bind(db)),
-  setSub: promisifyBufferedFn(db.setSub.bind(db)),
-  remove: promisifyBufferedFn(db.remove.bind(db)),
-  flush: util.promisify(db.flush.bind(db)),
-});
+const promisifyDb = (db) => {
+  const ret = {};
+  const fns = ['init', 'close', 'get', 'getSub', 'findKeys', 'set', 'setSub', 'remove', 'flush'];
+  for (const fn of fns) ret[fn] = util.promisify(db[fn].bind(db));
+  return ret;
+};
 
 describe(__filename, function () {
   let speedTable;
@@ -265,15 +236,10 @@ describe(__filename, function () {
                 // Pre-allocate an array before starting the timer so that time spent growing the
                 // array doesn't throw off the benchmarks.
                 const promises = [...Array(count + 1)].map(() => null);
-                const bufferedPromises = [...Array(count)].map(() => null);
 
                 const timers = {start: Date.now()};
 
-                for (let i = 0; i < count; ++i) {
-                  promises[i] = pdb.set(key + i, input);
-                  bufferedPromises[i] = promises[i].buffered();
-                }
-                await Promise.all(bufferedPromises);
+                for (let i = 0; i < count; ++i) promises[i] = pdb.set(key + i, input);
                 promises[count] = pdb.flush();
                 await Promise.all(promises);
                 timers.set = Date.now();
@@ -286,11 +252,7 @@ describe(__filename, function () {
                 await Promise.all(promises);
                 timers.findKeys = Date.now();
 
-                for (let i = 0; i < count; ++i) {
-                  promises[i] = pdb.remove(key + i);
-                  bufferedPromises[i] = promises[i].buffered();
-                }
-                await Promise.all(bufferedPromises);
+                for (let i = 0; i < count; ++i) promises[i] = pdb.remove(key + i);
                 promises[count] = pdb.flush();
                 await Promise.all(promises);
                 timers.remove = Date.now();
