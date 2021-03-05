@@ -124,7 +124,7 @@ exports.Database.prototype.remove = function (key, cb, deprecated = null) {
  * @param deprecated Deprecated callback that is called just after cb.
  */
 exports.Database.prototype.set = function (key, value, cb, deprecated = null) {
-  this.db.set(key, clone(value), makeDoneCallback(cb, deprecated));
+  util.callbackify(this.db.set.bind(this.db))(key, clone(value), makeDoneCallback(cb, deprecated));
 };
 
 exports.Database.prototype.getSub = function (key, sub, callback) {
