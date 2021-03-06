@@ -1,5 +1,4 @@
 'use strict';
-/* eslint new-cap: ["error", {"newIsCapExceptions": ["channels"]}] */
 
 /**
  * 2011 Peter 'Pita' Martischka
@@ -19,7 +18,6 @@
  */
 
 const cacheAndBufferLayer = require('./lib/CacheAndBufferLayer');
-const channels = require('channels');
 const util = require('util');
 
 // Returns a logger derived from the given logger (which may be null) that has debug() and
@@ -59,7 +57,6 @@ exports.Database = function (type, dbSettings, wrapperSettings, logger = null) {
   this.dbSettings = dbSettings;
   this.wrapperSettings = wrapperSettings;
   this.logger = normalizeLogger(logger);
-  this.channels = new channels.channels(doOperation);
 };
 
 exports.Database.prototype.init = function (callback) {
@@ -91,7 +88,7 @@ exports.Database.prototype.flush = function (callback) {
 };
 
 exports.Database.prototype.get = function (key, callback) {
-  this.channels.emit(key, {db: this.db, type: 'get', key, callback});
+  util.callbackify(this.db.get.bind(this.db))(key, (err, val) => callback(err, clone(val)));
 };
 
 exports.Database.prototype.findKeys = function (key, notKey, callback) {
@@ -99,72 +96,19 @@ exports.Database.prototype.findKeys = function (key, notKey, callback) {
 };
 
 exports.Database.prototype.remove = function (key, bufferCallback, writeCallback) {
-  this.channels.emit(key, {db: this.db, type: 'remove', key, bufferCallback, writeCallback});
+  this.db.remove(key, bufferCallback, writeCallback);
 };
 
 exports.Database.prototype.set = function (key, value, bufferCallback, writeCallback) {
-  this.channels.emit(key,
-      {db: this.db, type: 'set', key, value: clone(value), bufferCallback, writeCallback});
+  this.db.set(key, clone(value), bufferCallback, writeCallback);
 };
 
 exports.Database.prototype.getSub = function (key, sub, callback) {
-  this.channels.emit(key, {db: this.db, type: 'getsub', key, sub, callback});
+  util.callbackify(this.db.getSub.bind(this.db))(key, sub, (err, val) => callback(err, clone(val)));
 };
 
 exports.Database.prototype.setSub = function (key, sub, value, bufferCallback, writeCallback) {
-  this.channels.emit(key,
-      {db: this.db, type: 'setsub', key, sub, value: clone(value), bufferCallback, writeCallback});
-};
-
-const doOperation = (operation, callback) => {
-  const db = operation.db;
-  if (operation.type === 'get') {
-    util.callbackify(db.get.bind(db))(operation.key, (err, value) => {
-      // clone the value
-      value = clone(value);
-
-      // call the caller callback
-      operation.callback(err, value);
-
-      // call the queue callback
-      callback();
-    });
-  } else if (operation.type === 'remove') {
-    db.remove(operation.key, (err) => {
-      // call the queue callback
-      callback();
-
-      // call the caller callback
-      if (operation.bufferCallback) operation.bufferCallback(err);
-    }, operation.writeCallback);
-  } else if (operation.type === 'set') {
-    db.set(operation.key, operation.value, (err) => {
-      // call the queue callback
-      callback();
-
-      // call the caller callback
-      if (operation.bufferCallback) operation.bufferCallback(err);
-    }, operation.writeCallback);
-  } else if (operation.type === 'getsub') {
-    util.callbackify(db.getSub.bind(db))(operation.key, operation.sub, (err, value) => {
-      // clone the value
-      value = clone(value);
-
-      // call the caller callback
-      operation.callback(err, value);
-
-      // call the queue callback
-      callback();
-    });
-  } else if (operation.type === 'setsub') {
-    db.setSub(operation.key, operation.sub, operation.value, (err) => {
-      // call the queue callback
-      callback();
-
-      // call the caller callback
-      if (operation.bufferCallback) operation.bufferCallback(err);
-    }, operation.writeCallback);
-  }
+  this.db.setSub(key, sub, clone(value), bufferCallback, writeCallback);
 };
 
 /**
