@@ -95,7 +95,7 @@ exports.Database.prototype.get = function (key, callback) {
 };
 
 exports.Database.prototype.findKeys = function (key, notKey, callback) {
-  this.channels.emit(key, {db: this.db, type: 'findKeys', key, notKey, callback});
+  util.callbackify(this.db.findKeys.bind(this.db))(key, notKey, (e, v) => callback(e, clone(v)));
 };
 
 exports.Database.prototype.remove = function (key, bufferCallback, writeCallback) {
@@ -137,17 +137,6 @@ const doOperation = (operation, callback) => {
       // call the caller callback
       if (operation.bufferCallback) operation.bufferCallback(err);
     }, operation.writeCallback);
-  } else if (operation.type === 'findKeys') {
-    util.callbackify(db.findKeys.bind(db))(operation.key, operation.notKey, (err, value) => {
-      // clone the value
-      value = clone(value);
-
-      // call the caller callback
-      operation.callback(err, value);
-
-      // call the queue callback
-      callback();
-    });
   } else if (operation.type === 'set') {
     db.set(operation.key, operation.value, (err) => {
       // call the queue callback
