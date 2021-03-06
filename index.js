@@ -138,7 +138,8 @@ exports.Database.prototype.getSub = function (key, sub, callback) {
  * @param deprecated Deprecated callback that is called just after cb.
  */
 exports.Database.prototype.setSub = function (key, sub, value, cb, deprecated = null) {
-  this.db.setSub(key, sub, clone(value), makeDoneCallback(cb, deprecated));
+  util.callbackify(this.db.setSub.bind(this.db))(
+      key, sub, clone(value), makeDoneCallback(cb, deprecated));
 };
 
 /**
