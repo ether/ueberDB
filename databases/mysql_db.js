@@ -234,17 +234,17 @@ exports.Database.prototype.doBulk = function (bulk, callback) {
   let firstReplace = true;
   let firstRemove = true;
 
-  for (const i in bulk) {
-    if (bulk[i].type === 'set') {
+  for (const op of bulk) {
+    if (op.type === 'set') {
       if (!firstReplace) replaceSQL += ',';
       firstReplace = false;
 
-      replaceSQL += `(${this.db.escape(bulk[i].key)}, ${this.db.escape(bulk[i].value)})`;
-    } else if (bulk[i].type === 'remove') {
+      replaceSQL += `(${this.db.escape(op.key)}, ${this.db.escape(op.value)})`;
+    } else if (op.type === 'remove') {
       if (!firstRemove) keysToDelete += ',';
       firstRemove = false;
 
-      keysToDelete += this.db.escape(bulk[i].key);
+      keysToDelete += this.db.escape(op.key);
     }
   }
 
