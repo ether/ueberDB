@@ -114,7 +114,7 @@ const makeDoneCallback = (callback, deprecated) => (err) => {
  * @param deprecated Deprecated callback that is called just after cb.
  */
 exports.Database.prototype.remove = function (key, cb, deprecated = null) {
-  this.db.remove(key, makeDoneCallback(cb, deprecated));
+  util.callbackify(this.db.remove.bind(this.db))(key, makeDoneCallback(cb, deprecated));
 };
 
 /**
