@@ -34,6 +34,9 @@ exports.databases = {
     password: 'ueberdb',
     database: 'ueberdb',
     charset: 'utf8mb4',
+    speeds: {
+      setMax: 6,
+    },
   },
   redis: {
   },
