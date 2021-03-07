@@ -57,11 +57,17 @@ exports.Database = function (type, dbSettings, wrapperSettings, logger = null) {
   this.dbSettings = dbSettings;
   this.wrapperSettings = wrapperSettings;
   this.logger = normalizeLogger(logger);
+  const db = new this.dbModule.Database(this.dbSettings);
+  this.db = new cacheAndBufferLayer.Database(db, this.wrapperSettings, this.logger);
+
+  // Expose the cache wrapper's metrics to the user. See lib/CacheAndBufferLayer.js for details.
+  //
+  // WARNING: This feature is EXPERIMENTAL -- do not assume it will continue to exist in its current
+  // form in a future version.
+  this.metrics = this.db.metrics;
 };
 
 exports.Database.prototype.init = function (callback) {
-  const db = new this.dbModule.Database(this.dbSettings);
-  this.db = new cacheAndBufferLayer.Database(db, this.wrapperSettings, this.logger);
   if (callback) {
     util.callbackify(this.db.init.bind(this.db))(callback);
   } else {
