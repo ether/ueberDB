@@ -189,41 +189,25 @@ exports.Database.prototype.remove = async function (key) {
 };
 
 exports.Database.prototype.doBulk = async function (bulk) {
-  let replaceSQL = 'REPLACE INTO `store` VALUES ';
-
-  // keysToDelete is a string of the form "(k1, k2, ..., kn)" painstakingly built by hand.
-  let keysToDelete = '(';
-
-  let firstReplace = true;
-  let firstRemove = true;
-
+  const replaces = [];
+  const deletes = [];
   for (const op of bulk) {
-    if (op.type === 'set') {
-      if (!firstReplace) replaceSQL += ',';
-      firstReplace = false;
-
-      replaceSQL += `(${this.db.escape(op.key)}, ${this.db.escape(op.value)})`;
-    } else if (op.type === 'remove') {
-      if (!firstRemove) keysToDelete += ',';
-      firstRemove = false;
-
-      keysToDelete += this.db.escape(op.key);
+    switch (op.type) {
+      case 'set': replaces.push([op.key, op.value]); break;
+      case 'remove': deletes.push(op.key); break;
+      default: throw new Error(`unknown op type: ${op.type}`);
     }
   }
-
-  keysToDelete += ')';
-
-  replaceSQL += ';';
-
-  const removeSQL =
-      `DELETE FROM \`store\` WHERE \`key\` IN ${keysToDelete} ` +
-      `AND BINARY \`key\` IN ${keysToDelete};`;
-
   await Promise.all([
-    firstReplace ? null : this._query({sql: replaceSQL, timeout: 60000}),
-    firstRemove ? null : this._query({sql: removeSQL, timeout: 60000}),
+    replaces.length ? this._query({
+      sql: 'REPLACE INTO `store` VALUES ?;',
+      timeout: 60000,
+    }, [replaces]) : null,
+    deletes.length ? this._query({
+      sql: 'DELETE FROM `store` WHERE `key` IN (?) AND BINARY `key` IN (?);',
+      timeout: 60000,
+    }, [deletes, deletes]) : null,
   ]);
-
   this.schedulePing();
 };
 
