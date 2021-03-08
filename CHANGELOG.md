@@ -7,6 +7,8 @@
   another callback that is called after the write is committed, both callbacks
   are now called after the write is committed. Futhermore, the second callback
   argument is now deprecated.
+* Modernized record locking.
+* Experimental metrics for reads, writes, and locking.
 
 ## v1.3.2
 
