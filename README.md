@@ -18,6 +18,7 @@ writes are done in a bulk. This can be turned off.
 * Dirty
 * Elasticsearch
 * Maria
+* `memory`: An in-memory ephemeral database.
 * Mongo
 * MsSQL
 * MySQL

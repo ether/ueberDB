@@ -1,6 +1,7 @@
 'use strict';
 
 exports.databases = {
+  memory: {},
   dirty: {
     filename: '/tmp/ueberdb-test.db',
     speeds: {

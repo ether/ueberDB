@@ -1,5 +1,9 @@
 # Notable Changes
 
+## v1.5.0
+
+* New `memory` database driver that stores values in memory only.
+
 ## v1.4.19
 
 Updated database (and other) dependencies:
