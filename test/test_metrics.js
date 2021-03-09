@@ -68,6 +68,7 @@ describe(__filename, function () {
             wantMetrics: {
               lockReleases: 1,
               readsFinished: 1,
+              readsFromDbFinished: 1,
             },
           },
           {
@@ -89,6 +90,8 @@ describe(__filename, function () {
               lockReleases: 1,
               readsFailed: 1,
               readsFinished: 1,
+              readsFromDbFailed: 1,
+              readsFromDbFinished: 1,
             },
           },
           {
@@ -99,6 +102,7 @@ describe(__filename, function () {
               lockReleases: 1,
               readsFailed: 1,
               readsFinished: 1,
+              readsFromDbFinished: 1,
             },
           },
         ];
@@ -125,6 +129,7 @@ describe(__filename, function () {
               assertMetricsDelta(before, db.metrics, {
                 lockAcquires: 1,
                 reads: 1,
+                readsFromDb: 1,
               });
               before = {...db.metrics};
               finishDbRead();
@@ -214,15 +219,17 @@ describe(__filename, function () {
               readsFromCache: tc.nReads,
               writes: tc.nWrites,
               writesObsoleted: tc.nWrites - tc.nDbWrites,
-              writesStarted: tc.nDbWrites,
+              writesToDb: tc.nDbWrites,
             });
             before = {...db.metrics};
             finishWrite();
             await (failWrite ? assert.rejects(writeFinished, {message: 'test'}) : writeFinished);
             await flushed;
             assertMetricsDelta(before, db.metrics, {
-              writesFailed: failWrite ? tc.nDbWrites : 0,
-              writesFinished: tc.nDbWrites,
+              writesFailed: failWrite ? tc.nWrites : 0,
+              writesFinished: tc.nWrites,
+              writesToDbFailed: failWrite ? tc.nDbWrites : 0,
+              writesToDbFinished: tc.nDbWrites,
             });
           });
         }
