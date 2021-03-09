@@ -1,5 +1,9 @@
 # Notable Changes
 
+## v1.4.2
+
+* Refined the experimental read and write metrics.
+
 ## v1.4.1
 
 * The two callback arguments in `remove()`, `set()`, and `setSub()` have
