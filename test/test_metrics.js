@@ -16,6 +16,14 @@ const diffMetrics = (before, after) => {
   return diff;
 };
 
+const assertMetricsDelta = (before, after, wantDelta) => {
+  wantDelta = {...wantDelta};
+  for (const [k, v] of Object.entries(wantDelta)) {
+    if (v === 0) delete wantDelta[k];
+  }
+  assert.deepEqual(diffMetrics(before, after), wantDelta);
+};
+
 describe(__filename, function () {
   let db;
   let key;
@@ -53,83 +61,80 @@ describe(__filename, function () {
 
     for (const tc of tcs) {
       describe(tc.name, function () {
-        it('cache miss', async function () {
-          let before = {...db.metrics};
-          mock.once('get', (key, cb) => {
-            assert.deepEqual(diffMetrics(before, db.metrics), {lockAcquires: 1, reads: 1});
-            before = {...db.metrics};
-            cb(null, '{"s": "v"}');
-          });
-          await tc.f(key);
-          assert.deepEqual(diffMetrics(before, db.metrics), {lockReleases: 1, readsFinished: 1});
-        });
+        const subtcs = [
+          {
+            name: 'cache miss',
+            val: '{"s": "v"}',
+            wantMetrics: {
+              lockReleases: 1,
+              readsFinished: 1,
+            },
+          },
+          {
+            name: 'cache hit',
+            cacheHit: true,
+            val: '{"s": "v"}',
+            wantMetrics: {
+              lockAcquires: 1,
+              lockReleases: 1,
+              reads: 1,
+              readsFinished: 1,
+              readsFromCache: 1,
+            },
+          },
+          {
+            name: 'read error',
+            err: new Error('test'),
+            wantMetrics: {
+              lockReleases: 1,
+              readsFailed: 1,
+              readsFinished: 1,
+            },
+          },
+          {
+            name: 'json error',
+            val: 'ignore me -- this is intentionally invalid json',
+            wantJsonErr: true,
+            wantMetrics: {
+              lockReleases: 1,
+              readsFailed: 1,
+              readsFinished: 1,
+            },
+          },
+        ];
 
-        it('cache hit', async function () {
-          mock.once('get', (key, cb) => { cb(null, '{"s": "v"}'); });
-          await tc.f(key);
-          const before = {...db.metrics};
-          mock.once('get', (key, cb) => { assert.fail('value should be cached'); });
-          await tc.f(key);
-          assert.deepEqual(diffMetrics(before, db.metrics), {
-            lockAcquires: 1,
-            lockReleases: 1,
-            reads: 1,
-            readsFinished: 1,
-            readsFromCache: 1,
-          });
-        });
-
-        it('read error', async function () {
-          let before = {...db.metrics};
-          mock.once('get', (key, cb) => {
-            assert.deepEqual(diffMetrics(before, db.metrics), {lockAcquires: 1, reads: 1});
-            before = {...db.metrics};
-            cb(new Error('test'));
-          });
-          await assert.rejects(tc.f(key), {message: 'test'});
-          assert.deepEqual(diffMetrics(before, db.metrics), {
-            lockReleases: 1,
-            readsFailed: 1,
-            readsFinished: 1,
-          });
-        });
-
-        it('json error', async function () {
-          let before = {...db.metrics};
-          mock.once('get', (key, cb) => {
-            assert.deepEqual(diffMetrics(before, db.metrics), {lockAcquires: 1, reads: 1});
-            before = {...db.metrics};
-            cb(null, 'ignore me -- this is intentionally invalid json');
-          });
-          await assert.rejects(tc.f(key), {message: /JSON/});
-          assert.deepEqual(diffMetrics(before, db.metrics), {
-            lockReleases: 1,
-            readsFailed: 1,
-            readsFinished: 1,
-          });
-        });
-
-        it('lock contention', async function () {
-          let finishRead;
-          const readStarted = new Promise((resolve) => {
-            mock.once('get', (key, cb) => {
-              resolve();
-              const val = '{"s": "v"}';
-              new Promise((resolve) => { finishRead = resolve; }).then(() => cb(null, val));
+        for (const subtc of subtcs) {
+          it(subtc.name, async function () {
+            if (subtc.cacheHit) {
+              mock.once('get', (key, cb) => { cb(null, subtc.val); });
+              await tc.f(key);
+            }
+            let finishDbRead;
+            const dbReadStarted = new Promise((resolve) => {
+              mock.once('get', (key, cb) => {
+                assert(!subtc.cacheHit, 'value should have been cached');
+                resolve();
+                new Promise((resolve) => { finishDbRead = resolve; })
+                    .then(() => cb(subtc.err, subtc.val));
+              });
             });
+            let before = {...db.metrics};
+            let readFinished = tc.f(key);
+            if (!subtc.cacheHit) {
+              await dbReadStarted;
+              assertMetricsDelta(before, db.metrics, {
+                lockAcquires: 1,
+                reads: 1,
+              });
+              before = {...db.metrics};
+              finishDbRead();
+            }
+            if (subtc.err) readFinished = assert.rejects(readFinished, subtc.err);
+            if (subtc.wantJsonErr) readFinished = assert.rejects(readFinished, {message: /JSON/});
+            await readFinished;
+            assertMetricsDelta(before, db.metrics, subtc.wantMetrics);
           });
-          // Note: All contention tests should be with get() to ensure that all functions lock using
-          // the record's key.
-          const p1 = db.get(key);
-          await readStarted;
-          mock.once('get', (key, cb) => { assert.fail('value should be cached'); });
-          const before = {...db.metrics};
-          const p2 = tc.f(key);
-          assert.deepEqual(diffMetrics(before, db.metrics), {lockAwaits: 1});
-          finishRead();
-          assert.deepEqual(await p1, {s: 'v'});
-          await p2;
-        });
+        }
 
         it('read of in-progress write', async function () {
           let finishWrite;
@@ -144,8 +149,8 @@ describe(__filename, function () {
           await writeStarted;
           mock.once('get', (key, cb) => { assert.fail('value should be cached'); });
           const before = {...db.metrics};
-          assert.equal(await db.getSub(key, ['s']), 'v');
-          assert.deepEqual(diffMetrics(before, db.metrics), {
+          await tc.f(key);
+          assertMetricsDelta(before, db.metrics, {
             lockAcquires: 1,
             lockReleases: 1,
             reads: 1,
@@ -164,16 +169,23 @@ describe(__filename, function () {
     const tcs = [
       {name: 'remove', f: (key) => db.remove(key)},
       {name: 'set', f: (key) => db.set(key, 'v')},
-      {name: 'setSub', fn: 'set', f: (key) => db.setSub(key, ['s'], 'v')},
-      {name: 'doBulk', f: (key) => Promise.all([
+      {name: 'setSub', fn: 'set', nReads: 1, f: (key) => db.setSub(key, ['s'], 'v')},
+      {name: 'doBulk', nWrites: 2, f: (key) => Promise.all([
         db.set(key, 'v'),
-        db.set(`${key}2`, 'v'),
-      ]), nOps: 2},
+        db.set(`${key} second op`, 'v'),
+      ])},
+      {name: 'obsoleted', fn: 'set', nWrites: 2, nDbWrites: 1, f: (key) => Promise.all([
+        db.set(key, 'v'),
+        db.set(key, 'v2'),
+      ])},
     ];
 
     for (const tc of tcs) {
-      if (tc.nOps == null) tc.nOps = 1;
       if (tc.fn == null) tc.fn = tc.name;
+      if (tc.nWrites == null) tc.nWrites = 1;
+      if (tc.nDbWrites == null) tc.nDbWrites = tc.nWrites;
+      if (tc.nReads == null) tc.nReads = 0;
+
       describe(tc.name, function () {
         for (const failWrite of [false, true]) {
           it(failWrite ? 'error' : 'ok', async function () {
@@ -193,56 +205,98 @@ describe(__filename, function () {
             const writeFinished = tc.f(key);
             const flushed = db.flush(); // Speed up the tests.
             await writeStarted;
-            assert.deepEqual(diffMetrics(before, db.metrics), {
-              lockAcquires: tc.nOps,
-              lockReleases: tc.nOps,
-              ...tc.name === 'setSub' ? {
-                reads: 1,
-                readsFinished: 1,
-                readsFromCache: 1,
-              } : {},
-              writes: tc.nOps,
-              writesStarted: tc.nOps,
+            assertMetricsDelta(before, db.metrics, {
+              lockAcquires: tc.nWrites,
+              lockAwaits: tc.nWrites - tc.nDbWrites,
+              lockReleases: tc.nWrites,
+              reads: tc.nReads,
+              readsFinished: tc.nReads,
+              readsFromCache: tc.nReads,
+              writes: tc.nWrites,
+              writesObsoleted: tc.nWrites - tc.nDbWrites,
+              writesStarted: tc.nDbWrites,
             });
             before = {...db.metrics};
             finishWrite();
-            await failWrite ? assert.rejects(writeFinished, {message: 'test'}) : writeFinished;
+            await (failWrite ? assert.rejects(writeFinished, {message: 'test'}) : writeFinished);
             await flushed;
-            assert.deepEqual(diffMetrics(before, db.metrics), {
-              writesFinished: tc.nOps,
-              ...failWrite ? {writesFailed: tc.nOps} : {},
+            assertMetricsDelta(before, db.metrics, {
+              writesFailed: failWrite ? tc.nDbWrites : 0,
+              writesFinished: tc.nDbWrites,
             });
           });
         }
+      });
+    }
+  });
 
-        it('lock contention', async function () {
-          let finishRead;
-          const readStarted = new Promise((resolve) => {
-            mock.once('get', (key, cb) => {
-              resolve();
-              const val = '{"s": "v"}';
-              new Promise((resolve) => { finishRead = resolve; }).then(() => cb(null, val));
-            });
+  describe('lock contention', function () {
+    const tcs = [
+      {
+        name: 'get',
+        f: (key) => db.get(key),
+        wantMetrics: {lockAwaits: 1},
+      },
+      {
+        name: 'getSub',
+        fn: 'get',
+        f: (key) => db.getSub(key, ['s']),
+        wantMetrics: {lockAwaits: 1},
+      },
+      {
+        name: 'remove',
+        f: (key) => db.remove(key),
+        wantMetrics: {lockAwaits: 1},
+      },
+      {
+        name: 'set',
+        f: (key) => db.set(key, 'v'),
+        wantMetrics: {lockAwaits: 1},
+      },
+      {
+        name: 'setSub',
+        fn: 'set',
+        f: (key) => db.setSub(key, ['s'], 'v'),
+        wantMetrics: {lockAwaits: 1},
+      },
+      {
+        name: 'doBulk',
+        f: (key) => Promise.all([
+          db.set(key, 'v'),
+          db.set(`${key} second op`, 'v'),
+        ]),
+        wantMetrics: {lockAcquires: 1, lockAwaits: 1},
+      },
+    ];
+
+    for (const tc of tcs) {
+      if (tc.fn == null) tc.fn = tc.name;
+
+      it(tc.name, async function () {
+        let finishRead;
+        const readStarted = new Promise((resolve) => {
+          mock.once('get', (key, cb) => {
+            resolve();
+            const val = '{"s": "v"}';
+            new Promise((resolve) => { finishRead = resolve; }).then(() => cb(null, val));
           });
-          // Note: All contention tests should be with get() to ensure that all functions lock using
-          // the record's key.
-          const valP = db.get(key);
-          await readStarted;
-          mock.once(tc.fn, (...args) => args.pop()());
-          const before = {...db.metrics};
-          const writeFinished = tc.f(key);
-          const flushed = db.flush();
-          assert.deepEqual(diffMetrics(before, db.metrics), {
-            ...tc.nOps > 1 ? {
-              lockAcquires: tc.nOps - 1,
-            } : {},
-            lockAwaits: 1,
-          });
-          finishRead();
-          assert.deepEqual(await valP, {s: 'v'});
-          await writeFinished;
-          await flushed;
         });
+        // Note: All contention tests should be with get() to ensure that all functions lock using
+        // the record's key.
+        const getP = db.get(key);
+        await readStarted;
+        mock.once(tc.fn, (...args) => {
+          assert(tc.fn !== 'get', 'value should have been cached');
+          args.pop()();
+        });
+        const before = {...db.metrics};
+        const opFinished = tc.f(key);
+        const flushed = db.flush(); // Speed up tests.
+        assertMetricsDelta(before, db.metrics, tc.wantMetrics);
+        finishRead();
+        await getP;
+        await opFinished;
+        await flushed;
       });
     }
   });
