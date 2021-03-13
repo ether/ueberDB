@@ -4,6 +4,9 @@
 
 * New experimental setting to limit the number of operations written at a time
   when flushing outstanding writes.
+* `mysql`: Bulk writes are limited to 100 changes at a time to avoid query
+  timeouts.
+* `mysql`: Raised default cache size from 500 entries to 10000.
 
 ## v1.4.2
 
