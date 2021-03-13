@@ -1,5 +1,10 @@
 # Notable Changes
 
+## v1.4.4
+
+* New experimental setting to limit the number of operations written at a time
+  when flushing outstanding writes.
+
 ## v1.4.2
 
 * Refined the experimental read and write metrics.
