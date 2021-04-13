@@ -15,26 +15,57 @@
  * limitations under the License.
  */
 
+const mysql = require('mysql');
 const util = require('util');
 
 exports.Database = class {
   constructor(settings) {
     // temp hack needs a proper fix..
     if (settings && !settings.charset) settings.charset = 'utf8mb4';
-    this.db = require('mysql').createConnection(settings);
     this.settings = settings;
     this.settings.engine = 'InnoDB';
     // Limit the query size to avoid timeouts or other failures.
     this.settings.bulkLimit = 100;
     this.settings.json = true;
+    // Promise that resolves to a MySQL Connection object.
+    this._connection = this._connect();
   }
 
   get isAsync() { return true; }
 
+  _connect() {
+    const p = (async () => {
+      const connection = mysql.createConnection(this.settings);
+      connection.on('error', (err) => this._handleMysqlError(err));
+      await util.promisify(connection.connect.bind(connection))();
+      return connection;
+    })();
+    // Suppress "unhandled Promise rejection" if connection fails before init() is called. If the
+    // connection does fail, init() will throw when it awaits p.
+    p.catch(() => {});
+    return p;
+  }
+
+  _handleMysqlError(err) {
+    if (!err.fatal) return;
+    // Must reconnect on fatal error. Start closing the old connection (ignoring any errors), but
+    // don't wait for it to finish closing before resetting this._connection otherwise the old
+    // connection might still be used. Closing the old connection might be unnecessary, but it
+    // shouldn't hurt.
+    this._connection.then((connection) => connection.end(() => {})).catch(() => {});
+    this._connection = this._connect();
+  }
+
   async _query(...args) {
-    return await new Promise((resolve, reject) => {
-      this.db.query(...args, (err, ...args) => err != null ? reject(err) : resolve(args));
-    });
+    const connection = await this._connection;
+    try {
+      return await new Promise((resolve, reject) => {
+        connection.query(...args, (err, ...args) => err != null ? reject(err) : resolve(args));
+      });
+    } catch (err) {
+      this._handleMysqlError(err);
+      throw err;
+    }
   }
 
   clearPing() {
@@ -46,11 +77,10 @@ exports.Database = class {
   schedulePing() {
     this.clearPing();
 
-    this.interval = setInterval(() => {
-      this.db.query({
-        sql: 'SELECT 1',
-        timeout: 60000,
-      });
+    this.interval = setInterval(async () => {
+      try {
+        await this._query({sql: 'SELECT 1', timeout: 60000});
+      } catch (err) { /* intentionally ignored */ }
     }, 10000);
   }
 
@@ -200,7 +230,10 @@ exports.Database = class {
   }
 
   async close() {
+    const connection = await this._connection;
+    // Clear the ping after getting the connection to avoid a race where close() is called while a
+    // new connection is being created.
     this.clearPing();
-    await util.promisify(this.db.end.bind(this.db))();
+    await util.promisify(connection.end.bind(connection))();
   }
 };

@@ -1,5 +1,9 @@
 # Notable Changes
 
+## v1.4.5
+
+* `mysql`: Reconnect on fatal error.
+
 ## v1.4.4
 
 * New experimental setting to limit the number of operations written at a time
