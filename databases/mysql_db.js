@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+const util = require('util');
+
 exports.Database = function (settings) {
   // temp hack needs a proper fix..
   if (settings && !settings.charset) settings.charset = 'utf8mb4';
@@ -211,7 +213,7 @@ exports.Database.prototype.doBulk = async function (bulk) {
   this.schedulePing();
 };
 
-exports.Database.prototype.close = function (callback) {
+exports.Database.prototype.close = async function () {
   this.clearPing();
-  this.db.end(callback);
+  await util.promisify(this.db.end.bind(this.db))();
 };
