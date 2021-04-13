@@ -20,6 +20,7 @@ const util = require('util');
 
 exports.Database = class {
   constructor(settings) {
+    this.logger = console;
     // temp hack needs a proper fix..
     if (settings && !settings.charset) settings.charset = 'utf8mb4';
     this.settings = settings;
@@ -111,16 +112,16 @@ exports.Database = class {
 
     result = JSON.parse(JSON.stringify(result));
     if (result[0].DEFAULT_CHARACTER_SET_NAME !== charset) {
-      console.error(`Database is not configured with charset ${charset} -- ` +
-                    'This may lead to crashes when certain characters are pasted in pads');
-      console.log(result[0], charset);
+      this.logger.error(`Database is not configured with charset ${charset} -- ` +
+                        'This may lead to crashes when certain characters are pasted in pads');
+      this.logger.log(result[0], charset);
     }
 
     if (result[0].DEFAULT_COLLATION_NAME.indexOf(charset) === -1) {
-      console.error(
+      this.logger.error(
           `Database is not configured with collation name that includes ${charset} -- ` +
             'This may lead to crashes when certain characters are pasted in pads');
-      console.log(result[0], charset, result[0].DEFAULT_COLLATION_NAME);
+      this.logger.log(result[0], charset, result[0].DEFAULT_COLLATION_NAME);
     }
 
     const tableCharSet =
@@ -135,13 +136,13 @@ exports.Database = class {
       timeout: 60000,
     });
     if (!result[0]) {
-      console.warn('Data has no character_set_name value -- ' +
-                   'This may lead to crashes when certain characters are pasted in pads');
+      this.logger.warn('Data has no character_set_name value -- ' +
+                       'This may lead to crashes when certain characters are pasted in pads');
     }
     if (result[0] && (result[0].character_set_name !== charset)) {
-      console.error(`table is not configured with charset ${charset} -- ` +
-                    'This may lead to crashes when certain characters are pasted in pads');
-      console.log(result[0], charset);
+      this.logger.error(`table is not configured with charset ${charset} -- ` +
+                        'This may lead to crashes when certain characters are pasted in pads');
+      this.logger.log(result[0], charset);
     }
 
     // check migration level, alter if not migrated
