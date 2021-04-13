@@ -21,23 +21,8 @@ exports.Database = class {
   constructor(settings) {
     // temp hack needs a proper fix..
     if (settings && !settings.charset) settings.charset = 'utf8mb4';
-
     this.db = require('mysql').createConnection(settings);
-
     this.settings = settings;
-
-    if (this.settings.host != null) this.db.host = this.settings.host;
-
-    if (this.settings.port != null) this.db.port = this.settings.port;
-
-    if (this.settings.user != null) this.db.user = this.settings.user;
-
-    if (this.settings.password != null) this.db.password = this.settings.password;
-
-    if (this.settings.database != null) this.db.database = this.settings.database;
-
-    if (this.settings.charset != null) this.db.charset = this.settings.charset;
-
     this.settings.engine = 'InnoDB';
     // Limit the query size to avoid timeouts or other failures.
     this.settings.bulkLimit = 100;
@@ -70,7 +55,7 @@ exports.Database = class {
   }
 
   async init() {
-    const db = this.db;
+    const {database, charset} = this.settings;
 
     const sqlCreate = `${'CREATE TABLE IF NOT EXISTS `store` ( ' +
                   '`key` VARCHAR( 100 ) NOT NULL COLLATE utf8mb4_bin, ' +
@@ -88,24 +73,24 @@ exports.Database = class {
     // Checks for Database charset et al
     const dbCharSet =
         'SELECT DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME ' +
-        `FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '${db.database}'`;
+        `FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '${database}'`;
     let [result] = await this._query({
       sql: dbCharSet,
       timeout: 60000,
     });
 
     result = JSON.parse(JSON.stringify(result));
-    if (result[0].DEFAULT_CHARACTER_SET_NAME !== db.charset) {
-      console.error(`Database is not configured with charset ${db.charset} -- ` +
+    if (result[0].DEFAULT_CHARACTER_SET_NAME !== charset) {
+      console.error(`Database is not configured with charset ${charset} -- ` +
                     'This may lead to crashes when certain characters are pasted in pads');
-      console.log(result[0], db.charset);
+      console.log(result[0], charset);
     }
 
-    if (result[0].DEFAULT_COLLATION_NAME.indexOf(db.charset) === -1) {
+    if (result[0].DEFAULT_COLLATION_NAME.indexOf(charset) === -1) {
       console.error(
-          `Database is not configured with collation name that includes ${db.charset} -- ` +
+          `Database is not configured with collation name that includes ${charset} -- ` +
             'This may lead to crashes when certain characters are pasted in pads');
-      console.log(result[0], db.charset, result[0].DEFAULT_COLLATION_NAME);
+      console.log(result[0], charset, result[0].DEFAULT_COLLATION_NAME);
     }
 
     const tableCharSet =
@@ -113,7 +98,7 @@ exports.Database = class {
         'FROM information_schema.`TABLES` ' +
         'T,information_schema.`COLLATION_CHARACTER_SET_APPLICABILITY` CCSA ' +
         'WHERE CCSA.collation_name = T.table_collation ' +
-        `AND T.table_schema = '${db.database}' ` +
+        `AND T.table_schema = '${database}' ` +
         "AND T.table_name = 'store'";
     [result] = await this._query({
       sql: tableCharSet,
@@ -123,10 +108,10 @@ exports.Database = class {
       console.warn('Data has no character_set_name value -- ' +
                    'This may lead to crashes when certain characters are pasted in pads');
     }
-    if (result[0] && (result[0].character_set_name !== db.charset)) {
-      console.error(`table is not configured with charset ${db.charset} -- ` +
+    if (result[0] && (result[0].character_set_name !== charset)) {
+      console.error(`table is not configured with charset ${charset} -- ` +
                     'This may lead to crashes when certain characters are pasted in pads');
-      console.log(result[0], db.charset);
+      console.log(result[0], charset);
     }
 
     // check migration level, alter if not migrated
