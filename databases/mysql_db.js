@@ -68,6 +68,7 @@ exports.Database = class {
     const connection = await this._connection;
     try {
       return await new Promise((resolve, reject) => {
+        options = {timeout: 60000, ...options};
         connection.query(options, (err, ...args) => err != null ? reject(err) : resolve(args));
       });
     } catch (err) {
@@ -87,7 +88,7 @@ exports.Database = class {
 
     this.interval = setInterval(async () => {
       try {
-        await this._query({sql: 'SELECT 1', timeout: 60000});
+        await this._query({sql: 'SELECT 1'});
       } catch (err) { /* intentionally ignored */ }
     }, 10000);
   }
@@ -103,19 +104,13 @@ exports.Database = class {
 
     const sqlAlter = 'ALTER TABLE store MODIFY `key` VARCHAR(100) COLLATE utf8mb4_bin;';
 
-    await this._query({
-      sql: sqlCreate,
-      timeout: 60000,
-    });
+    await this._query({sql: sqlCreate});
 
     // Checks for Database charset et al
     const dbCharSet =
         'SELECT DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME ' +
         `FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '${database}'`;
-    let [result] = await this._query({
-      sql: dbCharSet,
-      timeout: 60000,
-    });
+    let [result] = await this._query({sql: dbCharSet});
 
     result = JSON.parse(JSON.stringify(result));
     if (result[0].DEFAULT_CHARACTER_SET_NAME !== charset) {
@@ -138,10 +133,7 @@ exports.Database = class {
         'WHERE CCSA.collation_name = T.table_collation ' +
         `AND T.table_schema = '${database}' ` +
         "AND T.table_name = 'store'";
-    [result] = await this._query({
-      sql: tableCharSet,
-      timeout: 60000,
-    });
+    [result] = await this._query({sql: tableCharSet});
     if (!result[0]) {
       this.logger.warn('Data has no character_set_name value -- ' +
                        'This may lead to crashes when certain characters are pasted in pads');
@@ -156,10 +148,7 @@ exports.Database = class {
     const level = await this.get('MYSQL_MIGRATION_LEVEL');
 
     if (level !== '1') {
-      await this._query({
-        sql: sqlAlter,
-        timeout: 60000,
-      });
+      await this._query({sql: sqlAlter});
       await this.set('MYSQL_MIGRATION_LEVEL', '1');
     }
 
@@ -169,7 +158,6 @@ exports.Database = class {
   async get(key) {
     const [results] = await this._query({
       sql: 'SELECT `value` FROM `store` WHERE `key` = ? AND BINARY `key` = ?',
-      timeout: 60000,
       values: [key, key],
     });
     this.schedulePing();
@@ -190,29 +178,20 @@ exports.Database = class {
       query += ' AND `key` NOT LIKE ?';
       params.push(notKey);
     }
-    const [results] = await this._query({
-      sql: query,
-      timeout: 60000,
-      values: params,
-    });
+    const [results] = await this._query({sql: query, values: params});
     this.schedulePing();
     return results.map((val) => val.key);
   }
 
   async set(key, value) {
     if (key.length > 100) throw new Error('Your Key can only be 100 chars');
-    await this._query({
-      sql: 'REPLACE INTO `store` VALUES (?,?)',
-      timeout: 60000,
-      values: [key, value],
-    });
+    await this._query({sql: 'REPLACE INTO `store` VALUES (?,?)', values: [key, value]});
     this.schedulePing();
   }
 
   async remove(key) {
     await this._query({
       sql: 'DELETE FROM `store` WHERE `key` = ? AND BINARY `key` = ?',
-      timeout: 60000,
       values: [key, key],
     });
     this.schedulePing();
@@ -231,12 +210,10 @@ exports.Database = class {
     await Promise.all([
       replaces.length ? this._query({
         sql: 'REPLACE INTO `store` VALUES ?;',
-        timeout: 60000,
         values: [replaces],
       }) : null,
       deletes.length ? this._query({
         sql: 'DELETE FROM `store` WHERE `key` IN (?) AND BINARY `key` IN (?);',
-        timeout: 60000,
         values: [deletes, deletes],
       }) : null,
     ]);
