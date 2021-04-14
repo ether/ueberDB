@@ -64,11 +64,11 @@ exports.Database = class {
     this._connection = this._connect();
   }
 
-  async _query(...args) {
+  async _query(options) {
     const connection = await this._connection;
     try {
       return await new Promise((resolve, reject) => {
-        connection.query(...args, (err, ...args) => err != null ? reject(err) : resolve(args));
+        connection.query(options, (err, ...args) => err != null ? reject(err) : resolve(args));
       });
     } catch (err) {
       this._handleMysqlError(err);
@@ -106,7 +106,7 @@ exports.Database = class {
     await this._query({
       sql: sqlCreate,
       timeout: 60000,
-    }, []);
+    });
 
     // Checks for Database charset et al
     const dbCharSet =
@@ -159,7 +159,7 @@ exports.Database = class {
       await this._query({
         sql: sqlAlter,
         timeout: 60000,
-      }, []);
+      });
       await this.set('MYSQL_MIGRATION_LEVEL', '1');
     }
 
@@ -170,7 +170,8 @@ exports.Database = class {
     const [results] = await this._query({
       sql: 'SELECT `value` FROM `store` WHERE `key` = ? AND BINARY `key` = ?',
       timeout: 60000,
-    }, [key, key]);
+      values: [key, key],
+    });
     this.schedulePing();
     return results.length === 1 ? results[0].value : null;
   }
@@ -192,7 +193,8 @@ exports.Database = class {
     const [results] = await this._query({
       sql: query,
       timeout: 60000,
-    }, params);
+      values: params,
+    });
     this.schedulePing();
     return results.map((val) => val.key);
   }
@@ -202,7 +204,8 @@ exports.Database = class {
     await this._query({
       sql: 'REPLACE INTO `store` VALUES (?,?)',
       timeout: 60000,
-    }, [key, value]);
+      values: [key, value],
+    });
     this.schedulePing();
   }
 
@@ -210,7 +213,8 @@ exports.Database = class {
     await this._query({
       sql: 'DELETE FROM `store` WHERE `key` = ? AND BINARY `key` = ?',
       timeout: 60000,
-    }, [key, key]);
+      values: [key, key],
+    });
     this.schedulePing();
   }
 
@@ -228,11 +232,13 @@ exports.Database = class {
       replaces.length ? this._query({
         sql: 'REPLACE INTO `store` VALUES ?;',
         timeout: 60000,
-      }, [replaces]) : null,
+        values: [replaces],
+      }) : null,
       deletes.length ? this._query({
         sql: 'DELETE FROM `store` WHERE `key` IN (?) AND BINARY `key` IN (?);',
         timeout: 60000,
-      }, [deletes, deletes]) : null,
+        values: [deletes, deletes],
+      }) : null,
     ]);
     this.schedulePing();
   }
