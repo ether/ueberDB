@@ -21,13 +21,16 @@ const util = require('util');
 exports.Database = class {
   constructor(settings) {
     this.logger = console;
-    // temp hack needs a proper fix..
-    if (settings && !settings.charset) settings.charset = 'utf8mb4';
-    this.settings = settings;
-    this.settings.engine = 'InnoDB';
-    // Limit the query size to avoid timeouts or other failures.
-    this.settings.bulkLimit = 100;
-    this.settings.json = true;
+    this._mysqlSettings = {
+      charset: 'utf8mb4', // temp hack needs a proper fix..
+      ...settings,
+    };
+    this.settings = {
+      engine: 'InnoDB',
+      // Limit the query size to avoid timeouts or other failures.
+      bulkLimit: 100,
+      json: true,
+    };
     // Promise that resolves to a MySQL Connection object.
     this._connection = this._connect();
   }
@@ -38,7 +41,7 @@ exports.Database = class {
     const p = (async () => {
       let connection;
       try {
-        connection = mysql.createConnection(this.settings);
+        connection = mysql.createConnection(this._mysqlSettings);
         connection.on('error', (err) => this._handleMysqlError(err));
         await util.promisify(connection.connect.bind(connection))();
       } catch (err) {
@@ -94,7 +97,7 @@ exports.Database = class {
   }
 
   async init() {
-    const {database, charset} = this.settings;
+    const {database, charset} = this._mysqlSettings;
 
     const sqlCreate = `${'CREATE TABLE IF NOT EXISTS `store` ( ' +
                   '`key` VARCHAR( 100 ) NOT NULL COLLATE utf8mb4_bin, ' +
