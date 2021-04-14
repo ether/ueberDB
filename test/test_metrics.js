@@ -189,14 +189,14 @@ describe(__filename, function () {
         action: async () => await db.remove(key),
         wantOps: [
           {
-            wantFn: 'remove',
+            wantFns: ['remove'],
             wantMetricsDelta: {
               lockAcquires: 1,
               lockReleases: 1,
               writes: 1,
               writesToDb: 1,
             },
-            cbArgs: [null],
+            cbArgs: [[null]],
           },
         ],
         wantErr: null,
@@ -210,14 +210,14 @@ describe(__filename, function () {
         action: async () => await db.remove(key),
         wantOps: [
           {
-            wantFn: 'remove',
+            wantFns: ['remove'],
             wantMetricsDelta: {
               lockAcquires: 1,
               lockReleases: 1,
               writes: 1,
               writesToDb: 1,
             },
-            cbArgs: [new Error('test')],
+            cbArgs: [[new Error('test')]],
           },
         ],
         wantErr: {message: 'test'},
@@ -233,14 +233,14 @@ describe(__filename, function () {
         action: async () => await db.set(key, 'v'),
         wantOps: [
           {
-            wantFn: 'set',
+            wantFns: ['set'],
             wantMetricsDelta: {
               lockAcquires: 1,
               lockReleases: 1,
               writes: 1,
               writesToDb: 1,
             },
-            cbArgs: [null],
+            cbArgs: [[null]],
           },
         ],
         wantErr: null,
@@ -254,14 +254,14 @@ describe(__filename, function () {
         action: async () => await db.set(key, 'v'),
         wantOps: [
           {
-            wantFn: 'set',
+            wantFns: ['set'],
             wantMetricsDelta: {
               lockAcquires: 1,
               lockReleases: 1,
               writes: 1,
               writesToDb: 1,
             },
-            cbArgs: [new Error('test')],
+            cbArgs: [[new Error('test')]],
           },
         ],
         wantErr: {message: 'test'},
@@ -290,16 +290,16 @@ describe(__filename, function () {
         action: async () => await db.setSub(key, ['s'], 'v2'),
         wantOps: [
           {
-            wantFn: 'get',
+            wantFns: ['get'],
             wantMetricsDelta: {
               lockAcquires: 1,
               reads: 1,
               readsFromDb: 1,
             },
-            cbArgs: [null, '{"s": "v1"}'],
+            cbArgs: [[null, '{"s": "v1"}']],
           },
           {
-            wantFn: 'set',
+            wantFns: ['set'],
             wantMetricsDelta: {
               lockReleases: 1,
               readsFinished: 1,
@@ -307,7 +307,7 @@ describe(__filename, function () {
               writes: 1,
               writesToDb: 1,
             },
-            cbArgs: [null],
+            cbArgs: [[null]],
           },
         ],
         wantErr: null,
@@ -321,16 +321,16 @@ describe(__filename, function () {
         action: async () => await db.setSub(key, ['s'], 'v2'),
         wantOps: [
           {
-            wantFn: 'get',
+            wantFns: ['get'],
             wantMetricsDelta: {
               lockAcquires: 1,
               reads: 1,
               readsFromDb: 1,
             },
-            cbArgs: [null, '{"s": "v1"}'],
+            cbArgs: [[null, '{"s": "v1"}']],
           },
           {
-            wantFn: 'set',
+            wantFns: ['set'],
             wantMetricsDelta: {
               lockReleases: 1,
               readsFinished: 1,
@@ -338,7 +338,7 @@ describe(__filename, function () {
               writes: 1,
               writesToDb: 1,
             },
-            cbArgs: [new Error('test')],
+            cbArgs: [[new Error('test')]],
           },
         ],
         wantErr: {message: 'test'},
@@ -354,13 +354,13 @@ describe(__filename, function () {
         action: async () => await db.setSub(key, ['s'], 'v2'),
         wantOps: [
           {
-            wantFn: 'get',
+            wantFns: ['get'],
             wantMetricsDelta: {
               lockAcquires: 1,
               reads: 1,
               readsFromDb: 1,
             },
-            cbArgs: [new Error('test')],
+            cbArgs: [[new Error('test')]],
           },
         ],
         wantErr: {message: 'test'},
@@ -380,13 +380,13 @@ describe(__filename, function () {
         action: async () => await db.setSub(key, ['s'], 'v2'),
         wantOps: [
           {
-            wantFn: 'get',
+            wantFns: ['get'],
             wantMetricsDelta: {
               lockAcquires: 1,
               reads: 1,
               readsFromDb: 1,
             },
-            cbArgs: [null, 'ignore me -- this is intentionally invalid json'],
+            cbArgs: [[null, 'ignore me -- this is intentionally invalid json']],
           },
         ],
         wantErr: {name: 'SyntaxError'},
@@ -405,13 +405,13 @@ describe(__filename, function () {
         action: async () => await db.setSub(key, ['s'], 'v2'),
         wantOps: [
           {
-            wantFn: 'get',
+            wantFns: ['get'],
             wantMetricsDelta: {
               lockAcquires: 1,
               reads: 1,
               readsFromDb: 1,
             },
-            cbArgs: [null, '"foo"'],
+            cbArgs: [[null, '"foo"']],
           },
         ],
         wantErr: {message: /non-object/},
@@ -429,13 +429,13 @@ describe(__filename, function () {
         action: async () => await db.setSub(key, ['s'], BigInt(1)), // BigInts are not JSONable.
         wantOps: [
           {
-            wantFn: 'get',
+            wantFns: ['get'],
             wantMetricsDelta: {
               lockAcquires: 1,
               reads: 1,
               readsFromDb: 1,
             },
-            cbArgs: [null, '{"s": "v1"}'],
+            cbArgs: [[null, '{"s": "v1"}']],
           },
         ],
         wantErr: {name: 'TypeError'},
@@ -453,14 +453,14 @@ describe(__filename, function () {
         action: async () => await Promise.all([db.set(key, 'v'), db.set(`${key} second op`, 'v')]),
         wantOps: [
           {
-            wantFn: 'doBulk',
+            wantFns: ['doBulk'],
             wantMetricsDelta: {
               lockAcquires: 2,
               lockReleases: 2,
               writes: 2,
               writesToDb: 2,
             },
-            cbArgs: [null],
+            cbArgs: [[null]],
           },
         ],
         wantErr: null,
@@ -470,21 +470,86 @@ describe(__filename, function () {
         },
       },
       {
-        name: 'doBulk error',
+        name: 'doBulk error, all retries ok',
         action: async () => await Promise.all([db.set(key, 'v'), db.set(`${key} second op`, 'v')]),
         wantOps: [
           {
-            wantFn: 'doBulk',
+            wantFns: ['doBulk'],
             wantMetricsDelta: {
               lockAcquires: 2,
               lockReleases: 2,
               writes: 2,
               writesToDb: 2,
             },
-            cbArgs: [new Error('test')],
+            cbArgs: [[new Error('injected doBulk error')]],
+          },
+          {
+            wantFns: ['set', 'set'],
+            wantMetricsDelta: {
+              writesToDbRetried: 2,
+            },
+            cbArgs: [[null], [null]],
+          },
+        ],
+        wantErr: null,
+        wantMetricsDelta: {
+          writesFinished: 2,
+          writesToDbFinished: 2,
+        },
+      },
+      {
+        name: 'doBulk error, one of the retries fails',
+        action: async () => await Promise.all([db.set(key, 'v'), db.set(`${key} second op`, 'v')]),
+        wantOps: [
+          {
+            wantFns: ['doBulk'],
+            wantMetricsDelta: {
+              lockAcquires: 2,
+              lockReleases: 2,
+              writes: 2,
+              writesToDb: 2,
+            },
+            cbArgs: [[new Error('injected doBulk error')]],
+          },
+          {
+            wantFns: ['set', 'set'],
+            wantMetricsDelta: {
+              writesToDbRetried: 2,
+            },
+            cbArgs: [[new Error('test')], [null]],
           },
         ],
         wantErr: {message: 'test'},
+        wantMetricsDelta: {
+          writesFailed: 1,
+          writesFinished: 2,
+          writesToDbFailed: 1,
+          writesToDbFinished: 2,
+        },
+      },
+      {
+        name: 'doBulk error, all retries fail',
+        action: async () => await Promise.all([db.set(key, 'v'), db.set(`${key} second op`, 'v')]),
+        wantOps: [
+          {
+            wantFns: ['doBulk'],
+            wantMetricsDelta: {
+              lockAcquires: 2,
+              lockReleases: 2,
+              writes: 2,
+              writesToDb: 2,
+            },
+            cbArgs: [[new Error('injected doBulk error')]],
+          },
+          {
+            wantFns: ['set', 'set'],
+            wantMetricsDelta: {
+              writesToDbRetried: 2,
+            },
+            cbArgs: [[new Error('test1')], [new Error('test2')]],
+          },
+        ],
+        wantErr: (err) => ['test1', 'test2'].includes(err.message),
         wantMetricsDelta: {
           writesFailed: 2,
           writesFinished: 2,
@@ -497,7 +562,7 @@ describe(__filename, function () {
         action: async () => await Promise.all([db.set(key, 'v'), db.set(key, 'v2')]),
         wantOps: [
           {
-            wantFn: 'set',
+            wantFns: ['set'],
             wantMetricsDelta: {
               lockAcquires: 2,
               lockAwaits: 1,
@@ -506,7 +571,7 @@ describe(__filename, function () {
               writesObsoleted: 1,
               writesToDb: 1,
             },
-            cbArgs: [null],
+            cbArgs: [[null]],
           },
         ],
         wantErr: null,
@@ -520,7 +585,7 @@ describe(__filename, function () {
         action: async () => await Promise.all([db.set(key, 'v'), db.set(key, 'v2')]),
         wantOps: [
           {
-            wantFn: 'set',
+            wantFns: ['set'],
             wantMetricsDelta: {
               lockAcquires: 2,
               lockAwaits: 1,
@@ -529,7 +594,7 @@ describe(__filename, function () {
               writesObsoleted: 1,
               writesToDb: 1,
             },
-            cbArgs: [new Error('test')],
+            cbArgs: [[new Error('test')]],
           },
         ],
         wantErr: {message: 'test'},
@@ -544,27 +609,49 @@ describe(__filename, function () {
 
     for (const tc of tcs) {
       it(tc.name, async function () {
-        let opStart;
+        const opStarts = [];
         for (const fn of ['doBulk', 'get', 'remove', 'set']) {
           mock.on(fn, (...args) => {
+            const opStart = opStarts.shift();
             const cb = args.pop();
             opStart.open([fn, cb]);
           });
         }
         let before = {...db.metrics};
         let actionDone;
-        // advance() triggers the next database operation, either by starting tc.action (if
-        // tc.action has not yet been started) or completing the previous operation (if tc.action
+        // advance() triggers the next database operation(s), either by starting tc.action (if
+        // tc.action has not yet been started) or completing the previous operation(s) (if tc.action
         // has been started).
         let advance = () => { actionDone = tc.action(); };
-        for (const op of tc.wantOps) {
-          opStart = new Gate();
-          advance();
-          const [gotFn, cb] = await opStart;
-          assert.equal(gotFn, op.wantFn);
-          assertMetricsDelta(before, db.metrics, op.wantMetricsDelta);
+        for (const ops of tc.wantOps) {
+          // Provide a way for the mock database to tell us that a mocked database method has been
+          // called. The number of expected parallel operations for this iteration is
+          // ops.wantFns.length, so that is the number of Gates that are added to opStarts. Each
+          // Gate resolves to [fn, cb] where fn is the name of the mocked database method and cb is
+          // the mocked database method's callback.
+          for (let i = 0; i < ops.wantFns.length; ++i) opStarts.push(new Gate());
+
+          // Trigger the call(s) to the mock database method(s). This is scheduled to run in the
+          // future to ensure that advance() does not empty the opStarts array until after the
+          // Promise.all() call below has a chance to see all of the Promises in opStarts.
+          setImmediate(advance);
+
+          // Wait until the expected number of parallel database method calls have started.
+          const gotOps = await Promise.all(opStarts);
+
+          assertMetricsDelta(before, db.metrics, ops.wantMetricsDelta);
           before = {...db.metrics};
-          advance = () => cb(...op.cbArgs);
+
+          const advanceFns = [];
+          for (const [gotFn, cb] of gotOps) {
+            const i = ops.wantFns.indexOf(gotFn);
+            assert(i >= 0, `unexpected mock database method call: ${gotFn}`);
+            ops.wantFns.splice(i, 1);
+            const [cbArgs] = ops.cbArgs.splice(i, 1);
+            advanceFns.push(() => cb(...cbArgs));
+          }
+          assert.equal(ops.wantFns.length, 0, `missing call(s): ${ops.wantFns.join(', ')}`);
+          advance = () => advanceFns.forEach((f) => f());
         }
         advance();
         await (tc.wantErr ? assert.rejects(actionDone, tc.wantErr) : actionDone);

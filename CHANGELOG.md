@@ -2,6 +2,8 @@
 
 ## v1.4.7
 
+* Each write operation in a bulk write batch is now retried if the bulk write
+  fails.
 * Fixed write metrics for `setSub()` read failures.
 
 ## v1.4.6
