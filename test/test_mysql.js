@@ -29,4 +29,15 @@ describe(__filename, function () {
     assert.notEqual(after, before);
     await db.close();
   });
+
+  it('query times out', async function () {
+    const db = new mysql.Database(databases.mysql);
+    await db.init();
+    // Timeout error messages are expected; prevent them from being logged.
+    db.logger = Object.setPrototypeOf({error() {}}, db.logger);
+    db.settings.queryTimeout = 100;
+    await assert.doesNotReject(db._query({sql: 'DO SLEEP(0.090);'}));
+    await assert.rejects(db._query({sql: 'DO SLEEP(0.110);'}));
+    await db.close();
+  });
 });
