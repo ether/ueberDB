@@ -36,9 +36,15 @@ exports.Database = class {
 
   _connect() {
     const p = (async () => {
-      const connection = mysql.createConnection(this.settings);
-      connection.on('error', (err) => this._handleMysqlError(err));
-      await util.promisify(connection.connect.bind(connection))();
+      let connection;
+      try {
+        connection = mysql.createConnection(this.settings);
+        connection.on('error', (err) => this._handleMysqlError(err));
+        await util.promisify(connection.connect.bind(connection))();
+      } catch (err) {
+        this.logger.error(`MySQL connection error: ${err.stack || err}`);
+        throw err;
+      }
       return connection;
     })();
     // Suppress "unhandled Promise rejection" if connection fails before init() is called. If the
@@ -48,6 +54,7 @@ exports.Database = class {
   }
 
   _handleMysqlError(err) {
+    this.logger.error(`${err.fatal ? 'Fatal ' : ''}MySQL error: ${err.stack || err}`);
     if (!err.fatal) return;
     // Must reconnect on fatal error. Start closing the old connection (ignoring any errors), but
     // don't wait for it to finish closing before resetting this._connection otherwise the old

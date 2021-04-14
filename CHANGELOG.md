@@ -3,6 +3,7 @@
 ## v1.4.5
 
 * `mysql`: Reconnect on fatal error.
+* `mysql`: Log MySQL errors.
 
 ## v1.4.4
 
