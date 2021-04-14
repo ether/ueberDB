@@ -30,6 +30,7 @@ exports.Database = class {
       // Limit the query size to avoid timeouts or other failures.
       bulkLimit: 100,
       json: true,
+      queryTimeout: 60000,
     };
     // Promise that resolves to a MySQL Connection object.
     this._connection = this._connect();
@@ -71,7 +72,7 @@ exports.Database = class {
     const connection = await this._connection;
     try {
       return await new Promise((resolve, reject) => {
-        options = {timeout: 60000, ...options};
+        options = {timeout: this.settings.queryTimeout, ...options};
         connection.query(options, (err, ...args) => err != null ? reject(err) : resolve(args));
       });
     } catch (err) {
