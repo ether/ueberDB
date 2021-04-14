@@ -32,6 +32,7 @@ exports.Database = class {
       json: true,
       queryTimeout: 60000,
     };
+    this._pingTimeout = null;
     // Promise that resolves to a MySQL Connection object.
     this._connection = this._connect();
   }
@@ -49,6 +50,7 @@ exports.Database = class {
         this.logger.error(`MySQL connection error: ${err.stack || err}`);
         throw err;
       }
+      this.schedulePing();
       return connection;
     })();
     // Suppress "unhandled Promise rejection" if connection fails before init() is called. If the
@@ -78,19 +80,16 @@ exports.Database = class {
     } catch (err) {
       this._handleMysqlError(err);
       throw err;
+    } finally {
+      this.schedulePing();
     }
   }
 
-  clearPing() {
-    if (this.interval) {
-      clearInterval(this.interval);
-    }
-  }
+  clearPing() { clearTimeout(this._pingTimeout); }
 
   schedulePing() {
     this.clearPing();
-
-    this.interval = setInterval(async () => {
+    this._pingTimeout = setTimeout(async () => {
       try {
         await this._query({sql: 'SELECT 1'});
       } catch (err) { /* intentionally ignored */ }
@@ -155,8 +154,6 @@ exports.Database = class {
       await this._query({sql: sqlAlter});
       await this.set('MYSQL_MIGRATION_LEVEL', '1');
     }
-
-    this.schedulePing();
   }
 
   async get(key) {
@@ -164,7 +161,6 @@ exports.Database = class {
       sql: 'SELECT `value` FROM `store` WHERE `key` = ? AND BINARY `key` = ?',
       values: [key, key],
     });
-    this.schedulePing();
     return results.length === 1 ? results[0].value : null;
   }
 
@@ -183,14 +179,12 @@ exports.Database = class {
       params.push(notKey);
     }
     const [results] = await this._query({sql: query, values: params});
-    this.schedulePing();
     return results.map((val) => val.key);
   }
 
   async set(key, value) {
     if (key.length > 100) throw new Error('Your Key can only be 100 chars');
     await this._query({sql: 'REPLACE INTO `store` VALUES (?,?)', values: [key, value]});
-    this.schedulePing();
   }
 
   async remove(key) {
@@ -198,7 +192,6 @@ exports.Database = class {
       sql: 'DELETE FROM `store` WHERE `key` = ? AND BINARY `key` = ?',
       values: [key, key],
     });
-    this.schedulePing();
   }
 
   async doBulk(bulk) {
@@ -221,7 +214,6 @@ exports.Database = class {
         values: [deletes, deletes],
       }) : null,
     ]);
-    this.schedulePing();
   }
 
   async close() {
