@@ -5,7 +5,10 @@ const events = require('events');
 exports.Database = class extends events.EventEmitter {
   constructor(settings) {
     super();
-    this.settings = settings;
+    this.settings = {
+      writeInterval: 1,
+      ...settings,
+    };
     settings.mock = this;
   }
 

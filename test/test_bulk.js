@@ -21,7 +21,7 @@ describe(__filename, function () {
     for (const bulkLimit of bulkLimits) {
       it(bulkLimit === undefined ? 'undefined' : JSON.stringify(bulkLimit), async function () {
         const settings = {};
-        const udb = new ueberdb.Database('mock', settings, {bulkLimit, writeInterval: 1});
+        const udb = new ueberdb.Database('mock', settings, {bulkLimit});
         mock = settings.mock;
         db = {};
         for (const fn of ['init', 'close', 'set']) db[fn] = util.promisify(udb[fn].bind(udb));
