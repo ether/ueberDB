@@ -4,6 +4,18 @@ const assert = require('assert').strict;
 const ueberdb = require('../index');
 const util = require('util');
 
+// Gate is a normal Promise that resolves when its open() method is called.
+class Gate extends Promise {
+  constructor(executor = null) {
+    let open;
+    super((resolve, reject) => {
+      open = resolve;
+      if (executor != null) executor(resolve, reject);
+    });
+    this.open = open;
+  }
+}
+
 const diffMetrics = (before, after) => {
   const diff = {};
   assert.equal(Object.keys(before).length, Object.keys(after).length);
@@ -172,67 +184,279 @@ describe(__filename, function () {
 
   describe('writes', function () {
     const tcs = [
-      {name: 'remove', f: (key) => db.remove(key)},
-      {name: 'set', f: (key) => db.set(key, 'v')},
-      {name: 'setSub', fn: 'set', nReads: 1, f: (key) => db.setSub(key, ['s'], 'v')},
-      {name: 'doBulk', nWrites: 2, f: (key) => Promise.all([
-        db.set(key, 'v'),
-        db.set(`${key} second op`, 'v'),
-      ])},
-      {name: 'obsoleted', fn: 'set', nWrites: 2, nDbWrites: 1, f: (key) => Promise.all([
-        db.set(key, 'v'),
-        db.set(key, 'v2'),
-      ])},
+      {
+        name: 'remove ok',
+        action: async () => await db.remove(key),
+        wantOps: [
+          {
+            wantFn: 'remove',
+            wantMetricsDelta: {
+              lockAcquires: 1,
+              lockReleases: 1,
+              writes: 1,
+              writesToDb: 1,
+            },
+            cbArgs: [null],
+          },
+        ],
+        wantErr: null,
+        wantMetricsDelta: {
+          writesFinished: 1,
+          writesToDbFinished: 1,
+        },
+      },
+      {
+        name: 'remove error',
+        action: async () => await db.remove(key),
+        wantOps: [
+          {
+            wantFn: 'remove',
+            wantMetricsDelta: {
+              lockAcquires: 1,
+              lockReleases: 1,
+              writes: 1,
+              writesToDb: 1,
+            },
+            cbArgs: [new Error('test')],
+          },
+        ],
+        wantErr: {message: 'test'},
+        wantMetricsDelta: {
+          writesFailed: 1,
+          writesFinished: 1,
+          writesToDbFailed: 1,
+          writesToDbFinished: 1,
+        },
+      },
+      {
+        name: 'set ok',
+        action: async () => await db.set(key, 'v'),
+        wantOps: [
+          {
+            wantFn: 'set',
+            wantMetricsDelta: {
+              lockAcquires: 1,
+              lockReleases: 1,
+              writes: 1,
+              writesToDb: 1,
+            },
+            cbArgs: [null],
+          },
+        ],
+        wantErr: null,
+        wantMetricsDelta: {
+          writesFinished: 1,
+          writesToDbFinished: 1,
+        },
+      },
+      {
+        name: 'set error',
+        action: async () => await db.set(key, 'v'),
+        wantOps: [
+          {
+            wantFn: 'set',
+            wantMetricsDelta: {
+              lockAcquires: 1,
+              lockReleases: 1,
+              writes: 1,
+              writesToDb: 1,
+            },
+            cbArgs: [new Error('test')],
+          },
+        ],
+        wantErr: {message: 'test'},
+        wantMetricsDelta: {
+          writesFailed: 1,
+          writesFinished: 1,
+          writesToDbFailed: 1,
+          writesToDbFinished: 1,
+        },
+      },
+      {
+        name: 'setSub ok',
+        action: async () => await db.setSub(key, ['s'], 'v2'),
+        wantOps: [
+          {
+            wantFn: 'get',
+            wantMetricsDelta: {
+              lockAcquires: 1,
+              reads: 1,
+              readsFromDb: 1,
+            },
+            cbArgs: [null, '{"s": "v1"}'],
+          },
+          {
+            wantFn: 'set',
+            wantMetricsDelta: {
+              lockReleases: 1,
+              readsFinished: 1,
+              readsFromDbFinished: 1,
+              writes: 1,
+              writesToDb: 1,
+            },
+            cbArgs: [null],
+          },
+        ],
+        wantErr: null,
+        wantMetricsDelta: {
+          writesFinished: 1,
+          writesToDbFinished: 1,
+        },
+      },
+      {
+        name: 'setSub error',
+        action: async () => await db.setSub(key, ['s'], 'v2'),
+        wantOps: [
+          {
+            wantFn: 'get',
+            wantMetricsDelta: {
+              lockAcquires: 1,
+              reads: 1,
+              readsFromDb: 1,
+            },
+            cbArgs: [null, '{"s": "v1"}'],
+          },
+          {
+            wantFn: 'set',
+            wantMetricsDelta: {
+              lockReleases: 1,
+              readsFinished: 1,
+              readsFromDbFinished: 1,
+              writes: 1,
+              writesToDb: 1,
+            },
+            cbArgs: [new Error('test')],
+          },
+        ],
+        wantErr: {message: 'test'},
+        wantMetricsDelta: {
+          writesFailed: 1,
+          writesFinished: 1,
+          writesToDbFailed: 1,
+          writesToDbFinished: 1,
+        },
+      },
+      {
+        name: 'doBulk ok',
+        action: async () => await Promise.all([db.set(key, 'v'), db.set(`${key} second op`, 'v')]),
+        wantOps: [
+          {
+            wantFn: 'doBulk',
+            wantMetricsDelta: {
+              lockAcquires: 2,
+              lockReleases: 2,
+              writes: 2,
+              writesToDb: 2,
+            },
+            cbArgs: [null],
+          },
+        ],
+        wantErr: null,
+        wantMetricsDelta: {
+          writesFinished: 2,
+          writesToDbFinished: 2,
+        },
+      },
+      {
+        name: 'doBulk error',
+        action: async () => await Promise.all([db.set(key, 'v'), db.set(`${key} second op`, 'v')]),
+        wantOps: [
+          {
+            wantFn: 'doBulk',
+            wantMetricsDelta: {
+              lockAcquires: 2,
+              lockReleases: 2,
+              writes: 2,
+              writesToDb: 2,
+            },
+            cbArgs: [new Error('test')],
+          },
+        ],
+        wantErr: {message: 'test'},
+        wantMetricsDelta: {
+          writesFailed: 2,
+          writesFinished: 2,
+          writesToDbFailed: 2,
+          writesToDbFinished: 2,
+        },
+      },
+      {
+        name: 'obsoleted ok',
+        action: async () => await Promise.all([db.set(key, 'v'), db.set(key, 'v2')]),
+        wantOps: [
+          {
+            wantFn: 'set',
+            wantMetricsDelta: {
+              lockAcquires: 2,
+              lockAwaits: 1,
+              lockReleases: 2,
+              writes: 2,
+              writesObsoleted: 1,
+              writesToDb: 1,
+            },
+            cbArgs: [null],
+          },
+        ],
+        wantErr: null,
+        wantMetricsDelta: {
+          writesFinished: 2,
+          writesToDbFinished: 1,
+        },
+      },
+      {
+        name: 'obsoleted error',
+        action: async () => await Promise.all([db.set(key, 'v'), db.set(key, 'v2')]),
+        wantOps: [
+          {
+            wantFn: 'set',
+            wantMetricsDelta: {
+              lockAcquires: 2,
+              lockAwaits: 1,
+              lockReleases: 2,
+              writes: 2,
+              writesObsoleted: 1,
+              writesToDb: 1,
+            },
+            cbArgs: [new Error('test')],
+          },
+        ],
+        wantErr: {message: 'test'},
+        wantMetricsDelta: {
+          writesFailed: 2,
+          writesFinished: 2,
+          writesToDbFailed: 1,
+          writesToDbFinished: 1,
+        },
+      },
     ];
 
     for (const tc of tcs) {
-      if (tc.fn == null) tc.fn = tc.name;
-      if (tc.nWrites == null) tc.nWrites = 1;
-      if (tc.nDbWrites == null) tc.nDbWrites = tc.nWrites;
-      if (tc.nReads == null) tc.nReads = 0;
-
-      describe(tc.name, function () {
-        for (const failWrite of [false, true]) {
-          it(failWrite ? 'error' : 'ok', async function () {
-            // Seed with a value that can be read by the setSub test.
-            mock.once('set', (key, val, cb) => cb());
-            await db.set(key, {s: 'v'});
-            let finishWrite;
-            const writeStarted = new Promise((resolve) => {
-              mock.once(tc.fn, (...args) => {
-                const cb = args.pop();
-                resolve();
-                const err = failWrite ? new Error('test') : null;
-                new Promise((resolve) => { finishWrite = resolve; }).then(() => cb(err));
-              });
-            });
-            let before = {...db.metrics};
-            const writeFinished = tc.f(key);
-            const flushed = db.flush(); // Speed up the tests.
-            await writeStarted;
-            assertMetricsDelta(before, db.metrics, {
-              lockAcquires: tc.nWrites,
-              lockAwaits: tc.nWrites - tc.nDbWrites,
-              lockReleases: tc.nWrites,
-              reads: tc.nReads,
-              readsFinished: tc.nReads,
-              readsFromCache: tc.nReads,
-              writes: tc.nWrites,
-              writesObsoleted: tc.nWrites - tc.nDbWrites,
-              writesToDb: tc.nDbWrites,
-            });
-            before = {...db.metrics};
-            finishWrite();
-            await (failWrite ? assert.rejects(writeFinished, {message: 'test'}) : writeFinished);
-            await flushed;
-            assertMetricsDelta(before, db.metrics, {
-              writesFailed: failWrite ? tc.nWrites : 0,
-              writesFinished: tc.nWrites,
-              writesToDbFailed: failWrite ? tc.nDbWrites : 0,
-              writesToDbFinished: tc.nDbWrites,
-            });
+      it(tc.name, async function () {
+        let opStart;
+        for (const fn of ['doBulk', 'get', 'remove', 'set']) {
+          mock.on(fn, (...args) => {
+            const cb = args.pop();
+            opStart.open([fn, cb]);
           });
         }
+        let before = {...db.metrics};
+        let actionDone;
+        // advance() triggers the next database operation, either by starting tc.action (if
+        // tc.action has not yet been started) or completing the previous operation (if tc.action
+        // has been started).
+        let advance = () => { actionDone = tc.action(); };
+        for (const op of tc.wantOps) {
+          opStart = new Gate();
+          advance();
+          const [gotFn, cb] = await opStart;
+          assert.equal(gotFn, op.wantFn);
+          assertMetricsDelta(before, db.metrics, op.wantMetricsDelta);
+          before = {...db.metrics};
+          advance = () => cb(...op.cbArgs);
+        }
+        advance();
+        await (tc.wantErr ? assert.rejects(actionDone, tc.wantErr) : actionDone);
+        assertMetricsDelta(before, db.metrics, tc.wantMetricsDelta);
       });
     }
   });
