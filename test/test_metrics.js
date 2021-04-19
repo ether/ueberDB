@@ -250,7 +250,7 @@ describe(__filename, function () {
         },
       },
       {
-        name: 'set error',
+        name: 'set db error',
         action: async () => await db.set(key, 'v'),
         wantOps: [
           {
@@ -270,6 +270,19 @@ describe(__filename, function () {
           writesFinished: 1,
           writesToDbFailed: 1,
           writesToDbFinished: 1,
+        },
+      },
+      {
+        name: 'set json error',
+        action: async () => await db.set(key, BigInt(1)), // BigInts are not JSONable.
+        wantOps: [],
+        wantErr: {name: 'TypeError'},
+        wantMetricsDelta: {
+          lockAcquires: 1,
+          lockReleases: 1,
+          writes: 1,
+          writesFailed: 1,
+          writesFinished: 1,
         },
       },
       {
@@ -304,7 +317,7 @@ describe(__filename, function () {
         },
       },
       {
-        name: 'setSub error',
+        name: 'setSub db write error',
         action: async () => await db.setSub(key, ['s'], 'v2'),
         wantOps: [
           {
@@ -334,6 +347,105 @@ describe(__filename, function () {
           writesFinished: 1,
           writesToDbFailed: 1,
           writesToDbFinished: 1,
+        },
+      },
+      {
+        name: 'setSub db read error',
+        action: async () => await db.setSub(key, ['s'], 'v2'),
+        wantOps: [
+          {
+            wantFn: 'get',
+            wantMetricsDelta: {
+              lockAcquires: 1,
+              reads: 1,
+              readsFromDb: 1,
+            },
+            cbArgs: [new Error('test')],
+          },
+        ],
+        wantErr: {message: 'test'},
+        wantMetricsDelta: {
+          lockReleases: 1,
+          readsFailed: 1,
+          readsFinished: 1,
+          readsFromDbFailed: 1,
+          readsFromDbFinished: 1,
+          writes: 1,
+          writesFailed: 1,
+          writesFinished: 1,
+        },
+      },
+      {
+        name: 'setSub json read error',
+        action: async () => await db.setSub(key, ['s'], 'v2'),
+        wantOps: [
+          {
+            wantFn: 'get',
+            wantMetricsDelta: {
+              lockAcquires: 1,
+              reads: 1,
+              readsFromDb: 1,
+            },
+            cbArgs: [null, 'ignore me -- this is intentionally invalid json'],
+          },
+        ],
+        wantErr: {name: 'SyntaxError'},
+        wantMetricsDelta: {
+          lockReleases: 1,
+          readsFailed: 1,
+          readsFinished: 1,
+          readsFromDbFinished: 1,
+          writes: 1,
+          writesFailed: 1,
+          writesFinished: 1,
+        },
+      },
+      {
+        name: 'setSub update non-object error',
+        action: async () => await db.setSub(key, ['s'], 'v2'),
+        wantOps: [
+          {
+            wantFn: 'get',
+            wantMetricsDelta: {
+              lockAcquires: 1,
+              reads: 1,
+              readsFromDb: 1,
+            },
+            cbArgs: [null, '"foo"'],
+          },
+        ],
+        wantErr: {message: /non-object/},
+        wantMetricsDelta: {
+          lockReleases: 1,
+          readsFinished: 1,
+          readsFromDbFinished: 1,
+          writes: 1,
+          writesFailed: 1,
+          writesFinished: 1,
+        },
+      },
+      {
+        name: 'setSub json write error',
+        action: async () => await db.setSub(key, ['s'], BigInt(1)), // BigInts are not JSONable.
+        wantOps: [
+          {
+            wantFn: 'get',
+            wantMetricsDelta: {
+              lockAcquires: 1,
+              reads: 1,
+              readsFromDb: 1,
+            },
+            cbArgs: [null, '{"s": "v1"}'],
+          },
+        ],
+        wantErr: {name: 'TypeError'},
+        wantMetricsDelta: {
+          lockReleases: 1,
+          readsFinished: 1,
+          readsFromDbFinished: 1,
+          writes: 1,
+          writesFailed: 1,
+          writesFinished: 1,
         },
       },
       {

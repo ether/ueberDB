@@ -1,5 +1,9 @@
 # Notable Changes
 
+## v1.4.7
+
+* Fixed write metrics for `setSub()` read failures.
+
 ## v1.4.6
 
 * `mysql`: Use a connection pool to improve performance and simplify the code.
