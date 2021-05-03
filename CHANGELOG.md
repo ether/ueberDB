@@ -1,5 +1,9 @@
 # Notable Changes
 
+## v1.4.8
+
+* `redis`: Updated `redis` dependency to 3.1.2.
+
 ## v1.4.7
 
 * Each write operation in a bulk write batch is now retried if the bulk write
