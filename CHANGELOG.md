@@ -1,5 +1,13 @@
 # Notable Changes
 
+## v1.4.16
+
+* `postgres`, `postgrespool`: The `postgrespool` database driver was renamed to
+  `postgres`, replacing the old `postgres` driver. The old `postgrespool` name
+  is still usable, but is deprecated. For users of the old `postgres` driver,
+  this change increases the number of concurrent database connections. You may
+  need to increase your configured connection limit.
+
 ## v1.4.15
 
 * `sqlite`: Updated `sqlite3` to 5.0.2.
