@@ -23,7 +23,9 @@ exports.Database = class extends AbstractDatabase {
     this.settings = settings;
 
     if (!this.settings.url) throw new Error('You must specify a mongodb url');
-    if (!this.settings.dbName) throw new Error('You must specify a mongodb database');
+    // For backwards compatibility:
+    if (this.settings.database == null) this.settings.database = this.settings.dbName;
+    if (!this.settings.database) throw new Error('You must specify a mongodb database');
 
     if (!this.settings.collection) this.settings.collection = 'ueberdb';
   }
@@ -49,7 +51,7 @@ exports.Database = class extends AbstractDatabase {
     MongoClient.connect(this.settings.url, (err, client) => {
       if (!err) {
         this.client = client;
-        this.database = client.db(this.settings.dbName);
+        this.database = client.db(this.settings.database);
         this.collection = this.database.collection(this.settings.collection);
       }
 

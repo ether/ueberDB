@@ -42,7 +42,7 @@ exports.databases = {
   },
   mongodb: {
     url: 'mongodb://127.0.0.1:27017',
-    dbName: 'mydb_test',
+    database: 'mydb_test',
     speeds: {
       setMax: 0.2,
       getMax: 0.05,

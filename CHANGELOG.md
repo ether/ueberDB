@@ -1,5 +1,12 @@
 # Notable Changes
 
+## v1.4.13
+
+* `mongodb`: The `dbName` setting has been renamed to `database` for consistency
+  with other database drivers. The `dbName` setting will continue to work (for
+  backwards compatibility), but it is deprecated and is ignored if `database` is
+  set.
+
 ## v1.4.8
 
 * `redis`: Updated `redis` dependency to 3.1.2.
