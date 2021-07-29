@@ -6,6 +6,8 @@
   with other database drivers. The `dbName` setting will continue to work (for
   backwards compatibility), but it is deprecated and is ignored if `database` is
   set.
+* `mongodb`: The `database` (formerly `dbName`) setting is now optional. If it
+  is not specified, the database name embedded in the `url` setting is used.
 
 ## v1.4.8
 

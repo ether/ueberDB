@@ -25,7 +25,6 @@ exports.Database = class extends AbstractDatabase {
     if (!this.settings.url) throw new Error('You must specify a mongodb url');
     // For backwards compatibility:
     if (this.settings.database == null) this.settings.database = this.settings.dbName;
-    if (!this.settings.database) throw new Error('You must specify a mongodb database');
 
     if (!this.settings.collection) this.settings.collection = 'ueberdb';
   }
