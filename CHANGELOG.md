@@ -4,6 +4,7 @@
 
 Updated dependencies:
 * `couch`: Updated `nano` to 9.0.3.
+* `dirty`: Updated `dirty` to 1.1.3.
 * `dirty_git`: Updated `simple-git` to 2.45.0.
 * `mongodb`: Updated `mongodb` to 3.6.11.
 * `mssql`: Updated `mssql` to 7.2.1.
