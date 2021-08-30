@@ -3,6 +3,7 @@
 ## v1.4.14
 
 Updated dependencies:
+* `cassandra`: Updated `cassandra-driver` to 4.6.3.
 * `couch`: Updated `nano` to 9.0.3.
 * `dirty`: Updated `dirty` to 1.1.3.
 * `dirty_git`: Updated `simple-git` to 2.45.0.
