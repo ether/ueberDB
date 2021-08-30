@@ -21,7 +21,7 @@
     }
   ],
   "dependencies": {
-    "async": "^3.2.0",
+    "async": "^3.2.1",
     "cassandra-driver": "^4.5.1",
     "dirty": "^1.1.1",
     "elasticsearch": "^16.7.1",
