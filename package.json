@@ -48,7 +48,7 @@
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "eslint-plugin-promise": "^5.1.0",
     "eslint-plugin-you-dont-need-lodash-underscore": "^6.12.0",
-    "mocha": "^7.1.2",
+    "mocha": "^9.1.1",
     "randexp": "^0.5.3",
     "wtfnode": "^0.9.1"
   },
