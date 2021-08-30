@@ -4,6 +4,7 @@
 
 Updated dependencies:
 * `dirty_git`: Updated `simple-git` to 2.45.0.
+* `postgres`, `postgrespool`: Updated `pg` to 8.7.1.
 
 ## v1.4.13
 
