@@ -49,7 +49,7 @@
     "eslint-plugin-you-dont-need-lodash-underscore": "^6.11.0",
     "mocha": "^7.1.2",
     "randexp": "^0.5.3",
-    "wtfnode": "^0.8.4"
+    "wtfnode": "^0.9.1"
   },
   "repository": {
     "type": "git",
