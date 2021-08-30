@@ -1,5 +1,9 @@
 # Notable Changes
 
+## v1.4.15
+
+* `sqlite`: Updated `sqlite3` to 5.0.2.
+
 ## v1.4.14
 
 Updated dependencies:

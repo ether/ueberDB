@@ -35,7 +35,7 @@
     "simple-git": "^2.45.0"
   },
   "optionalDependencies": {
-    "sqlite3": "^5.0.1"
+    "sqlite3": "^5.0.2"
   },
   "devDependencies": {
     "cli-table": "^0.3.6",
