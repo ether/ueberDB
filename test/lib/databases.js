@@ -25,6 +25,7 @@ exports.databases = {
     database: 'ueberdb',
     charset: 'utf8mb4',
     speeds: {
+      findKeysMax: 6,
       getMax: 1,
     },
   },
