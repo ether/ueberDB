@@ -5,6 +5,7 @@
 Updated dependencies:
 * `couch`: Updated `nano` to 9.0.3.
 * `dirty_git`: Updated `simple-git` to 2.45.0.
+* `mssql`: Updated `mssql` to 7.2.1.
 * `postgres`, `postgrespool`: Updated `pg` to 8.7.1.
 
 ## v1.4.13
