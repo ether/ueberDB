@@ -1,5 +1,10 @@
 # Notable Changes
 
+## v1.4.14
+
+Updated dependencies:
+* `dirty_git`: Updated `simple-git` to 2.45.0.
+
 ## v1.4.13
 
 * `mongodb`: The `dbName` setting has been renamed to `database` for consistency
