@@ -1,5 +1,13 @@
 # Notable Changes
 
+## v1.4.16
+
+* `postgres`: You can now provide a connection string instead of a settings
+  object. For example:
+  ```javascript
+  const db = new ueberdb.Database('postgres', 'postgres://user:password@host/dbname');
+  ```
+
 ## v1.4.15
 
 * `postgres`, `postgrespool`: The `postgrespool` database driver was renamed to

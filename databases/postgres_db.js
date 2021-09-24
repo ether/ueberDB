@@ -22,6 +22,7 @@ const pg = require('pg');
 exports.Database = class extends AbstractDatabase {
   constructor(settings) {
     super();
+    if (typeof settings === 'string') settings = {connectionString: settings};
     this.settings = settings;
 
     this.settings.cache = settings.cache || 1000;
