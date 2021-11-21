@@ -1,5 +1,12 @@
 # Notable Changes
 
+## v1.4.19
+
+Updated database (and other) dependencies:
+* `mongodb`: Updated `mongodb` to 3.7.3.
+* `mssql`: Updated `mssql` to 7.3.0.
+* `dirty_git`: Updated `simple-git` to 2.47.0.
+
 ## v1.4.16
 
 * `postgres`: You can now provide a connection string instead of a settings
