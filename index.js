@@ -153,9 +153,11 @@ exports.Database = class {
   }
 };
 
-const clone = (obj) => {
+const clone = (obj, key = '') => {
   // Handle the 3 simple types, and null or undefined
   if (null == obj || 'object' !== typeof obj) return obj;
+
+  if (typeof obj.toJSON === 'function') return clone(obj.toJSON(key));
 
   // Handle Date
   if (obj instanceof Date) {
@@ -168,7 +170,7 @@ const clone = (obj) => {
   if (obj instanceof Array) {
     const copy = [];
     for (let i = 0, len = obj.length; i < len; ++i) {
-      copy[i] = clone(obj[i]);
+      copy[i] = clone(obj[i], String(i));
     }
     return copy;
   }
@@ -177,7 +179,7 @@ const clone = (obj) => {
   if (obj instanceof Object) {
     const copy = {};
     for (const attr in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, attr)) copy[attr] = clone(obj[attr]);
+      if (Object.prototype.hasOwnProperty.call(obj, attr)) copy[attr] = clone(obj[attr], attr);
     }
     return copy;
   }

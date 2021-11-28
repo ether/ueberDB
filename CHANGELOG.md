@@ -1,7 +1,13 @@
 # Notable Changes
 
-## v1.5.0
+## v2.0.0
 
+* When saving an object that has a `.toJSON()` method, the value returned from
+  that method is saved to the database instead of the object itself. This
+  matches [the behavior of
+  `JSON.stringify()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#tojson_behavior).
+  The `.toJSON()` method is used even if the chosen database driver never
+  actually converts anything to JSON.
 * New `memory` database driver that stores values in memory only.
 
 ## v1.4.19
