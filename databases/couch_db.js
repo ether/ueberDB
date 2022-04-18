@@ -16,6 +16,7 @@
  */
 
 const AbstractDatabase = require('../lib/AbstractDatabase');
+const http = require('http');
 const nano = require('nano');
 const async = require('async');
 
@@ -29,6 +30,7 @@ const handleError = (er) => {
 exports.Database = class extends AbstractDatabase {
   constructor(settings) {
     super();
+    this.agent = null;
     this.db = null;
     this.client = null;
     this.settings = settings;
@@ -45,16 +47,18 @@ exports.Database = class extends AbstractDatabase {
     let client = null;
     let db = null;
 
+    this.agent = new http.Agent({
+      keepAlive: true,
+      maxSockets: this.settings.maxListeners || 1,
+    });
     const config = {
       url: `http://${settings.host}:${settings.port}`,
       requestDefaults: {
-        pool: {
-          maxSockets: settings.maxListeners || 1,
-        },
         auth: {
-          user: settings.user,
-          pass: settings.password,
+          username: settings.user,
+          password: settings.password,
         },
+        httpAgent: this.agent,
       },
     };
 
@@ -196,6 +200,8 @@ exports.Database = class extends AbstractDatabase {
   }
 
   close(callback) {
+    if (this.agent) this.agent.destroy();
+    this.agent = null;
     if (callback) callback();
   }
 };
