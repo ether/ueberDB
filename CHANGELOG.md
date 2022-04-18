@@ -1,5 +1,12 @@
 # Notable Changes
 
+## v2.1.0
+
+Updated database dependencies:
+
+  * `dirty_git`: Updated `simple-git` to 3.6.0.
+  * `mssql`: Updated `mssql` to 8.1.0.
+
 ## v2.0.0
 
 * When saving an object that has a `.toJSON()` method, the value returned from
