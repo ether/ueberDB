@@ -35,7 +35,7 @@
     "simple-git": "^3.6.0"
   },
   "optionalDependencies": {
-    "sqlite3": "github:mapbox/node-sqlite3#593c9d498be2510d286349134537e3bf89401c4a"
+    "sqlite3": "^5.0.4"
   },
   "devDependencies": {
     "cli-table": "^0.3.8",
