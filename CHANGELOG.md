@@ -2,6 +2,9 @@
 
 ## v2.1.0
 
+  * `memory`: New `data` setting that allows users to supply the backing Map
+    object (rather than create a new Map).
+
 Updated database dependencies:
 
   * `dirty_git`: Updated `simple-git` to 3.6.0.

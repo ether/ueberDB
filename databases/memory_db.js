@@ -28,7 +28,7 @@ exports.Database = class extends AbstractDatabase {
   }
 
   init() {
-    this._data = new Map();
+    this._data = this.settings.data || new Map();
   }
 
   remove(key) {
