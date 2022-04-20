@@ -21,6 +21,10 @@ const cacheAndBufferLayer = require('./lib/CacheAndBufferLayer');
 const logging = require('./lib/logging');
 const util = require('util');
 
+const cbDb = Object.fromEntries(
+    ['close', 'findKeys', 'flush', 'get', 'getSub', 'init', 'remove', 'set', 'setSub']
+        .map((fn) => [fn, util.callbackify(cacheAndBufferLayer.Database.prototype[fn])]));
+
 const makeDoneCallback = (callback, deprecated) => (err) => {
   if (callback) callback(err);
   if (deprecated) deprecated(err);
@@ -60,7 +64,7 @@ exports.Database = class {
 
   init(callback) {
     if (callback) {
-      util.callbackify(this.db.init.bind(this.db))(callback);
+      cbDb.init.call(this.db, callback);
     } else {
       return this.db.init();
     }
@@ -81,15 +85,15 @@ exports.Database = class {
    * Writes any unsaved changes to the underlying database.
    */
   flush(callback) {
-    util.callbackify(this.db.flush.bind(this.db))(callback);
+    cbDb.flush.call(this.db, callback);
   }
 
   get(key, callback) {
-    util.callbackify(this.db.get.bind(this.db))(key, callback);
+    cbDb.get.call(this.db, key, callback);
   }
 
   findKeys(key, notKey, callback) {
-    util.callbackify(this.db.findKeys.bind(this.db))(key, notKey, callback);
+    cbDb.findKeys.call(this.db, key, notKey, callback);
   }
 
   /**
@@ -99,7 +103,7 @@ exports.Database = class {
    * @param deprecated Deprecated callback that is called just after cb.
    */
   remove(key, cb, deprecated = null) {
-    util.callbackify(this.db.remove.bind(this.db))(key, makeDoneCallback(cb, deprecated));
+    cbDb.remove.call(this.db, key, makeDoneCallback(cb, deprecated));
   }
 
   /**
@@ -109,11 +113,11 @@ exports.Database = class {
    * @param deprecated Deprecated callback that is called just after cb.
    */
   set(key, value, cb, deprecated = null) {
-    util.callbackify(this.db.set.bind(this.db))(key, value, makeDoneCallback(cb, deprecated));
+    cbDb.set.call(this.db, key, value, makeDoneCallback(cb, deprecated));
   }
 
   getSub(key, sub, callback) {
-    util.callbackify(this.db.getSub.bind(this.db))(key, sub, callback);
+    cbDb.getSub.call(this.db, key, sub, callback);
   }
 
   /**
@@ -123,8 +127,7 @@ exports.Database = class {
    * @param deprecated Deprecated callback that is called just after cb.
    */
   setSub(key, sub, value, cb, deprecated = null) {
-    util.callbackify(this.db.setSub.bind(this.db))(
-        key, sub, value, makeDoneCallback(cb, deprecated));
+    cbDb.setSub.call(this.db, key, sub, value, makeDoneCallback(cb, deprecated));
   }
 
   /**
@@ -132,7 +135,7 @@ exports.Database = class {
    * returns, any future call to a method on this object may result in an error.
    */
   close(callback) {
-    util.callbackify(this.db.close.bind(this.db))(callback);
+    cbDb.close.call(this.db, callback);
   }
 };
 
