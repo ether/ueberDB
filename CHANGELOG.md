@@ -2,6 +2,10 @@
 
 ## Next Release
 
+Compatibility changes:
+
+  * Minimum supported Node.js version is now 14.15.0.
+
 Bug fixes:
 
   * A call to `flush()` immediately after a call to `set()`, `setSub()`, or
