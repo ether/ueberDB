@@ -85,11 +85,11 @@ exports.Database = class {
   }
 
   get(key, callback) {
-    util.callbackify(this.db.get.bind(this.db))(key, (err, val) => callback(err, clone(val)));
+    util.callbackify(this.db.get.bind(this.db))(key, callback);
   }
 
   findKeys(key, notKey, callback) {
-    util.callbackify(this.db.findKeys.bind(this.db))(key, notKey, (e, v) => callback(e, clone(v)));
+    util.callbackify(this.db.findKeys.bind(this.db))(key, notKey, callback);
   }
 
   /**
@@ -109,13 +109,11 @@ exports.Database = class {
    * @param deprecated Deprecated callback that is called just after cb.
    */
   set(key, value, cb, deprecated = null) {
-    util.callbackify(this.db.set.bind(this.db))(
-        key, clone(value), makeDoneCallback(cb, deprecated));
+    util.callbackify(this.db.set.bind(this.db))(key, value, makeDoneCallback(cb, deprecated));
   }
 
   getSub(key, sub, callback) {
-    util.callbackify(this.db.getSub.bind(this.db))(
-        key, sub, (err, val) => callback(err, clone(val)));
+    util.callbackify(this.db.getSub.bind(this.db))(key, sub, callback);
   }
 
   /**
@@ -126,7 +124,7 @@ exports.Database = class {
    */
   setSub(key, sub, value, cb, deprecated = null) {
     util.callbackify(this.db.setSub.bind(this.db))(
-        key, sub, clone(value), makeDoneCallback(cb, deprecated));
+        key, sub, value, makeDoneCallback(cb, deprecated));
   }
 
   /**
@@ -136,40 +134,6 @@ exports.Database = class {
   close(callback) {
     util.callbackify(this.db.close.bind(this.db))(callback);
   }
-};
-
-const clone = (obj, key = '') => {
-  // Handle the 3 simple types, and null or undefined
-  if (null == obj || 'object' !== typeof obj) return obj;
-
-  if (typeof obj.toJSON === 'function') return clone(obj.toJSON(key));
-
-  // Handle Date
-  if (obj instanceof Date) {
-    const copy = new Date();
-    copy.setTime(obj.getTime());
-    return copy;
-  }
-
-  // Handle Array
-  if (obj instanceof Array) {
-    const copy = [];
-    for (let i = 0, len = obj.length; i < len; ++i) {
-      copy[i] = clone(obj[i], String(i));
-    }
-    return copy;
-  }
-
-  // Handle Object
-  if (obj instanceof Object) {
-    const copy = {};
-    for (const attr in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, attr)) copy[attr] = clone(obj[attr], attr);
-    }
-    return copy;
-  }
-
-  throw new Error("Unable to copy obj! Its type isn't supported.");
 };
 
 /**
