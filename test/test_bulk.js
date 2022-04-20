@@ -11,10 +11,8 @@ describe(__filename, function () {
   let mock = null;
   const createDb = async (wrapperSettings) => {
     const settings = {};
-    const udb = new ueberdb.Database('mock', settings, wrapperSettings);
+    db = new ueberdb.Database('mock', settings, wrapperSettings);
     mock = settings.mock;
-    db = {};
-    for (const fn of ['init', 'close', 'set']) db[fn] = util.promisify(udb[fn].bind(udb));
     mock.once('init', (cb) => cb());
     await db.init();
   };

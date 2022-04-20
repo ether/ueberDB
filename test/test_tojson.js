@@ -2,15 +2,12 @@
 
 const assert = require('assert').strict;
 const ueberdb = require('../index');
-const util = require('util');
 
 describe(__filename, function () {
   let db = null;
 
   before(async function () {
-    const udb = new ueberdb.Database('memory', {}, {});
-    db = {};
-    for (const fn of ['init', 'close', 'set', 'get']) db[fn] = util.promisify(udb[fn].bind(udb));
+    db = new ueberdb.Database('memory', {}, {});
     await db.init();
   });
 

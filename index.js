@@ -62,12 +62,12 @@ exports.Database = class {
     this.metrics = this.db.metrics;
   }
 
-  init(callback) {
-    if (callback) {
-      cbDb.init.call(this.db, callback);
-    } else {
-      return this.db.init();
-    }
+  /**
+   * @param callback - Deprecated. Node-style callback. If null, a Promise is returned.
+   */
+  init(callback = null) {
+    if (callback != null) return cbDb.init.call(this.db, callback);
+    return this.db.init();
   }
 
   /**
@@ -76,66 +76,94 @@ exports.Database = class {
 
   /**
    * Deprecated synonym of flush().
+   *
+   * @param callback - Deprecated. Node-style callback. If null, a Promise is returned.
    */
-  doShutdown(callback) {
-    this.flush(callback);
+  doShutdown(callback = null) {
+    return this.flush(callback);
   }
 
   /**
    * Writes any unsaved changes to the underlying database.
+   *
+   * @param callback - Deprecated. Node-style callback. If null, a Promise is returned.
    */
-  flush(callback) {
-    cbDb.flush.call(this.db, callback);
+  flush(callback = null) {
+    if (callback != null) return cbDb.flush.call(this.db, callback);
+    return this.db.flush();
   }
 
-  get(key, callback) {
-    cbDb.get.call(this.db, key, callback);
+  /**
+   * @param callback - Deprecated. Node-style callback. If null, a Promise is returned.
+   */
+  get(key, callback = null) {
+    if (callback != null) return cbDb.get.call(this.db, key, callback);
+    return this.db.get(key);
   }
 
-  findKeys(key, notKey, callback) {
-    cbDb.findKeys.call(this.db, key, notKey, callback);
+  /**
+   * @param callback - Deprecated. Node-style callback. If null, a Promise is returned.
+   */
+  findKeys(key, notKey, callback = null) {
+    if (callback != null) return cbDb.findKeys.call(this.db, key, notKey, callback);
+    return this.db.findKeys(key, notKey);
   }
 
   /**
    * Removes an entry from the database if present.
    *
-   * @param cb Called when the write has been committed to the underlying database driver.
-   * @param deprecated Deprecated callback that is called just after cb.
+   * @param cb Deprecated. Node-style callback. Called when the write has been committed to the
+   *     underlying database driver. If null, a Promise is returned.
+   * @param deprecated Deprecated callback that is called just after cb. Ignored if cb is null.
    */
-  remove(key, cb, deprecated = null) {
-    cbDb.remove.call(this.db, key, makeDoneCallback(cb, deprecated));
+  remove(key, cb = null, deprecated = null) {
+    if (cb != null) return cbDb.remove.call(this.db, key, makeDoneCallback(cb, deprecated));
+    return this.db.remove(key);
   }
 
   /**
    * Adds or changes the value of an entry.
    *
-   * @param cb Called when the write has been committed to the underlying database driver.
-   * @param deprecated Deprecated callback that is called just after cb.
+   * @param cb Deprecated. Node-style callback. Called when the write has been committed to the
+   *     underlying database driver. If null, a Promise is returned.
+   * @param deprecated Deprecated callback that is called just after cb. Ignored if cb is null.
    */
-  set(key, value, cb, deprecated = null) {
-    cbDb.set.call(this.db, key, value, makeDoneCallback(cb, deprecated));
+  set(key, value, cb = null, deprecated = null) {
+    if (cb != null) return cbDb.set.call(this.db, key, value, makeDoneCallback(cb, deprecated));
+    return this.db.set(key, value);
   }
 
-  getSub(key, sub, callback) {
-    cbDb.getSub.call(this.db, key, sub, callback);
+  /**
+   * @param callback - Deprecated. Node-style callback. If null, a Promise is returned.
+   */
+  getSub(key, sub, callback = null) {
+    if (callback != null) return cbDb.getSub.call(this.db, key, sub, callback);
+    return this.db.getSub(key, sub);
   }
 
   /**
    * Adds or changes a subvalue of an entry.
    *
-   * @param cb Called when the write has been committed to the underlying database driver.
-   * @param deprecated Deprecated callback that is called just after cb.
+   * @param cb Deprecated. Node-style callback. Called when the write has been committed to the
+   *     underlying database driver. If null, a Promise is returned.
+   * @param deprecated Deprecated callback that is called just after cb. Ignored if cb is null.
    */
-  setSub(key, sub, value, cb, deprecated = null) {
-    cbDb.setSub.call(this.db, key, sub, value, makeDoneCallback(cb, deprecated));
+  setSub(key, sub, value, cb = null, deprecated = null) {
+    if (cb != null) {
+      return cbDb.setSub.call(this.db, key, sub, value, makeDoneCallback(cb, deprecated));
+    }
+    return this.db.setSub(key, sub, value);
   }
 
   /**
    * Flushes unwritten changes then closes the connection to the underlying database. After this
    * returns, any future call to a method on this object may result in an error.
+   *
+   * @param callback - Deprecated. Node-style callback. If null, a Promise is returned.
    */
-  close(callback) {
-    cbDb.close.call(this.db, callback);
+  close(callback = null) {
+    if (callback != null) return cbDb.close.call(this.db, callback);
+    return this.db.close();
   }
 };
 

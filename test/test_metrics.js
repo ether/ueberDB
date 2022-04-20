@@ -2,7 +2,6 @@
 
 const assert = require('assert').strict;
 const ueberdb = require('../index');
-const util = require('util');
 
 // Gate is a normal Promise that resolves when its open() method is called.
 class Gate extends Promise {
@@ -43,11 +42,8 @@ describe(__filename, function () {
 
   before(async function () {
     const settings = {};
-    const udb = new ueberdb.Database('mock', settings);
+    db = new ueberdb.Database('mock', settings);
     mock = settings.mock;
-    db = {metrics: udb.metrics};
-    const fns = ['init', 'close', 'get', 'getSub', 'findKeys', 'flush', 'remove', 'set', 'setSub'];
-    for (const fn of fns) db[fn] = util.promisify(udb[fn].bind(udb));
     mock.once('init', (cb) => cb());
     await db.init();
   });

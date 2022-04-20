@@ -2,6 +2,15 @@
 
 ## Next Release
 
+Compatibility changes:
+
+  * Passing callbacks to the database methods is deprecated; use the returned
+    Promises instead.
+
+New features:
+
+  * Database methods now return a Promise if a callback is not provided.
+
 Bug fixes:
 
   * A call to `flush()` immediately after a call to `set()`, `setSub()`, or
