@@ -3,7 +3,6 @@
 const assert = require('assert').strict;
 const logging = require('../lib/logging');
 const ueberdb = require('../index');
-const util = require('util');
 
 const logger = new logging.ConsoleLogger();
 
@@ -12,11 +11,8 @@ describe(__filename, function () {
   let mock = null;
   const createDb = async (wrapperSettings = {}) => {
     const settings = {};
-    const udb = new ueberdb.Database('mock', settings, {json: false, ...wrapperSettings}, logger);
+    db = new ueberdb.Database('mock', settings, {json: false, ...wrapperSettings}, logger);
     mock = settings.mock;
-    db = {};
-    const fns = ['init', 'close', 'set', 'setSub', 'findKeys'];
-    for (const fn of fns) db[fn] = util.promisify(udb[fn].bind(udb));
     mock.once('init', (cb) => cb());
     await db.init();
   };

@@ -5,6 +5,12 @@
 Compatibility changes:
 
   * Minimum supported Node.js version is now 14.15.0.
+  * Passing callbacks to the database methods is deprecated; use the returned
+    Promises instead.
+
+New features:
+
+  * Database methods now return a Promise if a callback is not provided.
 
 Bug fixes:
 

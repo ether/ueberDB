@@ -40,58 +40,48 @@ npm install ueberdb2
 ```javascript
 const ueberdb = require('ueberdb2');
 
-// mysql
-const db = new ueberdb.Database('mysql', {
-  user: 'root',
-  host: 'localhost',
-  password: '',
-  database: 'store',
-  engine: 'InnoDB',
-});
-
-// dirty to file system
-//const db = new ueberdb.Database('dirty', {filename: 'var/dirty.db'});
-
-async function example(db) {
-  await db.init();
-
-  // no need for await because it's already in cache.
-  db.set('valueA', {a: 1, b: 2});
-
-  db.get('valueA', function (err, value) {
-    // close the database connection.
-    db.close(function () {
-      process.exit(0);
-    });
+(async () => {
+  // mysql
+  const db = new ueberdb.Database('mysql', {
+    user: 'root',
+    host: 'localhost',
+    password: '',
+    database: 'store',
+    engine: 'InnoDB',
   });
-}
+  // dirty to file system
+  //const db = new ueberdb.Database('dirty', {filename: 'var/dirty.db'});
 
-example(db);
+  await db.init();
+  try {
+    await db.set('valueA', {a: 1, b: 2});
+    console.log('valueA is', await db.get('valueA'));
+  } finally {
+    await db.close();
+  }
+})();
 ```
 
 ### findKeys
 
 ```javascript
 const ueberdb = require('ueberdb2');
-const db = new ueberdb.Database('dirty', {filename: 'var/dirty.db'});
 
-async function example(db){
+(async () => {
+  const db = new ueberdb.Database('dirty', {filename: 'var/dirty.db'});
   await db.init();
-
-  // no need for await because it's already in cache.
-  db.set('valueA', {a: 1, b: 2});
-  db.set('valueA:h1', {a: 1, b: 2});
-  db.set('valueA:h2', {a: 3, b: 4});
-
-  db.findKeys('valueA:*', null, function (err, value) { // TODO: Check this
-    // value will be ['valueA:h1', 'valueA:h2']
-    db.close(function () {
-      process.exit(0);
-    });
-  });
-}
-
-example(db);
+  try {
+    await Promise.all([
+      db.set('valueA', {a: 1, b: 2}),
+      db.set('valueA:h1', {a: 1, b: 2}),
+      db.set('valueA:h2', {a: 3, b: 4}),
+    ]);
+    // prints [ 'valueA:h1', 'valueA:h2' ]
+    console.log(await db.findKeys('valueA:*', null));
+  } finally {
+    await db.close();
+  }
+})();
 ```
 
 ### Getting and setting subkeys
@@ -103,6 +93,7 @@ methods make this easier.
 #### `getSub`
 
 ```javascript
+const value = await db.getSub(key, propertyPath);
 db.getSub(key, propertyPath, callback);
 ```
 
@@ -115,40 +106,31 @@ exist or if the given property path does not exist.
 Examples:
 
 ```javascript
-db.set(key, {prop1: {prop2: ['value']}}, (err) => {
-  if (err != null) throw err;
+(async () => {
+  await db.set(key, {prop1: {prop2: ['value']}});
 
-  db.getSub(key, ['prop1', 'prop2', '0'], (err, val) => {
-    if (err != null) throw err;
-    console.log('1.', val); // prints "1. value"
-  });
+  const val1 = await db.getSub(key, ['prop1', 'prop2', '0']);
+  console.log('1.', val1); // prints "1. value"
 
-  db.getSub(key, ['prop1', 'prop2'], (err, val) => {
-    if (err != null) throw err;
-    console.log('2.', val); // prints "2. [ 'value' ]"
-  });
+  const val2 = await db.getSub(key, ['prop1', 'prop2']);
+  console.log('2.', val2); // prints "2. [ 'value' ]"
 
-  db.getSub(key, ['prop1'], (err, val) => {
-    if (err != null) throw err;
-    console.log('3.', val); // prints "3. { prop2: [ 'value' ] }"
-  });
+  const val3 = await db.getSub(key, ['prop1']);
+  console.log('3.', val3); // prints "3. { prop2: [ 'value' ] }"
 
-  db.getSub(key, [], (err, val) => {
-    if (err != null) throw err;
-    console.log('4.', val); // prints "4. { prop1: { prop2: [ 'value' ] } }"
-  });
+  const val4 = await db.getSub(key, []);
+  console.log('4.', val4); // prints "4. { prop1: { prop2: [ 'value' ] } }"
 
-  db.getSub(key, ['does', 'not', 'exist'], (err, val) => {
-    if (err != null) throw err;
-    console.log('5.', val); // prints "5. null" or "5. undefined"
-  });
+  const val5 = await db.getSub(key, ['does', 'not', 'exist']);
+  console.log('5.', val5); // prints "5. null" or "5. undefined"
 });
 ```
 
 #### `setSub`
 
 ```javascript
-db.setSub(key, propertyPath, value, cb);
+await db.setSub(key, propertyPath, value);
+db.setSub(key, propertyPath, value, callback);
 ```
 
 Fetches the object stored at `key`, walks the property path given in
@@ -156,30 +138,26 @@ Fetches the object stored at `key`, walks the property path given in
 must be an array. If `propertyPath` is an empty array then `setSub()` is
 equivalent to `set()`. Empty objects are created as needed if the property path
 does not exist (including if `key` does not exist in the database). It is an
-error to attempt to set a property on a non-object. `cb` is optional and is
-called when the database driver has reported that the change has been written.
+error to attempt to set a property on a non-object.
 
 Examples:
 
 ```javascript
-// Assumption: The database does not yet have any records.
+// Assumption: db does not yet have any records.
+(async () => {
+  // Equivalent to db.set('key1', 'value'):
+  await db.setSub('key1', [], 'value');
 
-// Equivalent to db.set('key1', 'value', cb):
-db.setSub('key1', [], 'value', cb);
+  // Equivalent to db.set('key2', {prop1: {prop2: {0: 'value'}}}):
+  await db.setSub('key2', ['prop1', 'prop2', '0'], 'value'):
 
-// Equivalent to db.set('key2', {prop1: {prop2: {0: 'value'}}}, cb):
-db.setSub('key2', ['prop1', 'prop2', '0'], 'value', cb):
+  await db.set('key3', {prop1: 'value'});
 
-db.set('key3', {prop1: 'value'}, (err) => {
-  if (err != null) return cb(err);
-  // Equivalent to db.set('key3', {prop1: 'value', prop2: 'other value'}, cb):
-  db.setSub('key3', ['prop2'], 'other value', cb);
-});
+  // Equivalent to db.set('key3', {prop1: 'value', prop2: 'other value'}):
+  await db.setSub('key3', ['prop2'], 'other value');
 
-db.set('key3', {prop1: 'value'}, (err) => {
-  if (err != null) return cb(err);
   // TypeError: Cannot set property "badProp" on non-object "value":
-  db.setSub('key3', ['prop1', 'badProp'], 'foo', cb);
+  await db.setSub('key3', ['prop1', 'badProp'], 'foo');
 });
 ```
 
@@ -196,13 +174,13 @@ const ueberdb = require('ueberdb2');
   const db = new ueberdb.Database(
       'dirty', {filename: 'var/dirty.db'}, {cache: 0});
   await db.init();
-  db.set('valueA', {a: 1, b: 2});
-  db.get('valueA', (err, value) => {
+  try {
+    await db.set('valueA', {a: 1, b: 2});
+    const value = await db.get('valueA');
     console.log(JSON.stringify(value));
-    db.close(() => {
-      process.exit(0);
-    });
-  });
+  } finally {
+    await db.close();
+  }
 })();
 ```
 
@@ -218,13 +196,13 @@ const ueberdb = require('ueberdb2');
   const db = new ueberdb.Database(
       'dirty', {filename: 'var/dirty.db'}, {writeInterval: 0});
   await db.init();
-  db.set('valueA', {a: 1, b: 2});
-  db.get('valueA', (err, value) => {
+  try {
+    await db.set('valueA', {a: 1, b: 2});
+    const value = await db.get('valueA');
     console.log(JSON.stringify(value));
-    db.close(() => {
-      process.exit(0);
-    });
-  });
+  } finally {
+    await db.close();
+  }
 })();
 ```
 
