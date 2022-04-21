@@ -104,17 +104,11 @@ exports.Database = class extends AbstractDatabase {
    */
   async findKeys(key, notKey) {
     const splitKey = key.split(':');
-    let response;
-    try {
-      response = await client.search({
-        index: elasticsearchSettings.base_index,
-        type: splitKey[0],
-        size: 100, // this is a pretty random threshold...
-      });
-    } catch (err) {
-      console.error('findkeys', err);
-      throw err;
-    }
+    const response = await client.search({
+      index: elasticsearchSettings.base_index,
+      type: splitKey[0],
+      size: 100, // this is a pretty random threshold...
+    });
     if (response.hits) {
       const keys = [];
       for (let counter = 0; counter < response.hits.total; counter++) {
@@ -259,7 +253,6 @@ const parseResponse = (error, response) => {
   if (error) {
     // don't treat not found as an error (is this specific to etherpad?)
     if (error.message === 'Not Found' && !response.found) return null;
-    console.error('elasticsearch_db: ', error);
     throw error;
   }
 
