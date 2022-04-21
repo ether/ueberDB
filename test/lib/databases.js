@@ -61,4 +61,10 @@ exports.databases = {
       findKeysMax: 30,
     },
   },
+  elasticsearch: {
+    base_index: 'ueberdb_test',
+    speeds: {
+      findKeysMax: 30,
+    },
+  },
 };
