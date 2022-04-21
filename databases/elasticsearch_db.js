@@ -56,28 +56,20 @@ exports.Database = class extends AbstractDatabase {
     }
   }
 
+  get isAsync() { return true; }
+
   /**
    * Initialize the elasticsearch client, then ping the server to ensure that a
    * connection was made.
    */
-  init(callback) {
+  async init() {
     // create elasticsearch client
     client = new es.Client({
       host: `${elasticsearchSettings.hostname}:${elasticsearchSettings.port}`,
       apiVersion: elasticsearchSettings.api,
       // log: "trace" // useful for debugging
     });
-
-    // test the connection
-    client.ping({
-      requestTimeout: 3000,
-    }, (error) => {
-      if (error) {
-        console.error('unable to communicate with elasticsearch');
-      }
-
-      callback(error);
-    });
+    await client.ping({requestTimeout: 3000});
   }
 
   /**
@@ -85,13 +77,15 @@ exports.Database = class extends AbstractDatabase {
    *
    *  @param {String} key Key, of the format "test:test1" or, optionally, of the
    *    format "test:test1:check:check1"
-   *  @param {function} callback Function will be called in the event of an error or
-   *    upon completion of a successful database retrieval.
    */
-  get(key, callback) {
-    client.get(getIndexTypeId(key), (error, response) => {
-      parseResponse(error, response, callback);
-    });
+  async get(key) {
+    let response, error;
+    try {
+      response = await client.get(getIndexTypeId(key));
+    } catch (err) {
+      error = err;
+    }
+    return parseResponse(error, response);
   }
 
   /**
@@ -107,30 +101,27 @@ exports.Database = class extends AbstractDatabase {
    *
    *  @param key Search key, which uses an asterisk (*) as the wild card.
    *  @param notKey Used to filter the result set
-   *  @param callback First param is error, second is result
    */
-  findKeys(key, notKey, callback) {
+  async findKeys(key, notKey) {
     const splitKey = key.split(':');
-
-    client.search({
-      index: elasticsearchSettings.base_index,
-      type: splitKey[0],
-      size: 100, // this is a pretty random threshold...
-    }, (error, response) => {
-      if (error) {
-        console.error('findkeys', error);
-        callback(error);
-        return;
+    let response;
+    try {
+      response = await client.search({
+        index: elasticsearchSettings.base_index,
+        type: splitKey[0],
+        size: 100, // this is a pretty random threshold...
+      });
+    } catch (err) {
+      console.error('findkeys', err);
+      throw err;
+    }
+    if (response.hits) {
+      const keys = [];
+      for (let counter = 0; counter < response.hits.total; counter++) {
+        keys.push(`${splitKey[0]}:${response.hits.hits[counter]._id}`);
       }
-
-      if (!error && response.hits) {
-        const keys = [];
-        for (let counter = 0; counter < response.hits.total; counter++) {
-          keys.push(`${splitKey[0]}:${response.hits.hits[counter]._id}`);
-        }
-        callback(null, keys);
-      }
-    });
+      return keys;
+    }
   }
 
   /**
@@ -141,19 +132,19 @@ exports.Database = class extends AbstractDatabase {
    *  @param {JSON|String} value The value to be stored to the database.  The value is
    *    always converted to {val:value} before being written to the database, to account
    *    for situations where the value is just a string.
-   *  @param {function} callback Function will be called in the event of an error or on
-   *    completion of a successful database write.
    */
-  set(key, value, callback) {
+  async set(key, value) {
     const options = getIndexTypeId(key);
-
     options.body = {
       val: value,
     };
-
-    client.index(options, (error, response) => {
-      parseResponse(error, response, callback);
-    });
+    let response, error;
+    try {
+      response = await client.index(options);
+    } catch (err) {
+      error = err;
+    }
+    return parseResponse(error, response);
   }
 
   /**
@@ -164,13 +155,15 @@ exports.Database = class extends AbstractDatabase {
    *
    *  @param {String} key Key, of the format "test:test1" or, optionally, of the
    *    format "test:test1:check:check1"
-   *  @param {function} callback Function will be called in the event of an error or on
-   *    completion of a successful database write.
    */
-  remove(key, callback) {
-    client.delete(key, (error, response) => {
-      parseResponse(error, response, callback);
-    });
+  async remove(key) {
+    let response, error;
+    try {
+      response = await client.delete(key);
+    } catch (err) {
+      error = err;
+    }
+    return parseResponse(error, response);
   }
 
   /**
@@ -181,10 +174,8 @@ exports.Database = class extends AbstractDatabase {
    *
    *  @param {Array} bulk An array of JSON data in the format:
    *      {"type":type, "key":key, "value":value}
-   *  @param {function} callback This function will be called on an error or upon the
-   *      successful completion of the database write.
    */
-  doBulk(bulk, callback) {
+  async doBulk(bulk) {
     // bulk is an array of JSON:
     // example: [{"type":"set", "key":"sessionstorage:{id}", "value":{"cookie":{...}}]
 
@@ -211,17 +202,18 @@ exports.Database = class extends AbstractDatabase {
       }
     }
 
-    // send bulk request
-    client.bulk({
-      body: operations,
-    }, (error, response) => {
-      parseResponse(error, response, callback);
-    });
+    let response, error;
+    try {
+      response = await client.bulk({
+        body: operations,
+      });
+    } catch (err) {
+      error = err;
+    }
+    return parseResponse(error, response);
   }
 
-  close(callback) {
-    callback(null);
-  }
+  async close() {}
 };
 
 /** ************************
@@ -261,20 +253,17 @@ const getIndexTypeId = (key) => {
 };
 
 /**
- * Extract data from elasticsearch responses, handle errors, handle callbacks.
+ * Extract data from elasticsearch responses, handle errors.
  */
-const parseResponse = (error, response, callback) => {
+const parseResponse = (error, response) => {
   if (error) {
     // don't treat not found as an error (is this specific to etherpad?)
-    if (error.message === 'Not Found' && !response.found) {
-      callback(null, null);
-      return;
-    } else {
-      console.error('elasticsearch_db: ', error);
-    }
+    if (error.message === 'Not Found' && !response.found) return null;
+    console.error('elasticsearch_db: ', error);
+    throw error;
   }
 
-  if (!error && response) {
+  if (response) {
     response = response._source;
 
     if (response) {
@@ -284,5 +273,5 @@ const parseResponse = (error, response, callback) => {
     response = JSON.stringify(response);
   }
 
-  callback(error, response);
+  return response;
 };
