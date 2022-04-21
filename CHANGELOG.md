@@ -19,6 +19,7 @@ Bug fixes:
     new write operation.
   * Fixed a bug where `findKeys()` would return stale results when write
     buffering is enabled and writes are pending.
+  * `couch`: Rewrote driver to fix numerous bugs.
 
 ## v2.1.1
 
