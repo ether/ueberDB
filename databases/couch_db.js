@@ -18,21 +18,12 @@
 const AbstractDatabase = require('../lib/AbstractDatabase');
 const http = require('http');
 const nano = require('nano');
-const async = require('async');
-
-const DESIGN_NAME = 'ueberDb';
-const DESIGN_PATH = `_design/${DESIGN_NAME}`;
-
-const handleError = (er) => {
-  if (er) throw new Error(er);
-};
 
 exports.Database = class extends AbstractDatabase {
   constructor(settings) {
     super();
     this.agent = null;
     this.db = null;
-    this.client = null;
     this.settings = settings;
 
     // force some settings
@@ -42,166 +33,110 @@ exports.Database = class extends AbstractDatabase {
     this.settings.json = false;
   }
 
-  init(callback) {
-    const settings = this.settings;
-    let client = null;
-    let db = null;
+  get isAsync() { return true; }
 
+  async init() {
     this.agent = new http.Agent({
       keepAlive: true,
       maxSockets: this.settings.maxListeners || 1,
     });
-    const config = {
-      url: `http://${settings.host}:${settings.port}`,
+    const client = nano({
+      url: `http://${this.settings.host}:${this.settings.port}`,
       requestDefaults: {
         auth: {
-          username: settings.user,
-          password: settings.password,
+          username: this.settings.user,
+          password: this.settings.password,
         },
         httpAgent: this.agent,
       },
-    };
+    });
+    try {
+      await client.db.get(this.settings.database);
+    } catch (err) {
+      if (err.statusCode !== 404) throw err;
+      await client.db.create(this.settings.database);
+    }
+    this.db = client.use(this.settings.database);
+  }
 
-    const createDb = () => {
-      client.db.create(settings.database, (er, body) => {
-        if (er) return callback(er);
-        return setDb();
-      });
-    };
+  async get(key) {
+    let doc;
+    try {
+      doc = await this.db.get(key);
+    } catch (err) {
+      if (err.statusCode === 404) return null;
+      throw err;
+    }
+    return doc.value;
+  }
 
-    const setDb = () => {
-      db = client.use(settings.database);
-      checkUeberDbDesignDocument(db);
-      this.client = client;
-      this.db = db;
-      callback();
-    };
+  async findKeys(key, notKey) {
+    const pfxLen = key.indexOf('*');
+    const pfx = pfxLen < 0 ? key : key.slice(0, pfxLen);
+    const results = await this.db.find({
+      selector: {
+        _id: pfxLen < 0 ? pfx : {
+          $gte: pfx,
+          // https://docs.couchdb.org/en/3.2.2/ddocs/views/collation.html#string-ranges
+          $lte: `${pfx}\ufff0`,
+          $regex: this.createFindRegex(key, notKey).source,
+        },
+      },
+      fields: ['_id'],
+    });
+    return results.docs.map((doc) => doc._id);
+  }
 
-    // Always ensure that couchDb has at least an empty design doc for UeberDb use
-    // this will be necessary for the `findKeys` method
-    const checkUeberDbDesignDocument = () => {
-      db.head(DESIGN_PATH, (er, _, header) => {
-        if (er && er.statusCode === 404) return db.insert({views: {}}, DESIGN_PATH, handleError);
-        if (er) throw new Error(er);
-      });
-    };
-
-    client = nano(config);
-    client.db.get(settings.database, (er, body) => {
-      if (er && er.statusCode === 404) return createDb();
-      if (er) return callback(er);
-      return setDb();
+  async set(key, value) {
+    let doc;
+    try {
+      doc = await this.db.get(key);
+    } catch (err) {
+      if (err.statusCode !== 404) throw err;
+    }
+    await this.db.insert({
+      _id: key,
+      value,
+      ...doc == null ? {} : {
+        _rev: doc._rev,
+      },
     });
   }
 
-  get(key, callback) {
-    const db = this.db;
-    db.get(key, (er, doc) => {
-      if (er && er.statusCode !== 404) {
-        console.log('GET');
-        console.log(er);
-      }
-      if (doc == null) return callback(null, null);
-      callback(null, doc.value);
-    });
+  async remove(key) {
+    let header;
+    try {
+      header = await this.db.head(key);
+    } catch (err) {
+      if (err.statusCode === 404) return;
+      throw err;
+    }
+    // etag has additional quotation marks, remove them
+    const etag = JSON.parse(header.etag);
+    await this.db.destroy(key, etag);
   }
 
-  findKeys(key, notKey, callback) {
-    const regex = this.createFindRegex(key, notKey);
-    const queryKey = `${key}__${notKey}`;
-    const db = this.db;
-
-    // always look up if the query haven't be done before
-    const checkQuery = () => {
-      db.get(DESIGN_PATH, (er, doc) => {
-        handleError(er);
-        const queryExists = queryKey in doc.views;
-        if (!queryExists) return createQuery(doc);
-        makeQuery();
-      });
-    };
-
-    // Cache the query for faster reuse in the future
-    const createQuery = (doc) => {
-      const mapFunction = {
-        map: `function (doc) { if (${regex}.test(doc._id)) { emit(doc._id, null); } }`,
-      };
-      doc.views[queryKey] = mapFunction;
-      db.insert(doc, DESIGN_PATH, (er) => {
-        handleError(er);
-        makeQuery();
-      });
-    };
-
-    // If this is the first time the request is used, this can take a while…
-    const makeQuery = (er) => {
-      db.view(DESIGN_NAME, queryKey, (er, docs) => {
-        handleError(er);
-        docs = docs.rows.map((doc) => doc.key);
-        callback(null, docs);
-      });
-    };
-
-    checkQuery();
-  }
-
-  set(key, value, callback) {
-    const db = this.db;
-    db.get(key, (er, doc) => {
-      if (doc == null) return db.insert({_id: key, value}, callback);
-      db.insert({_id: key, _rev: doc._rev, value}, callback);
-    });
-  }
-
-  remove(key, callback) {
-    const db = this.db;
-    db.head(key, (er, _, header) => {
-      if (er && er.statusCode === 404) return callback(null);
-      if (er) return callback(er);
-      // etag has additional quotation marks, remove them
-      const etag = JSON.parse(header).etag;
-      db.destroy(key, etag, (er, body) => {
-        if (er) return callback(er);
-        callback(null);
-      });
-    });
-  }
-
-  doBulk(bulk, callback) {
-    const db = this.db;
+  async doBulk(bulk) {
     const keys = bulk.map((op) => op.key);
     const revs = {};
+    for (const {key, value} of (await this.db.fetchRevs({keys})).rows) {
+      // couchDB will return error instead of value if key does not exist
+      if (value != null) revs[key] = value.rev;
+    }
     const setters = [];
-    async.series([
-      (callback) => {
-        db.fetchRevs({keys}, (er, r) => {
-          if (er) throw new Error(JSON.stringify(er));
-          const rows = r.rows;
-          for (const j in r.rows) {
-            // couchDB will return error instead of value if key does not exist
-            if (rows[j].value != null) revs[rows[j].key] = rows[j].value.rev;
-          }
-          callback();
-        });
-      },
-      (callback) => {
-        for (const item of bulk) {
-          const set = {_id: item.key};
-          if (revs[item.key] != null) set._rev = revs[item.key];
-          if (item.type === 'set') set.value = item.value;
-          if (item.type === 'remove') set._deleted = true;
-          setters.push(set);
-        }
-        callback();
-      },
-    ], (err) => {
-      db.bulk({docs: setters}, callback);
-    });
+    for (const item of bulk) {
+      const set = {_id: item.key};
+      if (revs[item.key] != null) set._rev = revs[item.key];
+      if (item.type === 'set') set.value = item.value;
+      if (item.type === 'remove') set._deleted = true;
+      setters.push(set);
+    }
+    await this.db.bulk({docs: setters});
   }
 
-  close(callback) {
+  async close() {
+    this.db = null;
     if (this.agent) this.agent.destroy();
     this.agent = null;
-    if (callback) callback();
   }
 };
