@@ -18,12 +18,10 @@
 const AbstractDatabase = require('../lib/AbstractDatabase');
 const es = require('elasticsearch');
 
-let client;
-
 exports.Database = class extends AbstractDatabase {
   constructor(settings) {
     super();
-    this.db = null;
+    this._client = null;
     this.settings = {
       host: '127.0.0.1',
       port: '9200',
@@ -49,6 +47,7 @@ exports.Database = class extends AbstractDatabase {
       // log: "trace" // useful for debugging
     });
     await client.ping({requestTimeout: 3000});
+    this._client = client;
   }
 
   /**
@@ -60,7 +59,7 @@ exports.Database = class extends AbstractDatabase {
   async get(key) {
     let response, error;
     try {
-      response = await client.get(this._getIndexTypeId(key));
+      response = await this._client.get(this._getIndexTypeId(key));
     } catch (err) {
       error = err;
     }
@@ -83,7 +82,7 @@ exports.Database = class extends AbstractDatabase {
    */
   async findKeys(key, notKey) {
     const splitKey = key.split(':');
-    const response = await client.search({
+    const response = await this._client.search({
       index: this.settings.base_index,
       type: splitKey[0],
       size: 100, // this is a pretty random threshold...
@@ -113,7 +112,7 @@ exports.Database = class extends AbstractDatabase {
     };
     let response, error;
     try {
-      response = await client.index(options);
+      response = await this._client.index(options);
     } catch (err) {
       error = err;
     }
@@ -132,7 +131,7 @@ exports.Database = class extends AbstractDatabase {
   async remove(key) {
     let response, error;
     try {
-      response = await client.delete(key);
+      response = await this._client.delete(key);
     } catch (err) {
       error = err;
     }
@@ -177,7 +176,7 @@ exports.Database = class extends AbstractDatabase {
 
     let response, error;
     try {
-      response = await client.bulk({
+      response = await this._client.bulk({
         body: operations,
       });
     } catch (err) {
