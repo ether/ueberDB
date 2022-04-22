@@ -18,42 +18,21 @@
 const AbstractDatabase = require('../lib/AbstractDatabase');
 const es = require('elasticsearch');
 
-// initialize w/ default settings
-const elasticsearchSettings = {
-  hostname: '127.0.0.1',
-  port: '9200',
-  base_index: 'ueberes',
-
-  // for a list of valid API values see:
-  // https://www.elastic.co/guide/en/elasticsearch/client/javascript-api/current/configuration.html#config-options
-  api: '7.6',
-};
-
 let client;
 
 exports.Database = class extends AbstractDatabase {
   constructor(settings) {
     super();
     this.db = null;
-
-    this.settings = settings || {};
-
-    // update settings if they were provided
-    if (this.settings.host) {
-      elasticsearchSettings.hostname = this.settings.host;
-    }
-
-    if (this.settings.port) {
-      elasticsearchSettings.port = this.settings.port;
-    }
-
-    if (this.settings.base_index) {
-      elasticsearchSettings.base_index = this.settings.base_index;
-    }
-
-    if (this.settings.api) {
-      elasticsearchSettings.api = this.settings.api;
-    }
+    this.settings = {
+      host: '127.0.0.1',
+      port: '9200',
+      base_index: 'ueberes',
+      // for a list of valid API values see:
+      // https://www.elastic.co/guide/en/elasticsearch/client/javascript-api/current/configuration.html#config-options
+      api: '7.6',
+      ...settings || {},
+    };
   }
 
   get isAsync() { return true; }
@@ -64,9 +43,9 @@ exports.Database = class extends AbstractDatabase {
    */
   async init() {
     // create elasticsearch client
-    client = new es.Client({
-      host: `${elasticsearchSettings.hostname}:${elasticsearchSettings.port}`,
-      apiVersion: elasticsearchSettings.api,
+    const client = new es.Client({
+      host: `${this.settings.host}:${this.settings.port}`,
+      apiVersion: this.settings.api,
       // log: "trace" // useful for debugging
     });
     await client.ping({requestTimeout: 3000});
@@ -81,7 +60,7 @@ exports.Database = class extends AbstractDatabase {
   async get(key) {
     let response, error;
     try {
-      response = await client.get(getIndexTypeId(key));
+      response = await client.get(this._getIndexTypeId(key));
     } catch (err) {
       error = err;
     }
@@ -105,7 +84,7 @@ exports.Database = class extends AbstractDatabase {
   async findKeys(key, notKey) {
     const splitKey = key.split(':');
     const response = await client.search({
-      index: elasticsearchSettings.base_index,
+      index: this.settings.base_index,
       type: splitKey[0],
       size: 100, // this is a pretty random threshold...
     });
@@ -128,7 +107,7 @@ exports.Database = class extends AbstractDatabase {
    *    for situations where the value is just a string.
    */
   async set(key, value) {
-    const options = getIndexTypeId(key);
+    const options = this._getIndexTypeId(key);
     options.body = {
       val: value,
     };
@@ -176,7 +155,7 @@ exports.Database = class extends AbstractDatabase {
     const operations = [];
 
     for (let counter = 0; counter < bulk.length; counter++) {
-      const indexTypeId = getIndexTypeId(bulk[counter].key);
+      const indexTypeId = this._getIndexTypeId(bulk[counter].key);
       const operationPayload = {
         _index: indexTypeId.index,
         _type: indexTypeId.type,
@@ -208,42 +187,38 @@ exports.Database = class extends AbstractDatabase {
   }
 
   async close() {}
-};
 
-/** ************************
- **** Helper functions ****
- **************************/
+  /**
+   *  This function parses a given key into an object with three
+   *  fields, .index, .type, and .id.  This object can then be
+   *  used to build an elasticsearch path or to access an object
+   *  for bulk updates.
+   *
+   *  @param {String} key Key, of the format "test:test1" or, optionally, of the
+   *    format "test:test1:check:check1"
+   */
+  _getIndexTypeId(key) {
+    const returnObject = {};
 
-/**
- *  This function parses a given key into an object with three
- *  fields, .index, .type, and .id.  This object can then be
- *  used to build an elasticsearch path or to access an object
- *  for bulk updates.
- *
- *  @param {String} key Key, of the format "test:test1" or, optionally, of the
- *    format "test:test1:check:check1"
- */
-const getIndexTypeId = (key) => {
-  const returnObject = {};
+    const splitKey = key.split(':');
 
-  const splitKey = key.split(':');
+    if (splitKey.length === 4) {
+      /*
+       * This is for keys like test:test1:check:check1.
+       * These keys are stored at /base_index-test-check/test1/check1
+       */
+      returnObject.index = `${this.settings.base_index}-${splitKey[0]}-${splitKey[2]}`;
+      returnObject.type = encodeURIComponent(splitKey[1]);
+      returnObject.id = splitKey[3];
+    } else {
+      // everything else ('test:test1') is stored /base_index/test/test1
+      returnObject.index = this.settings.base_index;
+      returnObject.type = splitKey[0];
+      returnObject.id = encodeURIComponent(splitKey[1]);
+    }
 
-  if (splitKey.length === 4) {
-    /*
-     * This is for keys like test:test1:check:check1.
-     * These keys are stored at /base_index-test-check/test1/check1
-     */
-    returnObject.index = `${elasticsearchSettings.base_index}-${splitKey[0]}-${splitKey[2]}`;
-    returnObject.type = encodeURIComponent(splitKey[1]);
-    returnObject.id = splitKey[3];
-  } else {
-    // everything else ('test:test1') is stored /base_index/test/test1
-    returnObject.index = elasticsearchSettings.base_index;
-    returnObject.type = splitKey[0];
-    returnObject.id = encodeURIComponent(splitKey[1]);
+    return returnObject;
   }
-
-  return returnObject;
 };
 
 /**
