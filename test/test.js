@@ -10,6 +10,12 @@ const fs = require('fs').promises;
 const ueberdb = require('../index');
 const util = require('util');
 
+const logger = Object.assign(Object.create(console), {
+  debug: () => {},
+  isDebugEnabled: () => false,
+});
+util.inspect.defaultOptions.depth = Infinity;
+
 const maxKeyLength = 100;
 const randomString = (length = maxKeyLength) => new Randexp(new RegExp(`.{${length}}`)).gen();
 
@@ -74,7 +80,7 @@ describe(__filename, function () {
                 db = new ueberdb.Database(database, dbSettings, {
                   ...(readCache ? {} : {cache: 0}),
                   ...(writeBuffer ? {} : {writeInterval: 0}),
-                });
+                }, logger);
                 pdb = promisifyDb(db);
                 await pdb.init();
               });
