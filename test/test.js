@@ -237,7 +237,7 @@ describe(__filename, function () {
               });
 
               it('speed is acceptable', async function () {
-                this.timeout(60000);
+                this.timeout(180000);
 
                 const {speeds: {
                   count = 1000,
