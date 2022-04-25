@@ -64,6 +64,7 @@ exports.Database = class {
     this.wrapperSettings = wrapperSettings;
     this.logger = normalizeLogger(logger);
     const db = new this.dbModule.Database(this.dbSettings);
+    db.logger = this.logger;
     this.db = new cacheAndBufferLayer.Database(db, this.wrapperSettings, this.logger);
 
     // Expose the cache wrapper's metrics to the user. See lib/CacheAndBufferLayer.js for details.
