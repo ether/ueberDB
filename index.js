@@ -23,7 +23,7 @@ const util = require('util');
 // Returns a logger derived from the given logger (which may be null) that has debug() and
 // isDebugEnabled() methods.
 const normalizeLogger = (logger) => {
-  const logLevelsUsed = ['debug', 'error'];
+  const logLevelsUsed = ['debug', 'info', 'warn', 'error'];
   logger = Object.create(logger || {});
   for (const level of logLevelsUsed) {
     const enabledFnName = `is${level.charAt(0).toUpperCase() + level.slice(1)}Enabled`;
