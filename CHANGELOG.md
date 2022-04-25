@@ -7,6 +7,8 @@ Bug fixes:
   * A call to `flush()` immediately after a call to `set()`, `setSub()`, or
     `remove()` (within the same ECMAScript macro- or microtask) now flushes the
     new write operation.
+  * Fixed a bug where `findKeys()` would return stale results when write
+    buffering is enabled and writes are pending.
 
 ## v2.1.1
 
