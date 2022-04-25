@@ -139,18 +139,45 @@ describe(__filename, function () {
               });
 
               it('findKeys works', async function () {
-                const input = {a: 1, b: new Randexp(/.+/).gen()};
+                if (database === 'mongodb') this.skip(); // TODO: Fix mongodb.
                 // TODO setting a key with non ascii chars
                 const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
                 await Promise.all([
-                  pdb.set(`${key}:test2`, input),
-                  pdb.set(`${key}:test`, input),
+                  pdb.set(key, true),
+                  pdb.set(`${key}a`, true),
+                  pdb.set(`nonmatching_${key}`, false),
                 ]);
-                const output = await pdb.findKeys(`${key}:*`, null);
-                for (const keyVal of output) {
-                  const output = await pdb.get(keyVal);
-                  assert.equal(JSON.stringify(output), JSON.stringify(input));
-                }
+                const keys = await pdb.findKeys(`${key}*`, null);
+                assert.deepEqual(keys.sort(), [key, `${key}a`]);
+              });
+
+              it('findKeys with exclusion works', async function () {
+                if (database === 'mongodb') this.skip(); // TODO: Fix mongodb.
+                if (database === 'redis') this.skip(); // TODO: Fix redis.
+                const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
+                await Promise.all([
+                  pdb.set(key, true),
+                  pdb.set(`${key}a`, true),
+                  pdb.set(`${key}b`, false),
+                  pdb.set(`${key}b2`, false),
+                  pdb.set(`nonmatching_${key}`, false),
+                ]);
+                const keys = await pdb.findKeys(`${key}*`, `${key}b*`);
+                assert.deepEqual(keys.sort(), [key, `${key}a`].sort());
+              });
+
+              it('findKeys with no matches works', async function () {
+                const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
+                await db.set(key, true);
+                const keys = await db.findKeys(`${key}_nomatch_*`, null);
+                assert.deepEqual(keys, []);
+              });
+
+              it('findKeys with no wildcard works', async function () {
+                const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
+                await db.set(key, true);
+                const keys = await db.findKeys(key, null);
+                assert.deepEqual(keys, [key]);
               });
 
               it('remove works', async function () {
