@@ -7,14 +7,9 @@ const Randexp = require('randexp');
 const assert = require('assert').strict;
 const databases = require('./lib/databases').databases;
 const fs = require('fs').promises;
+const logging = require('../lib/logging');
 const ueberdb = require('../index');
 const util = require('util');
-
-const logger = Object.assign(Object.create(console), {
-  debug: () => {},
-  isDebugEnabled: () => false,
-});
-util.inspect.defaultOptions.depth = Infinity;
 
 const maxKeyLength = 100;
 const randomString = (length = maxKeyLength) => new Randexp(new RegExp(`.{${length}}`)).gen();
@@ -80,7 +75,7 @@ describe(__filename, function () {
                 db = new ueberdb.Database(database, dbSettings, {
                   ...(readCache ? {} : {cache: 0}),
                   ...(writeBuffer ? {} : {writeInterval: 0}),
-                }, logger);
+                }, new logging.ConsoleLogger());
                 pdb = promisifyDb(db);
                 await pdb.init();
               });
