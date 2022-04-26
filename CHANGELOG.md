@@ -5,10 +5,17 @@
 Compatibility changes:
 
   * Minimum supported Node.js version is now 14.15.0.
+  * `elasticsearch`: New index name and mapping (schema). To automatically copy
+    existing data to the new index when the ueberdb client is initialized, set
+    the `migrate_to_newer_schema` option to `true`.
   * As mentioned in the v2.2.0 changes, passing callbacks to the database
     methods is deprecated. Use the returned Promises instead.
   * As mentioned in the v1.4.15 changes, `postgrespool` is deprecated. Use
     `postgres` instead.
+
+Bug fixes:
+
+  * `elasticsearch`: Rewrote driver to fix numerous bugs and modernize the code.
 
 Updated database dependencies:
 

@@ -16,7 +16,72 @@
  */
 
 const AbstractDatabase = require('../lib/AbstractDatabase');
+const assert = require('assert').strict;
+const {Buffer} = require('buffer');
+const crypto = require('crypto');
 const es = require('elasticsearch');
+
+const schema = '2';
+
+const keyToId = (key) => {
+  const keyBuf = Buffer.from(key);
+  return keyBuf.length > 512 ? crypto.createHash('sha512').update(keyBuf).digest('hex') : key;
+};
+
+const mappings = {
+  // _id is expected to equal key, unless the UTF-8 encoded key is > 512 bytes, in which case it is
+  // the hex-encoded sha512 hash of the UTF-8 encoded key.
+  properties: {
+    key: {type: 'wildcard'}, // For findKeys, and because _id is limited to 512 bytes.
+    value: {type: 'object', enabled: false}, // Values should be opaque to Elasticsearch.
+  },
+};
+
+const migrateToSchema2 = async (client, v1BaseIndex, v2Index, logger) => {
+  let recordsMigratedLastLogged = 0;
+  let recordsMigrated = 0;
+  const totals = new Map();
+  logger.info('Attempting elasticsearch record migration from schema v1 at base index ' +
+              `${v1BaseIndex} to schema v2 at index ${v2Index}...`);
+  const indices = await client.indices.get({index: [v1BaseIndex, `${v1BaseIndex}-*-*`]});
+  const scrollIds = new Map();
+  const q = [];
+  try {
+    for (const index of Object.keys(indices)) {
+      const res = await client.search({index, scroll: '10m'});
+      scrollIds.set(index, res._scroll_id);
+      q.push({index, res});
+    }
+    while (q.length) {
+      const {index, res: {hits: {hits, total: {value: total}}}} = q.shift();
+      if (hits.length === 0) continue;
+      totals.set(index, total);
+      const body = [];
+      for (const {_id, _type, _source: {val}} of hits) {
+        let key = `${_type}:${_id}`;
+        if (index !== v1BaseIndex) {
+          const parts = index.slice(v1BaseIndex.length + 1).split('-');
+          if (parts.length !== 2) {
+            throw new Error(`unable to migrate records from index ${index} due to data ambiguity`);
+          }
+          key = `${parts[0]}:${decodeURIComponent(_type)}:${parts[1]}:${_id}`;
+        }
+        body.push({index: {_id: keyToId(key)}}, {key, value: JSON.parse(val)});
+      }
+      await client.bulk({index: v2Index, body});
+      recordsMigrated += hits.length;
+      if (Math.floor(recordsMigrated / 100) > Math.floor(recordsMigratedLastLogged / 100)) {
+        const total = [...totals.values()].reduce((a, b) => a + b, 0);
+        logger.info(`Migrated ${recordsMigrated} records out of ${total}`);
+        recordsMigratedLastLogged = recordsMigrated;
+      }
+      q.push({index, res: await client.scroll({scroll: '5m', scrollId: scrollIds.get(index)})});
+    }
+    logger.info(`Finished migrating ${recordsMigrated} records`);
+  } finally {
+    await Promise.all([...scrollIds.values()].map((scrollId) => client.clearScroll({scrollId})));
+  }
+};
 
 exports.Database = class extends AbstractDatabase {
   constructor(settings) {
@@ -26,14 +91,25 @@ exports.Database = class extends AbstractDatabase {
       host: '127.0.0.1',
       port: '9200',
       base_index: 'ueberes',
+      migrate_to_newer_schema: false,
       // for a list of valid API values see:
       // https://www.elastic.co/guide/en/elasticsearch/client/javascript-api/current/configuration.html#config-options
       api: '7.6',
       ...settings || {},
+      json: false, // Elasticsearch will do the JSON conversion as necessary.
     };
+    this._index = `${this.settings.base_index}_s${schema}`;
+    this._q = {index: this._index};
+    this._indexClean = true;
   }
 
   get isAsync() { return true; }
+
+  async _refreshIndex() {
+    if (this._indexClean) return;
+    this._indexClean = true;
+    await this._client.indices.refresh(this._q);
+  }
 
   /**
    * Initialize the elasticsearch client, then ping the server to ensure that a
@@ -47,66 +123,78 @@ exports.Database = class extends AbstractDatabase {
       // log: "trace" // useful for debugging
     });
     await client.ping({requestTimeout: 3000});
+    if (!await client.indices.exists({index: this._index})) {
+      let tmpIndex;
+      const migrate = await client.indices.exists({index: this.settings.base_index});
+      if (migrate && !this.settings.migrate_to_newer_schema) {
+        throw new Error(
+            `Data exists under the legacy index (schema) named ${this.settings.base_index}. ` +
+            'Set migrate_to_newer_schema to true to copy the existing data to a new index ' +
+            `named ${this._index}.`);
+      }
+      let attempt = 0;
+      while (true) {
+        tmpIndex = `${this._index}_${migrate ? 'migrate_attempt_' : 'i'}${attempt++}`;
+        if (!await client.indices.exists({index: tmpIndex})) break;
+      }
+      await client.indices.create({index: tmpIndex, body: {mappings}});
+      if (migrate) await migrateToSchema2(client, this.settings.base_index, tmpIndex, this.logger);
+      await client.indices.putAlias({index: tmpIndex, name: this._index});
+    }
+    const indices = Object.values(await client.indices.get({index: this._index}));
+    assert.equal(indices.length, 1);
+    try {
+      assert.deepEqual(indices[0].mappings, mappings);
+    } catch (err) {
+      this.logger.warn(`Index ${this._index} mappings does not match expected; ` +
+                       `attempting to use index anyway. Details: ${err}`);
+    }
     this._client = client;
   }
 
   /**
    *  This function provides read functionality to the database.
    *
-   *  @param {String} key Key, of the format "test:test1" or, optionally, of the
-   *    format "test:test1:check:check1"
+   *  @param {String} key Key
    */
   async get(key) {
-    const response = await this._client.get({...this._getIndexTypeId(key), ignore: [404]});
+    const response = await this._client.get({...this._q, ignore: [404], id: keyToId(key)});
     if (!response.found) return null;
-    return response._source.val;
+    return response._source.value;
   }
 
   /**
-   *  The three key scenarios for this are:
-   *      (test:test1, null) ; (test:*, *:*:*) ; (test:*, null)
-   *
-   *  TODO This currently works only for the second implementation above.
-   *
-   *  For more information:
-   *    - See the #Limitations section of the ueberDB README.
-   *    - See https://github.com/Pita/ueberDB/wiki/findKeys-functionality, as well
-   *      as the sqlite and mysql implementations.
-   *
    *  @param key Search key, which uses an asterisk (*) as the wild card.
    *  @param notKey Used to filter the result set
    */
   async findKeys(key, notKey) {
-    const splitKey = key.split(':');
-    const response = await this._client.search({
-      index: this.settings.base_index,
-      type: splitKey[0],
-      size: 100, // this is a pretty random threshold...
-    });
-    if (response.hits) {
-      const keys = [];
-      for (let counter = 0; counter < response.hits.total; counter++) {
-        keys.push(`${splitKey[0]}:${response.hits.hits[counter]._id}`);
-      }
-      return keys;
-    }
+    await this._refreshIndex();
+    const q = {
+      ...this._q,
+      body: {
+        query: {
+          bool: {
+            filter: {wildcard: {key: {value: key}}},
+            ...notKey == null ? {} : {
+              must_not: {wildcard: {key: {value: notKey}}},
+            },
+          },
+        },
+      },
+    };
+    const {hits: {hits}} = await this._client.search(q);
+    return hits.map((h) => h._source.key);
   }
 
   /**
    *  This function provides write functionality to the database.
    *
-   *  @param {String} key Key, of the format "test:test1" or, optionally, of the
-   *    format "test:test1:check:check1"
-   *  @param {JSON|String} value The value to be stored to the database.  The value is
-   *    always converted to {val:value} before being written to the database, to account
-   *    for situations where the value is just a string.
+   *  @param {String} key Record identifier.
+   *  @param {JSON|String} value The value to store in the database.
    */
   async set(key, value) {
-    const options = this._getIndexTypeId(key);
-    options.body = {
-      val: value,
-    };
-    await this._client.index(options);
+    this._indexClean = false;
+    await this._client.index({...this._q, id: keyToId(key), body: {key, value}});
   }
 
   /**
@@ -115,11 +203,11 @@ exports.Database = class extends AbstractDatabase {
    *  The index, type, and ID will be parsed from the key, and this document will
    *  be deleted from the database.
    *
-   *  @param {String} key Key, of the format "test:test1" or, optionally, of the
-   *    format "test:test1:check:check1"
+   *  @param {String} key Record identifier.
    */
   async remove(key) {
-    await this._client.delete({ignore: [404], id: key});
+    this._indexClean = false;
+    await this._client.delete({...this._q, ignore: [404], id: keyToId(key)});
   }
 
   /**
@@ -137,60 +225,25 @@ exports.Database = class extends AbstractDatabase {
 
     const operations = [];
 
-    for (let counter = 0; counter < bulk.length; counter++) {
-      const indexTypeId = this._getIndexTypeId(bulk[counter].key);
-      const operationPayload = {
-        _index: indexTypeId.index,
-        _type: indexTypeId.type,
-        _id: indexTypeId.id,
-      };
-
-      switch (bulk[counter].type) {
+    for (const {type, key, value} of bulk) {
+      this._indexClean = false;
+      switch (type) {
         case 'set':
-          operations.push({index: operationPayload});
-          operations.push({val: JSON.parse(bulk[counter].value)});
+          operations.push({index: {_id: keyToId(key)}});
+          operations.push({key, value});
           break;
         case 'remove':
-          operations.push({delete: operationPayload});
+          operations.push({delete: {_id: keyToId(key)}});
           break;
         default:
           continue;
       }
     }
-    await this._client.bulk({body: operations});
+    await this._client.bulk({...this._q, body: operations});
   }
 
-  async close() {}
-
-  /**
-   *  This function parses a given key into an object with three
-   *  fields, .index, .type, and .id.  This object can then be
-   *  used to build an elasticsearch path or to access an object
-   *  for bulk updates.
-   *
-   *  @param {String} key Key, of the format "test:test1" or, optionally, of the
-   *    format "test:test1:check:check1"
-   */
-  _getIndexTypeId(key) {
-    const returnObject = {};
-
-    const splitKey = key.split(':');
-
-    if (splitKey.length === 4) {
-      /*
-       * This is for keys like test:test1:check:check1.
-       * These keys are stored at /base_index-test-check/test1/check1
-       */
-      returnObject.index = `${this.settings.base_index}-${splitKey[0]}-${splitKey[2]}`;
-      returnObject.type = encodeURIComponent(splitKey[1]);
-      returnObject.id = splitKey[3];
-    } else {
-      // everything else ('test:test1') is stored /base_index/test/test1
-      returnObject.index = this.settings.base_index;
-      returnObject.type = splitKey[0];
-      returnObject.id = encodeURIComponent(splitKey[1]);
-    }
-
-    return returnObject;
+  async close() {
+    if (this._client != null) this._client.close();
+    this._client = null;
   }
 };
