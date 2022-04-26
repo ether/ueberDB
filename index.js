@@ -18,24 +18,8 @@
  */
 
 const cacheAndBufferLayer = require('./lib/CacheAndBufferLayer');
+const logging = require('./lib/logging');
 const util = require('util');
-
-// Returns a logger derived from the given logger (which may be null) that has debug() and
-// isDebugEnabled() methods.
-const normalizeLogger = (logger) => {
-  const logLevelsUsed = ['debug', 'info', 'warn', 'error'];
-  logger = Object.create(logger || {});
-  for (const level of logLevelsUsed) {
-    const enabledFnName = `is${level.charAt(0).toUpperCase() + level.slice(1)}Enabled`;
-    if (typeof logger[level] !== 'function') {
-      logger[level] = () => {};
-      logger[enabledFnName] = () => false;
-    } else if (typeof logger[enabledFnName] !== 'function') {
-      logger[enabledFnName] = () => true;
-    }
-  }
-  return logger;
-};
 
 const makeDoneCallback = (callback, deprecated) => (err) => {
   if (callback) callback(err);
@@ -62,7 +46,7 @@ exports.Database = class {
     this.dbModule = require(`./databases/${type}_db`);
     this.dbSettings = dbSettings;
     this.wrapperSettings = wrapperSettings;
-    this.logger = normalizeLogger(logger);
+    this.logger = logging.normalizeLogger(logger);
     const db = new this.dbModule.Database(this.dbSettings);
     db.logger = this.logger;
     this.db = new cacheAndBufferLayer.Database(db, this.wrapperSettings, this.logger);
