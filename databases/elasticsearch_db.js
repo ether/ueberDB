@@ -57,13 +57,9 @@ exports.Database = class extends AbstractDatabase {
    *    format "test:test1:check:check1"
    */
   async get(key) {
-    let response, error;
-    try {
-      response = await this._client.get(this._getIndexTypeId(key));
-    } catch (err) {
-      error = err;
-    }
-    return parseResponse(error, response);
+    const response = await this._client.get({...this._getIndexTypeId(key), ignore: [404]});
+    if (!response.found) return null;
+    return response._source.val;
   }
 
   /**
@@ -110,13 +106,7 @@ exports.Database = class extends AbstractDatabase {
     options.body = {
       val: value,
     };
-    let response, error;
-    try {
-      response = await this._client.index(options);
-    } catch (err) {
-      error = err;
-    }
-    return parseResponse(error, response);
+    await this._client.index(options);
   }
 
   /**
@@ -129,13 +119,7 @@ exports.Database = class extends AbstractDatabase {
    *    format "test:test1:check:check1"
    */
   async remove(key) {
-    let response, error;
-    try {
-      response = await this._client.delete(key);
-    } catch (err) {
-      error = err;
-    }
-    return parseResponse(error, response);
+    await this._client.delete({ignore: [404], id: key});
   }
 
   /**
@@ -173,16 +157,7 @@ exports.Database = class extends AbstractDatabase {
           continue;
       }
     }
-
-    let response, error;
-    try {
-      response = await this._client.bulk({
-        body: operations,
-      });
-    } catch (err) {
-      error = err;
-    }
-    return parseResponse(error, response);
+    await this._client.bulk({body: operations});
   }
 
   async close() {}
@@ -218,27 +193,4 @@ exports.Database = class extends AbstractDatabase {
 
     return returnObject;
   }
-};
-
-/**
- * Extract data from elasticsearch responses, handle errors.
- */
-const parseResponse = (error, response) => {
-  if (error) {
-    // don't treat not found as an error (is this specific to etherpad?)
-    if (error.message === 'Not Found' && !response.found) return null;
-    throw error;
-  }
-
-  if (response) {
-    response = response._source;
-
-    if (response) {
-      response = response.val;
-    }
-
-    response = JSON.stringify(response);
-  }
-
-  return response;
 };
