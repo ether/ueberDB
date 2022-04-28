@@ -1,5 +1,13 @@
 # Notable Changes
 
+## Next Release
+
+Bug fixes:
+
+  * A call to `flush()` immediately after a call to `set()`, `setSub()`, or
+    `remove()` (within the same ECMAScript macro- or microtask) now flushes the
+    new write operation.
+
 ## v2.1.0
 
   * `memory`: New `data` setting that allows users to supply the backing Map
