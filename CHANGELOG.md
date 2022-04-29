@@ -1,5 +1,11 @@
 # Notable Changes
 
+## v2.1.1
+
+Security fix:
+
+  * Fix `setSub()` prototype pollution vulnerability.
+
 ## v2.1.0
 
   * `memory`: New `data` setting that allows users to supply the backing Map
