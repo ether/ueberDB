@@ -155,6 +155,20 @@ describe(__filename, function () {
                 assert.deepEqual(keys.sort(), [key, `${key}a`].sort());
               });
 
+              it('findKeys with no matches works', async function () {
+                const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
+                await db.set(key, true);
+                const keys = await db.findKeys(`${key}_nomatch_*`, null);
+                assert.deepEqual(keys, []);
+              });
+
+              it('findKeys with no wildcard works', async function () {
+                const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
+                await db.set(key, true);
+                const keys = await db.findKeys(key, null);
+                assert.deepEqual(keys, [key]);
+              });
+
               it('remove works', async function () {
                 const input = {a: 1, b: new Randexp(/.+/).gen()};
                 const key = randomString();
