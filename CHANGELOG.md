@@ -1,5 +1,14 @@
 # Notable Changes
 
+## v3.0.0
+
+Compatibility changes:
+
+  * As mentioned in the v2.2.0 changes, passing callbacks to the database
+    methods is deprecated. Use the returned Promises instead.
+  * As mentioned in the v1.4.15 changes, `postgrespool` is deprecated. Use
+    `postgres` instead.
+
 ## v2.2.0
 
 Compatibility changes:
