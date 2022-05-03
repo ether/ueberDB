@@ -1,6 +1,6 @@
 # Notable Changes
 
-## Next Release
+## v2.2.0
 
 Compatibility changes:
 
