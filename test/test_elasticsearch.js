@@ -1,7 +1,7 @@
 'use strict';
 
 const assert = require('assert').strict;
-const es = require('elasticsearch');
+const es = require('elasticsearch7');
 const {databases: {elasticsearch: cfg}} = require('./lib/databases');
 const logging = require('../lib/logging');
 const ueberdb = require('../index');
@@ -20,17 +20,15 @@ describe(__filename, function () {
 
   beforeEach(async function () {
     client = new es.Client({
-      host: `${cfg.host || '127.0.0.1'}:${cfg.port || '9200'}`,
-      keepAlive: true,
-      apiVersion: '7.6',
+      node: `http://${cfg.host || '127.0.0.1'}:${cfg.port || '9200'}`,
     });
-    await client.indices.delete({index: `${base_index}*`, ignore: [404]});
+    await client.indices.delete({index: `${base_index}*`}, {ignore: [404]});
   });
 
   afterEach(async function () {
     if (db != null) await db.close();
     db = null;
-    await client.indices.delete({index: `${base_index}*`, ignore: [404]});
+    await client.indices.delete({index: `${base_index}*`}, {ignore: [404]});
     client.close();
     client = null;
   });
@@ -44,7 +42,7 @@ describe(__filename, function () {
           db = new ueberdb.Database('elasticsearch', settings, {}, logger);
           await db.init();
           const indices = [];
-          const res = await client.indices.get({index: `${base_index}*`});
+          const {body: res} = await client.indices.get({index: `${base_index}*`});
           for (const [k, v] of Object.entries(res)) {
             indices.push(k);
             indices.push(...Object.keys(v.aliases));
@@ -106,7 +104,7 @@ describe(__filename, function () {
         const settings = {base_index, ...cfg, migrate_to_newer_schema: true};
         db = new ueberdb.Database('elasticsearch', settings, {}, logger);
         const getIndices =
-            async () => Object.keys(await client.indices.get({index: `${base_index}_s2*`}));
+            async () => Object.keys((await client.indices.get({index: `${base_index}_s2*`})).body);
         assert.deepEqual(await getIndices(), []);
         await assert.rejects(db.init(), /ambig/);
         assert.deepEqual(await getIndices(), [`${base_index}_s2_migrate_attempt_0`]);

@@ -19,7 +19,7 @@ const AbstractDatabase = require('../lib/AbstractDatabase');
 const assert = require('assert').strict;
 const {Buffer} = require('buffer');
 const crypto = require('crypto');
-const es = require('elasticsearch');
+const es = require('elasticsearch7');
 
 const schema = '2';
 
@@ -43,12 +43,12 @@ const migrateToSchema2 = async (client, v1BaseIndex, v2Index, logger) => {
   const totals = new Map();
   logger.info('Attempting elasticsearch record migration from schema v1 at base index ' +
               `${v1BaseIndex} to schema v2 at index ${v2Index}...`);
-  const indices = await client.indices.get({index: [v1BaseIndex, `${v1BaseIndex}-*-*`]});
+  const {body: indices} = await client.indices.get({index: [v1BaseIndex, `${v1BaseIndex}-*-*`]});
   const scrollIds = new Map();
   const q = [];
   try {
     for (const index of Object.keys(indices)) {
-      const res = await client.search({index, scroll: '10m'});
+      const {body: res} = await client.search({index, scroll: '10m'});
       scrollIds.set(index, res._scroll_id);
       q.push({index, res});
     }
@@ -75,7 +75,8 @@ const migrateToSchema2 = async (client, v1BaseIndex, v2Index, logger) => {
         logger.info(`Migrated ${recordsMigrated} records out of ${total}`);
         recordsMigratedLastLogged = recordsMigrated;
       }
-      q.push({index, res: await client.scroll({scroll: '5m', scrollId: scrollIds.get(index)})});
+      q.push(
+          {index, res: (await client.scroll({scroll: '5m', scrollId: scrollIds.get(index)})).body});
     }
     logger.info(`Finished migrating ${recordsMigrated} records`);
   } finally {
@@ -118,14 +119,12 @@ exports.Database = class extends AbstractDatabase {
   async init() {
     // create elasticsearch client
     const client = new es.Client({
-      host: `${this.settings.host}:${this.settings.port}`,
-      apiVersion: this.settings.api,
-      // log: "trace" // useful for debugging
+      node: `http://${this.settings.host}:${this.settings.port}`,
     });
-    await client.ping({requestTimeout: 3000});
-    if (!await client.indices.exists({index: this._index})) {
+    await client.ping();
+    if (!(await client.indices.exists({index: this._index})).body) {
       let tmpIndex;
-      const migrate = await client.indices.exists({index: this.settings.base_index});
+      const {body: migrate} = await client.indices.exists({index: this.settings.base_index});
       if (migrate && !this.settings.migrate_to_newer_schema) {
         throw new Error(
             `Data exists under the legacy index (schema) named ${this.settings.base_index}. ` +
@@ -135,13 +134,13 @@ exports.Database = class extends AbstractDatabase {
       let attempt = 0;
       while (true) {
         tmpIndex = `${this._index}_${migrate ? 'migrate_attempt_' : 'i'}${attempt++}`;
-        if (!await client.indices.exists({index: tmpIndex})) break;
+        if (!(await client.indices.exists({index: tmpIndex})).body) break;
       }
       await client.indices.create({index: tmpIndex, body: {mappings}});
       if (migrate) await migrateToSchema2(client, this.settings.base_index, tmpIndex, this.logger);
       await client.indices.putAlias({index: tmpIndex, name: this._index});
     }
-    const indices = Object.values(await client.indices.get({index: this._index}));
+    const indices = Object.values((await client.indices.get({index: this._index})).body);
     assert.equal(indices.length, 1);
     try {
       assert.deepEqual(indices[0].mappings, mappings);
@@ -158,9 +157,9 @@ exports.Database = class extends AbstractDatabase {
    *  @param {String} key Key
    */
   async get(key) {
-    const response = await this._client.get({...this._q, ignore: [404], id: keyToId(key)});
-    if (!response.found) return null;
-    return response._source.value;
+    const {body} = await this._client.get({...this._q, id: keyToId(key)}, {ignore: [404]});
+    if (!body.found) return null;
+    return body._source.value;
   }
 
   /**
@@ -182,7 +181,7 @@ exports.Database = class extends AbstractDatabase {
         },
       },
     };
-    const {hits: {hits}} = await this._client.search(q);
+    const {body: {hits: {hits}}} = await this._client.search(q);
     return hits.map((h) => h._source.key);
   }
 
@@ -207,7 +206,7 @@ exports.Database = class extends AbstractDatabase {
    */
   async remove(key) {
     this._indexClean = false;
-    await this._client.delete({...this._q, ignore: [404], id: keyToId(key)});
+    await this._client.delete({...this._q, id: keyToId(key)}, {ignore: [404]});
   }
 
   /**
