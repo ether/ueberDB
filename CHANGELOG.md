@@ -9,6 +9,14 @@ Compatibility changes:
   * As mentioned in the v1.4.15 changes, `postgrespool` is deprecated. Use
     `postgres` instead.
 
+Updated database dependencies:
+
+  * `couch`: Updated `nano` to 10.0.0.
+  * `dirty_git`: Updated `simple-git` to 3.7.1.
+  * `elasticsearch`: Updated `elasticsearch` to 16.7.3.
+  * `postgres`: Updated `pg` to 8.7.3.
+  * `sqlite`: Updated `sqlite3` to 5.0.6.
+
 ## v2.2.0
 
 Compatibility changes:
