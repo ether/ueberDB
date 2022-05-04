@@ -272,16 +272,8 @@ You should create your database as utf8mb4_bin.
 If you enabled TLS on your Redis database (available since Redis 6.0) you will
 need to change your connections parameters, here is an example:
 
-```
-settings:
-    {
-      host:
-      port: rediss://<redis_database_address>:<redis_database_port>
-      socket:
-      database:
-      password:
-      client_options
-    }
+```javascript
+const db = new ueberdb.Database('redis', {url: 'rediss://localhost'});
 ```
 
 Do not provide a `host` value.
