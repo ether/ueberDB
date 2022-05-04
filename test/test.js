@@ -142,7 +142,6 @@ describe(__filename, function () {
 
               it('findKeys with exclusion works', async function () {
                 if (database === 'mongodb') this.skip(); // TODO: Fix mongodb.
-                if (database === 'redis') this.skip(); // TODO: Fix redis.
                 const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
                 await Promise.all([
                   db.set(key, true),

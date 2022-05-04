@@ -39,19 +39,17 @@ exports.Database = class extends AbstractDatabase {
   }
 
   async findKeys(key, notKey) {
-    // As redis provides only limited support for getting a list of all
-    // available keys we have to limit key and notKey here.
-    // See http://redis.io/commands/keys
-    if (notKey == null) return await this._client.keys(key.replace(/[?[\]\\]/g, '\\$&'));
-    // restrict key to format "text:*"
-    const matches = /^([^:*]+):\*$/.exec(key);
-    if (!matches) {
-      throw new Error('redis db only supports key patterns like pad:* when notKey is non-null');
+    const [type] = /^([^:*]+):\*$/.exec(key) || [];
+    if (type != null && ['*:*:*', `${key}:*`].includes(notKey)) {
+      // Performance optimization for a common Etherpad case.
+      return await this._client.sMembers(`ueberDB:keys:${type}`);
     }
-    if (!['*:*:*', `${key}:*`].includes(notKey)) {
-      throw new Error('redis db currently only supports *:*:* as notKey');
+    let keys = await this._client.keys(key.replace(/[?[\]\\]/g, '\\$&'));
+    if (notKey != null) {
+      const regex = this.createFindRegex(key, notKey);
+      keys = keys.filter((k) => regex.test(k));
     }
-    return await this._client.sMembers(`ueberDB:keys:${matches[1]}`);
+    return keys;
   }
 
   async set(key, value) {
