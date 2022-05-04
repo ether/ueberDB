@@ -39,17 +39,11 @@
   },
   "devDependencies": {
     "cli-table": "^0.3.11",
-    "eslint": "^7.32.0",
-    "eslint-config-etherpad": "^2.0.3",
-    "eslint-plugin-cypress": "^2.12.1",
-    "eslint-plugin-eslint-comments": "^3.2.0",
-    "eslint-plugin-mocha": "^9.0.0",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prefer-arrow": "^1.2.3",
-    "eslint-plugin-promise": "^5.1.1",
-    "eslint-plugin-you-dont-need-lodash-underscore": "^6.12.0",
+    "eslint": "^8.14.0",
+    "eslint-config-etherpad": "^3.0.13",
     "mocha": "^9.2.2",
     "randexp": "^0.5.3",
+    "typescript": "^4.6.4",
     "wtfnode": "^0.9.1"
   },
   "repository": {
@@ -77,45 +71,6 @@
       "email": "john@mclear.co.uk"
     }
   ],
-  "eslintConfig": {
-    "overrides": [
-      {
-        "files": [
-          "**/.eslintrc.js"
-        ],
-        "extends": "etherpad/node"
-      },
-      {
-        "files": [
-          "**/*"
-        ],
-        "excludedFiles": [
-          "**/.eslintrc.js"
-        ],
-        "extends": "etherpad/node"
-      },
-      {
-        "files": [
-          "test/**/*"
-        ],
-        "excludedFiles": [
-          "**/.eslintrc.js"
-        ],
-        "extends": "etherpad/tests/backend",
-        "overrides": [
-          {
-            "files": [
-              "test/lib/**/*"
-            ],
-            "rules": {
-              "mocha/no-exports": "off"
-            }
-          }
-        ]
-      }
-    ],
-    "root": true
-  },
   "engines": {
     "node": ">=14.15.0"
   }

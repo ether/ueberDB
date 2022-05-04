@@ -21,7 +21,7 @@ after(async function () {
     console.error('node should have exited by now but something is keeping it open ' +
                   'such as an open connection or active timer');
     wtfnode.dump();
-    process.exit(1); // eslint-disable-line no-process-exit
+    process.exit(1); // eslint-disable-line n/no-process-exit
   }, 5000).unref();
 });
 

@@ -208,7 +208,7 @@ exports.Database = class extends AbstractDatabase {
             callback(err);
           }
           callback(err, results);
-        }
+        },
     );
   }
 
