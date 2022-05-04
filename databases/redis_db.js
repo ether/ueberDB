@@ -18,27 +18,30 @@
  */
 
 const AbstractDatabase = require('../lib/AbstractDatabase');
-const async = require('async');
 const redis = require('redis');
+const util = require('util');
 
 exports.Database = class extends AbstractDatabase {
   constructor(settings) {
     super();
     this.client = null;
+    this._pclient = null;
     this.settings = settings || {};
   }
 
-  auth(callback) {
-    if (!this.settings.password) return callback();
-    this.client.auth(this.settings.password, callback);
+  get isAsync() { return true; }
+
+  async _auth() {
+    if (!this.settings.password) return;
+    await util.promisify(this.client.auth).call(this.client, this.settings.password);
   }
 
-  select(callback) {
-    if (!this.settings.database) return callback();
-    this.client.select(this.settings.database, callback);
+  async _select() {
+    if (!this.settings.database) return;
+    await util.promisify(this.client.select).call(this.client, this.settings.database);
   }
 
-  _deprecatedInit(callback) {
+  async _deprecatedInit() {
     if (this.settings.socket) {
       // Deprecated, but kept for backwards compatibility.
       this.client = redis.createClient(this.settings.socket,
@@ -50,56 +53,54 @@ exports.Database = class extends AbstractDatabase {
     }
 
     this.client.database = this.settings.database;
-    async.waterfall([this.auth.bind(this), this.select.bind(this)], callback);
+    await this._auth();
+    await this._select();
   }
 
-  init(callback) {
-    if (this.settings.socket || this.settings.client_options) return this._deprecatedInit(callback);
-    this.client = redis.createClient(this.settings);
-    callback();
+  async init() {
+    if (this.settings.socket || this.settings.client_options) await this._deprecatedInit();
+    else this.client = redis.createClient(this.settings);
+    const fns = ['KEYS', 'SMEMBERS', 'del', 'get', 'quit', 'sadd', 'set', 'srem'];
+    this._pclient = Object.fromEntries(
+        fns.map((fn) => [fn, util.promisify(this.client[fn]).bind(this.client)]));
   }
 
-  get(key, callback) {
-    this.client.get(key, callback);
+  async get(key) {
+    return await this._pclient.get(key);
   }
 
-  findKeys(key, notKey, callback) {
+  async findKeys(key, notKey) {
     // As redis provides only limited support for getting a list of all
     // available keys we have to limit key and notKey here.
     // See http://redis.io/commands/keys
-    if (notKey == null) {
-      this.client.KEYS(key, callback);
-    } else if (notKey === '*:*:*') {
-      // restrict key to format "text:*"
-      const matches = /^([^:]+):\*$/.exec(key);
-      if (matches) {
-        this.client.SMEMBERS(`ueberDB:keys:${matches[1]}`, callback);
-      } else {
-        const msg = 'redis db only supports key patterns like pad:* when notKey is set to *:*:*';
-        callback(new Error(msg), null);
-      }
-    } else {
-      callback(new Error('redis db currently only supports *:*:* as notKey'), null);
+    if (notKey == null) return await this._pclient.KEYS(key);
+    if (notKey !== '*:*:*') throw new Error('redis db currently only supports *:*:* as notKey');
+    // restrict key to format "text:*"
+    const matches = /^([^:]+):\*$/.exec(key);
+    if (!matches) {
+      throw new Error(
+          'redis db only supports key patterns like pad:* when notKey is set to *:*:*');
     }
+    return await this._pclient.SMEMBERS(`ueberDB:keys:${matches[1]}`);
   }
 
-  set(key, value, callback) {
+  async set(key, value) {
     const matches = /^([^:]+):([^:]+)$/.exec(key);
-    if (matches) {
-      this.client.sadd([`ueberDB:keys:${matches[1]}`, matches[0]]);
-    }
-    this.client.set(key, value, callback);
+    await Promise.all([
+      matches && this._pclient.sadd([`ueberDB:keys:${matches[1]}`, matches[0]]),
+      this._pclient.set(key, value),
+    ]);
   }
 
-  remove(key, callback) {
+  async remove(key) {
     const matches = /^([^:]+):([^:]+)$/.exec(key);
-    if (matches) {
-      this.client.srem([`ueberDB:keys:${matches[1]}`, matches[0]]);
-    }
-    this.client.del(key, callback);
+    await Promise.all([
+      matches && this._pclient.srem([`ueberDB:keys:${matches[1]}`, matches[0]]),
+      this._pclient.del(key),
+    ]);
   }
 
-  doBulk(bulk, callback) {
+  async doBulk(bulk) {
     const multi = this.client.multi();
 
     for (const {key, type, value} of bulk) {
@@ -117,13 +118,12 @@ exports.Database = class extends AbstractDatabase {
       }
     }
 
-    multi.exec(callback);
+    await util.promisify(multi.exec).call(multi);
   }
 
-  close(callback) {
-    this.client.quit(() => {
-      this.client = null;
-      callback();
-    });
+  async close() {
+    await this._pclient.quit();
+    this.client = null;
+    this._pclient = null;
   }
 };
