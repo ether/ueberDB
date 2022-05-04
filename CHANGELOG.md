@@ -6,6 +6,14 @@ Compatibility changes:
 
   * `redis`: The `socket` and `client_options` settings, deprecated since
     v1.3.1, have been removed.
+  * `redis`: The client configuration object has changed with the new version of
+    the `redis` client library. See the [`redis` client library
+    documentation](https://github.com/redis/node-redis/blob/redis%404.1.0/docs/client-configuration.md)
+    for details.
+
+Updated database dependencies:
+
+  * `redis`: Updated `redis` from 3.1.2 to 4.1.0.
 
 ## v3.0.1
 

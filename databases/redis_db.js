@@ -1,5 +1,4 @@
 'use strict';
-/* eslint new-cap: ["error", {"capIsNewExceptions": ["KEYS", "SMEMBERS"]}] */
 
 /**
  * 2011 Peter 'Pita' Martischka
@@ -19,34 +18,31 @@
 
 const AbstractDatabase = require('../lib/AbstractDatabase');
 const redis = require('redis');
-const util = require('util');
 
 exports.Database = class extends AbstractDatabase {
   constructor(settings) {
     super();
-    this.client = null;
-    this._pclient = null;
+    this._client = null;
     this.settings = settings || {};
   }
 
   get isAsync() { return true; }
 
   async init() {
-    this.client = redis.createClient(this.settings);
-    const fns = ['KEYS', 'SMEMBERS', 'del', 'get', 'quit', 'sadd', 'set', 'srem'];
-    this._pclient = Object.fromEntries(
-        fns.map((fn) => [fn, util.promisify(this.client[fn]).bind(this.client)]));
+    this._client = redis.createClient(this.settings);
+    await this._client.connect();
+    await this._client.ping();
   }
 
   async get(key) {
-    return await this._pclient.get(key);
+    return await this._client.get(key);
   }
 
   async findKeys(key, notKey) {
     // As redis provides only limited support for getting a list of all
     // available keys we have to limit key and notKey here.
     // See http://redis.io/commands/keys
-    if (notKey == null) return await this._pclient.KEYS(key);
+    if (notKey == null) return await this._client.keys(key);
     if (notKey !== '*:*:*') throw new Error('redis db currently only supports *:*:* as notKey');
     // restrict key to format "text:*"
     const matches = /^([^:]+):\*$/.exec(key);
@@ -54,49 +50,48 @@ exports.Database = class extends AbstractDatabase {
       throw new Error(
           'redis db only supports key patterns like pad:* when notKey is set to *:*:*');
     }
-    return await this._pclient.SMEMBERS(`ueberDB:keys:${matches[1]}`);
+    return await this._client.sMembers(`ueberDB:keys:${matches[1]}`);
   }
 
   async set(key, value) {
     const matches = /^([^:]+):([^:]+)$/.exec(key);
     await Promise.all([
-      matches && this._pclient.sadd([`ueberDB:keys:${matches[1]}`, matches[0]]),
-      this._pclient.set(key, value),
+      matches && this._client.sAdd(`ueberDB:keys:${matches[1]}`, matches[0]),
+      this._client.set(key, value),
     ]);
   }
 
   async remove(key) {
     const matches = /^([^:]+):([^:]+)$/.exec(key);
     await Promise.all([
-      matches && this._pclient.srem([`ueberDB:keys:${matches[1]}`, matches[0]]),
-      this._pclient.del(key),
+      matches && this._client.sRem(`ueberDB:keys:${matches[1]}`, matches[0]),
+      this._client.del(key),
     ]);
   }
 
   async doBulk(bulk) {
-    const multi = this.client.multi();
+    const multi = this._client.multi();
 
     for (const {key, type, value} of bulk) {
       const matches = /^([^:]+):([^:]+)$/.exec(key);
       if (type === 'set') {
         if (matches) {
-          multi.sadd([`ueberDB:keys:${matches[1]}`, matches[0]]);
+          multi.sAdd(`ueberDB:keys:${matches[1]}`, matches[0]);
         }
         multi.set(key, value);
       } else if (type === 'remove') {
         if (matches) {
-          multi.srem([`ueberDB:keys:${matches[1]}`, matches[0]]);
+          multi.sRem(`ueberDB:keys:${matches[1]}`, matches[0]);
         }
         multi.del(key);
       }
     }
 
-    await util.promisify(multi.exec).call(multi);
+    await multi.exec();
   }
 
   async close() {
-    await this._pclient.quit();
-    this.client = null;
-    this._pclient = null;
+    await this._client.quit();
+    this._client = null;
   }
 };
