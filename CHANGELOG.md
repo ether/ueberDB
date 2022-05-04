@@ -11,6 +11,10 @@ Compatibility changes:
     documentation](https://github.com/redis/node-redis/blob/redis%404.1.0/docs/client-configuration.md)
     for details.
 
+Bug fixes:
+
+  * `redis`: Special characters in a `findKeys()` pattern are now escaped.
+
 Updated database dependencies:
 
   * `redis`: Updated `redis` from 3.1.2 to 4.1.0.

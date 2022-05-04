@@ -42,7 +42,7 @@ exports.Database = class extends AbstractDatabase {
     // As redis provides only limited support for getting a list of all
     // available keys we have to limit key and notKey here.
     // See http://redis.io/commands/keys
-    if (notKey == null) return await this._client.keys(key);
+    if (notKey == null) return await this._client.keys(key.replace(/[?[\]\\]/g, '\\$&'));
     if (notKey !== '*:*:*') throw new Error('redis db currently only supports *:*:* as notKey');
     // restrict key to format "text:*"
     const matches = /^([^:]+):\*$/.exec(key);
