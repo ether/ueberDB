@@ -5,7 +5,8 @@
 Bug fixes:
 
   * Fixed `findKeys()` calls containing special regular expression characters
-    for those database drivers that use the glob-to-regex helper function.
+    (applicable to the database drivers that use the glob-to-regex helper
+    function).
 
 ## v3.0.0
 
@@ -17,8 +18,12 @@ Compatibility changes:
     the `migrate_to_newer_schema` option to `true`.
   * As mentioned in the v2.2.0 changes, passing callbacks to the database
     methods is deprecated. Use the returned Promises instead.
-  * As mentioned in the v1.4.15 changes, `postgrespool` is deprecated. Use
-    `postgres` instead.
+  * `postgrespool`: As mentioned in the v1.4.15 changes, `postgrespool` is
+    deprecated. Use `postgres` instead.
+  * `redis`: As mentioned in the v1.3.1 changes, the `socket` and
+    `client_options` settings are deprecated. Pass the [client options
+    object](https://www.npmjs.com/package/redis/v/3.1.2#options-object-properties)
+    directly.
 
 Bug fixes:
 
