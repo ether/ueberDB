@@ -1,5 +1,12 @@
 # Notable Changes
 
+## v3.0.1
+
+Bug fixes:
+
+  * Fixed `findKeys()` calls containing special regular expression characters
+    for those database drivers that use the glob-to-regex helper function.
+
 ## v3.0.0
 
 Compatibility changes:
