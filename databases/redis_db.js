@@ -122,6 +122,7 @@ exports.Database = class extends AbstractDatabase {
 
   close(callback) {
     this.client.quit(() => {
+      this.client = null;
       callback();
     });
   }
