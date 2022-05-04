@@ -13,7 +13,7 @@ Compatibility changes:
 
 Bug fixes:
 
-  * `redis`: Special characters in a `findKeys()` pattern are now escaped.
+  * `redis`: Several `findKeys()` fixes.
 
 Updated database dependencies:
 

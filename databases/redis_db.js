@@ -45,7 +45,7 @@ exports.Database = class extends AbstractDatabase {
     if (notKey == null) return await this._client.keys(key.replace(/[?[\]\\]/g, '\\$&'));
     if (notKey !== '*:*:*') throw new Error('redis db currently only supports *:*:* as notKey');
     // restrict key to format "text:*"
-    const matches = /^([^:]+):\*$/.exec(key);
+    const matches = /^([^:*]+):\*$/.exec(key);
     if (!matches) {
       throw new Error(
           'redis db only supports key patterns like pad:* when notKey is set to *:*:*');
