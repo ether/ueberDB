@@ -1,5 +1,12 @@
 # Notable Changes
 
+## v4.0.0
+
+Compatibility changes:
+
+  * `redis`: The `socket` and `client_options` settings, deprecated since
+    v1.3.1, have been removed.
+
 ## v3.0.1
 
 Bug fixes:

@@ -31,35 +31,8 @@ exports.Database = class extends AbstractDatabase {
 
   get isAsync() { return true; }
 
-  async _auth() {
-    if (!this.settings.password) return;
-    await util.promisify(this.client.auth).call(this.client, this.settings.password);
-  }
-
-  async _select() {
-    if (!this.settings.database) return;
-    await util.promisify(this.client.select).call(this.client, this.settings.database);
-  }
-
-  async _deprecatedInit() {
-    if (this.settings.socket) {
-      // Deprecated, but kept for backwards compatibility.
-      this.client = redis.createClient(this.settings.socket,
-          this.settings.client_options);
-    } else {
-      // Deprecated, but kept for backwards compatibility.
-      this.client = redis.createClient(this.settings.port,
-          this.settings.host, this.settings.client_options);
-    }
-
-    this.client.database = this.settings.database;
-    await this._auth();
-    await this._select();
-  }
-
   async init() {
-    if (this.settings.socket || this.settings.client_options) await this._deprecatedInit();
-    else this.client = redis.createClient(this.settings);
+    this.client = redis.createClient(this.settings);
     const fns = ['KEYS', 'SMEMBERS', 'del', 'get', 'quit', 'sadd', 'set', 'srem'];
     this._pclient = Object.fromEntries(
         fns.map((fn) => [fn, util.promisify(this.client[fn]).bind(this.client)]));
