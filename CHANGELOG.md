@@ -33,6 +33,15 @@ Updated database dependencies:
   * `postgres`: Updated `pg` to 8.7.3.
   * `sqlite`: Updated `sqlite3` to 5.0.6.
 
+## v2.2.4
+
+Security fix:
+
+  * `getSub()` now returns `null` when it encounters a non-"own" property
+    (including `__proto__`) or any non-object while walking the given property
+    path. This should make it easier to avoid accidental prototype pollution
+    vulnerabilities.
+
 ## v2.2.0
 
 Compatibility changes:
