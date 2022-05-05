@@ -19,6 +19,15 @@ Updated database dependencies:
 
   * `redis`: Updated `redis` from 3.1.2 to 4.1.0.
 
+## v3.0.2
+
+Security fix:
+
+  * `getSub()` now returns `null` when it encounters a non-"own" property
+    (including `__proto__`) or any non-object while walking the given property
+    path. This should make it easier to avoid accidental prototype pollution
+    vulnerabilities.
+
 ## v3.0.1
 
 Bug fixes:
@@ -56,6 +65,15 @@ Updated database dependencies:
     `elasticsearch` to `@elastic/elasticsearch` version 7.17.0.
   * `postgres`: Updated `pg` to 8.7.3.
   * `sqlite`: Updated `sqlite3` to 5.0.6.
+
+## v2.2.4
+
+Security fix:
+
+  * `getSub()` now returns `null` when it encounters a non-"own" property
+    (including `__proto__`) or any non-object while walking the given property
+    path. This should make it easier to avoid accidental prototype pollution
+    vulnerabilities.
 
 ## v2.2.0
 
