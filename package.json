@@ -29,13 +29,13 @@
     "mssql": "^8.1.0",
     "mysql": "2.18.1",
     "nano": "^10.0.0",
-    "pg": "^8.7.3",
+    "pg": "^8.8.0",
     "redis": "^4.1.0",
     "rethinkdb": "^2.4.2",
     "simple-git": "^3.7.1"
   },
   "optionalDependencies": {
-    "sqlite3": "^5.0.6"
+    "sqlite3": "^5.0.11"
   },
   "devDependencies": {
     "cli-table": "^0.3.11",
@@ -51,7 +51,7 @@
     "url": "https://github.com/ether/ueberDB.git"
   },
   "main": "./index",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "bugs": {
     "url": "https://github.com/ether/ueberDB/issues"
   },
