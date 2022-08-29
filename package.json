@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "cli-table": "^0.3.11",
-    "eslint": "^8.14.0",
+    "eslint": "^8.23.0",
     "eslint-config-etherpad": "^3.0.13",
     "mocha": "^10.0.0",
     "randexp": "^0.5.3",
