@@ -26,7 +26,7 @@
     "dirty": "^1.1.3",
     "elasticsearch7": "npm:@elastic/elasticsearch@^7.17.0",
     "mongodb": "^3.7.3",
-    "mssql": "^8.1.0",
+    "mssql": "^9.1.0",
     "mysql": "2.18.1",
     "nano": "^10.0.0",
     "pg": "^8.7.3",
