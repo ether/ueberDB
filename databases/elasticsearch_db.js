@@ -19,7 +19,7 @@ const AbstractDatabase = require('../lib/AbstractDatabase');
 const assert = require('assert').strict;
 const {Buffer} = require('buffer');
 const crypto = require('crypto');
-const es = require('elasticsearch7');
+const es = require('elasticsearch');
 
 const schema = '2';
 
