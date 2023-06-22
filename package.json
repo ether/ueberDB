@@ -21,13 +21,13 @@
     }
   ],
   "dependencies": {
+    "@elastic/elasticsearch": "^8.8.1",
     "async": "^3.2.0",
     "cassandra-driver": "^4.5.1",
     "chai": "^4.2.0",
     "channels": "0.0.4",
     "cli-table": "^0.3.1",
     "dirty": "^1.1.0",
-    "elasticsearch": "^16.7.1",
     "mocha": "^7.1.2",
     "mssql": "^6.2.3",
     "mysql": "2.18.1",
