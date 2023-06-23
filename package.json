@@ -21,6 +21,7 @@
     }
   ],
   "dependencies": {
+    "@azure/msal-node": "^1.17.3",
     "async": "^3.2.3",
     "cassandra-driver": "^4.6.3",
     "dirty": "^1.1.3",
