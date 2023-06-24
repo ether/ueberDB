@@ -97,14 +97,14 @@ exports.Database = class extends AbstractDatabase {
     if (key.length > 100) {
       callback('Your Key can only be 100 chars');
     } else {
-      this.collection.update({_id: key}, {$set: {value}}, {upsert: true}, callback);
+      this.collection.updateOne({_id: key}, {$set: {value}}, {upsert: true}, callback);
     }
 
     this.schedulePing();
   }
 
   remove(key, callback) {
-    this.collection.remove({_id: key}, callback);
+    this.collection.deleteOne({_id: key}, callback);
 
     this.schedulePing();
   }
