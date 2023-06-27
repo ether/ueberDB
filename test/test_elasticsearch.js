@@ -1,7 +1,7 @@
 'use strict';
 
 const assert = require('assert').strict;
-const es = require('elasticsearch7');
+const es = require('@elastic/elasticsearch');
 const {databases: {elasticsearch: cfg}} = require('./lib/databases');
 const logging = require('../lib/logging');
 const ueberdb = require('../index');
