@@ -19,12 +19,6 @@ jobs:
         env:
           COUCHDB_USER: ueberdb
           COUCHDB_PASSWORD: ueberdb
-      elasticsearch:
-        image: elasticsearch:7.17.3
-        ports:
-          - 9200:9200
-        env:
-          discovery.type: single-node
       mongo:
         image: mongo
         ports:
