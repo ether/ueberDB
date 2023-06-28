@@ -16,7 +16,6 @@ writes are done in a bulk. This can be turned off.
 
 * Couch
 * Dirty
-* Elasticsearch
 * Maria
 * `memory`: An in-memory ephemeral database.
 * Mongo
@@ -214,7 +213,6 @@ const ueberdb = require('ueberdb2');
 |  couchdb |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
 |  dirty |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |        |   ✓   |
 |  dirty_git |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |        |
-|  elasticsearch |  ✓  |  ✓  |    *     |   ✓    |   ✓    |   ✓    |   ✓    |
 |  maria |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
 |  mysql |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |   ✓   |
 |  postgres  |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |   ✓   |
@@ -235,7 +233,6 @@ The following have limitations on findKeys
 
 * redis (Only keys of the format \*:\*:\*)
 * cassandra (Only keys of the format \*:\*:\*)
-* elasticsearch (Only keys of the format \*:\*:\*)
 * rethink (Currently doesn't work)
 
 For details on how it works please refer to the wiki:
