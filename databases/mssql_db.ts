@@ -21,12 +21,20 @@
  *
  */
 
-const AbstractDatabase = require('../lib/AbstractDatabase');
-const async = require('async');
-const mssql = require('mssql');
+import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
+import async from 'async';
+import mssql, {ConnectionPool} from 'mssql';
+import {BulkObject} from "./cassandra_db";
 
-exports.Database = class extends AbstractDatabase {
-  constructor(settings) {
+type RowResult = {
+    key: string;
+}
+
+
+
+export const Database = class extends AbstractDatabase {
+  private db: ConnectionPool | undefined;
+  constructor(settings:Settings) {
     super();
     settings = settings || {};
 
@@ -49,7 +57,7 @@ exports.Database = class extends AbstractDatabase {
     this.settings.writeInterval = 0;
   }
 
-  init(callback) {
+  init(callback:(err: any)=>{}) {
     const sqlCreate =
         "IF OBJECT_ID(N'dbo.store', N'U') IS NULL" +
         '  BEGIN' +
@@ -59,6 +67,7 @@ exports.Database = class extends AbstractDatabase {
         '    );' +
         '  END';
 
+    // @ts-ignore
     new mssql.ConnectionPool(this.settings).connect().then((pool) => {
       this.db = pool;
 
@@ -74,7 +83,7 @@ exports.Database = class extends AbstractDatabase {
     });
   }
 
-  get(key, callback) {
+  get(key:string, callback:(err?:Error, value?:string)=>{}) {
     const request = new mssql.Request(this.db);
 
     request.input('key', mssql.NVarChar(100), key);
@@ -82,7 +91,8 @@ exports.Database = class extends AbstractDatabase {
     request.query('SELECT [value] FROM [store] WHERE [key] = @key', (err, results) => {
       let value = null;
 
-      if (!err && results.rowsAffected[0] === 1) {
+      if (!err && results && results.rowsAffected[0] === 1) {
+        // @ts-ignore
         value = results.recordset[0].value;
       }
 
@@ -90,7 +100,7 @@ exports.Database = class extends AbstractDatabase {
     });
   }
 
-  findKeys(key, notKey, callback) {
+  findKeys(key:string, notKey:string, callback:(err: Error | undefined,value:string[])=>{}) {
     const request = new mssql.Request(this.db);
     let query = 'SELECT [key] FROM [store] WHERE [key] LIKE @key';
 
@@ -107,11 +117,11 @@ exports.Database = class extends AbstractDatabase {
     }
 
     request.query(query, (err, results) => {
-      const value = [];
+      const value:string[] = [];
 
-      if (!err && results.rowsAffected[0] > 0) {
+      if (!err && results && results.rowsAffected[0] > 0) {
         for (let i = 0; i < results.recordset.length; i++) {
-          value.push(results.recordset[i].key);
+          value.push((results.recordset[i] as RowResult).key);
         }
       }
 
@@ -119,7 +129,7 @@ exports.Database = class extends AbstractDatabase {
     });
   }
 
-  set(key, value, callback) {
+  set(key:string, value:string, callback: (val:string)=>{}) {
     const request = new mssql.Request(this.db);
 
     if (key.length > 100) {
@@ -135,23 +145,23 @@ exports.Database = class extends AbstractDatabase {
       request.input('value', mssql.NText, value);
 
       request.query(query, (err, info) => {
-        callback(err);
+        callback(err?err.toString():'');
       });
     }
   }
 
-  remove(key, callback) {
+  remove(key:string, callback:()=>{}) {
     const request = new mssql.Request(this.db);
     request.input('key', mssql.NVarChar(100), key);
     request.query('DELETE FROM [store] WHERE [key] = @key', callback);
   }
 
-  doBulk(bulk, callback) {
+  doBulk(bulk: BulkObject[], callback:(err:any, results?: any)=>{}) {
     const maxInserts = 100;
     const request = new mssql.Request(this.db);
     let firstReplace = true;
     let firstRemove = true;
-    const replacements = [];
+    const replacements: string[] = [];
     let removeSQL = 'DELETE FROM [store] WHERE [key] IN (';
 
     for (const i in bulk) {
@@ -159,7 +169,7 @@ exports.Database = class extends AbstractDatabase {
         if (firstReplace) {
           replacements.push('BEGIN TRANSACTION;');
           firstReplace = false;
-        } else if (i % maxInserts === 0) {
+        } else if (Number(i) % maxInserts === 0) {
           replacements.push('\nCOMMIT TRANSACTION;\nBEGIN TRANSACTION;\n');
         }
 
@@ -212,7 +222,7 @@ exports.Database = class extends AbstractDatabase {
     );
   }
 
-  close(callback) {
-    this.db.close(callback);
+  close(callback: (err?:Error)=>{}) {
+    this.db&&this.db.close(callback);
   }
 };

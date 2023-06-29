@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use strict';
 /**
  * 2011 Peter 'Pita' Martischka
@@ -116,20 +117,20 @@ class SelfContainedPromise extends Promise {
 }
 
 const defaultSettings =
-{
-  // Maximum number of operations that can be passed to the wrapped database's doBulk() method.
-  // Falsy means no limit. EXPERIMENTAL.
-  bulkLimit: 0,
-  // the number of elements that should be cached. To Disable cache just set it to zero
-  cache: 10000,
-  // the interval in ms the wrapper writes to the database. To Disable interval writes just set it
-  // to zero
-  writeInterval: 100,
-  // a flag if the data sould be serialized/deserialized to json
-  json: true,
-  // use utf8mb4 as default
-  charset: 'utf8mb4',
-};
+    {
+      // Maximum number of operations that can be passed to the wrapped database's doBulk() method.
+      // Falsy means no limit. EXPERIMENTAL.
+      bulkLimit: 0,
+      // the number of elements that should be cached. To Disable cache just set it to zero
+      cache: 10000,
+      // the interval in ms the wrapper writes to the database. To Disable interval writes just set it
+      // to zero
+      writeInterval: 100,
+      // a flag if the data sould be serialized/deserialized to json
+      json: true,
+      // use utf8mb4 as default
+      charset: 'utf8mb4',
+    };
 
 exports.Database = class {
   /**
@@ -230,7 +231,7 @@ exports.Database = class {
 
     // start the write Interval
     this.flushInterval = this.settings.writeInterval > 0
-      ? setInterval(() => this.flush(), this.settings.writeInterval) : null;
+        ? setInterval(() => this.flush(), this.settings.writeInterval) : null;
   }
 
   async _lock(key) {
@@ -316,7 +317,7 @@ exports.Database = class {
         ++this.metrics.readsFromCache;
         if (this.logger.isDebugEnabled()) {
           this.logger.debug(`GET    - ${key} - ${JSON.stringify(entry.value)} - ` +
-                            `from ${entry.dirty ? 'dirty buffer' : 'cache'}`);
+              `from ${entry.dirty ? 'dirty buffer' : 'cache'}`);
         }
         return entry.value;
       }

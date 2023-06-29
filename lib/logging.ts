@@ -1,7 +1,7 @@
 'use strict';
 
-const {Console} = require('console');
-const {stdout, stderr} = require('process');
+import {Console} from 'console';
+import {stdout, stderr} from 'process';
 
 class ConsoleLogger extends Console {
   constructor(opts = {}) { super({stdout, stderr, inspectOptions: {depth: Infinity}, ...opts}); }
@@ -11,9 +11,8 @@ class ConsoleLogger extends Console {
   isErrorEnabled() { return true; }
 }
 
-exports.ConsoleLogger = ConsoleLogger;
 
-exports.normalizeLogger = (logger) => {
+export const normalizeLogger = (logger: null|Function) => {
   const logLevelsUsed = ['debug', 'info', 'warn', 'error'];
   logger = Object.create(logger || {});
   for (const level of logLevelsUsed) {
@@ -27,3 +26,5 @@ exports.normalizeLogger = (logger) => {
   }
   return logger;
 };
+
+export default ConsoleLogger

@@ -15,12 +15,15 @@
  * limitations under the License.
  */
 
-const AbstractDatabase = require('../lib/AbstractDatabase');
-const mysql = require('mysql');
-const util = require('util');
+import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
+import mysql from 'mysql';
+import util from 'util';
+import {BulkObject} from "./cassandra_db";
 
 exports.Database = class extends AbstractDatabase {
-  constructor(settings) {
+  private _mysqlSettings: Settings;
+  private _pool: any;
+  constructor(settings:Settings) {
     super();
     this.logger = console;
     this._mysqlSettings = {
@@ -39,19 +42,21 @@ exports.Database = class extends AbstractDatabase {
 
   get isAsync() { return true; }
 
-  async _query(options) {
+  async _query(options: any):Promise<any> {
     try {
       return await new Promise((resolve, reject) => {
         options = {timeout: this.settings.queryTimeout, ...options};
-        this._pool.query(options, (err, ...args) => err != null ? reject(err) : resolve(args));
+        // @ts-ignore
+        this._pool&&this._pool.query(options, (err, ...args) => err != null ? reject(err) : resolve(args));
       });
-    } catch (err) {
+    } catch (err:any) {
       this.logger.error(`${err.fatal ? 'Fatal ' : ''}MySQL error: ${err.stack || err}`);
       throw err;
     }
   }
 
   async init() {
+    // @ts-ignore
     this._pool = mysql.createPool(this._mysqlSettings);
     const {database, charset} = this._mysqlSettings;
 
@@ -69,6 +74,7 @@ exports.Database = class extends AbstractDatabase {
     const dbCharSet =
         'SELECT DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME ' +
         `FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '${database}'`;
+    // @ts-ignore
     let [result] = await this._query({sql: dbCharSet});
 
     result = JSON.parse(JSON.stringify(result));
@@ -112,15 +118,15 @@ exports.Database = class extends AbstractDatabase {
     }
   }
 
-  async get(key) {
+  async get(key:string) {
     const [results] = await this._query({
       sql: 'SELECT `value` FROM `store` WHERE `key` = ? AND BINARY `key` = ?',
       values: [key, key],
-    });
+    })
     return results.length === 1 ? results[0].value : null;
   }
 
-  async findKeys(key, notKey) {
+  async findKeys(key:string, notKey:string) {
     let query = 'SELECT `key` FROM `store` WHERE `key` LIKE ?';
     const params = [];
 
@@ -135,22 +141,22 @@ exports.Database = class extends AbstractDatabase {
       params.push(notKey);
     }
     const [results] = await this._query({sql: query, values: params});
-    return results.map((val) => val.key);
+    return results.map((val:{key:string}) => val.key);
   }
 
-  async set(key, value) {
+  async set(key:string, value:string) {
     if (key.length > 100) throw new Error('Your Key can only be 100 chars');
     await this._query({sql: 'REPLACE INTO `store` VALUES (?,?)', values: [key, value]});
   }
 
-  async remove(key) {
+  async remove(key:string) {
     await this._query({
       sql: 'DELETE FROM `store` WHERE `key` = ? AND BINARY `key` = ?',
       values: [key, key],
     });
   }
 
-  async doBulk(bulk) {
+  async doBulk(bulk:BulkObject[]) {
     const replaces = [];
     const deletes = [];
     for (const op of bulk) {

@@ -13,10 +13,23 @@
  * limitations under the License.
  */
 
-const AbstractDatabase = require('../lib/AbstractDatabase');
-const cassandra = require('cassandra-driver');
+import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
+import cassandra, {ArrayOrObject, Client, types, ValueCallback} from 'cassandra-driver';
+import ResultSet = types.ResultSet;
 
-exports.Database = class extends AbstractDatabase {
+type Result = {
+  rows: any[];
+}
+
+export type BulkObject = {
+  type: string
+  key:string
+  value?: string
+}
+
+export const Database = class extends AbstractDatabase {
+  private client: Client|undefined;
+  private pool: any;
   /**
    * @param {Object} settings The required settings object to initiate the Cassandra database
    * @param {String[]} settings.clientOptions See
@@ -28,7 +41,7 @@ exports.Database = class extends AbstractDatabase {
    *     the Cassandra driver. See https://github.com/datastax/nodejs-driver#logging for more
    *     information
    */
-  constructor(settings) {
+  constructor(settings:Settings) {
     super();
     if (!settings.clientOptions) {
       throw new Error('The Cassandra client options should be defined');
@@ -36,8 +49,7 @@ exports.Database = class extends AbstractDatabase {
     if (!settings.columnFamily) {
       throw new Error('The Cassandra column family should be defined');
     }
-
-    this.settings = {};
+    this.settings = {database: settings.database}
     this.settings.clientOptions = settings.clientOptions;
     this.settings.columnFamily = settings.columnFamily;
     this.settings.logger = settings.logger;
@@ -50,7 +62,7 @@ exports.Database = class extends AbstractDatabase {
    * @param  {Function}   callback        Standard callback method.
    * @param  {Error}      callback.err    An error object (if any.)
    */
-  init(callback) {
+  init(callback: (arg: any)=>{}) {
     // Create a client
     this.client = new cassandra.Client(this.settings.clientOptions);
 
@@ -83,7 +95,7 @@ exports.Database = class extends AbstractDatabase {
             const cql =
                 `CREATE COLUMNFAMILY "${this.settings.columnFamily}" ` +
                 '(key text PRIMARY KEY, data text)';
-            this.client.execute(cql, callback);
+            this.client&&this.client.execute(cql, callback);
           }
         });
   }
@@ -96,9 +108,9 @@ exports.Database = class extends AbstractDatabase {
    * @param  {Error}      callback.err      An error object, if any
    * @param  {String}     callback.value    The value for the given key (if any)
    */
-  get(key, callback) {
+  get(key:string, callback: (err:Error|null, data?:any)=>{}) {
     const cql = `SELECT data FROM "${this.settings.columnFamily}" WHERE key = ?`;
-    this.client.execute(cql, [key], (err, result) => {
+    this.client && this.client.execute(cql, [key], (err, result) => {
       if (err) {
         return callback(err);
       }
@@ -122,12 +134,12 @@ exports.Database = class extends AbstractDatabase {
    * @param  {Error}      callback.err      An error object, if any
    * @param  {String[]}   callback.keys     An array of keys that match the specified filters
    */
-  findKeys(key, notKey, callback) {
+  findKeys(key:string, notKey:string, callback: Function) {
     let cql = null;
     if (!notKey) {
       // Get all the keys
       cql = `SELECT key FROM "${this.settings.columnFamily}"`;
-      this.client.execute(cql, (err, result) => {
+      this.client&&this.client.execute(cql, (err: Error, result:Result) => {
         if (err) {
           return callback(err);
         }
@@ -135,7 +147,7 @@ exports.Database = class extends AbstractDatabase {
         // Construct a regular expression based on the given key
         const regex = new RegExp(`^${key.replace(/\*/g, '.*')}$`);
 
-        const keys = [];
+        const keys:string[] = [];
         result.rows.forEach((row) => {
           if (regex.test(row.key)) {
             keys.push(row.key);
@@ -151,7 +163,9 @@ exports.Database = class extends AbstractDatabase {
         // Get the 'text' bit out of the key and get all those keys from a special column.
         // We can retrieve them from this column as we're duplicating them on .set/.remove
         cql = `SELECT * from "${this.settings.columnFamily}" WHERE key = ?`;
-        this.client.execute(cql, [`ueberdb:keys:${matches[1]}`], (err, result) => {
+        this.client&&
+        this.client
+            .execute(cql, [`ueberdb:keys:${matches[1]}`], (err, result) => {
           if (err) {
             return callback(err);
           }
@@ -181,7 +195,7 @@ exports.Database = class extends AbstractDatabase {
    * @param  {Function}   callback        Standard callback method
    * @param  {Error}      callback.err    An error object, if any
    */
-  set(key, value, callback) {
+  set(key: string, value:string, callback:()=>{}) {
     this.doBulk([{type: 'set', key, value}], callback);
   }
 
@@ -192,9 +206,10 @@ exports.Database = class extends AbstractDatabase {
    * @param  {Function}   callback        Standard callback method
    * @param  {Error}      callback.err    An error object, if any
    */
-  remove(key, callback) {
+  remove(key:string, callback: ValueCallback<ResultSet>) {
     this.doBulk([{type: 'remove', key}], callback);
   }
+
 
   /**
    * Performs multiple operations in one action
@@ -203,8 +218,8 @@ exports.Database = class extends AbstractDatabase {
    * @param  {Function}   callback        Standard callback method
    * @param  {Error}      callback.err    An error object, if any
    */
-  doBulk(bulk, callback) {
-    const queries = [];
+  doBulk(bulk:BulkObject[], callback:ValueCallback<ResultSet>) {
+    const queries:Array<string|{query: string, params?: ArrayOrObject}> = [];
     bulk.forEach((operation) => {
       // We support finding keys of the form `test:*`. If anything matches, we will try and save
       // this
@@ -235,7 +250,7 @@ exports.Database = class extends AbstractDatabase {
         }
       }
     });
-    this.client.batch(queries, {prepare: true}, callback);
+    this.client&&this.client.batch(queries, {prepare: true}, callback);
   }
 
   /**
@@ -244,7 +259,7 @@ exports.Database = class extends AbstractDatabase {
    * @param  {Function}   callback        Standard callback method
    * @param  {Error}      callback.err    Error object in case something goes wrong
    */
-  close(callback) {
+  close(callback: ()=>{}) {
     this.pool.shutdown(callback);
   }
 };

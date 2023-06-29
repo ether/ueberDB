@@ -1,9 +1,11 @@
 'use strict';
 
+import {Settings} from "../lib/AbstractDatabase";
+
 const AbstractDatabase = require('../lib/AbstractDatabase');
 
 exports.Database = class extends AbstractDatabase {
-  constructor(settings) {
+  constructor(settings:Settings) {
     super();
     this.settings = settings;
     settings.json = false;
@@ -18,12 +20,12 @@ exports.Database = class extends AbstractDatabase {
     this._data = null;
   }
 
-  findKeys(key, notKey) {
+  findKeys(key:string, notKey:string) {
     const regex = this.createFindRegex(key, notKey);
     return [...this._data.keys()].filter((k) => regex.test(k));
   }
 
-  get(key) {
+  get(key:string) {
     return this._data.get(key);
   }
 
@@ -31,11 +33,11 @@ exports.Database = class extends AbstractDatabase {
     this._data = this.settings.data || new Map();
   }
 
-  remove(key) {
+  remove(key:string) {
     this._data.delete(key);
   }
 
-  set(key, value) {
+  set(key:string, value:string) {
     this._data.set(key, value);
   }
 };

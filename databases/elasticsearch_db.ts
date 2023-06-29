@@ -15,15 +15,17 @@
  * limitations under the License.
  */
 
-const AbstractDatabase = require('../lib/AbstractDatabase');
-const assert = require('assert').strict;
-const {Buffer} = require('buffer');
-const crypto = require('crypto');
-const es = require('elasticsearch7');
+import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
+import assert, {strict} from "assert";
+
+import {Buffer} from 'buffer';
+import crypto from 'crypto';
+import es from 'elasticsearch7';
+import {BulkObject} from "./cassandra_db";
 
 const schema = '2';
 
-const keyToId = (key) => {
+const keyToId = (key:string) => {
   const keyBuf = Buffer.from(key);
   return keyBuf.length > 512 ? crypto.createHash('sha512').update(keyBuf).digest('hex') : key;
 };
@@ -37,7 +39,7 @@ const mappings = {
   },
 };
 
-const migrateToSchema2 = async (client, v1BaseIndex, v2Index, logger) => {
+const migrateToSchema2 = async (client: any, v1BaseIndex: string | undefined, v2Index: string, logger: any) => {
   let recordsMigratedLastLogged = 0;
   let recordsMigrated = 0;
   const totals = new Map();
@@ -53,13 +55,13 @@ const migrateToSchema2 = async (client, v1BaseIndex, v2Index, logger) => {
       q.push({index, res});
     }
     while (q.length) {
-      const {index, res: {hits: {hits, total: {value: total}}}} = q.shift();
+      const {index, res: {hits: {hits, total: {value: total}}}}:any = q.shift();
       if (hits.length === 0) continue;
       totals.set(index, total);
       const body = [];
       for (const {_id, _type, _source: {val}} of hits) {
         let key = `${_type}:${_id}`;
-        if (index !== v1BaseIndex) {
+        if (v1BaseIndex&&index !== v1BaseIndex) {
           const parts = index.slice(v1BaseIndex.length + 1).split('-');
           if (parts.length !== 2) {
             throw new Error(`unable to migrate records from index ${index} due to data ambiguity`);
@@ -85,7 +87,11 @@ const migrateToSchema2 = async (client, v1BaseIndex, v2Index, logger) => {
 };
 
 exports.Database = class extends AbstractDatabase {
-  constructor(settings) {
+  private _client: any;
+  private _index: any;
+  private _indexClean: boolean;
+  private _q: { index: any };
+  constructor(settings:Settings) {
     super();
     this._client = null;
     this.settings = {
@@ -98,7 +104,7 @@ exports.Database = class extends AbstractDatabase {
       api: '7.6',
       ...settings || {},
       json: false, // Elasticsearch will do the JSON conversion as necessary.
-    };
+    }
     this._index = `${this.settings.base_index}_s${schema}`;
     this._q = {index: this._index};
     this._indexClean = true;
@@ -124,6 +130,7 @@ exports.Database = class extends AbstractDatabase {
     await client.ping();
     if (!(await client.indices.exists({index: this._index})).body) {
       let tmpIndex;
+      // @ts-ignore
       const {body: migrate} = await client.indices.exists({index: this.settings.base_index});
       if (migrate && !this.settings.migrate_to_newer_schema) {
         throw new Error(
@@ -156,7 +163,7 @@ exports.Database = class extends AbstractDatabase {
    *
    *  @param {String} key Key
    */
-  async get(key) {
+  async get(key:string) {
     const {body} = await this._client.get({...this._q, id: keyToId(key)}, {ignore: [404]});
     if (!body.found) return null;
     return body._source.value;
@@ -166,7 +173,7 @@ exports.Database = class extends AbstractDatabase {
    *  @param key Search key, which uses an asterisk (*) as the wild card.
    *  @param notKey Used to filter the result set
    */
-  async findKeys(key, notKey) {
+  async findKeys(key:string, notKey:string) {
     await this._refreshIndex();
     const q = {
       ...this._q,
@@ -182,7 +189,7 @@ exports.Database = class extends AbstractDatabase {
       },
     };
     const {body: {hits: {hits}}} = await this._client.search(q);
-    return hits.map((h) => h._source.key);
+    return hits.map((h:{_source:{key:string}}) => h._source.key);
   }
 
   /**
@@ -191,7 +198,7 @@ exports.Database = class extends AbstractDatabase {
    *  @param {String} key Record identifier.
    *  @param {JSON|String} value The value to store in the database.
    */
-  async set(key, value) {
+  async set(key: string, value:string) {
     this._indexClean = false;
     await this._client.index({...this._q, id: keyToId(key), body: {key, value}});
   }
@@ -204,7 +211,7 @@ exports.Database = class extends AbstractDatabase {
    *
    *  @param {String} key Record identifier.
    */
-  async remove(key) {
+  async remove(key:string) {
     this._indexClean = false;
     await this._client.delete({...this._q, id: keyToId(key)}, {ignore: [404]});
   }
@@ -218,7 +225,7 @@ exports.Database = class extends AbstractDatabase {
    *  @param {Array} bulk An array of JSON data in the format:
    *      {"type":type, "key":key, "value":value}
    */
-  async doBulk(bulk) {
+  async doBulk(bulk: BulkObject[]) {
     // bulk is an array of JSON:
     // example: [{"type":"set", "key":"sessionstorage:{id}", "value":{"cookie":{...}}]
 

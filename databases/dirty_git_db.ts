@@ -1,4 +1,6 @@
 'use strict';
+import {Settings} from "../lib/AbstractDatabase";
+
 /**
  * 2011 Peter 'Pita' Martischka
  *
@@ -15,23 +17,18 @@
  * limitations under the License.
  */
 
-/*
-*
-* Fair warning that length may not provide the correct value upon load.
-* See https://github.com/ether/etherpad-lite/pull/3984
-*
-*/
-
-const AbstractDatabase = require('../lib/AbstractDatabase');
-const Dirty = require('dirty');
+import AbstractDatabase from '../lib/AbstractDatabase';
+import {Dirty} from '../dirtydb/DirtyDB'
 
 exports.Database = class extends AbstractDatabase {
-  constructor(settings) {
+  private db: Dirty;
+  constructor(settings: Settings) {
     super();
+    // @ts-ignore
     this.db = null;
 
     if (!settings || !settings.filename) {
-      settings = {filename: null};
+      settings = {};
     }
 
     this.settings = settings;
@@ -42,21 +39,21 @@ exports.Database = class extends AbstractDatabase {
     this.settings.json = false;
   }
 
-  init(callback) {
+  init(callback: ()=>void) {
     this.db = new Dirty(this.settings.filename);
-    this.db.on('load', (err) => {
+    this.db.on('load', (err: Error) => {
       callback();
     });
   }
 
-  get(key, callback) {
+  get(key:string, callback: (err: string|any, value: string)=>void) {
     callback(null, this.db.get(key));
   }
 
-  findKeys(key, notKey, callback) {
-    const keys = [];
+  findKeys(key:string, notKey:string, callback:(v:any,keys:string[])=>{}) {
+    const keys:string[] = [];
     const regex = this.createFindRegex(key, notKey);
-    this.db.forEach((key, val) => {
+    this.db.forEach((key:string, val:string) => {
       if (key.search(regex) !== -1) {
         keys.push(key);
       }
@@ -64,17 +61,22 @@ exports.Database = class extends AbstractDatabase {
     callback(null, keys);
   }
 
-  set(key, value, callback) {
+  set(key:string, value: string, callback: ()=>{}) {
     this.db.set(key, value, callback);
+    const databasePath = require('path').dirname(this.settings.filename);
+    require('simple-git')(databasePath)
+        .silent(true)
+        .add('./*.db')
+        .commit('Automated commit...')
+        .push(['-u', 'origin', 'master'], () => console.debug('Stored git commit'));
   }
 
-  remove(key, callback) {
+  remove(key:string, callback:()=> {}) {
     this.db.rm(key, callback);
   }
 
-  close(callback) {
+  close(callback: ()=>void) {
     this.db.close();
-    this.db = null;
     if (callback) callback();
   }
 };

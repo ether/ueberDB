@@ -15,12 +15,18 @@
  * limitations under the License.
  */
 
-const AbstractDatabase = require('../lib/AbstractDatabase');
-const r = require('rethinkdb');
-const async = require('async');
+import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
+import r from 'rethinkdb';
+import async from 'async';
+import {BulkObject} from "./cassandra_db";
 
 exports.Database = class extends AbstractDatabase {
-  constructor(settings) {
+  private host: string;
+  private db: string;
+  private port: number;
+  private table: string;
+  private connection:  r.Connection | null;
+  constructor(settings:Settings) {
     super();
     if (!settings) settings = {};
     if (!settings.host) { settings.host = 'localhost'; }
@@ -35,7 +41,8 @@ exports.Database = class extends AbstractDatabase {
     this.connection = null;
   }
 
-  init(callback) {
+  init(callback: (p: any, cursor: any)=>{}) {
+    // @ts-ignore
     r.connect(this, (err, conn) => {
       if (err) throw err;
       this.connection = conn;
@@ -43,21 +50,25 @@ exports.Database = class extends AbstractDatabase {
       r.table(this.table).run(this.connection, (err, cursor) => {
         if (err) {
           // assuming table does not exists
+          // @ts-ignore
           r.tableCreate(this.table).run(this.connection, callback);
         } else if (callback) { callback(null, cursor); }
       });
     });
   }
 
-  get(key, callback) {
+  get(key:string, callback: (err: Error, p: any)=>{}) {
+    // @ts-ignore
     r.table(this.table).get(key).run(this.connection, (err, item) => {
+      // @ts-ignore
       callback(err, (item ? item.content : item));
     });
   }
 
-  findKeys(key, notKey, callback) {
+  findKeys(key:string, notKey:string, callback:()=>{}) {
     const keys = [];
     const regex = this.createFindRegex(key, notKey);
+    // @ts-ignore
     r.filter((item) => {
       if (item.id.search(regex) !== -1) {
         keys.push(item.id);
@@ -65,15 +76,15 @@ exports.Database = class extends AbstractDatabase {
     }).run(this.connection, callback);
   }
 
-  set(key, value, callback) {
+  set(key:string, value:string, callback:()=>{}) {
     r.table(this.table)
         .insert({id: key, content: value}, {conflict: 'replace'})
-        .run(this.connection, callback);
+        .run(this.connection as r.Connection, callback);
   }
 
-  doBulk(bulk, callback) {
-    const _in = [];
-    const _out = [];
+  doBulk(bulk: BulkObject[], callback: ()=>{}) {
+    const _in: any[] = [];
+    const _out: string | string[] | r.Expression<any> = [];
 
     for (const i in bulk) {
       if (bulk[i].type === 'set') {
@@ -82,17 +93,22 @@ exports.Database = class extends AbstractDatabase {
         _out.push(bulk[i].key);
       }
     }
+
     async.parallel([
-      (cb) => { r.table(this.table).insert(_in, {conflict: 'replace'}).run(this.connection, cb); },
-      (cb) => { r.table(this.table).getAll(_out).delete().run(this.connection, cb); },
+      (cb) => { // @ts-ignore
+        r.table(this.table).insert(_in, {conflict: 'replace'}).run(this.connection, cb); },
+      (cb) => { // @ts-ignore
+        r.table(this.table).getAll(_out).delete().run(this.connection, cb); },
     ], callback);
   }
 
-  remove(key, callback) {
+  remove(key:string, callback:()=>{}) {
+    // @ts-ignore
     r.table(this.table).get(key).delete().run(this.connection, callback);
   }
 
-  close(callback) {
+  close(callback:()=>{}) {
+    if(this.connection)
     this.connection.close(callback);
   }
 };

@@ -15,17 +15,23 @@
  * limitations under the License.
  */
 
-const AbstractDatabase = require('../lib/AbstractDatabase');
-const Dirty = require('dirty');
+/*
+*
+* Fair warning that length may not provide the correct value upon load.
+* See https://github.com/ether/etherpad-lite/pull/3984
+*
+*/
 
-exports.Database = class extends AbstractDatabase {
-  constructor(settings) {
+import {Settings} from "../lib/AbstractDatabase";
+
+import AbstractDatabase from '../lib/AbstractDatabase';
+import Dirty, {Dirty as DClass} from '../dirtydb/DirtyDB'
+
+export const Database = class extends AbstractDatabase {
+  private db: DClass;
+  constructor(settings: Settings) {
     super();
-    this.db = null;
-
-    if (!settings || !settings.filename) {
-      settings = {filename: null};
-    }
+    this.db = new Dirty(this.settings.filename);
 
     this.settings = settings;
 
@@ -35,21 +41,22 @@ exports.Database = class extends AbstractDatabase {
     this.settings.json = false;
   }
 
-  init(callback) {
-    this.db = new Dirty(this.settings.filename);
-    this.db.on('load', (err) => {
+  init(callback: ()=>void) {
+    this.db&&this.db.on('load', (err:string) => {
       callback();
     });
   }
 
-  get(key, callback) {
-    callback(null, this.db.get(key));
+  get(key:string, callback: (err: string|any, value: string)=>void) {
+    if (this.db){
+      callback(null, this.db.get(key));
+    }
   }
 
-  findKeys(key, notKey, callback) {
-    const keys = [];
+  findKeys(key: string, notKey:string, callback:Function) {
+    const keys:string[] = [];
     const regex = this.createFindRegex(key, notKey);
-    this.db.forEach((key, val) => {
+    this.db&&this.db.forEach((key:string, val:string) => {
       if (key.search(regex) !== -1) {
         keys.push(key);
       }
@@ -57,22 +64,18 @@ exports.Database = class extends AbstractDatabase {
     callback(null, keys);
   }
 
-  set(key, value, callback) {
-    this.db.set(key, value, callback);
-    const databasePath = require('path').dirname(this.settings.filename);
-    require('simple-git')(databasePath)
-        .silent(true)
-        .add('./*.db')
-        .commit('Automated commit...')
-        .push(['-u', 'origin', 'master'], () => console.debug('Stored git commit'));
+  set(key:string, value:string, callback: ()=>{}) {
+    this.db&&this.db.set(key, value, callback);
   }
 
-  remove(key, callback) {
+  remove(key: string, callback: ()=>{}) {
     this.db.rm(key, callback);
   }
 
-  close(callback) {
+  close(callback: ()=>{}) {
     this.db.close();
+    // @ts-ignore
+    this.db = null;
     if (callback) callback();
   }
 };

@@ -1,4 +1,7 @@
 'use strict';
+import {Settings} from "../lib/AbstractDatabase";
+import {BulkObject} from "./cassandra_db";
+
 /**
  * 2011 Peter 'Pita' Martischka
  *
@@ -15,7 +18,7 @@
  * limitations under the License.
  */
 
-let sqlite3;
+let sqlite3: { Database: new (arg0: any, arg1: (err: any) => void) => any; };
 try {
   sqlite3 = require('sqlite3');
 } catch (err) {
@@ -28,10 +31,10 @@ try {
 const AbstractDatabase = require('../lib/AbstractDatabase');
 const util = require('util');
 
-const escape = (val) => `'${val.replace(/'/g, "''")}'`;
+const escape = (val: string) => `'${val.replace(/'/g, "''")}'`;
 
-exports.Database = class extends AbstractDatabase {
-  constructor(settings) {
+export const Database = class extends AbstractDatabase {
+  constructor(settings:Settings) {
     super();
     this.db = null;
 
@@ -53,7 +56,7 @@ exports.Database = class extends AbstractDatabase {
     }
   }
 
-  async _query(sql, params = []) {
+  async _query(sql:string, params = []) {
     // It is unclear how util.promisify() deals with variadic functions, so it is not used here.
     return await new Promise((resolve, reject) => {
       // According to sqlite3's documentation, .run() method (and maybe .all() and .get(); the
@@ -61,7 +64,7 @@ exports.Database = class extends AbstractDatabase {
       // guarantees that it is safe to call a Promise executor's resolve and reject functions
       // multiple times. The subsequent calls are ignored, except Node.js's 'process' object emits a
       // 'multipleResolves' event to aid in debugging.
-      this.db.all(sql, params, (err, rows) => {
+      this.db.all(sql, params, (err:any, rows:any) => {
         if (err != null) return reject(err);
         resolve(rows);
       });
@@ -70,16 +73,16 @@ exports.Database = class extends AbstractDatabase {
 
   // Temporary callbackified version of _query. This will be removed once all database objects are
   // asyncified.
-  _queryCb(sql, params, callback) {
+  _queryCb(sql: string, params: string[], callback: (err: Error|null, results?: any) => void) {
     // It is unclear how util.callbackify() handles optional parameters, so it is not used here.
-    const p = this._query(sql, params);
+    const p = this._query(sql, params as never[]);
     if (callback) p.then((rows) => callback(null, rows), (err) => callback(err || new Error(err)));
   }
 
-  init(callback) {
+  init(callback:(p: any, rows?: {length: number, rows:any})=>{}) {
     util.callbackify(async () => {
       this.db = await new Promise((resolve, reject) => {
-        new sqlite3.Database(this.settings.filename, function (err) {
+        new sqlite3.Database(this.settings.filename, (err) => {
           if (err != null) return reject(err);
           // The use of `this` relies on an undocumented feature of sqlite3:
           // https://github.com/mapbox/node-sqlite3/issues/1408
@@ -90,13 +93,12 @@ exports.Database = class extends AbstractDatabase {
     })(callback);
   }
 
-  get(key, callback) {
-    this._queryCb(
-        'SELECT value FROM store WHERE key = ?', [key],
-        (err, rows) => callback(err, err == null && rows && rows.length ? rows[0].value : null));
+  get(key:string, callback: (err: any, p: any)=>{}) {
+    // @ts-ignore
+    this._queryCb('SELECT value FROM store WHERE key = ?', [key], (err: Error, rows: any) => callback(err, err == null && rows && rows.length ? rows[0].value : null));
   }
 
-  findKeys(key, notKey, callback) {
+  findKeys(key:string, notKey:string, callback: (err: Error, value: string[])=>{}) {
     let query = 'SELECT key FROM store WHERE key LIKE ?';
     const params = [];
     // desired keys are %key:%, e.g. pad:%
@@ -110,11 +112,12 @@ exports.Database = class extends AbstractDatabase {
       params.push(notKey);
     }
 
-    this._queryCb(query, params, (err, results) => {
-      const value = [];
+    // @ts-ignore
+    this._queryCb(query, params, (err:Error, results:any) => {
+      const value:string[] = [];
 
       if (!err && Object.keys(results).length > 0) {
-        results.forEach((val) => {
+        results.forEach((val:any) => {
           value.push(val.key);
         });
       }
@@ -123,18 +126,19 @@ exports.Database = class extends AbstractDatabase {
     });
   }
 
-  set(key, value, callback) {
+  set(key:string, value:string, callback: (err: any)=>{}) {
     this._queryCb('REPLACE INTO store VALUES (?,?)', [key, value], callback);
   }
 
-  remove(key, callback) {
+  remove(key:string, callback:(err: any)=>{}) {
     this._queryCb('DELETE FROM store WHERE key = ?', [key], callback);
   }
 
-  doBulk(bulk, callback) {
+  doBulk(bulk:BulkObject[], callback:(err: any)=>{}) {
     let sql = 'BEGIN TRANSACTION;\n';
     for (const i in bulk) {
       if (bulk[i].type === 'set') {
+        // @ts-ignore
         sql += `REPLACE INTO store VALUES (${escape(bulk[i].key)}, ${escape(bulk[i].value)});\n`;
       } else if (bulk[i].type === 'remove') {
         sql += `DELETE FROM store WHERE key = ${escape(bulk[i].key)};\n`;
@@ -142,7 +146,7 @@ exports.Database = class extends AbstractDatabase {
     }
     sql += 'END TRANSACTION;';
 
-    this.db.exec(sql, (err) => {
+    this.db.exec(sql, (err:Error) => {
       if (err) {
         console.error('ERROR WITH SQL: ');
         console.error(sql);
@@ -152,7 +156,7 @@ exports.Database = class extends AbstractDatabase {
     });
   }
 
-  close(callback) {
+  close(callback:(err: any)=>{}) {
     this.db.close(callback);
   }
 };

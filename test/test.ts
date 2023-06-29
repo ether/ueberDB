@@ -26,8 +26,8 @@ after(async function () {
 });
 
 describe(__filename, function () {
-  let speedTable;
-  let db;
+  let speedTable: any[][];
+  let db: { init: () => any; close: () => any; set: (arg0: string, arg1: string | number | boolean) => null; get: (arg0: string) => null; findKeys: (arg0: string, arg1: string | null) => null; remove: (arg0: string) => null; getSub: (arg0: string, arg1: string[]) => any; setSub: (arg0: string, arg1: string[], arg2: string) => any; flush: () => null; };
 
   before(async function () {
     speedTable = new Clitable({

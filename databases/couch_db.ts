@@ -15,12 +15,25 @@
  * limitations under the License.
  */
 
-const AbstractDatabase = require('../lib/AbstractDatabase');
-const http = require('http');
-const nano = require('nano');
+import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
+import http, {Agent} from 'http';
+import nano, {MaybeDocument, ViewDocument} from 'nano';
+import {BulkObject} from "./cassandra_db";
 
-exports.Database = class extends AbstractDatabase {
-  constructor(settings) {
+type CouchDBSettings = {
+    url: string,
+    requestDefaults: {
+      auth?: {
+        username: string,
+        password: string,
+      },
+      agent: Agent
+    }
+}
+export const Database = class extends AbstractDatabase {
+  private agent: Agent|null;
+  private db: nano.DocumentScope<String>|null;
+  constructor(settings: Settings) {
     super();
     this.agent = null;
     this.db = null;
@@ -40,38 +53,59 @@ exports.Database = class extends AbstractDatabase {
       keepAlive: true,
       maxSockets: this.settings.maxListeners || 1,
     });
-    const client = nano({
+
+    const coudhDBSettings: CouchDBSettings = {
       url: `http://${this.settings.host}:${this.settings.port}`,
-      requestDefaults: {
-        auth: {
-          username: this.settings.user,
-          password: this.settings.password,
-        },
-        httpAgent: this.agent,
-      },
-    });
-    try {
-      await client.db.get(this.settings.database);
-    } catch (err) {
-      if (err.statusCode !== 404) throw err;
-      await client.db.create(this.settings.database);
+      requestDefaults:{
+        agent: this.agent
+      }
     }
-    this.db = client.use(this.settings.database);
+
+    if (this.settings.user && this.settings.password) {
+        coudhDBSettings.requestDefaults.auth = {
+            username: this.settings.user,
+            password: this.settings.password,
+        }
+    }
+
+
+    const client = nano(coudhDBSettings)
+    try {
+      if (this.settings.database != null) {
+        await client.db.get(this.settings.database);
+      }
+    } catch (err: any) {
+      if (err.statusCode !== 404) throw err;
+      if (this.settings.database != null) {
+        await client.db.create(this.settings.database);
+      }
+    }
+    if (this.settings.database != null) {
+      this.db = client.use(this.settings.database);
+    }
   }
 
-  async get(key) {
+  async get(key:string): Promise<null|string> {
     let doc;
     try {
-      doc = await this.db.get(key);
-    } catch (err) {
+      if (this.db){
+        doc = await this.db.get(key);
+      }
+    } catch (err:any) {
       if (err.statusCode === 404) return null;
       throw err;
     }
-    return doc.value;
+    if (doc && "value" in doc){
+      return doc.value as string
+    }
+    return ""
   }
 
-  async findKeys(key, notKey) {
+  async findKeys(key:string, notKey:string) {
     const pfxLen = key.indexOf('*');
+    if(!this.db){
+      return
+    }
     const pfx = pfxLen < 0 ? key : key.slice(0, pfxLen);
     const results = await this.db.find({
       selector: {
@@ -87,15 +121,21 @@ exports.Database = class extends AbstractDatabase {
     return results.docs.map((doc) => doc._id);
   }
 
-  async set(key, value) {
-    let doc;
+  async set(key:string, value:string) {
+    let doc
+
+    if(!this.db){
+      return
+    }
+
     try {
       doc = await this.db.get(key);
-    } catch (err) {
+    } catch (err:any) {
       if (err.statusCode !== 404) throw err;
     }
     await this.db.insert({
       _id: key,
+      // @ts-ignore
       value,
       ...doc == null ? {} : {
         _rev: doc._rev,
@@ -103,11 +143,14 @@ exports.Database = class extends AbstractDatabase {
     });
   }
 
-  async remove(key) {
+  async remove(key:string) {
     let header;
+    if(!this.db){
+      return
+    }
     try {
       header = await this.db.head(key);
-    } catch (err) {
+    } catch (err:any) {
       if (err.statusCode === 404) return;
       throw err;
     }
@@ -116,22 +159,28 @@ exports.Database = class extends AbstractDatabase {
     await this.db.destroy(key, etag);
   }
 
-  async doBulk(bulk) {
+  async doBulk(bulk:BulkObject[]) {
+    if(!this.db){
+      return
+    }
     const keys = bulk.map((op) => op.key);
-    const revs = {};
+    const revs:{[key:string]:any} = {};
+    // @ts-ignore
     for (const {key, value} of (await this.db.fetchRevs({keys})).rows) {
       // couchDB will return error instead of value if key does not exist
       if (value != null) revs[key] = value.rev;
     }
     const setters = [];
     for (const item of bulk) {
-      const set = {_id: item.key};
+      const set = {_id: item.key, _rev:undefined,
+        _deleted: false, value:""
+      };
       if (revs[item.key] != null) set._rev = revs[item.key];
-      if (item.type === 'set') set.value = item.value;
+      if (item.type === 'set') set.value = item.value as string;
       if (item.type === 'remove') set._deleted = true;
       setters.push(set);
     }
-    await this.db.bulk({docs: setters});
+    await this.db && await this.db.bulk({docs: setters});
   }
 
   async close() {

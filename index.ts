@@ -18,27 +18,47 @@
  */
 
 const cacheAndBufferLayer = require('./lib/CacheAndBufferLayer');
-const logging = require('./lib/logging');
-const util = require('util');
+import logging, {normalizeLogger} from './lib/logging';
+import {callbackify} from 'util'
 
-const cbDb = {};
+const cbDb = {
+  init: ()=>{},
+  flush:  ()=>{},
+  get:  ()=>{},
+  remove:  ()=>{},
+  findKeys:  ()=>{},
+  close:  ()=>{},
+  getSub:  ()=>{},
+  setSub:  ()=>{}
+};
 const fns = ['close', 'findKeys', 'flush', 'get', 'getSub', 'init', 'remove', 'set', 'setSub'];
-for (const fn of fns) cbDb[fn] = util.callbackify(cacheAndBufferLayer.Database.prototype[fn]);
-
-const makeDoneCallback = (callback, deprecated) => (err) => {
+for (const fn of fns) { // @ts-ignore
+  cbDb[fn] = callbackify(cacheAndBufferLayer.Database.prototype[fn])
+}
+const makeDoneCallback = (callback: (err?:any)=>{}, deprecated:(err:any)=>{}) => (err: null) => {
   if (callback) callback(err);
   if (deprecated) deprecated(err);
   if (err != null && callback == null && deprecated == null) throw err;
 };
 
 exports.Database = class {
+  private type: any;
+  private dbModule: any;
+  private readonly dbSettings: any;
+  private readonly wrapperSettings: any;
+  private readonly logger: Function|null;
+  private readonly db: any;
+  private metrics: any;
   /**
+   * @param type The type of the database
+   * @param dbSettings The settings for that specific database type
+   * @param wrapperSettings
    * @param logger Optional logger object. If no logger object is provided no logging will occur.
    *     The logger object is expected to be a log4js logger object or `console`. A logger object
    *     from another logging library should also work, but performance may be reduced if the logger
    *     object does not have is${Level}Enabled() methods (isDebugEnabled(), etc.).
    */
-  constructor(type, dbSettings, wrapperSettings, logger = null) {
+  constructor(type: undefined|string, dbSettings: null, wrapperSettings: null, logger = null) {
     if (!type) {
       type = 'sqlite';
       dbSettings = null;
@@ -50,7 +70,7 @@ exports.Database = class {
     this.dbModule = require(`./databases/${type}_db`);
     this.dbSettings = dbSettings;
     this.wrapperSettings = wrapperSettings;
-    this.logger = logging.normalizeLogger(logger);
+    this.logger = normalizeLogger(logger);
     const db = new this.dbModule.Database(this.dbSettings);
     db.logger = this.logger;
     this.db = new cacheAndBufferLayer.Database(db, this.wrapperSettings, this.logger);
@@ -66,7 +86,10 @@ exports.Database = class {
    * @param callback - Deprecated. Node-style callback. If null, a Promise is returned.
    */
   init(callback = null) {
-    if (callback != null) return cbDb.init.call(this.db, callback);
+    if (callback != null) {
+      // @ts-ignore
+      return cbDb.init.call(this.db, callback);
+    }
     return this.db.init();
   }
 
@@ -89,67 +112,92 @@ exports.Database = class {
    * @param callback - Deprecated. Node-style callback. If null, a Promise is returned.
    */
   flush(callback = null) {
-    if (callback != null) return cbDb.flush.call(this.db, callback);
+    if (!cbDb|| !cbDb.flush === undefined) return null
+    if (callback != null) { // @ts-ignore
+      return cbDb.flush.call(this.db, callback);
+    }
     return this.db.flush();
   }
 
   /**
+   * @param key
    * @param callback - Deprecated. Node-style callback. If null, a Promise is returned.
    */
-  get(key, callback = null) {
-    if (callback != null) return cbDb.get.call(this.db, key, callback);
+  get(key:string, callback = null) {
+    if (callback != null) { // @ts-ignore
+      return cbDb.get.call(this.db, key, callback);
+    }
     return this.db.get(key);
   }
 
   /**
+   * @param key
+   * @param notKey
    * @param callback - Deprecated. Node-style callback. If null, a Promise is returned.
    */
-  findKeys(key, notKey, callback = null) {
-    if (callback != null) return cbDb.findKeys.call(this.db, key, notKey, callback);
+  findKeys(key:string, notKey:string, callback = null) {
+    if (callback != null) { // @ts-ignore
+      return cbDb.findKeys.call(this.db, key, notKey, callback);
+    }
     return this.db.findKeys(key, notKey);
   }
 
   /**
    * Removes an entry from the database if present.
    *
+   * @param key
    * @param cb Deprecated. Node-style callback. Called when the write has been committed to the
    *     underlying database driver. If null, a Promise is returned.
    * @param deprecated Deprecated callback that is called just after cb. Ignored if cb is null.
    */
-  remove(key, cb = null, deprecated = null) {
-    if (cb != null) return cbDb.remove.call(this.db, key, makeDoneCallback(cb, deprecated));
+  remove(key:string, cb = null, deprecated = null) {
+    if (cb != null) { // @ts-ignore
+      return cbDb.remove.call(this.db, key, makeDoneCallback(cb, deprecated));
+    }
     return this.db.remove(key);
   }
 
   /**
    * Adds or changes the value of an entry.
    *
+   * @param key
+   * @param value
    * @param cb Deprecated. Node-style callback. Called when the write has been committed to the
    *     underlying database driver. If null, a Promise is returned.
    * @param deprecated Deprecated callback that is called just after cb. Ignored if cb is null.
    */
-  set(key, value, cb = null, deprecated = null) {
-    if (cb != null) return cbDb.set.call(this.db, key, value, makeDoneCallback(cb, deprecated));
+  set(key:string, value:string, cb = null, deprecated = null) {
+    if (cb != null) { // @ts-ignore
+      return cbDb.get.call(this.db, key, value, makeDoneCallback(cb, deprecated));
+    }
     return this.db.set(key, value);
   }
 
   /**
+   * @param key
+   * @param sub
    * @param callback - Deprecated. Node-style callback. If null, a Promise is returned.
    */
-  getSub(key, sub, callback = null) {
-    if (callback != null) return cbDb.getSub.call(this.db, key, sub, callback);
+  getSub(key:string, sub:string, callback = null) {
+    if (callback != null) { // @ts-ignore
+      return cbDb.getSub.call(this.db, key, sub, callback);
+    }
     return this.db.getSub(key, sub);
   }
 
   /**
    * Adds or changes a subvalue of an entry.
    *
+   * @param key
+   * @param sub
+   * @param value
    * @param cb Deprecated. Node-style callback. Called when the write has been committed to the
    *     underlying database driver. If null, a Promise is returned.
    * @param deprecated Deprecated callback that is called just after cb. Ignored if cb is null.
    */
-  setSub(key, sub, value, cb = null, deprecated = null) {
+  setSub(key:string, sub:string, value:string, cb = null, deprecated = null) {
     if (cb != null) {
+      // @ts-ignore
       return cbDb.setSub.call(this.db, key, sub, value, makeDoneCallback(cb, deprecated));
     }
     return this.db.setSub(key, sub, value);
@@ -162,7 +210,9 @@ exports.Database = class {
    * @param callback - Deprecated. Node-style callback. If null, a Promise is returned.
    */
   close(callback = null) {
-    if (callback != null) return cbDb.close.call(this.db, callback);
+    if (callback != null) { // @ts-ignore
+      return cbDb.close.call(this.db, callback);
+    }
     return this.db.close();
   }
 };
