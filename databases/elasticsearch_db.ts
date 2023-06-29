@@ -16,18 +16,18 @@
  */
 
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
-import assert, {strict} from "assert";
+import {equal, strict} from "assert";
 
 import {Buffer} from 'buffer';
-import crypto from 'crypto';
-import es from 'elasticsearch7';
+import {createHash} from 'crypto';
+import {Client} from 'elasticsearch7';
 import {BulkObject} from "./cassandra_db";
 
 const schema = '2';
 
 const keyToId = (key:string) => {
   const keyBuf = Buffer.from(key);
-  return keyBuf.length > 512 ? crypto.createHash('sha512').update(keyBuf).digest('hex') : key;
+  return keyBuf.length > 512 ? createHash('sha512').update(keyBuf).digest('hex') : key;
 };
 
 const mappings = {
@@ -73,6 +73,7 @@ const migrateToSchema2 = async (client: any, v1BaseIndex: string | undefined, v2
       await client.bulk({index: v2Index, body});
       recordsMigrated += hits.length;
       if (Math.floor(recordsMigrated / 100) > Math.floor(recordsMigratedLastLogged / 100)) {
+        // @ts-ignore
         const total = [...totals.values()].reduce((a, b) => a + b, 0);
         logger.info(`Migrated ${recordsMigrated} records out of ${total}`);
         recordsMigratedLastLogged = recordsMigrated;
@@ -82,6 +83,7 @@ const migrateToSchema2 = async (client: any, v1BaseIndex: string | undefined, v2
     }
     logger.info(`Finished migrating ${recordsMigrated} records`);
   } finally {
+    // @ts-ignore
     await Promise.all([...scrollIds.values()].map((scrollId) => client.clearScroll({scrollId})));
   }
 };
@@ -124,7 +126,7 @@ exports.Database = class extends AbstractDatabase {
    */
   async init() {
     // create elasticsearch client
-    const client = new es.Client({
+    const client = new Client({
       node: `http://${this.settings.host}:${this.settings.port}`,
     });
     await client.ping();
@@ -148,8 +150,9 @@ exports.Database = class extends AbstractDatabase {
       await client.indices.putAlias({index: tmpIndex, name: this._index});
     }
     const indices = Object.values((await client.indices.get({index: this._index})).body);
-    assert.equal(indices.length, 1);
+    equal(indices.length, 1);
     try {
+      // @ts-ignore
       assert.deepEqual(indices[0].mappings, mappings);
     } catch (err) {
       this.logger.warn(`Index ${this._index} mappings does not match expected; ` +

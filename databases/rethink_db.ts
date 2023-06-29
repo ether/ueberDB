@@ -23,7 +23,7 @@ import {BulkObject} from "./cassandra_db";
 exports.Database = class extends AbstractDatabase {
   private host: string;
   private db: string;
-  private port: number;
+  private port: number | string;
   private table: string;
   private connection:  r.Connection | null;
   constructor(settings:Settings) {
