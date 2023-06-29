@@ -29,7 +29,16 @@ exports.Database = class extends AbstractDatabase {
   get isAsync() { return true; }
 
   async init() {
-    this._client = redis.createClient(this.settings);
+
+    const json = this.settings.json
+    this._client = redis.createClient({
+      socket: {
+        host: json.host,
+        port: json.port
+      },
+      username: json.username,
+      password: json.password
+    });
     await this._client.connect();
     await this._client.ping();
   }
