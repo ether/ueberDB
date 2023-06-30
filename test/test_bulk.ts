@@ -1,5 +1,5 @@
 import assert$0 from "assert";
-import * as ueberdb from "../index.js";
+import {Database} from "../index";
 import util from "util";
 'use strict';
 const assert = assert$0.strict;
@@ -9,8 +9,7 @@ describe(__filename, function () {
     let mock: any = null;
     const createDb = async (wrapperSettings: any) => {
         const settings = {};
-        // @ts-expect-error TS(2339): Property 'Database' does not exist on type 'typeof... Remove this comment to see the full error message
-        db = new ueberdb.Database('mock', settings, wrapperSettings);
+        db = new Database('mock', settings, wrapperSettings);
         // @ts-expect-error TS(2339): Property 'mock' does not exist on type '{}'.
         mock = settings.mock;
         mock.once('init', (cb: any) => cb());

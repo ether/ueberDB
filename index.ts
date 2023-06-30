@@ -21,6 +21,7 @@
 import cacheAndBufferLayer from './lib/CacheAndBufferLayer';
 import {normalizeLogger} from './lib/logging';
 import {callbackify} from 'util'
+import {Settings} from "./lib/AbstractDatabase";
 
 const cbDb = {
   init: ()=>{},
@@ -42,11 +43,11 @@ const makeDoneCallback = (callback: (err?:any)=>{}, deprecated:(err:any)=>{}) =>
   if (err != null && callback == null && deprecated == null) throw err;
 };
 
-exports.Database = class {
+export const Database = class {
   private type: any;
   private dbModule: any;
   private readonly dbSettings: any;
-  private readonly wrapperSettings: any;
+  private readonly wrapperSettings: any|{};
   private readonly logger: Function|null;
   private readonly db: any;
   private metrics: any;
@@ -59,7 +60,7 @@ exports.Database = class {
    *     from another logging library should also work, but performance may be reduced if the logger
    *     object does not have is${Level}Enabled() methods (isDebugEnabled(), etc.).
    */
-  constructor(type: undefined|string, dbSettings: null, wrapperSettings: null, logger = null) {
+  constructor(type: undefined|string, dbSettings: Settings|null, wrapperSettings: null|{}, logger:any = null) {
     if (!type) {
       type = 'sqlite';
       dbSettings = null;

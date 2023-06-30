@@ -5,7 +5,6 @@ const assert = assert$0.strict;
 describe(__filename, function () {
     let db: any = null;
     before(async function () {
-        // @ts-expect-error TS(2339): Property 'Database' does not exist on type 'typeof... Remove this comment to see the full error message
         db = new ueberdb.Database('memory', {}, {});
         await db.init();
     });

@@ -18,9 +18,9 @@ import {BulkObject} from "./cassandra_db";
  * limitations under the License.
  */
 
-let sqlite3: { Database: new (arg0: any, arg1: (err: any) => void) => any; };
+let sqlite3: { Database: new (arg0: any, arg1: (err: any) => void) => any; }
 try {
-  sqlite3 = require('sqlite3');
+    require('sqlite3')
 } catch (err) {
   throw new Error(
       'sqlite3 not found. It was removed from ueberdb\'s dependencies because it requires ' +
@@ -28,12 +28,13 @@ try {
       '"npm install sqlite3" in your etherpad-lite ./src directory.');
 }
 
-const AbstractDatabase = require('../lib/AbstractDatabase');
-const util = require('util');
+import AbstractDatabase from '../lib/AbstractDatabase';
+import util from 'util';
 
 const escape = (val: string) => `'${val.replace(/'/g, "''")}'`;
 
 export const Database = class extends AbstractDatabase {
+  private db: any;
   constructor(settings:Settings) {
     super();
     this.db = null;
@@ -82,7 +83,7 @@ export const Database = class extends AbstractDatabase {
   init(callback:(p: any, rows?: {length: number, rows:any})=>{}) {
     util.callbackify(async () => {
       this.db = await new Promise((resolve, reject) => {
-        new sqlite3.Database(this.settings.filename, (err) => {
+        new sqlite3.Database(this.settings.filename as string, (err) => {
           if (err != null) return reject(err);
           // The use of `this` relies on an undocumented feature of sqlite3:
           // https://github.com/mapbox/node-sqlite3/issues/1408
@@ -159,4 +160,4 @@ export const Database = class extends AbstractDatabase {
   close(callback:(err: any)=>{}) {
     this.db.close(callback);
   }
-};
+}

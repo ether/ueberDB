@@ -2,6 +2,7 @@
 import wtfnode from "wtfnode";
 // @ts-expect-error TS(7016): Could not find a declaration file for module 'cli-... Remove this comment to see the full error message
 import Clitable from "cli-table";
+// @ts-ignore
 import Randexp from "randexp";
 import assert$0 from "assert";
 import { databases as databases$0 } from "./lib/databases";
@@ -61,7 +62,6 @@ describe(__filename, function () {
                             before(async function () {
                                 if (dbSettings.filename)
                                     await fs.unlink(dbSettings.filename).catch(() => { });
-                                // @ts-expect-error TS(2339): Property 'Database' does not exist on type 'typeof... Remove this comment to see the full error message
                                 db = new ueberdb.Database(database, dbSettings, {
                                     ...(readCache ? {} : { cache: 0 }),
                                     ...(writeBuffer ? {} : { writeInterval: 0 }),

@@ -7,7 +7,6 @@ describe(__filename, function () {
     let mock: any = null;
     const createDb = async (wrapperSettings = {}) => {
         const settings = {};
-        // @ts-expect-error TS(2339): Property 'Database' does not exist on type 'typeof... Remove this comment to see the full error message
         db = new ueberdb.Database('mock', settings, { json: false, ...wrapperSettings }, logger);
         // @ts-expect-error TS(2339): Property 'mock' does not exist on type '{}'.
         mock = settings.mock;

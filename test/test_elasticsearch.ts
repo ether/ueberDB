@@ -1,8 +1,8 @@
 import assert$0 from "assert";
 import es from "elasticsearch7";
 import { databases } from "./lib/databases";
-import logging from "../lib/logging.js";
-import * as ueberdb from "../index.js";
+import logging from "../lib/logging";
+import * as ueberdb from "../index";
 'use strict';
 const assert = assert$0.strict;
 const { databases: { elasticsearch: cfg } } = { databases };
@@ -38,7 +38,6 @@ describe(__filename, function(this: any) {
                     const settings = { base_index, migrate_to_newer_schema: undefined,
                         ...cfg };
                     delete settings.migrate_to_newer_schema;
-                    // @ts-expect-error TS(2339): Property 'Database' does not exist on type 'typeof... Remove this comment to see the full error message
                     db = new ueberdb.Database('elasticsearch', settings, {}, logger);
                     await db.init();
                     const indices = [];
@@ -87,14 +86,12 @@ describe(__filename, function(this: any) {
                 const settings = { base_index, migrate_to_newer_schema: undefined,
                     ...cfg };
                 delete settings.migrate_to_newer_schema;
-                // @ts-expect-error TS(2339): Property 'Database' does not exist on type 'typeof... Remove this comment to see the full error message
                 db = new ueberdb.Database('elasticsearch', settings, {}, logger);
                 await assert.rejects(db.init(), /migrate_to_newer_schema/);
             });
             it('migration enabled', async function () {
                 // @ts-ignore
                 const settings = { base_index, ...cfg, migrate_to_newer_schema: true };
-                // @ts-expect-error TS(2339): Property 'Database' does not exist on type 'typeof... Remove this comment to see the full error message
                 db = new ueberdb.Database('elasticsearch', settings, {}, logger);
                 await db.init();
                 await Promise.all([...data].map(async ([k, v]) => {
@@ -106,7 +103,6 @@ describe(__filename, function(this: any) {
                 await setOld('a-x:b:c-x:d', 'v'); // Force a conversion failure.
                 // @ts-ignore
                 const settings = { base_index, ...cfg, migrate_to_newer_schema: true };
-                // @ts-expect-error TS(2339): Property 'Database' does not exist on type 'typeof... Remove this comment to see the full error message
                 db = new ueberdb.Database('elasticsearch', settings, {}, logger);
                 const getIndices = async () => Object.keys((await client.indices.get({ index: `${base_index}_s2*` })).body);
                 // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
@@ -129,7 +125,6 @@ describe(__filename, function(this: any) {
                         await setOld(k, 'v');
                         // @ts-ignore
                         const settings = { base_index, ...cfg, migrate_to_newer_schema: true };
-                        // @ts-expect-error TS(2339): Property 'Database' does not exist on type 'typeof... Remove this comment to see the full error message
                         db = new ueberdb.Database('elasticsearch', settings, {}, logger);
                         await assert.rejects(db.init(), /ambig/);
                     });
