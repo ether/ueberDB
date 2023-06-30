@@ -71,7 +71,7 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "test": "mocha ./dist/test/test*.js",
+    "test": "tsc && mocha ./dist/test/test*.js",
     "test:watch": "mocha ./dist/test/test*.js --watch"
   },
   "_npmUser": {
