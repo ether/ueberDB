@@ -1,5 +1,5 @@
-import logging from "../lib/logging.js";
-import * as ueberdb from "../index.js";
+import logging from "../lib/logging";
+import * as ueberdb from "../index";
 'use strict';
 const logger = new logging.ConsoleLogger();
 describe(__filename, function () {

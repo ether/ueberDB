@@ -1,5 +1,5 @@
 import assert$0 from "assert";
-import * as ueberdb from "../index.js";
+import * as ueberdb from "../index";
 'use strict';
 const assert = assert$0.strict;
 describe(__filename, function () {

@@ -1,5 +1,5 @@
 import assert$0 from "assert";
-import * as memory from "../databases/memory_db.js";
+import * as memory from "../databases/memory_db";
 'use strict';
 const assert = assert$0.strict;
 

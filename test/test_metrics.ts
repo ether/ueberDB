@@ -1,5 +1,5 @@
 import assert$0 from "assert";
-import * as ueberdb from "../index.js";
+import * as ueberdb from "../index";
 'use strict';
 const assert = assert$0.strict;
 // Gate is a normal Promise that resolves when its open() method is called.
@@ -49,7 +49,6 @@ describe(__filename, function () {
     let mock: any;
     before(async function () {
         const settings = {};
-        // @ts-expect-error TS(2339): Property 'Database' does not exist on type 'typeof... Remove this comment to see the full error message
         db = new ueberdb.Database('mock', settings);
         // @ts-expect-error TS(2339): Property 'mock' does not exist on type '{}'.
         mock = settings.mock;

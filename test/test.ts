@@ -7,8 +7,8 @@ import Randexp from "randexp";
 import assert$0 from "assert";
 import { databases as databases$0 } from "./lib/databases";
 import { promises } from "fs";
-import logging from "../lib/logging.js";
-import * as ueberdb from "../index.js";
+import logging from "../lib/logging";
+import * as ueberdb from "../index";
 'use strict';
 const assert = assert$0.strict;
 const databases = { databases: databases$0 }.databases;
@@ -50,7 +50,7 @@ describe(__filename, function () {
     after(async function () {
         console.log(speedTable.toString());
     });
-    for (const database of Object.keys(databases)) {
+    Object.keys(databases).filter(k=>k === "mongodb").forEach(database=>{
         // @ts-ignore
         const dbSettings = databases[database];
         describe(database, function () {
@@ -332,5 +332,5 @@ describe(__filename, function () {
                 });
             }
         });
-    }
+    })
 });

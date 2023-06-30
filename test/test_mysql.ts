@@ -1,6 +1,6 @@
 import assert$0 from "assert";
 import { databases } from "./lib/databases";
-import * as mysql from "../databases/mysql_db.js";
+import * as mysql from "../databases/mysql_db";
 'use strict';
 const assert = assert$0.strict;
 describe(__filename, function () {

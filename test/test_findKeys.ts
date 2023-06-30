@@ -1,6 +1,6 @@
 import assert$0 from "assert";
-import logging from "../lib/logging.js";
-import * as ueberdb from "../index.js";
+import logging from "../lib/logging";
+import * as ueberdb from "../index";
 'use strict';
 const assert = assert$0.strict;
 const logger = new logging.ConsoleLogger();

@@ -62,7 +62,7 @@ export const Database = class extends AbstractDatabase {
      *   statement that needs to be used, based on the detection result
      * - calls the callback
      */
-    const detectUpsertMethod = (callback: (err: Error) => {}) => {
+    const detectUpsertMethod = (callback: (err?: Error) => {}) => {
       const upsertViaFunction = 'SELECT ueberdb_insert_or_update($1,$2)';
       const upsertNatively =
           'INSERT INTO store(key, value) VALUES ($1, $2) ' +
@@ -97,7 +97,7 @@ export const Database = class extends AbstractDatabase {
         // if we get here, the EXPLAIN UPSERT succeeded, and we can use a
         // native UPSERT
         this.upsertStatement = upsertNatively;
-        callback(new Error(''));
+        callback();
       });
     };
 
@@ -106,9 +106,11 @@ export const Database = class extends AbstractDatabase {
       if (result.rows.length === 0) {
         this.db.query(createTable, (err) => {
           if (err != null) return callback(err);
+          // @ts-ignore
           detectUpsertMethod(callback);
         });
       } else {
+        // @ts-ignore
         detectUpsertMethod(callback);
       }
     });

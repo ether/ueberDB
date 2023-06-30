@@ -1,5 +1,5 @@
 // @ts-expect-error TS(2306): File '/mnt/c/Users/samue/WebstormProjects/ueberDB/... Remove this comment to see the full error message
-import { exportedForTesting } from "../lib/CacheAndBufferLayer.js";
+import { exportedForTesting } from "../lib/CacheAndBufferLayer";
 import assert$0 from "assert";
 'use strict';
 const LRU = { exportedForTesting }.exportedForTesting.LRU;

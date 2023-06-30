@@ -60,7 +60,7 @@ export const Database = class {
    *     from another logging library should also work, but performance may be reduced if the logger
    *     object does not have is${Level}Enabled() methods (isDebugEnabled(), etc.).
    */
-  constructor(type: undefined|string, dbSettings: Settings|null, wrapperSettings: null|{}, logger:any = null) {
+  constructor(type: undefined|string, dbSettings: Settings|null|String, wrapperSettings?: null|{}, logger:any = null) {
     if (!type) {
       type = 'sqlite';
       dbSettings = null;
@@ -89,8 +89,7 @@ export const Database = class {
    */
   init(callback = null) {
     if (callback != null) {
-      // @ts-ignore
-      return cbDb.init.call(this.db, callback);
+      return cbDb.init.call(this.db);
     }
     return this.db.init();
   }

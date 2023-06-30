@@ -1,9 +1,11 @@
 'use strict';
+const os = require("os");
+
 
 export const databases = {
   memory: {},
   dirty: {
-    filename: '/tmp/ueberdb-test.db',
+    filename: os.tmpdir()+'/ueberdb-test.db',
     speeds: {
       setMax: 1,
       getMax: 0.1,
@@ -11,7 +13,7 @@ export const databases = {
     },
   },
   sqlite: {
-    filename: '/tmp/ueberdb-test.sqlite',
+    filename: os.tmpdir()+'/ueberdb-test.sqlite',
     speeds: {
       setMax: 0.6,
       getMax: 0.5,

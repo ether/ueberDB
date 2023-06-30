@@ -1,10 +1,9 @@
-import assert$0 from "assert";
+import {deepEqual, rejects} from "assert";
 import es from "elasticsearch7";
 import { databases } from "./lib/databases";
 import logging from "../lib/logging";
 import * as ueberdb from "../index";
 'use strict';
-const assert = assert$0.strict;
 const { databases: { elasticsearch: cfg } } = { databases };
 const logger = new class extends logging.ConsoleLogger {
     info() { }
@@ -47,8 +46,7 @@ describe(__filename, function(this: any) {
                         // @ts-expect-error TS(2571): Object is of type 'unknown'.
                         indices.push(...Object.keys(v.aliases));
                     }
-                    // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                    assert.deepEqual(indices.sort(), [`${base_index}_s2`, `${base_index}_s2_i0`].sort());
+                    deepEqual(indices.sort(), [`${base_index}_s2`, `${base_index}_s2_i0`].sort());
                 });
             }
         });
@@ -87,7 +85,7 @@ describe(__filename, function(this: any) {
                     ...cfg };
                 delete settings.migrate_to_newer_schema;
                 db = new ueberdb.Database('elasticsearch', settings, {}, logger);
-                await assert.rejects(db.init(), /migrate_to_newer_schema/);
+                await rejects(db.init(), /migrate_to_newer_schema/);
             });
             it('migration enabled', async function () {
                 // @ts-ignore
@@ -95,24 +93,20 @@ describe(__filename, function(this: any) {
                 db = new ueberdb.Database('elasticsearch', settings, {}, logger);
                 await db.init();
                 await Promise.all([...data].map(async ([k, v]) => {
-                    // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                    assert.deepEqual(await db.get(k), v);
+                    deepEqual(await db.get(k), v);
                 }));
             });
             it('each attempt uses a new index', async function () {
                 await setOld('a-x:b:c-x:d', 'v'); // Force a conversion failure.
-                // @ts-ignore
-                const settings = { base_index, ...cfg, migrate_to_newer_schema: true };
+                cfg.base_index = base_index;
+                const settings = { ...cfg, migrate_to_newer_schema: true };
                 db = new ueberdb.Database('elasticsearch', settings, {}, logger);
                 const getIndices = async () => Object.keys((await client.indices.get({ index: `${base_index}_s2*` })).body);
-                // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                assert.deepEqual(await getIndices(), []);
-                await assert.rejects(db.init(), /ambig/);
-                // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                assert.deepEqual(await getIndices(), [`${base_index}_s2_migrate_attempt_0`]);
-                await assert.rejects(db.init(), /ambig/);
-                // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                assert.deepEqual((await getIndices()).sort(), [
+                deepEqual(await getIndices(), []);
+                await rejects(db.init(), /ambig/);
+                deepEqual(await getIndices(), [`${base_index}_s2_migrate_attempt_0`]);
+                await rejects(db.init(), /ambig/);
+                deepEqual((await getIndices()).sort(), [
                     `${base_index}_s2_migrate_attempt_0`,
                     `${base_index}_s2_migrate_attempt_1`,
                 ]);
@@ -123,10 +117,10 @@ describe(__filename, function(this: any) {
                 for (const k of ['a:b:c-x:d', 'a-x:b:c:d', 'a-x:b:c-x:d']) {
                     it(k, async function () {
                         await setOld(k, 'v');
-                        // @ts-ignore
-                        const settings = { base_index, ...cfg, migrate_to_newer_schema: true };
+                        cfg.base_index = base_index;
+                        const settings = { ...cfg, migrate_to_newer_schema: true };
                         db = new ueberdb.Database('elasticsearch', settings, {}, logger);
-                        await assert.rejects(db.init(), /ambig/);
+                        await rejects(db.init(), /ambig/);
                     });
                 }
             });

@@ -18,6 +18,8 @@ services:
         image: mongo
         ports:
         - 27017:27017
+        environment:
+          MONGO_INITDB_DATABASE: mydb_test
     mysql:
       image: mariadb
       ports:
@@ -28,14 +30,14 @@ services:
         MYSQL_PASSWORD: ueberdb
         MYSQL_DATABASE: ueberdb
     postgres:
-      image: postgres
-      network_mode: "host"
+      image: postgres:14-alpine
       ports:
         - 5432:5432
       environment:
         POSTGRES_USER: ueberdb
         POSTGRES_PASSWORD: ueberdb
         POSTGRES_DB: ueberdb
+        POSTGRES_HOST_AUTH_METHOD: "trust"
     redis:
       image: redis
       ports:

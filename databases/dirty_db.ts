@@ -22,16 +22,23 @@
 *
 */
 
-import {Settings} from "../lib/AbstractDatabase";
+import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
+// @ts-ignore
+import Dirty from 'dirty';
 
-import AbstractDatabase from '../lib/AbstractDatabase';
-import Dirty, {Dirty as DClass} from '../dirtydb/DirtyDB'
+type DirtyDBCallback = (p?:any, keys?: string[])=>{}
+
 
 export const Database = class extends AbstractDatabase {
-  private db: DClass;
-  constructor(settings: Settings) {
+  private db: any;
+  constructor(settings:Settings) {
     super();
-    this.db = new Dirty(this.settings.filename);
+    this.db = null;
+
+    if (!settings || !settings.filename) {
+      // @ts-ignore
+      settings = {filename: null};
+    }
 
     this.settings = settings;
 
@@ -41,22 +48,21 @@ export const Database = class extends AbstractDatabase {
     this.settings.json = false;
   }
 
-  init(callback: ()=>void) {
-    this.db&&this.db.on('load', (err:string) => {
+  init(callback: ()=>{}) {
+    this.db = new Dirty(this.settings.filename);
+    this.db.on('load', (err:string) => {
       callback();
     });
   }
 
-  get(key:string, callback: (err: string|any, value: string)=>void) {
-    if (this.db){
-      callback(null, this.db.get(key));
-    }
+  get(key:string, callback:DirtyDBCallback) {
+    callback(null, this.db.get(key));
   }
 
-  findKeys(key: string, notKey:string, callback:Function) {
+  findKeys(key:string, notKey:string, callback:DirtyDBCallback) {
     const keys:string[] = [];
     const regex = this.createFindRegex(key, notKey);
-    this.db&&this.db.forEach((key:string, val:string) => {
+    this.db.forEach((key:string, val:string) => {
       if (key.search(regex) !== -1) {
         keys.push(key);
       }
@@ -64,17 +70,16 @@ export const Database = class extends AbstractDatabase {
     callback(null, keys);
   }
 
-  set(key:string, value:string, callback: ()=>{}) {
-    this.db&&this.db.set(key, value, callback);
+  set(key:string, value:string, callback:DirtyDBCallback) {
+    this.db.set(key, value, callback);
   }
 
-  remove(key: string, callback: ()=>{}) {
+  remove(key:string, callback:DirtyDBCallback) {
     this.db.rm(key, callback);
   }
 
-  close(callback: ()=>{}) {
+  close(callback:DirtyDBCallback) {
     this.db.close();
-    // @ts-ignore
     this.db = null;
     if (callback) callback();
   }

@@ -18,10 +18,11 @@ import {Settings} from "../lib/AbstractDatabase";
  */
 
 import AbstractDatabase from '../lib/AbstractDatabase';
-import {Dirty} from '../dirtydb/DirtyDB'
+// @ts-ignore
+import {Dirty} from 'dirty'
 
 export const Database  = class extends AbstractDatabase {
-  private db: Dirty;
+  private db: any
   constructor(settings: Settings) {
     super();
     // @ts-ignore

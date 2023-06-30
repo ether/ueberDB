@@ -16,15 +16,15 @@
  */
 
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
-import {MongoClient,Document} from 'mongodb';
+import {Func} from "mocha";
 import {BulkObject} from "./cassandra_db";
 
-export const Database = class MongoDB extends AbstractDatabase {
-  private interval: NodeJS.Timer | undefined;
+exports.Database = class extends AbstractDatabase {
+  private interval: any;
   private database: any;
-  private client: MongoClient | undefined;
+  private client: any;
   private collection: any;
-  constructor(settings: Settings) {
+  constructor(settings:Settings) {
     super();
     this.settings = settings;
 
@@ -50,22 +50,24 @@ export const Database = class MongoDB extends AbstractDatabase {
     }, 10000);
   }
 
-  init(callback: (err: Error)=>{}) {
+  init(callback:Function) {
+    const MongoClient = require('mongodb').MongoClient;
 
-     MongoClient.connect(this.settings.url as string).then((client) => {
-       this.client = client;
-       this.database = client.db(this.settings.database);
-       this.collection = this.database.collection(this.settings.collection);
-     })
-         .catch(err=>{
-           callback(err);
-         })
+    MongoClient.connect(this.settings.url, (err:any, client:any) => {
+      if (!err) {
+        this.client = client;
+        this.database = client.db(this.settings.database);
+        this.collection = this.database.collection(this.settings.collection);
+      }
+
+      callback(err);
+    });
 
     this.schedulePing();
   }
 
-  get(key:string, callback: (err:Error|null, document?:Document)=>{}) {
-    this.collection.findOne({_id: key}, (err: Error, document:Document) => {
+  get(key:string, callback:Function) {
+    this.collection.findOne({_id: key}, (err:any, document:any) => {
       if (err) callback(err);
       else callback(null, document ? document.value : null);
     });
@@ -73,7 +75,7 @@ export const Database = class MongoDB extends AbstractDatabase {
     this.schedulePing();
   }
 
-  findKeys(key:string, notKey:string, callback:(err:Error|null, keys?:string[])=>{}) {
+  findKeys(key:string, notKey:string, callback:Function) {
     const selector = {
       $and: [
         {_id: {$regex: `${key.replace(/\*/g, '')}`}},
@@ -85,20 +87,20 @@ export const Database = class MongoDB extends AbstractDatabase {
       selector.$and.push({_id: {$not: {$regex: `${notKey.replace(/\*/g, '')}`}}});
     }
 
-    this.collection.find(selector, async (err:Error, res:any) => {
+    this.collection.find(selector, async (err:any, res:any) => {
       if (err) {
         callback(err);
       } else {
         const data = await res.toArray();
 
-        callback(null, data.map((i: { _id: any; }) => i._id));
+        callback(null, data.map((i:any) => i._id));
       }
     });
 
     this.schedulePing();
   }
 
-  set(key:string, value:string, callback:(val: string)=>{}) {
+  set(key:string, value:string, callback:Function) {
     if (key.length > 100) {
       callback('Your Key can only be 100 chars');
     } else {
@@ -108,13 +110,13 @@ export const Database = class MongoDB extends AbstractDatabase {
     this.schedulePing();
   }
 
-  remove(key:string, callback:(err:Error|null)=>{}) {
+  remove(key:string, callback:Function) {
     this.collection.remove({_id: key}, callback);
 
     this.schedulePing();
   }
 
-  doBulk(bulk:BulkObject[], callback:(err: any, res?:any)=>{}) {
+  doBulk(bulk:BulkObject[], callback:Function) {
     const bulkMongo = this.collection.initializeOrderedBulkOp();
 
     for (const i in bulk) {
@@ -125,17 +127,17 @@ export const Database = class MongoDB extends AbstractDatabase {
       }
     }
 
-    bulkMongo.execute().then((res: any) => {
+    bulkMongo.execute().then((res:any) => {
       callback(null, res);
-    }).catch((error: any) => {
+    }).catch((error:any) => {
       callback(error);
     });
 
     this.schedulePing();
   }
 
-  close(callback: ()=>{}) {
+  close(callback:any) {
     this.clearPing();
-    this.client&&this.client.close(callback);
+    this.client.close(callback);
   }
 };
