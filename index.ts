@@ -17,8 +17,9 @@
  * limitations under the License.
  */
 
-const cacheAndBufferLayer = require('./lib/CacheAndBufferLayer');
-import logging, {normalizeLogger} from './lib/logging';
+// @ts-ignore
+import cacheAndBufferLayer from './lib/CacheAndBufferLayer';
+import {normalizeLogger} from './lib/logging';
 import {callbackify} from 'util'
 
 const cbDb = {

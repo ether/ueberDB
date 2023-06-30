@@ -1,6 +1,5 @@
 import assert$0 from "assert";
-// @ts-expect-error TS(2306): File '/mnt/c/Users/samue/WebstormProjects/ueberDB/... Remove this comment to see the full error message
-import { databases } from "./lib/databases.js";
+import { databases } from "./lib/databases";
 import * as mysql from "../databases/mysql_db.js";
 'use strict';
 const assert = assert$0.strict;

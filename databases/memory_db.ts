@@ -4,7 +4,7 @@ import {Settings} from "../lib/AbstractDatabase";
 
 const AbstractDatabase = require('../lib/AbstractDatabase');
 
-exports.Database = class extends AbstractDatabase {
+export default class extends AbstractDatabase {
   constructor(settings:Settings) {
     super();
     this.settings = settings;

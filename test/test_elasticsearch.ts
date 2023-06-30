@@ -1,7 +1,6 @@
 import assert$0 from "assert";
 import es from "elasticsearch7";
-// @ts-expect-error TS(2306): File '/mnt/c/Users/samue/WebstormProjects/ueberDB/... Remove this comment to see the full error message
-import { databases } from "./lib/databases.js";
+import { databases } from "./lib/databases";
 import logging from "../lib/logging.js";
 import * as ueberdb from "../index.js";
 'use strict';
@@ -35,7 +34,9 @@ describe(__filename, function(this: any) {
         describe('no old data', function () {
             for (const migrate of [false, true]) {
                 it(`migration ${migrate ? 'en' : 'dis'}abled`, async function () {
-                    const settings = { base_index, ...cfg };
+                    // @ts-ignore
+                    const settings = { base_index, migrate_to_newer_schema: undefined,
+                        ...cfg };
                     delete settings.migrate_to_newer_schema;
                     // @ts-expect-error TS(2339): Property 'Database' does not exist on type 'typeof... Remove this comment to see the full error message
                     db = new ueberdb.Database('elasticsearch', settings, {}, logger);
@@ -82,13 +83,16 @@ describe(__filename, function(this: any) {
                 await Promise.all([...data].map(async ([k, v]) => await setOld(k, v)));
             });
             it('migration disabled => init error', async function () {
-                const settings = { base_index, ...cfg };
+                // @ts-ignore
+                const settings = { base_index, migrate_to_newer_schema: undefined,
+                    ...cfg };
                 delete settings.migrate_to_newer_schema;
                 // @ts-expect-error TS(2339): Property 'Database' does not exist on type 'typeof... Remove this comment to see the full error message
                 db = new ueberdb.Database('elasticsearch', settings, {}, logger);
                 await assert.rejects(db.init(), /migrate_to_newer_schema/);
             });
             it('migration enabled', async function () {
+                // @ts-ignore
                 const settings = { base_index, ...cfg, migrate_to_newer_schema: true };
                 // @ts-expect-error TS(2339): Property 'Database' does not exist on type 'typeof... Remove this comment to see the full error message
                 db = new ueberdb.Database('elasticsearch', settings, {}, logger);
@@ -100,6 +104,7 @@ describe(__filename, function(this: any) {
             });
             it('each attempt uses a new index', async function () {
                 await setOld('a-x:b:c-x:d', 'v'); // Force a conversion failure.
+                // @ts-ignore
                 const settings = { base_index, ...cfg, migrate_to_newer_schema: true };
                 // @ts-expect-error TS(2339): Property 'Database' does not exist on type 'typeof... Remove this comment to see the full error message
                 db = new ueberdb.Database('elasticsearch', settings, {}, logger);
@@ -122,6 +127,7 @@ describe(__filename, function(this: any) {
                 for (const k of ['a:b:c-x:d', 'a-x:b:c:d', 'a-x:b:c-x:d']) {
                     it(k, async function () {
                         await setOld(k, 'v');
+                        // @ts-ignore
                         const settings = { base_index, ...cfg, migrate_to_newer_schema: true };
                         // @ts-expect-error TS(2339): Property 'Database' does not exist on type 'typeof... Remove this comment to see the full error message
                         db = new ueberdb.Database('elasticsearch', settings, {}, logger);

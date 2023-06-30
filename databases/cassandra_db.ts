@@ -27,7 +27,7 @@ export type BulkObject = {
   value?: string
 }
 
-export const Database = class extends AbstractDatabase {
+export default class extends AbstractDatabase {
   private client: Client|undefined;
   private pool: any;
   /**

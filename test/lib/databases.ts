@@ -1,6 +1,6 @@
 'use strict';
 
-exports.databases = {
+export const databases = {
   memory: {},
   dirty: {
     filename: '/tmp/ueberdb-test.db',
@@ -65,6 +65,8 @@ exports.databases = {
     base_index: 'ueberdb_test',
     speeds: {
       findKeysMax: 30,
-    },
+    }, host: "",
+    port: ""
+
   },
 };

@@ -46,7 +46,7 @@ export type Settings = {
 }
 
 
-export default class AbstractDatabase {
+class AbstractDatabase {
   protected logger: any;
   // @ts-ignore
   settings: Settings
@@ -75,4 +75,6 @@ export default class AbstractDatabase {
   }
 
   get isAsync() { return false; }
-};
+}
+
+export default AbstractDatabase;
