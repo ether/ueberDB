@@ -10,6 +10,7 @@ const nullLogger = normalizeLogger(null);
 const simpleGlobToRegExp = (s:string) => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*');
 
 export type Settings = {
+  data?: any;
   table?: string;
   db?: string;
   idleTimeoutMillis?: any;

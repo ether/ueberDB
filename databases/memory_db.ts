@@ -2,9 +2,10 @@
 
 import {Settings} from "../lib/AbstractDatabase";
 
-const AbstractDatabase = require('../lib/AbstractDatabase');
+import AbstractDatabase from '../lib/AbstractDatabase';
 
 export default class extends AbstractDatabase {
+  private _data: any;
   constructor(settings:Settings) {
     super();
     this.settings = settings;
