@@ -20,7 +20,7 @@ import r from 'rethinkdb';
 import async from 'async';
 import {BulkObject} from "./cassandra_db";
 
-exports.Database = class extends AbstractDatabase {
+export const Database = class extends  AbstractDatabase {
   private host: string;
   private db: string;
   private port: number | string;

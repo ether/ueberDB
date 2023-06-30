@@ -17,7 +17,7 @@
 
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
 import http, {Agent} from 'http';
-import nano, {MaybeDocument, ViewDocument} from 'nano';
+import nano from 'nano';
 import {BulkObject} from "./cassandra_db";
 
 type CouchDBSettings = {
@@ -30,7 +30,7 @@ type CouchDBSettings = {
       agent: Agent
     }
 }
-export default class extends AbstractDatabase {
+export const Database = class Couch_db extends AbstractDatabase {
   private agent: Agent|null;
   private db: nano.DocumentScope<String>|null;
   constructor(settings: Settings) {
@@ -188,4 +188,4 @@ export default class extends AbstractDatabase {
     if (this.agent) this.agent.destroy();
     this.agent = null;
   }
-};
+}

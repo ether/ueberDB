@@ -20,7 +20,7 @@ import {Settings} from "../lib/AbstractDatabase";
 import AbstractDatabase from '../lib/AbstractDatabase';
 import {Dirty} from '../dirtydb/DirtyDB'
 
-exports.Database = class extends AbstractDatabase {
+export const Database  = class extends AbstractDatabase {
   private db: Dirty;
   constructor(settings: Settings) {
     super();

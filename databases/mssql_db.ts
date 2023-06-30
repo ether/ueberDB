@@ -32,7 +32,7 @@ type RowResult = {
 
 
 
-export const Database = class extends AbstractDatabase {
+export const Database = class MSSQL extends AbstractDatabase {
   private db: ConnectionPool | undefined;
   constructor(settings:Settings) {
     super();

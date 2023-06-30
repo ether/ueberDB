@@ -20,7 +20,7 @@ import mysql from 'mysql';
 import util from 'util';
 import {BulkObject} from "./cassandra_db";
 
-exports.Database = class extends AbstractDatabase {
+export const Database = class extends AbstractDatabase {
   private _mysqlSettings: Settings;
   private _pool: any;
   constructor(settings:Settings) {

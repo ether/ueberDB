@@ -16,6 +16,7 @@
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
 import cassandra, {ArrayOrObject, Client, types, ValueCallback} from 'cassandra-driver';
 import ResultSet = types.ResultSet;
+import Cassandra_db from "../dist/databases/cassandra_db";
 
 type Result = {
   rows: any[];
@@ -27,7 +28,7 @@ export type BulkObject = {
   value?: string
 }
 
-export default class extends AbstractDatabase {
+export const Database = class Cassandra_db extends AbstractDatabase {
   private client: Client|undefined;
   private pool: any;
   /**

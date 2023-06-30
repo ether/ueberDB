@@ -6,7 +6,6 @@ const assert = assert$0.strict;
 describe(__filename, function () {
     describe('data option', function () {
         it('uses existing records from data option', async function () {
-            // @ts-expect-error TS(2339): Property 'Database' does not exist on type 'typeof... Remove this comment to see the full error message
             const db = new memory.Database({ data: new Map([['foo', 'bar']]) });
             await db.init();
             // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
@@ -14,7 +13,6 @@ describe(__filename, function () {
         });
         it('updates existing map', async function () {
             const data = new Map();
-            // @ts-expect-error TS(2339): Property 'Database' does not exist on type 'typeof... Remove this comment to see the full error message
             const db = new memory.Database({ data });
             await db.init();
             await db.set('foo', 'bar');
@@ -23,7 +21,6 @@ describe(__filename, function () {
         });
         it('does not clear map on close', async function () {
             const data = new Map();
-            // @ts-expect-error TS(2339): Property 'Database' does not exist on type 'typeof... Remove this comment to see the full error message
             const db = new memory.Database({ data });
             await db.init();
             await db.set('foo', 'bar');

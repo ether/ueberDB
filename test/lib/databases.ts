@@ -65,8 +65,8 @@ export const databases = {
     base_index: 'ueberdb_test',
     speeds: {
       findKeysMax: 30,
-    }, host: "",
-    port: ""
+    }, host: "127.0.0.1",
+    port: "9200"
 
   },
 };

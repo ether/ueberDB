@@ -19,7 +19,7 @@ import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
 import {MongoClient,Document} from 'mongodb';
 import {BulkObject} from "./cassandra_db";
 
-export const Database = class extends AbstractDatabase {
+export const Database = class MongoDB extends AbstractDatabase {
   private interval: NodeJS.Timer | undefined;
   private database: any;
   private client: MongoClient | undefined;

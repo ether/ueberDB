@@ -10,14 +10,12 @@ describe(__filename, function () {
     });
     it('connect error is detected during init()', async function () {
         // Use an invalid TCP port to force a connection error.
-        // @ts-expect-error TS(2339): Property 'Database' does not exist on type 'typeof... Remove this comment to see the full error message
         const db = new mysql.Database({ ...databases.mysql, port: 65536 });
         // An error is expected; prevent it from being logged.
         db.logger = Object.setPrototypeOf({ error() { } }, db.logger);
         await assert.rejects(db.init());
     });
     it('query after fatal error works', async function () {
-        // @ts-expect-error TS(2339): Property 'Database' does not exist on type 'typeof... Remove this comment to see the full error message
         const db = new mysql.Database(databases.mysql);
         await db.init();
         // An error is expected; prevent it from being logged.
@@ -28,7 +26,6 @@ describe(__filename, function () {
         await db.close();
     });
     it('query times out', async function () {
-        // @ts-expect-error TS(2339): Property 'Database' does not exist on type 'typeof... Remove this comment to see the full error message
         const db = new mysql.Database(databases.mysql);
         await db.init();
         // Timeout error messages are expected; prevent them from being logged.

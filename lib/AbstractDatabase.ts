@@ -48,7 +48,7 @@ export type Settings = {
 
 
 class AbstractDatabase {
-  protected logger: any;
+  logger: any;
   // @ts-ignore
   settings: Settings
   constructor() {

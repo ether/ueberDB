@@ -20,7 +20,7 @@ import async from 'async';
 import pg, {Pool, QueryResult} from 'pg';
 import {BulkObject} from "./cassandra_db";
 
-exports.Database = class extends AbstractDatabase {
+export const Database = class extends AbstractDatabase {
   private db: Pool;
   private upsertStatement: string | null | undefined;
   constructor(settings:Settings|string) {

@@ -88,11 +88,11 @@ const migrateToSchema2 = async (client: any, v1BaseIndex: string | undefined, v2
   }
 };
 
-exports.Database = class extends AbstractDatabase {
+export const Database = class extends AbstractDatabase {
   private _client: any;
-  private _index: any;
+  private readonly _index: any;
   private _indexClean: boolean;
-  private _q: { index: any };
+  private readonly _q: { index: any };
   constructor(settings:Settings) {
     super();
     this._client = null;
