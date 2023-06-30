@@ -71,8 +71,9 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "test": "tsc && mocha --inspect-brk ./dist/test/test*.js",
-    "test:watch": "mocha ./dist/test/test*.js --watch"
+    "test": "tsc && mocha ./dist/test/test*.js",
+    "test:watch": "mocha ./dist/test/test*.js --watch",
+    "test-debug": "tsc && mocha --inspect-brk ./dist/test/test*.js",
   },
   "_npmUser": {
     "name": "johnyma22",
