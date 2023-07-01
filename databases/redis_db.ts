@@ -15,7 +15,7 @@
  */
 
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
-import {createClient, RedisScripts, RedisFunctions, RedisModules} from 'redis';
+import {createClient, RedisScripts, RedisFunctions, RedisModules, RedisClientOptions} from 'redis';
 import {BulkObject} from './cassandra_db';
 import {RedisClientType} from '@redis/client';
 
@@ -54,25 +54,22 @@ export const Database = class RedisDB extends AbstractDatabase {
   get isAsync() { return true; }
 
   async init() {
-    if(this.settings.host){
-      this._client = createClient({
-        socket:{
-            host: this.settings.host,
-            port: Number(this.settings.port),
-        },
-        password: this.settings.password,
-        username: this.settings.user,
-      })
-    }
-    else if (this.settings.user){
-        this._client = createClient({
-            url: this.settings.url,
-            password: this.settings.password,
-            username: this.settings.user,
-        })
-    }
-    else{
+    if (this.settings.url) {
       this._client = createClient({url: this.settings.url});
+    } else if (this.settings.host) {
+      const options:RedisClientOptions = {
+        socket:{
+          host: this.settings.host,
+          port: Number(this.settings.port),
+        }
+      }
+      if (this.settings.password){
+        options.password = this.settings.password;
+      }
+      if (this.settings.user){
+        options.username = this.settings.user;
+      }
+      this._client = createClient(options)
     }
     if (this._client) {
       await this._client.connect();
