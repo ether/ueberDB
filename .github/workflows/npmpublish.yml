@@ -124,7 +124,10 @@ jobs:
       # back-to-back merges will cause the first merge's workflow to fail but
       # the second's will succeed.
       -
-        run: npm run publish
+        name: Convert typescript and create dist folder
+        run: tsc
+      -
+        run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       -

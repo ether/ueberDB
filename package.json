@@ -67,6 +67,7 @@
   "bugs": {
     "url": "https://github.com/ether/ueberDB/issues"
   },
+  "files": ["dist"],
   "homepage": "https://github.com/ether/ueberDB",
   "scripts": {
     "lint": "eslint .",
