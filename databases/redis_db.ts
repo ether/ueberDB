@@ -54,7 +54,26 @@ export const Database = class RedisDB extends AbstractDatabase {
   get isAsync() { return true; }
 
   async init() {
-    this._client = createClient({url: this.settings.url});
+    if(this.settings.host){
+      this._client = createClient({
+        socket:{
+            host: this.settings.host,
+            port: Number(this.settings.port),
+        },
+        password: this.settings.password,
+        username: this.settings.user,
+      })
+    }
+    else if (this.settings.user){
+        this._client = createClient({
+            url: this.settings.url,
+            password: this.settings.password,
+            username: this.settings.user,
+        })
+    }
+    else{
+      this._client = createClient({url: this.settings.url});
+    }
     if (this._client) {
       await this._client.connect();
       await this._client.ping();
