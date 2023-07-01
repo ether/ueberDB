@@ -50,7 +50,7 @@ describe(__filename, () => {
   after(async () => {
     console.log(speedTable.toString());
   });
-  Object.keys(databases).filter((v)=>v === "sqlite")
+  Object.keys(databases)
       .forEach((database) => {
     // @ts-ignore
     const dbSettings = databases[database];
