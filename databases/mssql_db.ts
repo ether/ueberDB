@@ -1,4 +1,3 @@
-'use strict';
 /* eslint new-cap: ["error", {"capIsNewExceptions": ["mssql.NVarChar"]}] */
 
 /**
@@ -24,12 +23,11 @@
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
 import async from 'async';
 import mssql, {ConnectionPool} from 'mssql';
-import {BulkObject} from "./cassandra_db";
+import {BulkObject} from './cassandra_db';
 
 type RowResult = {
     key: string;
-}
-
+};
 
 
 export const Database = class MSSQL extends AbstractDatabase {
@@ -100,7 +98,7 @@ export const Database = class MSSQL extends AbstractDatabase {
     });
   }
 
-  findKeys(key:string, notKey:string, callback:(err: Error | undefined,value:string[])=>{}) {
+  findKeys(key:string, notKey:string, callback:(err: Error | undefined, value:string[])=>{}) {
     const request = new mssql.Request(this.db);
     let query = 'SELECT [key] FROM [store] WHERE [key] LIKE @key';
 
@@ -145,7 +143,7 @@ export const Database = class MSSQL extends AbstractDatabase {
       request.input('value', mssql.NText, value);
 
       request.query(query, (err, info) => {
-        callback(err?err.toString():'');
+        callback(err ? err.toString() : '');
       });
     }
   }
@@ -223,6 +221,6 @@ export const Database = class MSSQL extends AbstractDatabase {
   }
 
   close(callback: (err?:Error)=>{}) {
-    this.db&&this.db.close(callback);
+    this.db && this.db.close(callback);
   }
 };

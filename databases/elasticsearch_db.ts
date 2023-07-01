@@ -1,4 +1,3 @@
-'use strict';
 /**
  * 2015 Visionist, Inc.
  *
@@ -16,12 +15,12 @@
  */
 
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
-import {equal, strict} from "assert";
+import {equal, strict} from 'assert';
 
 import {Buffer} from 'buffer';
 import {createHash} from 'crypto';
 import {Client} from 'elasticsearch7';
-import {BulkObject} from "./cassandra_db";
+import {BulkObject} from './cassandra_db';
 
 const schema = '2';
 
@@ -61,7 +60,7 @@ const migrateToSchema2 = async (client: any, v1BaseIndex: string | undefined, v2
       const body = [];
       for (const {_id, _type, _source: {val}} of hits) {
         let key = `${_type}:${_id}`;
-        if (v1BaseIndex&&index !== v1BaseIndex) {
+        if (v1BaseIndex && index !== v1BaseIndex) {
           const parts = index.slice(v1BaseIndex.length + 1).split('-');
           if (parts.length !== 2) {
             throw new Error(`unable to migrate records from index ${index} due to data ambiguity`);
@@ -92,7 +91,7 @@ export const Database = class extends AbstractDatabase {
   private _client: any;
   private readonly _index: any;
   private _indexClean: boolean;
-  private readonly _q: { index: any };
+  private readonly _q: {index: any};
   constructor(settings:Settings) {
     super();
     this._client = null;
@@ -106,7 +105,7 @@ export const Database = class extends AbstractDatabase {
       api: '7.6',
       ...settings || {},
       json: false, // Elasticsearch will do the JSON conversion as necessary.
-    }
+    };
     this._index = `${this.settings.base_index}_s${schema}`;
     this._q = {index: this._index};
     this._indexClean = true;

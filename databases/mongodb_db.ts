@@ -1,4 +1,3 @@
-'use strict';
 /**
  * 2020 Sylchauf
  *
@@ -16,8 +15,8 @@
  */
 
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
-import {Func} from "mocha";
-import {BulkObject} from "./cassandra_db";
+import {Func} from 'mocha';
+import {BulkObject} from './cassandra_db';
 
 exports.Database = class extends AbstractDatabase {
   private interval: any;

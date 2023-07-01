@@ -1,4 +1,3 @@
-'use strict';
 /**
  * 2011 Peter 'Pita' Martischka
  *
@@ -18,12 +17,12 @@
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
 import async from 'async';
 import pg, {Pool, QueryResult} from 'pg';
-import {BulkObject} from "./cassandra_db";
+import {BulkObject} from './cassandra_db';
 
 export const Database = class extends AbstractDatabase {
   private db: Pool;
   private upsertStatement: string | null | undefined;
-  constructor(settings:Settings|string) {
+  constructor(settings:Settings | string) {
     super();
     if (typeof settings === 'string') settings = {connectionString: settings};
     this.settings = settings;
@@ -116,7 +115,7 @@ export const Database = class extends AbstractDatabase {
     });
   }
 
-  get(key:string, callback: (err: Error|null, value: any)=>{}) {
+  get(key:string, callback: (err: Error | null, value: any)=>{}) {
     this.db.query('SELECT value FROM store WHERE key=$1', [key], (err, results) => {
       let value = null;
 
@@ -128,7 +127,7 @@ export const Database = class extends AbstractDatabase {
     });
   }
 
-  findKeys(key:string, notKey:string, callback: (err: Error|null, value: any)=>{}) {
+  findKeys(key:string, notKey:string, callback: (err: Error | null, value: any)=>{}) {
     let query = 'SELECT key FROM store WHERE key LIKE $1';
     const params = [];
     // desired keys are %key:%, e.g. pad:%
@@ -156,12 +155,10 @@ export const Database = class extends AbstractDatabase {
 
   set(key:string, value:string, callback:(err: Error, result: QueryResult<any>) => void) {
     if (key.length > 100) {
-      let val = '' as any
+      const val = '' as any;
       callback(Error('Your Key can only be 100 chars'), val);
-    } else {
-      if (this.upsertStatement != null) {
-        this.db.query(this.upsertStatement, [key, value], callback);
-      }
+    } else if (this.upsertStatement != null) {
+      this.db.query(this.upsertStatement, [key, value], callback);
     }
   }
 
@@ -190,8 +187,8 @@ export const Database = class extends AbstractDatabase {
 
     removeSQL += ');';
 
-    if(!this.upsertStatement){
-      return
+    if (!this.upsertStatement) {
+      return;
     }
 
 
@@ -200,10 +197,9 @@ export const Database = class extends AbstractDatabase {
 
     const removeFunction = (callback: ()=>{}) => {
       // @ts-ignore
-      if (!(removeVALs.length as number) >1 ){
+      if (!(removeVALs.length) > 1) {
         this.db.query(removeSQL, removeVALs, callback);
-      }
-      else callback();
+      } else { callback(); }
     };
     functions.push(removeFunction);
 

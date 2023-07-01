@@ -1,6 +1,4 @@
-'use strict';
-
-import {Settings} from "../lib/AbstractDatabase";
+import {Settings} from '../lib/AbstractDatabase';
 
 const postgres = require('./postgres_db');
 

@@ -1,11 +1,9 @@
-'use strict';
-
-import {Settings} from "../lib/AbstractDatabase";
+import {Settings} from '../lib/AbstractDatabase';
 
 import events from 'events';
 
 export const Database = class extends events.EventEmitter {
-  private settings: Settings
+  private settings: Settings;
   constructor(settings:Settings) {
     super();
     this.settings = {

@@ -1,4 +1,3 @@
-'use strict';
 /**
  * 2011 Peter 'Pita' Martischka
  *
@@ -26,7 +25,7 @@ import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
 // @ts-ignore
 import Dirty from 'dirty';
 
-type DirtyDBCallback = (p?:any, keys?: string[])=>{}
+type DirtyDBCallback = (p?:any, keys?: string[])=>{};
 
 
 export const Database = class extends AbstractDatabase {

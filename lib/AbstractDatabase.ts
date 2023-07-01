@@ -1,6 +1,4 @@
-'use strict';
-
-import {normalizeLogger} from './logging'
+import {normalizeLogger} from './logging';
 
 const nullLogger = normalizeLogger(null);
 
@@ -35,7 +33,7 @@ export type Settings = {
   database?: string;
   password?: string;
   user?: string;
-  port?: number|string;
+  port?: number | string;
   host?: string;
   maxListeners?: number | undefined;
   json?: boolean;
@@ -44,13 +42,13 @@ export type Settings = {
   logger?: any;
   columnFamily?: any;
   clientOptions?: any;
-}
+};
 
 
 class AbstractDatabase {
   logger: any;
   // @ts-ignore
-  settings: Settings
+  settings: Settings;
   constructor() {
     if (new.target === module.exports) {
       throw new TypeError('cannot instantiate Abstract Database directly');

@@ -1,4 +1,3 @@
-'use strict';
 /**
  * 2016 Remi Arnaud
  *
@@ -18,14 +17,14 @@
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
 import r from 'rethinkdb';
 import async from 'async';
-import {BulkObject} from "./cassandra_db";
+import {BulkObject} from './cassandra_db';
 
-export const Database = class extends  AbstractDatabase {
+export const Database = class extends AbstractDatabase {
   private host: string;
   private db: string;
   private port: number | string;
   private table: string;
-  private connection:  r.Connection | null;
+  private connection: r.Connection | null;
   constructor(settings:Settings) {
     super();
     if (!settings) settings = {};
@@ -96,9 +95,11 @@ export const Database = class extends  AbstractDatabase {
 
     async.parallel([
       (cb) => { // @ts-ignore
-        r.table(this.table).insert(_in, {conflict: 'replace'}).run(this.connection, cb); },
+        r.table(this.table).insert(_in, {conflict: 'replace'}).run(this.connection, cb);
+      },
       (cb) => { // @ts-ignore
-        r.table(this.table).getAll(_out).delete().run(this.connection, cb); },
+        r.table(this.table).getAll(_out).delete().run(this.connection, cb);
+      },
     ], callback);
   }
 
@@ -108,7 +109,6 @@ export const Database = class extends  AbstractDatabase {
   }
 
   close(callback:()=>{}) {
-    if(this.connection)
-    this.connection.close(callback);
+    if (this.connection) { this.connection.close(callback); }
   }
 };

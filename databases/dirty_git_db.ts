@@ -1,5 +1,4 @@
-'use strict';
-import {Settings} from "../lib/AbstractDatabase";
+import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
 
 /**
  * 2011 Peter 'Pita' Martischka
@@ -17,12 +16,12 @@ import {Settings} from "../lib/AbstractDatabase";
  * limitations under the License.
  */
 
-import AbstractDatabase from '../lib/AbstractDatabase';
-// @ts-ignore
-import {Dirty} from 'dirty'
 
-export const Database  = class extends AbstractDatabase {
-  private db: any
+// @ts-ignore
+import {Dirty} from 'dirty';
+
+export const Database = class extends AbstractDatabase {
+  private db: any;
   constructor(settings: Settings) {
     super();
     // @ts-ignore
@@ -47,11 +46,11 @@ export const Database  = class extends AbstractDatabase {
     });
   }
 
-  get(key:string, callback: (err: string|any, value: string)=>void) {
+  get(key:string, callback: (err: string | any, value: string)=>void) {
     callback(null, this.db.get(key));
   }
 
-  findKeys(key:string, notKey:string, callback:(v:any,keys:string[])=>{}) {
+  findKeys(key:string, notKey:string, callback:(v:any, keys:string[])=>{}) {
     const keys:string[] = [];
     const regex = this.createFindRegex(key, notKey);
     this.db.forEach((key:string, val:string) => {

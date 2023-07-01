@@ -20,22 +20,22 @@
 // @ts-ignore
 import cacheAndBufferLayer from './lib/CacheAndBufferLayer';
 import {normalizeLogger} from './lib/logging';
-import {callbackify} from 'util'
-import {Settings} from "./lib/AbstractDatabase";
+import {callbackify} from 'util';
+import {Settings} from './lib/AbstractDatabase';
 
 const cbDb = {
-  init: ()=>{},
-  flush:  ()=>{},
-  get:  ()=>{},
-  remove:  ()=>{},
-  findKeys:  ()=>{},
-  close:  ()=>{},
-  getSub:  ()=>{},
-  setSub:  ()=>{}
+  init: () => {},
+  flush: () => {},
+  get: () => {},
+  remove: () => {},
+  findKeys: () => {},
+  close: () => {},
+  getSub: () => {},
+  setSub: () => {},
 };
 const fns = ['close', 'findKeys', 'flush', 'get', 'getSub', 'init', 'remove', 'set', 'setSub'];
 for (const fn of fns) { // @ts-ignore
-  cbDb[fn] = callbackify(cacheAndBufferLayer.Database.prototype[fn])
+  cbDb[fn] = callbackify(cacheAndBufferLayer.Database.prototype[fn]);
 }
 const makeDoneCallback = (callback: (err?:any)=>{}, deprecated:(err:any)=>{}) => (err: null) => {
   if (callback) callback(err);
@@ -47,8 +47,8 @@ export const Database = class {
   private type: any;
   private dbModule: any;
   private readonly dbSettings: any;
-  private readonly wrapperSettings: any|{};
-  private readonly logger: Function|null;
+  private readonly wrapperSettings: any | {};
+  private readonly logger: Function | null;
   private readonly db: any;
   private metrics: any;
   /**
@@ -60,7 +60,7 @@ export const Database = class {
    *     from another logging library should also work, but performance may be reduced if the logger
    *     object does not have is${Level}Enabled() methods (isDebugEnabled(), etc.).
    */
-  constructor(type: undefined|string, dbSettings: Settings|null|String, wrapperSettings?: null|{}, logger:any = null) {
+  constructor(type: undefined | string, dbSettings: Settings | null | string, wrapperSettings?: null | {}, logger:any = null) {
     if (!type) {
       type = 'sqlite';
       dbSettings = null;
@@ -113,7 +113,7 @@ export const Database = class {
    * @param callback - Deprecated. Node-style callback. If null, a Promise is returned.
    */
   flush(callback = null) {
-    if (!cbDb|| !cbDb.flush === undefined) return null
+    if (!cbDb || !cbDb.flush === undefined) return null;
     if (callback != null) { // @ts-ignore
       return cbDb.flush.call(this.db, callback);
     }

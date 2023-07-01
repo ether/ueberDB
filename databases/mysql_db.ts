@@ -1,4 +1,3 @@
-'use strict';
 /**
  * 2011 Peter 'Pita' Martischka
  *
@@ -18,7 +17,7 @@
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
 import mysql from 'mysql';
 import util from 'util';
-import {BulkObject} from "./cassandra_db";
+import {BulkObject} from './cassandra_db';
 
 export const Database = class extends AbstractDatabase {
   private _mysqlSettings: Settings;
@@ -47,7 +46,7 @@ export const Database = class extends AbstractDatabase {
       return await new Promise((resolve, reject) => {
         options = {timeout: this.settings.queryTimeout, ...options};
         // @ts-ignore
-        this._pool&&this._pool.query(options, (err, ...args) => err != null ? reject(err) : resolve(args));
+        this._pool && this._pool.query(options, (err, ...args) => err != null ? reject(err) : resolve(args));
       });
     } catch (err:any) {
       this.logger.error(`${err.fatal ? 'Fatal ' : ''}MySQL error: ${err.stack || err}`);
@@ -122,7 +121,7 @@ export const Database = class extends AbstractDatabase {
     const [results] = await this._query({
       sql: 'SELECT `value` FROM `store` WHERE `key` = ? AND BINARY `key` = ?',
       values: [key, key],
-    })
+    });
     return results.length === 1 ? results[0].value : null;
   }
 

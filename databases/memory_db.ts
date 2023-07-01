@@ -1,10 +1,7 @@
-'use strict';
+import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
 
-import {Settings} from "../lib/AbstractDatabase";
 
-import AbstractDatabase from '../lib/AbstractDatabase';
-
-export const Database =  class MemoryDB extends AbstractDatabase {
+export const Database = class MemoryDB extends AbstractDatabase {
   private _data: any;
   constructor(settings:Settings) {
     super();

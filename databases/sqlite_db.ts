@@ -1,6 +1,5 @@
-'use strict';
-import {Settings} from "../lib/AbstractDatabase";
-import {BulkObject} from "./cassandra_db";
+import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
+import {BulkObject} from './cassandra_db';
 
 /**
  * 2011 Peter 'Pita' Martischka
@@ -18,9 +17,9 @@ import {BulkObject} from "./cassandra_db";
  * limitations under the License.
  */
 
-let sqlite3: { Database: new (arg0: any, arg1: (err: any) => void) => any; }
+let sqlite3: {Database: new (arg0: any, arg1: (err: any) => void) => any;};
 try {
-    require('sqlite3')
+  require('sqlite3');
 } catch (err) {
   throw new Error(
       'sqlite3 not found. It was removed from ueberdb\'s dependencies because it requires ' +
@@ -28,7 +27,7 @@ try {
       '"npm install sqlite3" in your etherpad-lite ./src directory.');
 }
 
-import AbstractDatabase from '../lib/AbstractDatabase';
+
 import util from 'util';
 
 const escape = (val: string) => `'${val.replace(/'/g, "''")}'`;
@@ -74,7 +73,7 @@ export const Database = class extends AbstractDatabase {
 
   // Temporary callbackified version of _query. This will be removed once all database objects are
   // asyncified.
-  _queryCb(sql: string, params: string[], callback: (err: Error|null, results?: any) => void) {
+  _queryCb(sql: string, params: string[], callback: (err: Error | null, results?: any) => void) {
     // It is unclear how util.callbackify() handles optional parameters, so it is not used here.
     const p = this._query(sql, params as never[]);
     if (callback) p.then((rows) => callback(null, rows), (err) => callback(err || new Error(err)));
@@ -160,4 +159,4 @@ export const Database = class extends AbstractDatabase {
   close(callback:(err: any)=>{}) {
     this.db.close(callback);
   }
-}
+};

@@ -1,5 +1,5 @@
 // @ts-nocheck
-'use strict';
+
 /**
  * 2011 Peter 'Pita' Martischka
  *
@@ -231,7 +231,7 @@ exports.Database = class {
 
     // start the write Interval
     this.flushInterval = this.settings.writeInterval > 0
-        ? setInterval(() => this.flush(), this.settings.writeInterval) : null;
+      ? setInterval(() => this.flush(), this.settings.writeInterval) : null;
   }
 
   async _lock(key) {

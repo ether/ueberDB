@@ -103,6 +103,7 @@
   },
   "include": [
     "src",
+    ".eslintrc.cjs",
     "test",
     "databases",
     "dirtydb"

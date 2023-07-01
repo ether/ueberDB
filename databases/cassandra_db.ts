@@ -1,4 +1,3 @@
-'use strict';
 /**
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,16 +19,16 @@ import ResultSet = types.ResultSet;
 
 type Result = {
   rows: any[];
-}
+};
 
 export type BulkObject = {
   type: string
   key:string
   value?: string
-}
+};
 
 export const Database = class Cassandra_db extends AbstractDatabase {
-  private client: Client|undefined;
+  private client: Client | undefined;
   private pool: any;
   /**
    * @param {Object} settings The required settings object to initiate the Cassandra database
@@ -50,7 +49,7 @@ export const Database = class Cassandra_db extends AbstractDatabase {
     if (!settings.columnFamily) {
       throw new Error('The Cassandra column family should be defined');
     }
-    this.settings = {database: settings.database}
+    this.settings = {database: settings.database};
     this.settings.clientOptions = settings.clientOptions;
     this.settings.columnFamily = settings.columnFamily;
     this.settings.logger = settings.logger;
@@ -96,7 +95,7 @@ export const Database = class Cassandra_db extends AbstractDatabase {
             const cql =
                 `CREATE COLUMNFAMILY "${this.settings.columnFamily}" ` +
                 '(key text PRIMARY KEY, data text)';
-            this.client&&this.client.execute(cql, callback);
+            this.client && this.client.execute(cql, callback);
           }
         });
   }
@@ -109,7 +108,7 @@ export const Database = class Cassandra_db extends AbstractDatabase {
    * @param  {Error}      callback.err      An error object, if any
    * @param  {String}     callback.value    The value for the given key (if any)
    */
-  get(key:string, callback: (err:Error|null, data?:any)=>{}) {
+  get(key:string, callback: (err:Error | null, data?:any)=>{}) {
     const cql = `SELECT data FROM "${this.settings.columnFamily}" WHERE key = ?`;
     this.client && this.client.execute(cql, [key], (err, result) => {
       if (err) {
@@ -140,7 +139,7 @@ export const Database = class Cassandra_db extends AbstractDatabase {
     if (!notKey) {
       // Get all the keys
       cql = `SELECT key FROM "${this.settings.columnFamily}"`;
-      this.client&&this.client.execute(cql, (err: Error, result:Result) => {
+      this.client && this.client.execute(cql, (err: Error, result:Result) => {
         if (err) {
           return callback(err);
         }
@@ -164,20 +163,20 @@ export const Database = class Cassandra_db extends AbstractDatabase {
         // Get the 'text' bit out of the key and get all those keys from a special column.
         // We can retrieve them from this column as we're duplicating them on .set/.remove
         cql = `SELECT * from "${this.settings.columnFamily}" WHERE key = ?`;
-        this.client&&
+        this.client &&
         this.client
             .execute(cql, [`ueberdb:keys:${matches[1]}`], (err, result) => {
-          if (err) {
-            return callback(err);
-          }
+              if (err) {
+                return callback(err);
+              }
 
-          if (!result.rows || result.rows.length === 0) {
-            return callback(null, []);
-          }
+              if (!result.rows || result.rows.length === 0) {
+                return callback(null, []);
+              }
 
-          const keys = result.rows.map((row) => row.data);
-          return callback(null, keys);
-        });
+              const keys = result.rows.map((row) => row.data);
+              return callback(null, keys);
+            });
       } else {
         const msg =
             'Cassandra db only supports key patterns like pad:* when notKey is set to *:*:*';
@@ -220,7 +219,7 @@ export const Database = class Cassandra_db extends AbstractDatabase {
    * @param  {Error}      callback.err    An error object, if any
    */
   doBulk(bulk:BulkObject[], callback:ValueCallback<ResultSet>) {
-    const queries:Array<string|{query: string, params?: ArrayOrObject}> = [];
+    const queries:Array<string | {query: string, params?: ArrayOrObject}> = [];
     bulk.forEach((operation) => {
       // We support finding keys of the form `test:*`. If anything matches, we will try and save
       // this
@@ -251,7 +250,7 @@ export const Database = class Cassandra_db extends AbstractDatabase {
         }
       }
     });
-    this.client&&this.client.batch(queries, {prepare: true}, callback);
+    this.client && this.client.batch(queries, {prepare: true}, callback);
   }
 
   /**

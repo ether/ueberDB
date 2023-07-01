@@ -1,4 +1,3 @@
-'use strict';
 /**
  * 2012 Max 'Azul' Wiehle
  *
@@ -18,7 +17,7 @@
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
 import http, {Agent} from 'http';
 import nano from 'nano';
-import {BulkObject} from "./cassandra_db";
+import {BulkObject} from './cassandra_db';
 
 type CouchDBSettings = {
     url: string,
@@ -29,10 +28,10 @@ type CouchDBSettings = {
       },
       agent: Agent
     }
-}
+};
 export const Database = class Couch_db extends AbstractDatabase {
-  private agent: Agent|null;
-  private db: nano.DocumentScope<String>|null;
+  private agent: Agent | null;
+  private db: nano.DocumentScope<string> | null;
   constructor(settings: Settings) {
     super();
     this.agent = null;
@@ -56,20 +55,20 @@ export const Database = class Couch_db extends AbstractDatabase {
 
     const coudhDBSettings: CouchDBSettings = {
       url: `http://${this.settings.host}:${this.settings.port}`,
-      requestDefaults:{
-        agent: this.agent
-      }
-    }
+      requestDefaults: {
+        agent: this.agent,
+      },
+    };
 
     if (this.settings.user && this.settings.password) {
-        coudhDBSettings.requestDefaults.auth = {
-            username: this.settings.user,
-            password: this.settings.password,
-        }
+      coudhDBSettings.requestDefaults.auth = {
+        username: this.settings.user,
+        password: this.settings.password,
+      };
     }
 
 
-    const client = nano(coudhDBSettings)
+    const client = nano(coudhDBSettings);
     try {
       if (this.settings.database != null) {
         await client.db.get(this.settings.database);
@@ -85,26 +84,26 @@ export const Database = class Couch_db extends AbstractDatabase {
     }
   }
 
-  async get(key:string): Promise<null|string> {
+  async get(key:string): Promise<null | string> {
     let doc;
     try {
-      if (this.db){
+      if (this.db) {
         doc = await this.db.get(key);
       }
     } catch (err:any) {
       if (err.statusCode === 404) return null;
       throw err;
     }
-    if (doc && "value" in doc){
-      return doc.value as string
+    if (doc && 'value' in doc) {
+      return doc.value as string;
     }
-    return ""
+    return '';
   }
 
   async findKeys(key:string, notKey:string) {
     const pfxLen = key.indexOf('*');
-    if(!this.db){
-      return
+    if (!this.db) {
+      return;
     }
     const pfx = pfxLen < 0 ? key : key.slice(0, pfxLen);
     const results = await this.db.find({
@@ -122,10 +121,10 @@ export const Database = class Couch_db extends AbstractDatabase {
   }
 
   async set(key:string, value:string) {
-    let doc
+    let doc;
 
-    if(!this.db){
-      return
+    if (!this.db) {
+      return;
     }
 
     try {
@@ -145,8 +144,8 @@ export const Database = class Couch_db extends AbstractDatabase {
 
   async remove(key:string) {
     let header;
-    if(!this.db){
-      return
+    if (!this.db) {
+      return;
     }
     try {
       header = await this.db.head(key);
@@ -160,8 +159,8 @@ export const Database = class Couch_db extends AbstractDatabase {
   }
 
   async doBulk(bulk:BulkObject[]) {
-    if(!this.db){
-      return
+    if (!this.db) {
+      return;
     }
     const keys = bulk.map((op) => op.key);
     const revs:{[key:string]:any} = {};
@@ -172,9 +171,8 @@ export const Database = class Couch_db extends AbstractDatabase {
     }
     const setters = [];
     for (const item of bulk) {
-      const set = {_id: item.key, _rev:undefined,
-        _deleted: false, value:""
-      };
+      const set = {_id: item.key, _rev: undefined,
+        _deleted: false, value: ''};
       if (revs[item.key] != null) set._rev = revs[item.key];
       if (item.type === 'set') set.value = item.value as string;
       if (item.type === 'remove') set._deleted = true;
@@ -188,4 +186,4 @@ export const Database = class Couch_db extends AbstractDatabase {
     if (this.agent) this.agent.destroy();
     this.agent = null;
   }
-}
+};

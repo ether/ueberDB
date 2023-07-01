@@ -1,5 +1,3 @@
-'use strict';
-
 import {Console} from 'console';
 import {stdout, stderr} from 'process';
 
@@ -12,7 +10,7 @@ class ConsoleLogger extends Console {
 }
 
 
-export const normalizeLogger = (logger: null|Function) => {
+export const normalizeLogger = (logger: null | Function) => {
   const logLevelsUsed = ['debug', 'info', 'warn', 'error'];
   logger = Object.create(logger || {});
   for (const level of logLevelsUsed) {
@@ -32,4 +30,4 @@ export const normalizeLogger = (logger: null|Function) => {
   return logger;
 };
 
-export default {ConsoleLogger}
+export default {ConsoleLogger};
