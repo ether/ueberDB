@@ -62,8 +62,8 @@
     "type": "git",
     "url": "https://github.com/ether/ueberDB.git"
   },
-  "main": "./index",
-  "version": "4.0.11",
+  "main": "./dist/index",
+  "version": "4.0.14",
   "bugs": {
     "url": "https://github.com/ether/ueberDB/issues"
   },
@@ -73,7 +73,8 @@
     "lint:fix": "eslint --fix .",
     "test": "tsc && mocha ./dist/test/test*.js",
     "test:watch": "mocha ./dist/test/test*.js --watch",
-    "test-debug": "tsc && mocha --inspect-brk ./dist/test/test*.js"
+    "test-debug": "tsc && mocha --inspect-brk ./dist/test/test*.js",
+    "build": "tsc"
   },
   "_npmUser": {
     "name": "johnyma22",
