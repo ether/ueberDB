@@ -1,5 +1,6 @@
-import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
-import {BulkObject} from './cassandra_db';
+'use strict';
+import {BulkObject} from "./cassandra_db";
+import {Settings} from "../lib/AbstractDatabase";
 
 /**
  * 2011 Peter 'Pita' Martischka
@@ -17,9 +18,9 @@ import {BulkObject} from './cassandra_db';
  * limitations under the License.
  */
 
-let sqlite3: {Database: new (arg0: any, arg1: (err: any) => void) => any;};
+let SQDB: any;
 try {
-  require('sqlite3');
+  SQDB = require('sqlite3').Database;
 } catch (err) {
   throw new Error(
       'sqlite3 not found. It was removed from ueberdb\'s dependencies because it requires ' +
@@ -27,13 +28,13 @@ try {
       '"npm install sqlite3" in your etherpad-lite ./src directory.');
 }
 
-
+import AbstractDatabase from '../lib/AbstractDatabase';
 import util from 'util';
 
-const escape = (val: string) => `'${val.replace(/'/g, "''")}'`;
+const escape = (val:string) => `'${val.replace(/'/g, "''")}'`;
 
-export const Database = class extends AbstractDatabase {
-  private db: any;
+export const Database = class SQLiteDB extends AbstractDatabase {
+  private db: typeof SQDB|null;
   constructor(settings:Settings) {
     super();
     this.db = null;
@@ -56,6 +57,14 @@ export const Database = class extends AbstractDatabase {
     }
   }
 
+  init(callback:Function) {
+    util.callbackify(async () => {
+      this.db = new SQDB(this.settings.filename as string)
+      await this._query('CREATE TABLE IF NOT EXISTS store (key TEXT PRIMARY KEY, value TEXT)');
+      // @ts-ignore
+    })(callback);
+  }
+
   async _query(sql:string, params = []) {
     // It is unclear how util.promisify() deals with variadic functions, so it is not used here.
     return await new Promise((resolve, reject) => {
@@ -64,7 +73,7 @@ export const Database = class extends AbstractDatabase {
       // guarantees that it is safe to call a Promise executor's resolve and reject functions
       // multiple times. The subsequent calls are ignored, except Node.js's 'process' object emits a
       // 'multipleResolves' event to aid in debugging.
-      this.db.all(sql, params, (err:any, rows:any) => {
+      this.db&&this.db.all(sql, params, (err:Error, rows:any) => {
         if (err != null) return reject(err);
         resolve(rows);
       });
@@ -73,32 +82,21 @@ export const Database = class extends AbstractDatabase {
 
   // Temporary callbackified version of _query. This will be removed once all database objects are
   // asyncified.
-  _queryCb(sql: string, params: string[], callback: (err: Error | null, results?: any) => void) {
+  _queryCb(sql: string, params: string[], callback: Function) {
     // It is unclear how util.callbackify() handles optional parameters, so it is not used here.
-    const p = this._query(sql, params as never[]);
+    const p = this._query(sql, params as []);
     if (callback) p.then((rows) => callback(null, rows), (err) => callback(err || new Error(err)));
   }
 
-  init(callback:(p: any, rows?: {length: number, rows:any})=>{}) {
-    util.callbackify(async () => {
-      this.db = await new Promise((resolve, reject) => {
-        new sqlite3.Database(this.settings.filename as string, (err) => {
-          if (err != null) return reject(err);
-          // The use of `this` relies on an undocumented feature of sqlite3:
-          // https://github.com/mapbox/node-sqlite3/issues/1408
-          resolve(this);
-        });
-      });
-      await this._query('CREATE TABLE IF NOT EXISTS store (key TEXT PRIMARY KEY, value TEXT)');
-    })(callback);
+
+
+  get(key:string, callback:Function) {
+    this._queryCb(
+        'SELECT value FROM store WHERE key = ?', [key],
+        (err:Error, rows:any) => callback(err, err == null && rows && rows.length ? rows[0].value : null));
   }
 
-  get(key:string, callback: (err: any, p: any)=>{}) {
-    // @ts-ignore
-    this._queryCb('SELECT value FROM store WHERE key = ?', [key], (err: Error, rows: any) => callback(err, err == null && rows && rows.length ? rows[0].value : null));
-  }
-
-  findKeys(key:string, notKey:string, callback: (err: Error, value: string[])=>{}) {
+  findKeys(key:string, notKey:string, callback:Function) {
     let query = 'SELECT key FROM store WHERE key LIKE ?';
     const params = [];
     // desired keys are %key:%, e.g. pad:%
@@ -112,12 +110,11 @@ export const Database = class extends AbstractDatabase {
       params.push(notKey);
     }
 
-    // @ts-ignore
-    this._queryCb(query, params, (err:Error, results:any) => {
-      const value:string[] = [];
+    this._queryCb(query, params, (err: Error, results: { val: string, key: string }[]) => {
+      const value: string[] = [];
 
       if (!err && Object.keys(results).length > 0) {
-        results.forEach((val:any) => {
+        results.forEach((val) => {
           value.push(val.key);
         });
       }
@@ -126,27 +123,26 @@ export const Database = class extends AbstractDatabase {
     });
   }
 
-  set(key:string, value:string, callback: (err: any)=>{}) {
+  set(key:string, value:string, callback:Function) {
     this._queryCb('REPLACE INTO store VALUES (?,?)', [key, value], callback);
   }
 
-  remove(key:string, callback:(err: any)=>{}) {
+  remove(key:string, callback:Function) {
     this._queryCb('DELETE FROM store WHERE key = ?', [key], callback);
   }
 
-  doBulk(bulk:BulkObject[], callback:(err: any)=>{}) {
+  doBulk(bulk:BulkObject[], callback:Function) {
     let sql = 'BEGIN TRANSACTION;\n';
     for (const i in bulk) {
       if (bulk[i].type === 'set') {
-        // @ts-ignore
-        sql += `REPLACE INTO store VALUES (${escape(bulk[i].key)}, ${escape(bulk[i].value)});\n`;
+        sql += `REPLACE INTO store VALUES (${escape(bulk[i].key)}, ${escape(bulk[i].value as string)});\n`;
       } else if (bulk[i].type === 'remove') {
         sql += `DELETE FROM store WHERE key = ${escape(bulk[i].key)};\n`;
       }
     }
     sql += 'END TRANSACTION;';
 
-    this.db.exec(sql, (err:Error) => {
+    this.db&&this.db.exec(sql, (err:any) => {
       if (err) {
         console.error('ERROR WITH SQL: ');
         console.error(sql);
@@ -156,7 +152,8 @@ export const Database = class extends AbstractDatabase {
     });
   }
 
-  close(callback:(err: any)=>{}) {
-    this.db.close(callback);
+  close(callback: Function) {
+    callback()
+    this.db&&this.db.close((err:any) => callback(err));
   }
 };
