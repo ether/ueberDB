@@ -75,7 +75,7 @@
     "test:watch": "mocha ./dist/test/test*.js --watch",
     "test-debug": "tsc && mocha --inspect-brk ./dist/test/test*.js",
     "build": "tsc",
-    "publish": "npm run build && && npm publish"
+    "publish": "npm run build && npm publish"
   },
   "_npmUser": {
     "name": "johnyma22",
