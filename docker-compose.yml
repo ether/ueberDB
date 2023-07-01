@@ -1,0 +1,44 @@
+# Docker compose setup for testing with multiple databases
+version: '3.8'
+services:
+    couchdb:
+        image: couchdb
+        ports:
+        - "5984:5984"
+        environment:
+          COUCHDB_USER: ueberdb
+          COUCHDB_PASSWORD: ueberdb
+    elasticsearch:
+        image: elasticsearch:7.17.3
+        ports:
+        - 9200:9200
+        environment:
+          discovery.type: single-node
+    mongo:
+        image: mongo
+        ports:
+        - 27017:27017
+        environment:
+          MONGO_INITDB_DATABASE: mydb_test
+    mysql:
+      image: mariadb
+      ports:
+        - 3306:3306
+      environment:
+        MYSQL_ROOT_PASSWORD: password
+        MYSQL_USER: ueberdb
+        MYSQL_PASSWORD: ueberdb
+        MYSQL_DATABASE: ueberdb
+    postgres:
+      image: postgres:14-alpine
+      ports:
+        - 5432:5432
+      environment:
+        POSTGRES_USER: ueberdb
+        POSTGRES_PASSWORD: ueberdb
+        POSTGRES_DB: ueberdb
+        POSTGRES_HOST_AUTH_METHOD: "trust"
+    redis:
+      image: redis
+      ports:
+        - "6379:6379"
