@@ -15,12 +15,13 @@
  */
 
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
-import {equal, strict} from 'assert';
+import assert, {equal} from 'assert';
 
 import {Buffer} from 'buffer';
 import {createHash} from 'crypto';
-import {Client} from 'elasticsearch7';
+import {Client} from 'elasticsearch8';
 import {BulkObject} from './cassandra_db';
+import {MappingTypeMapping} from "elasticsearch8/lib/api/types";
 
 const schema = '2';
 
@@ -29,7 +30,7 @@ const keyToId = (key:string) => {
   return keyBuf.length > 512 ? createHash('sha512').update(keyBuf).digest('hex') : key;
 };
 
-const mappings = {
+const mappings: MappingTypeMapping = {
   // _id is expected to equal key, unless the UTF-8 encoded key is > 512 bytes, in which case it is
   // the hex-encoded sha512 hash of the UTF-8 encoded key.
   properties: {
@@ -38,18 +39,18 @@ const mappings = {
   },
 };
 
-const migrateToSchema2 = async (client: any, v1BaseIndex: string | undefined, v2Index: string, logger: any) => {
+const migrateToSchema2 = async (client: Client, v1BaseIndex: string | undefined, v2Index: string, logger: any) => {
   let recordsMigratedLastLogged = 0;
   let recordsMigrated = 0;
   const totals = new Map();
   logger.info('Attempting elasticsearch record migration from schema v1 at base index ' +
               `${v1BaseIndex} to schema v2 at index ${v2Index}...`);
-  const {body: indices} = await client.indices.get({index: [v1BaseIndex, `${v1BaseIndex}-*-*`]});
+  const indices = await client.indices.get({index: [v1BaseIndex as string, `${v1BaseIndex}-*-*`]});
   const scrollIds = new Map();
   const q = [];
   try {
     for (const index of Object.keys(indices)) {
-      const {body: res} = await client.search({index, scroll: '10m'});
+      const res = await client.search({index, scroll: '10m'});
       scrollIds.set(index, res._scroll_id);
       q.push({index, res});
     }
@@ -72,18 +73,16 @@ const migrateToSchema2 = async (client: any, v1BaseIndex: string | undefined, v2
       await client.bulk({index: v2Index, body});
       recordsMigrated += hits.length;
       if (Math.floor(recordsMigrated / 100) > Math.floor(recordsMigratedLastLogged / 100)) {
-        // @ts-ignore
         const total = [...totals.values()].reduce((a, b) => a + b, 0);
         logger.info(`Migrated ${recordsMigrated} records out of ${total}`);
         recordsMigratedLastLogged = recordsMigrated;
       }
       q.push(
-          {index, res: (await client.scroll({scroll: '5m', scrollId: scrollIds.get(index)})).body});
+          {index, res: (await client.scroll({scroll: '5m', scroll_id: scrollIds.get(index)}))});
     }
     logger.info(`Finished migrating ${recordsMigrated} records`);
   } finally {
-    // @ts-ignore
-    await Promise.all([...scrollIds.values()].map((scrollId) => client.clearScroll({scrollId})));
+    await Promise.all([...scrollIds.values()].map((scrollId) => client.clearScroll({scroll_id:scrollId})));
   }
 };
 
@@ -129,11 +128,10 @@ export const Database = class extends AbstractDatabase {
       node: `http://${this.settings.host}:${this.settings.port}`,
     });
     await client.ping();
-    if (!(await client.indices.exists({index: this._index})).body) {
+    if (!(await client.indices.exists({index: this._index}))) {
       let tmpIndex;
-      // @ts-ignore
-      const {body: migrate} = await client.indices.exists({index: this.settings.base_index});
-      if (migrate && !this.settings.migrate_to_newer_schema) {
+      const exists = await client.indices.exists({index: this.settings.base_index as string});
+      if (exists && !this.settings.migrate_to_newer_schema) {
         throw new Error(
             `Data exists under the legacy index (schema) named ${this.settings.base_index}. ` +
             'Set migrate_to_newer_schema to true to copy the existing data to a new index ' +
@@ -141,17 +139,16 @@ export const Database = class extends AbstractDatabase {
       }
       let attempt = 0;
       while (true) {
-        tmpIndex = `${this._index}_${migrate ? 'migrate_attempt_' : 'i'}${attempt++}`;
-        if (!(await client.indices.exists({index: tmpIndex})).body) break;
+        tmpIndex = `${this._index}_${exists ? 'migrate_attempt_' : 'i'}${attempt++}`;
+        if (!(await client.indices.exists({index: tmpIndex}))) break;
       }
-      await client.indices.create({index: tmpIndex, body: {mappings}});
-      if (migrate) await migrateToSchema2(client, this.settings.base_index, tmpIndex, this.logger);
+      await client.indices.create({index: tmpIndex, mappings: mappings});
+      if (exists) await migrateToSchema2(client, this.settings.base_index, tmpIndex, this.logger);
       await client.indices.putAlias({index: tmpIndex, name: this._index});
     }
-    const indices = Object.values((await client.indices.get({index: this._index})).body);
+    const indices = Object.values((await client.indices.get({index: this._index})));
     equal(indices.length, 1);
     try {
-      // @ts-ignore
       assert.deepEqual(indices[0].mappings, mappings);
     } catch (err) {
       this.logger.warn(`Index ${this._index} mappings does not match expected; ` +
@@ -166,9 +163,9 @@ export const Database = class extends AbstractDatabase {
    *  @param {String} key Key
    */
   async get(key:string) {
-    const {body} = await this._client.get({...this._q, id: keyToId(key)}, {ignore: [404]});
-    if (!body.found) return null;
-    return body._source.value;
+    const res = await this._client.get({...this._q, id: keyToId(key)}, {ignore: [404]});
+    if (!res.found) return null;
+    return res._source.value;
   }
 
   /**
@@ -190,8 +187,8 @@ export const Database = class extends AbstractDatabase {
         },
       },
     };
-    const {body: {hits: {hits}}} = await this._client.search(q);
-    return hits.map((h:{_source:{key:string}}) => h._source.key);
+    const {hits:hits} = await this._client.search(q);
+    return hits.hits.map((h:{_source:{key:string}}) => h._source.key);
   }
 
   /**
@@ -244,7 +241,6 @@ export const Database = class extends AbstractDatabase {
           operations.push({delete: {_id: keyToId(key)}});
           break;
         default:
-          continue;
       }
     }
     await this._client.bulk({...this._q, body: operations});
