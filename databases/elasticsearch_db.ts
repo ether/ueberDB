@@ -39,18 +39,18 @@ const mappings: MappingTypeMapping = {
   },
 };
 
-const migrateToSchema2 = async (client: any, v1BaseIndex: string | undefined, v2Index: string, logger: any) => {
+const migrateToSchema2 = async (client: Client, v1BaseIndex: string | undefined, v2Index: string, logger: any) => {
   let recordsMigratedLastLogged = 0;
   let recordsMigrated = 0;
   const totals = new Map();
   logger.info('Attempting elasticsearch record migration from schema v1 at base index ' +
               `${v1BaseIndex} to schema v2 at index ${v2Index}...`);
-  const {body: indices} = await client.indices.get({index: [v1BaseIndex, `${v1BaseIndex}-*-*`]});
+  const indices = await client.indices.get({index: [v1BaseIndex as string, `${v1BaseIndex}-*-*`]});
   const scrollIds = new Map();
   const q = [];
   try {
     for (const index of Object.keys(indices)) {
-      const {body: res} = await client.search({index, scroll: '10m'});
+      const res = await client.search({index, scroll: '10m'});
       scrollIds.set(index, res._scroll_id);
       q.push({index, res});
     }
@@ -78,7 +78,7 @@ const migrateToSchema2 = async (client: any, v1BaseIndex: string | undefined, v2
         recordsMigratedLastLogged = recordsMigrated;
       }
       q.push(
-          {index, res: (await client.scroll({scroll: '5m', scrollId: scrollIds.get(index)}))});
+          {index, res: (await client.scroll({scroll: '5m', scroll_id: scrollIds.get(index)}))});
     }
     logger.info(`Finished migrating ${recordsMigrated} records`);
   } finally {

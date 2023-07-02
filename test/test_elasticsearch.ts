@@ -39,7 +39,7 @@ describe(__filename, function (this: any) {
           db = new ueberdb.Database('elasticsearch', settings, {}, logger);
           await db.init();
           const indices = [];
-          const {body: res} = await client.indices.get({index: `${base_index}*`});
+          const res = await client.indices.get({index: `${base_index}*`});
           for (const [k, v] of Object.entries(res)) {
             indices.push(k);
             // @ts-expect-error TS(2571): Object is of type 'unknown'.
@@ -100,7 +100,7 @@ describe(__filename, function (this: any) {
         cfg.base_index = base_index;
         const settings = {...cfg, migrate_to_newer_schema: true};
         db = new ueberdb.Database('elasticsearch', settings, {}, logger);
-        const getIndices = async () => Object.keys((await client.indices.get({index: `${base_index}_s2*`})).body);
+        const getIndices = async () => Object.keys((await client.indices.get({index: `${base_index}_s2*`})));
         deepEqual(await getIndices(), []);
         await rejects(db.init(), /ambig/);
         deepEqual(await getIndices(), [`${base_index}_s2_migrate_attempt_0`]);
