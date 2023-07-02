@@ -1,5 +1,5 @@
 import {deepEqual, rejects} from 'assert';
-import es from 'elasticsearch7';
+import es from 'elasticsearch8';
 import {databases} from './lib/databases';
 import logging from '../lib/logging';
 import * as ueberdb from '../index';

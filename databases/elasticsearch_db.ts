@@ -19,7 +19,7 @@ import {equal, strict} from 'assert';
 
 import {Buffer} from 'buffer';
 import {createHash} from 'crypto';
-import {Client} from 'elasticsearch7';
+import {Client} from 'elasticsearch8';
 import {BulkObject} from './cassandra_db';
 
 const schema = '2';
@@ -129,7 +129,7 @@ export const Database = class extends AbstractDatabase {
       node: `http://${this.settings.host}:${this.settings.port}`,
     });
     await client.ping();
-    if (!(await client.indices.exists({index: this._index})).body) {
+    if (!(await client.indices.exists({index: this._index}))) {
       let tmpIndex;
       // @ts-ignore
       const {body: migrate} = await client.indices.exists({index: this.settings.base_index});
@@ -142,8 +142,9 @@ export const Database = class extends AbstractDatabase {
       let attempt = 0;
       while (true) {
         tmpIndex = `${this._index}_${migrate ? 'migrate_attempt_' : 'i'}${attempt++}`;
-        if (!(await client.indices.exists({index: tmpIndex})).body) break;
+        if (!(await client.indices.exists({index: tmpIndex}))) break;
       }
+      // @ts-ignore
       await client.indices.create({index: tmpIndex, body: {mappings}});
       if (migrate) await migrateToSchema2(client, this.settings.base_index, tmpIndex, this.logger);
       await client.indices.putAlias({index: tmpIndex, name: this._index});
