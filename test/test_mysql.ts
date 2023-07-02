@@ -36,7 +36,6 @@ describe(__filename, () => {
   });
   it('queries run concurrently and are queued when pool is busy', async () => {
     const connectionLimit = 10;
-    // @ts-expect-error TS(2339): Property 'Database' does not exist on type 'typeof... Remove this comment to see the full error message
     const db = new mysql.Database({...databases.mysql, connectionLimit});
     await db.init();
     // Set the query duration high enough to avoid flakiness on slow machines but low enough to keep
