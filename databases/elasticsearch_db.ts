@@ -15,12 +15,13 @@
  */
 
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
-import {equal, strict} from 'assert';
+import assert, {equal, strict} from 'assert';
 
 import {Buffer} from 'buffer';
 import {createHash} from 'crypto';
 import {Client} from 'elasticsearch8';
 import {BulkObject} from './cassandra_db';
+import {MappingTypeMapping} from "elasticsearch8/lib/api/types";
 
 const schema = '2';
 
@@ -29,7 +30,7 @@ const keyToId = (key:string) => {
   return keyBuf.length > 512 ? createHash('sha512').update(keyBuf).digest('hex') : key;
 };
 
-const mappings = {
+const mappings: MappingTypeMapping = {
   // _id is expected to equal key, unless the UTF-8 encoded key is > 512 bytes, in which case it is
   // the hex-encoded sha512 hash of the UTF-8 encoded key.
   properties: {
@@ -72,7 +73,6 @@ const migrateToSchema2 = async (client: any, v1BaseIndex: string | undefined, v2
       await client.bulk({index: v2Index, body});
       recordsMigrated += hits.length;
       if (Math.floor(recordsMigrated / 100) > Math.floor(recordsMigratedLastLogged / 100)) {
-        // @ts-ignore
         const total = [...totals.values()].reduce((a, b) => a + b, 0);
         logger.info(`Migrated ${recordsMigrated} records out of ${total}`);
         recordsMigratedLastLogged = recordsMigrated;
@@ -82,8 +82,7 @@ const migrateToSchema2 = async (client: any, v1BaseIndex: string | undefined, v2
     }
     logger.info(`Finished migrating ${recordsMigrated} records`);
   } finally {
-    // @ts-ignore
-    await Promise.all([...scrollIds.values()].map((scrollId) => client.clearScroll({scrollId})));
+    await Promise.all([...scrollIds.values()].map((scrollId) => client.clearScroll({scroll_id:scrollId})));
   }
 };
 
@@ -131,9 +130,8 @@ export const Database = class extends AbstractDatabase {
     await client.ping();
     if (!(await client.indices.exists({index: this._index}))) {
       let tmpIndex;
-      // @ts-ignore
-      const {body: migrate} = await client.indices.exists({index: this.settings.base_index});
-      if (migrate && !this.settings.migrate_to_newer_schema) {
+      const exists = await client.indices.exists({index: this.settings.base_index as string});
+      if (exists && !this.settings.migrate_to_newer_schema) {
         throw new Error(
             `Data exists under the legacy index (schema) named ${this.settings.base_index}. ` +
             'Set migrate_to_newer_schema to true to copy the existing data to a new index ' +
@@ -141,18 +139,16 @@ export const Database = class extends AbstractDatabase {
       }
       let attempt = 0;
       while (true) {
-        tmpIndex = `${this._index}_${migrate ? 'migrate_attempt_' : 'i'}${attempt++}`;
+        tmpIndex = `${this._index}_${exists ? 'migrate_attempt_' : 'i'}${attempt++}`;
         if (!(await client.indices.exists({index: tmpIndex}))) break;
       }
-      // @ts-ignore
-      await client.indices.create({index: tmpIndex, body: {mappings}});
-      if (migrate) await migrateToSchema2(client, this.settings.base_index, tmpIndex, this.logger);
+      await client.indices.create({index: tmpIndex, mappings: mappings});
+      if (exists) await migrateToSchema2(client, this.settings.base_index, tmpIndex, this.logger);
       await client.indices.putAlias({index: tmpIndex, name: this._index});
     }
     const indices = Object.values((await client.indices.get({index: this._index})).body);
     equal(indices.length, 1);
     try {
-      // @ts-ignore
       assert.deepEqual(indices[0].mappings, mappings);
     } catch (err) {
       this.logger.warn(`Index ${this._index} mappings does not match expected; ` +
@@ -245,7 +241,6 @@ export const Database = class extends AbstractDatabase {
           operations.push({delete: {_id: keyToId(key)}});
           break;
         default:
-          continue;
       }
     }
     await this._client.bulk({...this._q, body: operations});
