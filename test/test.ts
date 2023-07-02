@@ -4,14 +4,13 @@ import wtfnode from 'wtfnode';
 import Clitable from 'cli-table';
 // @ts-ignore
 import Randexp from 'randexp';
-import assert$0 from 'assert';
-import {databases as databases$0} from './lib/databases';
+import {databases} from './lib/databases';
 import {promises} from 'fs';
 import logging from '../lib/logging';
 import * as ueberdb from '../index';
 'use strict';
-const assert = assert$0.strict;
-const databases = {databases: databases$0}.databases;
+import {deepEqual, equal, rejects} from 'assert'
+
 const fs = {promises}.promises;
 const maxKeyLength = 100;
 const randomString = (length = maxKeyLength) => new Randexp(new RegExp(`.{${length}}`)).gen();
@@ -52,7 +51,6 @@ describe(__filename, () => {
   });
   Object.keys(databases)
       .forEach((database) => {
-    // @ts-ignore
     const dbSettings = databases[database];
     describe(database, () => {
       for (const readCache of [false, true]) {
@@ -84,19 +82,16 @@ describe(__filename, () => {
                     });
                     it('get(key) -> record', async () => {
                       const output = await db.get(key);
-                      // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                      assert.equal(JSON.stringify(output), JSON.stringify(input));
+                      equal(JSON.stringify(output), JSON.stringify(input));
                     });
                     it('get(`${key} `) -> nullish', async () => {
                       const output = await db.get(`${key} `);
-                      // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                      assert(output == null);
+                      equal(output == null,true);
                     });
                     if (space) {
                       it('get(key.slice(0, -1)) -> nullish', async () => {
                         const output = await db.get(key.slice(0, -1));
-                        // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                        assert(output == null);
+                        equal(output == null,true);
                       });
                     }
                   });
@@ -104,24 +99,21 @@ describe(__filename, () => {
               });
               it('get of unknown key -> nullish', async () => {
                 const key = randomString();
-                // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                assert((await db.get(key)) == null);
+                equal((await db.get(key)) == null,true);
               });
               it('set+get works', async () => {
                 const input = {a: 1, b: new Randexp(/.+/).gen()};
                 const key = randomString();
                 await db.set(key, input);
                 const output = await db.get(key);
-                // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                assert.equal(JSON.stringify(output), JSON.stringify(input));
+                equal(JSON.stringify(output), JSON.stringify(input));
               });
               it('set+get with random key/value works', async () => {
                 const input = {testLongString: new Randexp(/[a-f0-9]{50000}/).gen()};
                 const key = randomString();
                 await db.set(key, input);
                 const output = await db.get(key);
-                // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                assert.equal(JSON.stringify(output), JSON.stringify(input));
+                equal(JSON.stringify(output), JSON.stringify(input));
               });
               it('findKeys works', async function (this: any) {
                 if (database === 'mongodb') { this.skip(); } // TODO: Fix mongodb.
@@ -133,8 +125,7 @@ describe(__filename, () => {
                   db.set(`nonmatching_${key}`, false),
                 ]);
                 const keys = await db.findKeys(`${key}*`, null);
-                // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                assert.deepEqual(keys.sort(), [key, `${key}a`]);
+                deepEqual(keys.sort(), [key, `${key}a`]);
               });
               it('findKeys with exclusion works', async function (this: any) {
                 if (database === 'mongodb') { this.skip(); } // TODO: Fix mongodb.
@@ -147,134 +138,123 @@ describe(__filename, () => {
                   db.set(`nonmatching_${key}`, false),
                 ]);
                 const keys = await db.findKeys(`${key}*`, `${key}b*`);
-                // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                assert.deepEqual(keys.sort(), [key, `${key}a`].sort());
+                deepEqual(keys.sort(), [key, `${key}a`].sort());
               });
               it('findKeys with no matches works', async () => {
                 const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
                 await db.set(key, true);
                 const keys = await db.findKeys(`${key}_nomatch_*`, null);
-                // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                assert.deepEqual(keys, []);
+                deepEqual(keys, []);
               });
               it('findKeys with no wildcard works', async () => {
                 const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
                 await db.set(key, true);
                 const keys = await db.findKeys(key, null);
-                // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                assert.deepEqual(keys, [key]);
+                deepEqual(keys, [key]);
               });
               it('remove works', async () => {
                 const input = {a: 1, b: new Randexp(/.+/).gen()};
                 const key = randomString();
                 await db.set(key, input);
-                // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                assert.equal(JSON.stringify(await db.get(key)), JSON.stringify(input));
+                equal(JSON.stringify(await db.get(key)), JSON.stringify(input));
                 await db.remove(key);
-                // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                assert((await db.get(key)) == null);
+                equal((await db.get(key)) == null,true);
               });
               it('getSub of existing property works', async () => {
                 await db.set('k', {sub1: {sub2: 'v'}});
-                // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                assert.equal(await db.getSub('k', ['sub1', 'sub2']), 'v');
-                // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                assert.deepEqual(await db.getSub('k', ['sub1']), {sub2: 'v'});
-                // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                assert.deepEqual(await db.getSub('k', []), {sub1: {sub2: 'v'}});
+                equal(await db.getSub('k', ['sub1', 'sub2']), 'v');
+                deepEqual(await db.getSub('k', ['sub1']), {sub2: 'v'});
+                deepEqual(await db.getSub('k', []), {sub1: {sub2: 'v'}});
               });
               it('getSub of missing property returns nullish', async () => {
                 await db.set('k', {sub1: {}});
-                // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                assert((await db.getSub('k', ['sub1', 'sub2'])) == null);
+                equal((await db.getSub('k', ['sub1', 'sub2'])) == null,true);
                 await db.set('k', {});
-                // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                assert((await db.getSub('k', ['sub1', 'sub2'])) == null);
-                // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                assert((await db.getSub('k', ['sub1'])) == null);
+                equal((await db.getSub('k', ['sub1', 'sub2'])) == null,true);
+                equal((await db.getSub('k', ['sub1'])) == null,true);
                 await db.remove('k');
-                // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                assert((await db.getSub('k', ['sub1', 'sub2'])) == null);
-                // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                assert((await db.getSub('k', ['sub1'])) == null);
-                // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                assert((await db.getSub('k', [])) == null);
+                equal((await db.getSub('k', ['sub1', 'sub2'])) == null,true);
+                equal((await db.getSub('k', ['sub1'])) == null,true);
+                equal((await db.getSub('k', [])) == null,true);
               });
               it('setSub can modify an existing property', async () => {
                 await db.set('k', {sub1: {sub2: 'v'}});
                 await db.setSub('k', ['sub1', 'sub2'], 'v2');
-                // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                assert.deepEqual(await db.get('k'), {sub1: {sub2: 'v2'}});
+                deepEqual(await db.get('k'), {sub1: {sub2: 'v2'}});
                 await db.setSub('k', ['sub1'], 'v2');
-                // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                assert.deepEqual(await db.get('k'), {sub1: 'v2'});
+                deepEqual(await db.get('k'), {sub1: 'v2'});
                 await db.setSub('k', [], 'v3');
-                // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                assert.equal(await db.get('k'), 'v3');
+                equal(await db.get('k'), 'v3');
               });
               it('setSub can add a new property', async () => {
                 await db.remove('k');
                 await db.setSub('k', [], {});
-                // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                assert.deepEqual(await db.get('k'), {});
+                deepEqual(await db.get('k'), {});
                 await db.setSub('k', ['sub1'], {});
-                // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                assert.deepEqual(await db.get('k'), {sub1: {}});
+                deepEqual(await db.get('k'), {sub1: {}});
                 await db.setSub('k', ['sub1', 'sub2'], 'v');
-                // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                assert.deepEqual(await db.get('k'), {sub1: {sub2: 'v'}});
+                deepEqual(await db.get('k'), {sub1: {sub2: 'v'}});
                 await db.remove('k');
                 await db.setSub('k', ['sub1', 'sub2'], 'v');
-                // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                assert.deepEqual(await db.get('k'), {sub1: {sub2: 'v'}});
+                deepEqual(await db.get('k'), {sub1: {sub2: 'v'}});
               });
               it('setSub rejects attempts to set properties on primitives', async () => {
                 for (const v of ['hello world', 42, true]) {
                   await db.set('k', v);
-                  assert.rejects(db.setSub('k', ['sub'], 'x'), {
+                  await rejects(db.setSub('k', ['sub'], 'x'), {
                     name: 'TypeError',
                     message: /property "sub" on non-object/,
                   });
-                  // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                  assert.deepEqual(await db.get('k'), v);
+                  deepEqual(await db.get('k'), v);
                 }
               });
               it('speed is acceptable', async function (this: any) {
+
+                type TimeSettings = {
+                  remove?: string | number;
+                  findKeys?: number;
+                  get?: number;
+                  set?: number;
+                  start: number,
+                }
+
+                type Speeds = {
+                  speeds:{
+                    count?: number;
+                    setMax?: number;
+                    getMax?: number;
+                    findKeysMax?: number;
+                    removeMax?: number;
+                  }
+                }
+
                 this.timeout(180000);
-                const {speeds: {count = 1000, setMax = 3, getMax = 0.1, findKeysMax = 3, removeMax = 1} = {}} = dbSettings || {};
+                const {speeds: {count = 1000, setMax = 3, getMax = 0.1, findKeysMax = 3, removeMax = 1} = {}}:Speeds = dbSettings || {};
                 const input = {a: 1, b: new Randexp(/.+/).gen()};
                 // TODO setting a key with non ascii chars
                 const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
                 // Pre-allocate an array before starting the timer so that time spent growing the
                 // array doesn't throw off the benchmarks.
                 const promises = [...Array(count + 1)].map(() => null);
-                const timers = {start: Date.now()};
+                const timers:TimeSettings = {start: Date.now()};
                 for (let i = 0; i < count; ++i) { promises[i] = db.set(key + i, input); }
                 promises[count] = db.flush();
                 await Promise.all(promises);
-                // @ts-expect-error TS(2339): Property 'set' does not exist on type '{ start: nu... Remove this comment to see the full error message
                 timers.set = Date.now();
                 for (let i = 0; i < count; ++i) { promises[i] = db.get(key + i); }
                 await Promise.all(promises);
-                // @ts-expect-error TS(2339): Property 'get' does not exist on type '{ start: nu... Remove this comment to see the full error message
                 timers.get = Date.now();
                 for (let i = 0; i < count; ++i) { promises[i] = db.findKeys(key + i, null); }
                 await Promise.all(promises);
-                // @ts-expect-error TS(2339): Property 'findKeys' does not exist on type '{ star... Remove this comment to see the full error message
                 timers.findKeys = Date.now();
                 for (let i = 0; i < count; ++i) { promises[i] = db.remove(key + i); }
                 promises[count] = db.flush();
                 await Promise.all(promises);
-                // @ts-expect-error TS(2339): Property 'remove' does not exist on type '{ start:... Remove this comment to see the full error message
                 timers.remove = Date.now();
                 const timePerOp = {
-                  // @ts-expect-error TS(2339): Property 'set' does not exist on type '{ start: nu... Remove this comment to see the full error message
                   set: (timers.set - timers.start) / count,
-                  // @ts-expect-error TS(2339): Property 'get' does not exist on type '{ start: nu... Remove this comment to see the full error message
                   get: (timers.get - timers.set) / count,
-                  // @ts-expect-error TS(2339): Property 'findKeys' does not exist on type '{ star... Remove this comment to see the full error message
                   findKeys: (timers.findKeys - timers.get) / count,
-                  // @ts-expect-error TS(2339): Property 'remove' does not exist on type '{ start:... Remove this comment to see the full error message
                   remove: (timers.remove - timers.findKeys) / count,
                 };
                 speedTable.push([
@@ -286,9 +266,7 @@ describe(__filename, () => {
                   timePerOp.get,
                   timePerOp.findKeys,
                   timePerOp.remove,
-                  // @ts-expect-error TS(2339): Property 'remove' does not exist on type '{ start:... Remove this comment to see the full error message
                   timers.remove - timers.start,
-                  // @ts-expect-error TS(2339): Property 'remove' does not exist on type '{ start:... Remove this comment to see the full error message
                   (timers.remove - timers.start) / count,
                 ]);
                 // Removes the "Acceptable ms/op" column if there is no enforced limit.
@@ -309,14 +287,10 @@ describe(__filename, () => {
                 ].map(filterColumn));
                 console.log(acceptableTable.toString());
                 if (readCache && writeBuffer) {
-                  // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                  assert(setMax >= timePerOp.set);
-                  // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                  assert(getMax >= timePerOp.get);
-                  // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                  assert(findKeysMax >= timePerOp.findKeys);
-                  // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                  assert(removeMax >= timePerOp.remove);
+                  equal(setMax >= timePerOp.set,true);
+                  equal(getMax >= timePerOp.get,true);
+                  equal(findKeysMax >= timePerOp.findKeys,true);
+                  equal(removeMax >= timePerOp.remove,true);
                 }
               });
             });

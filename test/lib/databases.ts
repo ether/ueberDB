@@ -1,7 +1,10 @@
 const os = require('os');
 
+type DatabaseType ={
+  [key:string]:any
+}
 
-export const databases = {
+export const databases:DatabaseType = {
   memory: {},
   dirty: {
     filename: `${os.tmpdir()}/ueberdb-test.db`,

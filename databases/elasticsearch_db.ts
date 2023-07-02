@@ -15,7 +15,7 @@
  */
 
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
-import assert, {equal, strict} from 'assert';
+import assert, {equal} from 'assert';
 
 import {Buffer} from 'buffer';
 import {createHash} from 'crypto';
@@ -78,7 +78,7 @@ const migrateToSchema2 = async (client: any, v1BaseIndex: string | undefined, v2
         recordsMigratedLastLogged = recordsMigrated;
       }
       q.push(
-          {index, res: (await client.scroll({scroll: '5m', scrollId: scrollIds.get(index)})).body});
+          {index, res: (await client.scroll({scroll: '5m', scrollId: scrollIds.get(index)}))});
     }
     logger.info(`Finished migrating ${recordsMigrated} records`);
   } finally {
@@ -146,7 +146,7 @@ export const Database = class extends AbstractDatabase {
       if (exists) await migrateToSchema2(client, this.settings.base_index, tmpIndex, this.logger);
       await client.indices.putAlias({index: tmpIndex, name: this._index});
     }
-    const indices = Object.values((await client.indices.get({index: this._index})).body);
+    const indices = Object.values((await client.indices.get({index: this._index})));
     equal(indices.length, 1);
     try {
       assert.deepEqual(indices[0].mappings, mappings);
@@ -163,9 +163,9 @@ export const Database = class extends AbstractDatabase {
    *  @param {String} key Key
    */
   async get(key:string) {
-    const {body} = await this._client.get({...this._q, id: keyToId(key)}, {ignore: [404]});
-    if (!body.found) return null;
-    return body._source.value;
+    const res = await this._client.get({...this._q, id: keyToId(key)}, {ignore: [404]});
+    if (!res.found) return null;
+    return res._source.value;
   }
 
   /**
@@ -187,8 +187,8 @@ export const Database = class extends AbstractDatabase {
         },
       },
     };
-    const {body: {hits: {hits}}} = await this._client.search(q);
-    return hits.map((h:{_source:{key:string}}) => h._source.key);
+    const {hits:hits} = await this._client.search(q);
+    return hits.hits.map((h:{_source:{key:string}}) => h._source.key);
   }
 
   /**
