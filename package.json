@@ -26,7 +26,7 @@
     "dirty": "^1.1.3",
     "elasticsearch8": "npm:@elastic/elasticsearch@^8.8.1",
     "eslint-plugin-import": "^2.26.0",
-    "mongodb": "^3.7.3",
+    "mongodb": "^5.7.0",
     "mssql": "^9.1.1",
     "mysql": "2.18.1",
     "nano": "^10.1.2",
