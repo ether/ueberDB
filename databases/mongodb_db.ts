@@ -96,6 +96,7 @@ export const Database = class extends AbstractDatabase {
         .then(r =>{
         callback(null, r);
     })
+        .catch(v=>callback(v));
 
 
     this.schedulePing();
@@ -115,7 +116,9 @@ export const Database = class extends AbstractDatabase {
 
   remove(key:string, callback:Function) {
     // @ts-ignore
-    this.collection!.deleteOne({_id: key}, ).then(r =>callback(null,r) );
+    this.collection!.deleteOne({_id: key}, )
+        .then(r =>callback(null,r) )
+        .catch(v=>callback(v));
 
     this.schedulePing();
   }
@@ -142,6 +145,6 @@ export const Database = class extends AbstractDatabase {
 
   close(callback:any) {
     this.clearPing();
-    this.client!.close(callback);
+    this.client!.close().then(r =>callback(r));
   }
 }
