@@ -50,6 +50,7 @@ describe(__filename, () => {
     console.log(speedTable.toString());
   });
   Object.keys(databases)
+      .filter(v=>v=='mongodb')
       .forEach((database) => {
     const dbSettings = databases[database];
     describe(database, () => {

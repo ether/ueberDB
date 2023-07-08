@@ -15,14 +15,15 @@
  */
 
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
-import {Func} from 'mocha';
-import {BulkObject} from './cassandra_db';
 
-exports.Database = class extends AbstractDatabase {
-  private interval: any;
-  private database: any;
-  private client: any;
-  private collection: any;
+import {BulkObject} from './cassandra_db';
+import {Collection, Db, MongoClient} from 'mongodb';
+
+export const Database = class extends AbstractDatabase {
+  private interval: NodeJS.Timer | undefined;
+  private database:  Db|undefined;
+  private client: MongoClient|undefined;
+  private collection:  Collection|undefined;
   constructor(settings:Settings) {
     super();
     this.settings = settings;
@@ -43,33 +44,36 @@ exports.Database = class extends AbstractDatabase {
   schedulePing() {
     this.clearPing();
     this.interval = setInterval(() => {
-      this.database.command({
+      this.database!.command({
         ping: 1,
       });
     }, 10000);
   }
 
   init(callback:Function) {
-    const MongoClient = require('mongodb').MongoClient;
 
-    MongoClient.connect(this.settings.url, (err:any, client:any) => {
-      if (!err) {
-        this.client = client;
-        this.database = client.db(this.settings.database);
-        this.collection = this.database.collection(this.settings.collection);
-      }
-
-      callback(err);
-    });
+    MongoClient.connect(this.settings.url!).then((v)=>{
+        this.client = v;
+        this.database = v.db(this.settings.database);
+        this.collection = this.database.collection(this.settings.collection!);
+        callback(null);
+    })
+        .catch((v:Error)=>{
+            callback(v);
+        })
 
     this.schedulePing();
   }
 
   get(key:string, callback:Function) {
-    this.collection.findOne({_id: key}, (err:any, document:any) => {
-      if (err) callback(err);
-      else callback(null, document ? document.value : null);
-    });
+    // @ts-ignore
+    this.collection!.findOne({_id: key})
+        .then((v)=>{
+          callback(null, v&&v.value);
+    }).catch(v=> {
+      console.log(v)
+      callback(v);
+    })
 
     this.schedulePing();
   }
@@ -86,15 +90,13 @@ exports.Database = class extends AbstractDatabase {
       selector.$and.push({_id: {$not: {$regex: `${notKey.replace(/\*/g, '')}`}}});
     }
 
-    this.collection.find(selector, async (err:any, res:any) => {
-      if (err) {
-        callback(err);
-      } else {
-        const data = await res.toArray();
+    // @ts-ignore
+    this.collection!.find(selector).map((i: any) => i._id)
+        .toArray()
+        .then(r =>{
+        callback(null, r);
+    })
 
-        callback(null, data.map((i:any) => i._id));
-      }
-    });
 
     this.schedulePing();
   }
@@ -103,20 +105,23 @@ exports.Database = class extends AbstractDatabase {
     if (key.length > 100) {
       callback('Your Key can only be 100 chars');
     } else {
-      this.collection.update({_id: key}, {$set: {value}}, {upsert: true}, callback);
+      // @ts-ignore
+      this.collection!.updateMany({_id: key}, {$set: {value}}, {upsert: true})
+          .then(v=>callback(null)).catch(v=>callback(v));
     }
 
     this.schedulePing();
   }
 
   remove(key:string, callback:Function) {
-    this.collection.remove({_id: key}, callback);
+    // @ts-ignore
+    this.collection!.deleteOne({_id: key}, ).then(r =>callback(null,r) );
 
     this.schedulePing();
   }
 
   doBulk(bulk:BulkObject[], callback:Function) {
-    const bulkMongo = this.collection.initializeOrderedBulkOp();
+    const bulkMongo = this.collection!.initializeOrderedBulkOp();
 
     for (const i in bulk) {
       if (bulk[i].type === 'set') {
@@ -137,6 +142,6 @@ exports.Database = class extends AbstractDatabase {
 
   close(callback:any) {
     this.clearPing();
-    this.client.close(callback);
+    this.client!.close(callback);
   }
-};
+}
