@@ -70,18 +70,12 @@ export const Database = class Couch_db extends AbstractDatabase {
 
     const client = nano(coudhDBSettings);
     try {
-      if (this.settings.database != null) {
-        await client.db.get(this.settings.database);
-      }
+        await client.db.get(this.settings.database!);
     } catch (err: any) {
       if (err.statusCode !== 404) throw err;
-      if (this.settings.database != null) {
-        await client.db.create(this.settings.database);
-      }
+        await client.db.create(this.settings.database!);
     }
-    if (this.settings.database != null) {
-      this.db = client.use(this.settings.database);
-    }
+      this.db = client.use(this.settings.database!);
   }
 
   async get(key:string): Promise<null | string> {
@@ -178,7 +172,7 @@ export const Database = class Couch_db extends AbstractDatabase {
       if (item.type === 'remove') set._deleted = true;
       setters.push(set);
     }
-    await this.db && await this.db.bulk({docs: setters});
+   await this.db.bulk({docs: setters});
   }
 
   async close() {
