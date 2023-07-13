@@ -45,7 +45,7 @@
     "@types/mssql": "^8.1.2",
     "@types/mongodb": "^4.0.7",
     "@types/mysql": "^2.15.21",
-    "@types/node": "^20.4.0",
+    "@types/node": "^20.4.2",
     "@types/pg": "^8.10.2",
     "@types/rethinkdb": "^2.3.17",
     "cli-table": "^0.3.11",
