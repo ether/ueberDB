@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import cacheAndBufferLayer, {Database as DatabaseCache} from './lib/CacheAndBufferLayer';
+import {Database as DatabaseCache} from './lib/CacheAndBufferLayer';
 import {normalizeLogger} from './lib/logging';
 import {callbackify} from 'util';
 import {Settings} from './lib/AbstractDatabase';
