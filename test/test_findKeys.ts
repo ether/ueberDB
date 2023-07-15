@@ -1,9 +1,9 @@
 import assert$0 from 'assert';
-import logging from '../lib/logging';
+import {ConsoleLogger} from '../lib/logging';
 import * as ueberdb from '../index';
 'use strict';
 const assert = assert$0.strict;
-const logger = new logging.ConsoleLogger();
+const logger = new ConsoleLogger();
 describe(__filename, () => {
   let db: any = null;
   let mock: any = null;

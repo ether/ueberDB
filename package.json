@@ -2,7 +2,7 @@
   "name": "ueberdb2",
   "description": "Transform every database into a object key value store",
   "url": "https://github.com/ether/ueberDB",
-  "module": "./dist/index",
+  "module": "CommonJS",
   "keywords": [
     "database",
     "keyvalue"
