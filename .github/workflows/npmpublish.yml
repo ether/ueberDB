@@ -125,7 +125,7 @@ jobs:
       # the second's will succeed.
       -
         name: Convert typescript and create dist folder
-        run: tsc
+        run: npx rollup -c rollup.config.cjs
       -
         run: npm publish
         env:
