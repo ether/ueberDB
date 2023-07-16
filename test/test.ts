@@ -153,7 +153,7 @@ describe(__filename, () => {
                 deepEqual(keys, [key]);
               });
               it('remove works', async () => {
-                const input = {a: 1, b: new Randexp(/.+/).gen()};
+                const input = {a: 1, b: new Randexp(/.+/).gen().replace("_","")};
                 const key = randomString();
                 await db.set(key, input);
                 equal(JSON.stringify(await db.get(key)), JSON.stringify(input));

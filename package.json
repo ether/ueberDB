@@ -53,12 +53,9 @@
     "eslint-config-etherpad": "^3.0.16",
     "mocha": "^10.2.0",
     "randexp": "^0.5.3",
-    "ts-migrate": "^0.1.35",
-    "ts-node": "^10.9.1",
     "typescript": "^4.9.5",
     "wtfnode": "^0.9.1",
     "rollup": "^3.26.2",
-    "@rollup/plugin-typescript": "^11.1.2",
     "rollup-plugin-typescript2": "^0.35.0",
     "@rollup/plugin-node-resolve": "^15.1.0",
     "glob": "^10.3.3"
@@ -81,7 +78,7 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "test": "npx rollup -c rollup.config.cjs && mocha ./dist/test/test*.js",
+    "test": "mocha ./dist/test/test*.js",
     "test:watch": "mocha ./dist/test/test*.js --watch",
     "test-debug": "npx rollup -c rollup.config.cjs && mocha --inspect-brk ./dist/test/test*.js",
     "build": "npx rollup -c rollup.config.cjs"

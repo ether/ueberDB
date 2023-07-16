@@ -76,6 +76,8 @@ jobs:
         run: |
           psql --version &&
           psql -d postgresql://ueberdb:ueberdb@127.0.0.1/ueberdb -c '\dt'
+      - name: Create javascript files from typescript
+        run: npm run build
 
       - run: npm test
       - run: npm run lint
