@@ -1,8 +1,8 @@
-import assert$0 from 'assert';
+import {strict} from 'assert';
 import {Database} from '../index';
 import util from 'util';
 'use strict';
-const assert = assert$0.strict;
+const assert = strict
 const range = (N: any) => [...Array(N).keys()];
 describe(__filename, () => {
   let db: any = null;
