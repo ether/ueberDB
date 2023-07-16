@@ -134,6 +134,6 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       -
         name: Add package to etherpad organization
-        run: npm access grant read-write etherpad:developers
+        run: npm access grant read-write etherpad:developers ueberdb2
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}

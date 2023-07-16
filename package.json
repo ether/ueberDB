@@ -72,7 +72,7 @@
   "files": [
     "dist/databases",
     "dist/index.js",
-    "lib"
+    "dist/lib"
   ],
   "homepage": "https://github.com/ether/ueberDB",
   "scripts": {
