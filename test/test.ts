@@ -13,7 +13,7 @@ import {deepEqual, equal, rejects} from 'assert'
 
 const fs = {promises}.promises;
 const maxKeyLength = 100;
-const randomString = (length = maxKeyLength) => new Randexp(new RegExp(`.{${length}}`)).gen();
+const randomString = (length = maxKeyLength) => new Randexp(new RegExp(`.{${length}}`)).gen().replace("_","");
 // eslint-disable-next-line mocha/no-top-level-hooks
 after(async () => {
   // Add a timeout to forcibly exit if something is keeping node from exiting cleanly.
@@ -153,7 +153,7 @@ describe(__filename, () => {
                 deepEqual(keys, [key]);
               });
               it('remove works', async () => {
-                const input = {a: 1, b: new Randexp(/.+/).gen().replace("_","")};
+                const input = {a: 1, b: new Randexp(/.+/)};
                 const key = randomString();
                 await db.set(key, input);
                 equal(JSON.stringify(await db.get(key)), JSON.stringify(input));
