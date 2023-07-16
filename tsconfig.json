@@ -106,7 +106,6 @@
     "src",
     ".eslintrc.cjs",
     "test",
-    "databases",
-    "dirtydb"
+    "databases"
   ]
 }

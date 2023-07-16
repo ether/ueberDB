@@ -14,6 +14,6 @@ module.exports = {
   output: {
     preserveModules: true,
     dir: './dist',
-    format: 'cjs',
+    format: 'cjs'
   }
 };
