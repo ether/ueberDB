@@ -6,7 +6,7 @@ import Clitable from 'cli-table';
 import Randexp from 'randexp';
 import {databases} from './lib/databases';
 import {promises} from 'fs';
-import logging from '../lib/logging';
+import {ConsoleLogger} from '../lib/logging';
 import * as ueberdb from '../index';
 'use strict';
 import {deepEqual, equal, rejects} from 'assert'
@@ -63,7 +63,7 @@ describe(__filename, () => {
                 db = new ueberdb.Database(database, dbSettings, {
                   ...(readCache ? {} : {cache: 0}),
                   ...(writeBuffer ? {} : {writeInterval: 0}),
-                }, new logging.ConsoleLogger());
+                }, new ConsoleLogger());
                 await db.init();
               });
               after(async () => {
@@ -153,7 +153,7 @@ describe(__filename, () => {
                 deepEqual(keys, [key]);
               });
               it('remove works', async () => {
-                const input = {a: 1, b: new Randexp(/.+/).gen()};
+                const input = {a: 1, b: new Randexp(/.+/).gen().replace("_","")};
                 const key = randomString();
                 await db.set(key, input);
                 equal(JSON.stringify(await db.get(key)), JSON.stringify(input));

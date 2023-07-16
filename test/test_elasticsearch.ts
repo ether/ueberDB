@@ -1,11 +1,11 @@
 import {deepEqual, rejects} from 'assert';
 import es from 'elasticsearch8';
 import {databases} from './lib/databases';
-import logging from '../lib/logging';
+import {ConsoleLogger} from '../lib/logging';
 import * as ueberdb from '../index';
 'use strict';
 const {databases: {elasticsearch: cfg}} = {databases};
-const logger = new class extends logging.ConsoleLogger {
+const logger = new class extends ConsoleLogger {
   info() { }
   isInfoEnabled() { return false; }
 }();

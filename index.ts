@@ -17,8 +17,7 @@
  * limitations under the License.
  */
 
-// @ts-ignore
-import cacheAndBufferLayer from './lib/CacheAndBufferLayer';
+import {Database as DatabaseCache} from './lib/CacheAndBufferLayer';
 import {normalizeLogger} from './lib/logging';
 import {callbackify} from 'util';
 import {Settings} from './lib/AbstractDatabase';
@@ -34,8 +33,9 @@ const cbDb = {
   setSub: () => {},
 };
 const fns = ['close', 'findKeys', 'flush', 'get', 'getSub', 'init', 'remove', 'set', 'setSub'];
-for (const fn of fns) { // @ts-ignore
-  cbDb[fn] = callbackify(cacheAndBufferLayer.Database.prototype[fn]);
+for (const fn of fns) {
+  // @ts-ignore
+  cbDb[fn] = callbackify(DatabaseCache.prototype[fn]);
 }
 const makeDoneCallback = (callback: (err?:any)=>{}, deprecated:(err:any)=>{}) => (err: null) => {
   if (callback) callback(err);
@@ -75,7 +75,7 @@ export const Database = class {
     this.logger = normalizeLogger(logger);
     const db = new this.dbModule.Database(this.dbSettings);
     db.logger = this.logger;
-    this.db = new cacheAndBufferLayer.Database(db, this.wrapperSettings, this.logger);
+    this.db = new DatabaseCache(db, this.wrapperSettings, this.logger);
 
     // Expose the cache wrapper's metrics to the user. See lib/CacheAndBufferLayer.js for details.
     //

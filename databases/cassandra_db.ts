@@ -13,7 +13,7 @@
  */
 
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
-import cassandra, {ArrayOrObject, Client, types, ValueCallback} from 'cassandra-driver';
+import {ArrayOrObject, Client, types, ValueCallback} from 'cassandra-driver';
 import ResultSet = types.ResultSet;
 
 
@@ -64,7 +64,7 @@ export const Database = class Cassandra_db extends AbstractDatabase {
    */
   init(callback: (arg: any)=>{}) {
     // Create a client
-    this.client = new cassandra.Client(this.settings.clientOptions);
+    this.client = new Client(this.settings.clientOptions);
 
     // Pass on log messages if a logger has been configured
     if (this.settings.logger) {

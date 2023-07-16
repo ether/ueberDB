@@ -39,7 +39,7 @@ const util = require('util');
 /**
  * Cache with Least Recently Used eviction policy.
  */
-class LRU {
+export class LRU {
   /**
    * @param evictable Optional predicate that dictates whether it is permissable to evict the entry
    *     if it is old and the cache is over capacity. The predicate is passed two arguments (key,
@@ -132,7 +132,7 @@ const defaultSettings =
       charset: 'utf8mb4',
     };
 
-exports.Database = class {
+export const Database = class {
   /**
    * @param wrappedDB The Database that should be wrapped
    * @param settings (optional) The settings that should be applied to the wrapper
@@ -660,6 +660,6 @@ const clone = (obj, key = '') => {
   throw new Error("Unable to copy obj! Its type isn't supported.");
 };
 
-exports.exportedForTesting = {
+export const exportedForTesting = {
   LRU,
 };
