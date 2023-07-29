@@ -108,7 +108,8 @@ export const Database = class extends AbstractDatabase {
     } else {
       // @ts-ignore
       this.collection!.updateMany({_id: key}, {$set: {value}}, {upsert: true})
-          .then(v=>callback(null)).catch(v=>callback(v));
+          .then(()=>callback(null))
+          .catch(v=>callback(v));
     }
 
     this.schedulePing();
