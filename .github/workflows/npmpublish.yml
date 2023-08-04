@@ -12,6 +12,15 @@ jobs:
   test:
     runs-on: ubuntu-latest
     services:
+      scylladb:
+        image: scylladb/scylla:4.4.3
+        ports:
+          - 9042:9042
+        options: >-
+          --health-cmd="cqlsh -e 'describe keyspaces;'"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
       couchdb:
         image: couchdb
         ports:

@@ -23,6 +23,22 @@ export const databases:DatabaseType = {
       removeMax: 0.5,
     },
   },
+  cassandra:{
+    hosts: ["127.0.0.1:9160"],
+    keyspace: "oae",
+    cfName: "Etherpad",
+    user: "",
+    pass: "",
+    timeout: 3000,
+    replication: 1,
+    strategyClass: "SimpleStrategy",
+    speeds: {
+      setMax: 0.6,
+      getMax: 0.5,
+      findKeysMax: 2.5,
+      removeMax: 0.5,
+    },
+  },
   mysql: {
     user: 'ueberdb',
     host: '127.0.0.1',
