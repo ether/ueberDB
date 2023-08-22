@@ -63,7 +63,7 @@ export const Database = class extends AbstractDatabase {
 
   set(key:string, value: string, callback: ()=>{}) {
     this.db.set(key, value, callback);
-    const databasePath = require('path').dirname(this.settings.filename);
+    const databasePath = require('path').dirname(this.settings.filename!);
     require('simple-git')(databasePath)
         .silent(true)
         .add('./*.db')

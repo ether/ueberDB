@@ -74,4 +74,17 @@ export const databases:DatabaseType = {
     port: '9200',
 
   },
+  surrealdb: {
+
+    url:'http://127.0.0.1:8000/rpc',
+    speeds: {
+        findKeysMax: 30,
+    },
+    columnFamily: 'ueberdb',
+    user: 'root',
+    password: 'root',
+    clientOptions: {
+        ns: 'ueberdb',
+    }
+  }
 };
