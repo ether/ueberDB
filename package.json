@@ -57,7 +57,7 @@
     "wtfnode": "^0.9.1",
     "rollup": "^3.28.1",
     "rollup-plugin-typescript2": "^0.35.0",
-    "@rollup/plugin-node-resolve": "^15.2.0",
+    "@rollup/plugin-node-resolve": "^15.2.1",
     "glob": "^10.3.3"
   },
   "repository": {
