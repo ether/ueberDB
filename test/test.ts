@@ -1,19 +1,16 @@
 // @ts-expect-error TS(7016): Could not find a declaration file for module 'wtfn... Remove this comment to see the full error message
 import wtfnode from 'wtfnode';
-// @ts-expect-error TS(7016): Could not find a declaration file for module 'cli-... Remove this comment to see the full error message
 import Clitable from 'cli-table';
-// @ts-ignore
-import Randexp from 'randexp';
+import Randexp from 'reregexp';
 import {databases} from './lib/databases';
 import {promises} from 'fs';
 import {ConsoleLogger} from '../lib/logging';
 import * as ueberdb from '../index';
-'use strict';
 import {deepEqual, equal, rejects} from 'assert'
 
 const fs = {promises}.promises;
 const maxKeyLength = 100;
-const randomString = (length = maxKeyLength) => new Randexp(new RegExp(`.{${length}}`)).gen().replace("_","");
+const randomString = (length = maxKeyLength) => new Randexp(new RegExp(`.{${length}}`)).build().replace("_","");
 // eslint-disable-next-line mocha/no-top-level-hooks
 after(async () => {
   // Add a timeout to forcibly exit if something is keeping node from exiting cleanly.
@@ -76,7 +73,7 @@ describe(__filename, () => {
                     let input: any;
                     let key: any;
                     before(async () => {
-                      input = {a: 1, b: new Randexp(/.+/).gen()};
+                      input = {a: 1, b: new Randexp(/.+/).build()};
                       key = randomString(maxKeyLength - 1) + (space ? ' ' : '');
                       await db.set(key, input);
                     });
@@ -102,14 +99,14 @@ describe(__filename, () => {
                 equal((await db.get(key)) == null,true);
               });
               it('set+get works', async () => {
-                const input = {a: 1, b: new Randexp(/.+/).gen()};
+                const input = {a: 1, b: new Randexp(/.+/).build()};
                 const key = randomString();
                 await db.set(key, input);
                 const output = await db.get(key);
                 equal(JSON.stringify(output), JSON.stringify(input));
               });
               it('set+get with random key/value works', async () => {
-                const input = {testLongString: new Randexp(/[a-f0-9]{50000}/).gen()};
+                const input = {testLongString: new Randexp(/[a-f0-9]{50000}/).build()};
                 const key = randomString();
                 await db.set(key, input);
                 const output = await db.get(key);
@@ -118,7 +115,7 @@ describe(__filename, () => {
               it('findKeys works', async function (this: any) {
                 if (database === 'mongodb') { this.skip(); } // TODO: Fix mongodb.
                 // TODO setting a key with non ascii chars
-                const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
+                const key = new Randexp(/([a-z]\w{0,20})foo\1/).build();
                 await Promise.all([
                   db.set(key, true),
                   db.set(`${key}a`, true),
@@ -129,7 +126,7 @@ describe(__filename, () => {
               });
               it('findKeys with exclusion works', async function (this: any) {
                 if (database === 'mongodb') { this.skip(); } // TODO: Fix mongodb.
-                const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
+                const key = new Randexp(/([a-z]\w{0,20})foo\1/).build();
                 await Promise.all([
                   db.set(key, true),
                   db.set(`${key}a`, true),
@@ -141,13 +138,13 @@ describe(__filename, () => {
                 deepEqual(keys.sort(), [key, `${key}a`].sort());
               });
               it('findKeys with no matches works', async () => {
-                const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
+                const key = new Randexp(/([a-z]\w{0,20})foo\1/).build();
                 await db.set(key, true);
                 const keys = await db.findKeys(`${key}_nomatch_*`, null);
                 deepEqual(keys, []);
               });
               it('findKeys with no wildcard works', async () => {
-                const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
+                const key = new Randexp(/([a-z]\w{0,20})foo\1/).build();
                 await db.set(key, true);
                 const keys = await db.findKeys(key, null);
                 deepEqual(keys, [key]);
@@ -230,9 +227,9 @@ describe(__filename, () => {
 
                 this.timeout(180000);
                 const {speeds: {count = 1000, setMax = 3, getMax = 0.1, findKeysMax = 3, removeMax = 1} = {}}:Speeds = dbSettings || {};
-                const input = {a: 1, b: new Randexp(/.+/).gen()};
+                const input = {a: 1, b: new Randexp(/.+/).build()};
                 // TODO setting a key with non ascii chars
-                const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
+                const key = new Randexp(/([a-z]\w{0,20})foo\1/).build();
                 // Pre-allocate an array before starting the timer so that time spent growing the
                 // array doesn't throw off the benchmarks.
                 const promises = [...Array(count + 1)].map(() => null);

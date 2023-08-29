@@ -41,7 +41,9 @@
     "sqlite3": "^5.1.6"
   },
   "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.2.1",
     "@types/async": "^3.2.20",
+    "@types/cli-table": "^0.3.1",
     "@types/mocha": "^10.0.1",
     "@types/mssql": "^8.1.2",
     "@types/mysql": "^2.15.21",
@@ -51,14 +53,13 @@
     "cli-table": "^0.3.11",
     "eslint": "^8.47.0",
     "eslint-config-etherpad": "^3.0.22",
+    "glob": "^10.3.3",
     "mocha": "^10.2.0",
-    "randexp": "^0.5.3",
-    "typescript": "^4.9.5",
-    "wtfnode": "^0.9.1",
+    "reregexp": "^1.6.1",
     "rollup": "^3.28.1",
     "rollup-plugin-typescript2": "^0.35.0",
-    "@rollup/plugin-node-resolve": "^15.2.1",
-    "glob": "^10.3.3"
+    "typescript": "^4.9.5",
+    "wtfnode": "^0.9.1"
   },
   "repository": {
     "type": "git",
