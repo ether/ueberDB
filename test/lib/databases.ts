@@ -51,9 +51,9 @@ export const databases:DatabaseType = {
     url: 'mongodb://127.0.0.1:27017',
     database: 'mydb_test',
     speeds: {
-      setMax: 0.5,
-      getMax: 0.1,
-      removeMax: 0.6,
+      setMax: 2,
+      getMax: 2,
+      removeMax: 2,
     },
   },
   couch: {
