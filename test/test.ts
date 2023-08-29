@@ -2,8 +2,7 @@
 import wtfnode from 'wtfnode';
 // @ts-expect-error TS(7016): Could not find a declaration file for module 'cli-... Remove this comment to see the full error message
 import Clitable from 'cli-table';
-// @ts-ignore
-import Randexp from 'randexp';
+import Randexp from 'randexp-ts';
 import {databases} from './lib/databases';
 import {promises} from 'fs';
 import {ConsoleLogger} from '../lib/logging';
