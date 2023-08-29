@@ -42,7 +42,7 @@ export const Database = class SurrealDB extends AbstractDatabase{
             .catch((e)=>callback(e, null))
     }
 
-    findKeys(key:string, notKey:string, callback:(v:any, keys:string[])=>{}) {
+    async findKeys(key:string, notKey:string, callback:(v:any, keys:string[])=>{}) {
         const vars:VarType  = {key: key}
         let query = "SELECT * FROM " + Database.TABLE + " WHERE key LIKE $key"
         if (notKey != null) {
@@ -52,7 +52,7 @@ export const Database = class SurrealDB extends AbstractDatabase{
             vars.notKey = notKey;
         }
 
-        this.db!.query(query, vars)
+       await this.db!.query(query, vars)
             .then((result) => {
                 const keys:string[] = [];
                 for (let i = 0; i < result.length; i++) {
