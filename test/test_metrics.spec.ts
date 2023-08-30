@@ -1,6 +1,6 @@
 import assert$0 from 'assert';
 import * as ueberdb from '../index';
-'use strict';
+import {afterAll, describe, it, afterEach, beforeEach, beforeAll, expect} from 'vitest'
 const assert = assert$0.strict;
 // Gate is a normal Promise that resolves when its open() method is called.
 // @ts-expect-error TS(2508): No base constructor has the specified number of ty... Remove this comment to see the full error message
@@ -42,24 +42,28 @@ const assertMetricsDelta = (before: any, after: any, wantDelta: any) => {
   // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
   assert.deepEqual(diffMetrics(before, after), wantDelta);
 };
+
+type MockSettings = {
+    mock?: any;
+}
+
 describe(__filename, () => {
   let db: any;
   let key: any;
   let mock: any;
-  before(async () => {
-    const settings = {};
+  beforeEach(async () => {
+    const settings:MockSettings = {};
     db = new ueberdb.Database('mock', settings);
-    // @ts-expect-error TS(2339): Property 'mock' does not exist on type '{}'.
-    mock = settings.mock;
-    mock.once('init', (cb: any) => cb());
     await db.init();
+    mock = settings.mock
+    mock.once('init', (cb: any) => cb());
   });
-  after(async () => {
+  afterAll(async () => {
     mock.once('close', (cb: any) => cb());
     await db.close();
   });
-  beforeEach(async function (this: any) {
-    key = this.currentTest.fullTitle(); // Use test title to avoid collisions with other tests.
+  beforeEach(async function (context) {
+    key = expect.getState().currentTestName
   });
   afterEach(async () => {
     mock.removeAllListeners();
@@ -123,11 +127,9 @@ describe(__filename, () => {
               await tc.f(key);
             }
             let finishDbRead;
-            const dbReadStarted = new Promise((resolve) => {
+            const dbReadStarted = new Promise<void>((resolve) => {
               mock.once('get', (key: any, cb: any) => {
-                // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-                assert(!subtc.cacheHit, 'value should have been cached');
-                // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
+                expect(!subtc.cacheHit).toBeTruthy //('value should have been cached');
                 resolve();
                 new Promise((resolve) => { finishDbRead = resolve; })
                     .then(() => cb(subtc.err, subtc.val));
@@ -174,7 +176,7 @@ describe(__filename, () => {
             readsFinished: 1,
             readsFromCache: 1,
           });
-          // @ts-expect-error TS(2722): Cannot invoke an object which is possibly 'undefin... Remove this comment to see the full error message
+          // @ts-ignore
           finishWrite();
           await writeFinished;
           await flushed;

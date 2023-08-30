@@ -4,16 +4,22 @@ import * as ueberdb from '../index';
 'use strict';
 const assert = assert$0.strict;
 const logger = new ConsoleLogger();
+import {afterAll, describe, it, afterEach, beforeEach, beforeAll, expect} from 'vitest'
+
+type MockSettings = {
+  mock?: any;
+}
+
 describe(__filename, () => {
   let db: any = null;
   let mock: any = null;
   const createDb = async (wrapperSettings = {}) => {
-    const settings = {};
+    const settings:MockSettings = {};
     db = new ueberdb.Database('mock', settings, {json: false, ...wrapperSettings}, logger);
-    // @ts-expect-error TS(2339): Property 'mock' does not exist on type '{}'.
+    await db.init();
     mock = settings.mock;
     mock.once('init', (cb: any) => cb());
-    await db.init();
+
   };
   afterEach(async () => {
     if (mock != null) {

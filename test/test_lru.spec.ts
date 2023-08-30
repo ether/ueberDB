@@ -1,6 +1,6 @@
 import {exportedForTesting} from '../lib/CacheAndBufferLayer';
 import assert$0 from 'assert';
-'use strict';
+import {afterAll, describe, it, afterEach, beforeEach, beforeAll, expect} from 'vitest'
 const LRU = {exportedForTesting}.exportedForTesting.LRU;
 const assert = assert$0.strict;
 describe(__filename, () => {

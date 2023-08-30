@@ -1,14 +1,15 @@
 import assert$0 from 'assert';
 import * as ueberdb from '../index';
-'use strict';
+import {afterAll, describe, it, afterEach, beforeEach, beforeAll, expect} from 'vitest'
+
 const assert = assert$0.strict;
 describe(__filename, () => {
   let db: any = null;
-  before(async () => {
+  beforeAll(async () => {
     db = new ueberdb.Database('memory', {}, {});
     await db.init();
   });
-  after(async () => {
+  afterAll(async () => {
     await db.close();
   });
   it('no .toJSON method', async () => {

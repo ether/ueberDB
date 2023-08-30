@@ -37,7 +37,7 @@ export const Database = class extends AbstractDatabase {
 
   clearPing() {
     if (this.interval) {
-      clearInterval(this.interval);
+      clearInterval(this.interval[Symbol.toPrimitive]());
     }
   }
 

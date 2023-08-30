@@ -1,7 +1,8 @@
 import assert$0 from 'assert';
 import {databases} from './lib/databases';
 import * as mysql from '../databases/mysql_db';
-'use strict';
+import {afterAll, describe, it, afterEach, beforeEach, beforeAll, expect} from 'vitest'
+
 const assert = assert$0.strict;
 describe(__filename, () => {
   beforeEach(async function (this: any) {
