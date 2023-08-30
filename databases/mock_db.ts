@@ -4,13 +4,16 @@ import events from 'events';
 
 export const Database = class extends events.EventEmitter {
   private settings: Settings;
+  public mock: any;
   constructor(settings:Settings) {
     super();
     this.settings = {
       writeInterval: 1,
       ...settings,
     };
-    this.settings.mock = this;
+    settings.mock = this;
+    this.settings = settings;
+    console.log("Initialized")
   }
 
   close(cb: ()=>{}) {
@@ -29,8 +32,8 @@ export const Database = class extends events.EventEmitter {
     this.emit('get', key, cb);
   }
 
-  init(cb:()=>{}) {
-    this.emit('init', cb);
+ async init(cb:()=>{}) {
+   this.emit('init', cb());
   }
 
   remove(key:string, cb:()=>{}) {

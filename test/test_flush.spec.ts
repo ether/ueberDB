@@ -8,7 +8,6 @@ describe(__filename, () => {
   const createDb = async (wrapperSettings = {}) => {
     const settings = {};
     db = new ueberdb.Database('mock', settings, {json: false, ...wrapperSettings}, logger);
-    // @ts-ignore
     mock = settings.mock;
     mock.once('init', (cb: any) => cb());
     await db.init();

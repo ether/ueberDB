@@ -12,7 +12,6 @@ const logger = new class extends ConsoleLogger {
 import {afterAll, describe, it, afterEach, beforeEach, beforeAll, expect} from 'vitest'
 
 describe(__filename, function (this: any) {
-  this.timeout(60000);
   const {base_index = 'ueberdb_test'} = cfg;
   let client: any;
   let db: any;
