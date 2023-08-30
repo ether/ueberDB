@@ -1,9 +1,11 @@
 import {strict} from 'assert';
 import {Database} from '../index';
 import util from 'util';
-'use strict';
 const assert = strict
 const range = (N: any) => [...Array(N).keys()];
+
+import {afterAll, describe, it, afterEach, beforeEach, beforeAll, expect} from 'vitest'
+
 describe(__filename, () => {
   let db: any = null;
   let mock: any = null;

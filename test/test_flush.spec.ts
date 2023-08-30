@@ -1,6 +1,6 @@
 import {ConsoleLogger} from '../lib/logging';
 import * as ueberdb from '../index';
-'use strict';
+import {afterAll, describe, it, afterEach, beforeEach, beforeAll, expect} from 'vitest'
 const logger = new ConsoleLogger();
 describe(__filename, () => {
   let db: any = null;

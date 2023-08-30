@@ -1,6 +1,6 @@
 import assert$0 from 'assert';
 import * as memory from '../databases/memory_db';
-'use strict';
+import {afterAll, describe, it, afterEach, beforeEach, beforeAll, expect} from 'vitest'
 const assert = assert$0.strict;
 
 describe(__filename, () => {

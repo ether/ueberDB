@@ -1,6 +1,6 @@
 import assert$0 from 'assert';
 import * as ueberdb from '../index';
-'use strict';
+import {afterAll, describe, it, afterEach, beforeEach, beforeAll, expect} from 'vitest'
 const assert = assert$0.strict;
 // Gate is a normal Promise that resolves when its open() method is called.
 // @ts-expect-error TS(2508): No base constructor has the specified number of ty... Remove this comment to see the full error message
@@ -46,7 +46,7 @@ describe(__filename, () => {
   let db: any;
   let key: any;
   let mock: any;
-  before(async () => {
+  beforeAll(async () => {
     const settings = {};
     db = new ueberdb.Database('mock', settings);
     // @ts-expect-error TS(2339): Property 'mock' does not exist on type '{}'.
@@ -54,7 +54,7 @@ describe(__filename, () => {
     mock.once('init', (cb: any) => cb());
     await db.init();
   });
-  after(async () => {
+  afterAll(async () => {
     mock.once('close', (cb: any) => cb());
     await db.close();
   });

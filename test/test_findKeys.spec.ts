@@ -4,6 +4,8 @@ import * as ueberdb from '../index';
 'use strict';
 const assert = assert$0.strict;
 const logger = new ConsoleLogger();
+import {afterAll, describe, it, afterEach, beforeEach, beforeAll, expect} from 'vitest'
+
 describe(__filename, () => {
   let db: any = null;
   let mock: any = null;
