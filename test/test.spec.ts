@@ -7,7 +7,6 @@ import {databases} from './lib/databases';
 import {promises} from 'fs';
 import {ConsoleLogger} from '../lib/logging';
 import * as ueberdb from '../index';
-'use strict';
 import {afterAll, describe, it, afterEach, beforeEach, beforeAll, expect} from 'vitest'
 import {rejects} from "assert";
 
@@ -51,7 +50,6 @@ describe(__filename, () => {
     console.log(speedTable.toString());
   });
   Object.keys(databases)
-      .filter((database) => database == 'mysql')
       .forEach((database) => {
     const dbSettings = databases[database];
     describe(database, () => {
