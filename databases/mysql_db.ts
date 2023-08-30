@@ -20,7 +20,7 @@ import util from 'util';
 import {BulkObject} from './cassandra_db';
 
 export const Database = class extends AbstractDatabase {
-  private _mysqlSettings: Settings;
+  private readonly _mysqlSettings: Settings;
   private _pool: any;
   constructor(settings:Settings) {
     super();
@@ -45,8 +45,7 @@ export const Database = class extends AbstractDatabase {
     try {
       return await new Promise((resolve, reject) => {
         options = {timeout: this.settings.queryTimeout, ...options};
-        // @ts-ignore
-        this._pool && this._pool.query(options, (err, ...args) => err != null ? reject(err) : resolve(args));
+        this._pool && this._pool.query(options, (err:Error, ...args:string[]) => err != null ? reject(err) : resolve(args));
       });
     } catch (err:any) {
       this.logger.error(`${err.fatal ? 'Fatal ' : ''}MySQL error: ${err.stack || err}`);

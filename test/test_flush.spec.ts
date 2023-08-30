@@ -2,11 +2,18 @@ import {ConsoleLogger} from '../lib/logging';
 import * as ueberdb from '../index';
 import {afterAll, describe, it, afterEach, beforeEach, beforeAll, expect} from 'vitest'
 const logger = new ConsoleLogger();
+
+
+type MockSettings = {
+    mock?: any;
+}
+
+
 describe(__filename, () => {
   let db: any = null;
   let mock: any = null;
   const createDb = async (wrapperSettings = {}) => {
-    const settings = {};
+    const settings:MockSettings = {};
     db = new ueberdb.Database('mock', settings, {json: false, ...wrapperSettings}, logger);
     mock = settings.mock;
     mock.once('init', (cb: any) => cb());
