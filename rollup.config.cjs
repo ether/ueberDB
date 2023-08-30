@@ -4,7 +4,7 @@ const typescript = require('rollup-plugin-typescript2');
 const glob = require('glob');
 
 module.exports = {
-  input: ['./index.ts'].concat(glob.sync('./databases/*.ts')).concat(glob.sync('./test/*.ts')), // Matches all TypeScript files in the 'src' directory and its subdirectories
+  input: ['./index.ts'].concat(glob.sync('./databases/*.ts')), // Matches all TypeScript files in the 'src' directory and its subdirectories
   plugins: [
     typescript({
       tsconfig: 'tsconfig.json',
