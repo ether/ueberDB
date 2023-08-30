@@ -4,18 +4,22 @@ import util from 'util';
 const assert = strict
 const range = (N: any) => [...Array(N).keys()];
 
-import {afterAll, describe, it, afterEach, beforeEach, beforeAll, expect} from 'vitest'
+import {describe, it, afterEach, expect} from 'vitest'
+
+type MockSettings = {
+  mock?: any;
+}
 
 describe(__filename, () => {
   let db: any = null;
   let mock: any = null;
   const createDb = async (wrapperSettings: any) => {
-    const settings = {};
+    const settings:MockSettings = {};
     db = new Database('mock', settings, wrapperSettings);
-    // @ts-expect-error TS(2339): Property 'mock' does not exist on type '{}'.
+    await db.init();
     mock = settings.mock;
     mock.once('init', (cb: any) => cb());
-    await db.init();
+
   };
   afterEach(async () => {
     if (mock != null) {
@@ -38,11 +42,9 @@ describe(__filename, () => {
         mock.on('doBulk', util.callbackify(async (ops: any) => gotWrites.push(ops.length)));
         const N = 10;
         await Promise.all(range(N).map((i) => db.set(`key${i}`, `val${i}`)));
-        const wantLimit = bulkLimit || N;
-        // @ts-expect-error TS(2363): The right-hand side of an arithmetic operation mus... Remove this comment to see the full error message
+        const wantLimit:any = bulkLimit || N;
         const wantWrites = range(N / wantLimit).map((i) => wantLimit);
-        // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-        assert.deepEqual(gotWrites, wantWrites);
+        expect(gotWrites).toStrictEqual(wantWrites);
       });
     }
   });

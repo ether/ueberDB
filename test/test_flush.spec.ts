@@ -15,9 +15,9 @@ describe(__filename, () => {
   const createDb = async (wrapperSettings = {}) => {
     const settings:MockSettings = {};
     db = new ueberdb.Database('mock', settings, {json: false, ...wrapperSettings}, logger);
+    await db.init();
     mock = settings.mock;
     mock.once('init', (cb: any) => cb());
-    await db.init();
   };
   afterEach(async () => {
     if (mock != null) {

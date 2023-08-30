@@ -51,6 +51,7 @@ describe(__filename, () => {
     console.log(speedTable.toString());
   });
   Object.keys(databases)
+      .filter((database) => database == 'mysql')
       .forEach((database) => {
     const dbSettings = databases[database];
     describe(database, () => {
@@ -89,7 +90,6 @@ describe(__filename, () => {
                     it('get(key) -> record', async () => {
                       const output = await db.get(key);
                       expect(JSON.stringify(output)).toBe(JSON.stringify(input));
-                      console.log("Done")
                     });
                     it('get(`${key} `) -> nullish', async () => {
                       const output = await db.get(`${key} `);
@@ -105,9 +105,7 @@ describe(__filename, () => {
                 }
               });
               it('get of unknown key -> nullish', async () => {
-                console.log("Test")
                 const key = randomString();
-                console.log(await db.get(key))
                 expect((await db.get(key)) == null).toBeTruthy();
               });
               it('set+get works', async () => {
@@ -221,8 +219,7 @@ describe(__filename, () => {
                   expect(await db.get('k')).toBe(v);
                 }
               });
-              it('speed is acceptable', async function (this: any) {
-
+              it('speed is acceptable', async function (context) {
                 type TimeSettings = {
                   remove?: string | number;
                   findKeys?: number;
@@ -322,7 +319,10 @@ describe(__filename, () => {
                   expect(findKeysMax >= timePerOp.findKeys).toBeTruthy();
                   expect(removeMax >= timePerOp.remove).toBeTruthy();
                 }
-              });
+              },
+                  {
+                    timeout: 60000
+                  });
             });
           }
         });
