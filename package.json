@@ -77,7 +77,8 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "build": "npx rollup -c rollup.config.cjs"
+    "build": "npx rollup -c rollup.config.cjs",
+    "test": "vitest"
   },
   "_npmUser": {
     "name": "johnyma22",
