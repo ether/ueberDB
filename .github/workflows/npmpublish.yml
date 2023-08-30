@@ -60,7 +60,7 @@ jobs:
       surrealdb:
         image: surrealdb/surrealdb:latest
         options: >-
-         start --user root --pass root file:/data/database.db
+         --user root --pass root file:/data/database.db
         ports:
           - "8000:8000"
     timeout-minutes: 10
