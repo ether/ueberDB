@@ -8,13 +8,15 @@ import {promises} from 'fs';
 import {ConsoleLogger} from '../lib/logging';
 import * as ueberdb from '../index';
 'use strict';
-import {deepEqual, equal, rejects} from 'assert'
+import {afterAll, describe, it, afterEach, beforeEach, beforeAll, expect} from 'vitest'
+import {rejects} from "assert";
+
 
 const fs = {promises}.promises;
 const maxKeyLength = 100;
 const randomString = (length = maxKeyLength) => new Randexp(new RegExp(`.{${length}}`)).gen().replace("_","");
 // eslint-disable-next-line mocha/no-top-level-hooks
-after(async () => {
+afterAll(async () => {
   // Add a timeout to forcibly exit if something is keeping node from exiting cleanly.
   // The timeout is unref()ed so that it doesn't prevent node from exiting when done.
   setTimeout(() => {
@@ -28,7 +30,7 @@ after(async () => {
 describe(__filename, () => {
   let speedTable: any;
   let db: any;
-  before(async () => {
+  beforeAll(async () => {
     speedTable = new Clitable({
       head: [
         'Database',
@@ -45,7 +47,7 @@ describe(__filename, () => {
       colWidths: [15, 15, 15, 8, 13, 13, 13, 13, 13, 13],
     });
   });
-  after(async () => {
+  afterAll(async () => {
     console.log(speedTable.toString());
   });
   Object.keys(databases)
@@ -56,66 +58,76 @@ describe(__filename, () => {
         describe(`${readCache ? '' : 'no '}read cache`, () => {
           for (const writeBuffer of [false, true]) {
             describe(`${writeBuffer ? '' : 'no '}write buffer`, function (this: any) {
-              this.timeout(5000);
-              before(async () => {
-                if (dbSettings.filename) { await fs.unlink(dbSettings.filename).catch(() => { }); }
+              beforeEach(async () => {
+                if (dbSettings.filename) {
+                  await fs.unlink(dbSettings.filename).catch(() => {
+                  });
+                }
                 db = new ueberdb.Database(database, dbSettings, {
                   ...(readCache ? {} : {cache: 0}),
                   ...(writeBuffer ? {} : {writeInterval: 0}),
                 }, new ConsoleLogger());
                 await db.init();
               });
-              after(async () => {
+              afterEach(async () => {
                 await db.close();
-                if (dbSettings.filename) { await fs.unlink(dbSettings.filename).catch(() => { }); }
+                if (dbSettings.filename) {
+                  await fs.unlink(dbSettings.filename).catch(() => {
+                  });
+                }
               });
               describe('white space in key is not ignored', () => {
                 for (const space of [false, true]) {
                   describe(`key ${space ? 'has' : 'does not have'} a trailing space`, () => {
                     let input: any;
                     let key: any;
-                    before(async () => {
+                    beforeEach(async () => {
                       input = {a: 1, b: new Randexp(/.+/).gen()};
                       key = randomString(maxKeyLength - 1) + (space ? ' ' : '');
                       await db.set(key, input);
                     });
                     it('get(key) -> record', async () => {
                       const output = await db.get(key);
-                      equal(JSON.stringify(output), JSON.stringify(input));
+                      expect(JSON.stringify(output)).toBe(JSON.stringify(input));
+                      console.log("Done")
                     });
                     it('get(`${key} `) -> nullish', async () => {
                       const output = await db.get(`${key} `);
-                      equal(output == null,true);
+                      expect(output == null).toBeTruthy();
                     });
                     if (space) {
                       it('get(key.slice(0, -1)) -> nullish', async () => {
                         const output = await db.get(key.slice(0, -1));
-                        equal(output == null,true);
+                        expect(output == null).toBeTruthy();
                       });
                     }
                   });
                 }
               });
               it('get of unknown key -> nullish', async () => {
+                console.log("Test")
                 const key = randomString();
-                equal((await db.get(key)) == null,true);
+                console.log(await db.get(key))
+                expect((await db.get(key)) == null).toBeTruthy();
               });
               it('set+get works', async () => {
                 const input = {a: 1, b: new Randexp(/.+/).gen()};
                 const key = randomString();
                 await db.set(key, input);
                 const output = await db.get(key);
-                equal(JSON.stringify(output), JSON.stringify(input));
+                expect(JSON.stringify(output)).toBe(JSON.stringify(input));
               });
               it('set+get with random key/value works', async () => {
                 const input = {testLongString: new Randexp(/[a-f0-9]{50000}/).gen()};
                 const key = randomString();
                 await db.set(key, input);
                 const output = await db.get(key);
-                equal(JSON.stringify(output), JSON.stringify(input));
+                expect(JSON.stringify(output)).toBe(JSON.stringify(input));
               });
               it('findKeys works', async function (this: any) {
-                if (database === 'mongodb') { this.skip(); } // TODO: Fix mongodb.
+                if (database === 'mongodb') {
+                  this.skip();
+                } // TODO: Fix mongodb.
                 // TODO setting a key with non ascii chars
                 const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
                 await Promise.all([
@@ -124,10 +136,12 @@ describe(__filename, () => {
                   db.set(`nonmatching_${key}`, false),
                 ]);
                 const keys = await db.findKeys(`${key}*`, null);
-                deepEqual(keys.sort(), [key, `${key}a`]);
+                expect(keys.sort()).toStrictEqual([key, `${key}a`]);
               });
               it('findKeys with exclusion works', async function (this: any) {
-                if (database === 'mongodb') { this.skip(); } // TODO: Fix mongodb.
+                if (database === 'mongodb') {
+                  this.skip();
+                } // TODO: Fix mongodb.
                 const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
                 await Promise.all([
                   db.set(key, true),
@@ -137,65 +151,65 @@ describe(__filename, () => {
                   db.set(`nonmatching_${key}`, false),
                 ]);
                 const keys = await db.findKeys(`${key}*`, `${key}b*`);
-                deepEqual(keys.sort(), [key, `${key}a`].sort());
+                expect(keys.sort()).toStrictEqual([key, `${key}a`]);
               });
               it('findKeys with no matches works', async () => {
                 const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
                 await db.set(key, true);
                 const keys = await db.findKeys(`${key}_nomatch_*`, null);
-                deepEqual(keys, []);
+                expect(keys).toStrictEqual([]);
               });
               it('findKeys with no wildcard works', async () => {
                 const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
                 await db.set(key, true);
                 const keys = await db.findKeys(key, null);
-                deepEqual(keys, [key]);
+                expect(keys).toStrictEqual([key]);
               });
               it('remove works', async () => {
                 const input = {a: 1, b: new Randexp(/.+/)};
                 const key = randomString();
                 await db.set(key, input);
-                equal(JSON.stringify(await db.get(key)), JSON.stringify(input));
+                expect(JSON.stringify(await db.get(key))).toStrictEqual(JSON.stringify(input));
                 await db.remove(key);
-                equal((await db.get(key)) == null,true);
+                expect((await db.get(key)) == null).toBeTruthy();
               });
               it('getSub of existing property works', async () => {
                 await db.set('k', {sub1: {sub2: 'v'}});
-                equal(await db.getSub('k', ['sub1', 'sub2']), 'v');
-                deepEqual(await db.getSub('k', ['sub1']), {sub2: 'v'});
-                deepEqual(await db.getSub('k', []), {sub1: {sub2: 'v'}});
+                expect(await db.getSub('k', ['sub1', 'sub2'])).toBe('v');
+                expect(await db.getSub('k', ['sub1'])).toStrictEqual({sub2: 'v'});
+                expect(await db.getSub('k', [])).toStrictEqual({sub1: {sub2: 'v'}});
               });
               it('getSub of missing property returns nullish', async () => {
                 await db.set('k', {sub1: {}});
-                equal((await db.getSub('k', ['sub1', 'sub2'])) == null,true);
+                expect((await db.getSub('k', ['sub1', 'sub2']))).toBeNull();
                 await db.set('k', {});
-                equal((await db.getSub('k', ['sub1', 'sub2'])) == null,true);
-                equal((await db.getSub('k', ['sub1'])) == null,true);
+                expect((await db.getSub('k', ['sub1', 'sub2']))).toBeNull();
+                expect((await db.getSub('k', ['sub1']))).toBeNull();
                 await db.remove('k');
-                equal((await db.getSub('k', ['sub1', 'sub2'])) == null,true);
-                equal((await db.getSub('k', ['sub1'])) == null,true);
-                equal((await db.getSub('k', [])) == null,true);
+                expect((await db.getSub('k', ['sub1', 'sub2']))).toBeNull();
+                expect((await db.getSub('k', ['sub1']))).toBeNull();
+                expect(await db.getSub('k', [])).toBeUndefined();
               });
               it('setSub can modify an existing property', async () => {
                 await db.set('k', {sub1: {sub2: 'v'}});
                 await db.setSub('k', ['sub1', 'sub2'], 'v2');
-                deepEqual(await db.get('k'), {sub1: {sub2: 'v2'}});
+                expect(await db.get('k')).toStrictEqual({sub1: {sub2: 'v2'}});
                 await db.setSub('k', ['sub1'], 'v2');
-                deepEqual(await db.get('k'), {sub1: 'v2'});
+                expect(await db.get('k')).toStrictEqual({sub1: 'v2'});
                 await db.setSub('k', [], 'v3');
-                equal(await db.get('k'), 'v3');
+                expect(await db.get('k')).toStrictEqual('v3');
               });
               it('setSub can add a new property', async () => {
                 await db.remove('k');
                 await db.setSub('k', [], {});
-                deepEqual(await db.get('k'), {});
+                expect(await db.get('k')).toStrictEqual({});
                 await db.setSub('k', ['sub1'], {});
-                deepEqual(await db.get('k'), {sub1: {}});
+                expect(await db.get('k')).toStrictEqual({sub1: {}});
                 await db.setSub('k', ['sub1', 'sub2'], 'v');
-                deepEqual(await db.get('k'), {sub1: {sub2: 'v'}});
+                expect(await db.get('k')).toStrictEqual({sub1: {sub2: 'v'}});
                 await db.remove('k');
                 await db.setSub('k', ['sub1', 'sub2'], 'v');
-                deepEqual(await db.get('k'), {sub1: {sub2: 'v'}});
+                expect(await db.get('k')).toStrictEqual({sub1: {sub2: 'v'}});
               });
               it('setSub rejects attempts to set properties on primitives', async () => {
                 for (const v of ['hello world', 42, true]) {
@@ -204,7 +218,7 @@ describe(__filename, () => {
                     name: 'TypeError',
                     message: /property "sub" on non-object/,
                   });
-                  deepEqual(await db.get('k'), v);
+                  expect(await db.get('k')).toBe(v);
                 }
               });
               it('speed is acceptable', async function (this: any) {
@@ -218,7 +232,7 @@ describe(__filename, () => {
                 }
 
                 type Speeds = {
-                  speeds:{
+                  speeds: {
                     count?: number;
                     setMax?: number;
                     getMax?: number;
@@ -227,26 +241,41 @@ describe(__filename, () => {
                   }
                 }
 
-                this.timeout(180000);
-                const {speeds: {count = 1000, setMax = 3, getMax = 0.1, findKeysMax = 3, removeMax = 1} = {}}:Speeds = dbSettings || {};
+                const {
+                  speeds: {
+                    count = 1000,
+                    setMax = 3,
+                    getMax = 0.1,
+                    findKeysMax = 3,
+                    removeMax = 1
+                  } = {}
+                }: Speeds = dbSettings || {};
                 const input = {a: 1, b: new Randexp(/.+/).gen()};
                 // TODO setting a key with non ascii chars
                 const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
                 // Pre-allocate an array before starting the timer so that time spent growing the
                 // array doesn't throw off the benchmarks.
                 const promises = [...Array(count + 1)].map(() => null);
-                const timers:TimeSettings = {start: Date.now()};
-                for (let i = 0; i < count; ++i) { promises[i] = db.set(key + i, input); }
+                const timers: TimeSettings = {start: Date.now()};
+                for (let i = 0; i < count; ++i) {
+                  promises[i] = db.set(key + i, input);
+                }
                 promises[count] = db.flush();
                 await Promise.all(promises);
                 timers.set = Date.now();
-                for (let i = 0; i < count; ++i) { promises[i] = db.get(key + i); }
+                for (let i = 0; i < count; ++i) {
+                  promises[i] = db.get(key + i);
+                }
                 await Promise.all(promises);
                 timers.get = Date.now();
-                for (let i = 0; i < count; ++i) { promises[i] = db.findKeys(key + i, null); }
+                for (let i = 0; i < count; ++i) {
+                  promises[i] = db.findKeys(key + i, null);
+                }
                 await Promise.all(promises);
                 timers.findKeys = Date.now();
-                for (let i = 0; i < count; ++i) { promises[i] = db.remove(key + i); }
+                for (let i = 0; i < count; ++i) {
+                  promises[i] = db.remove(key + i);
+                }
                 promises[count] = db.flush();
                 await Promise.all(promises);
                 timers.remove = Date.now();
@@ -270,7 +299,9 @@ describe(__filename, () => {
                 ]);
                 // Removes the "Acceptable ms/op" column if there is no enforced limit.
                 const filterColumn = (row: any) => {
-                  if (readCache && writeBuffer) { return row; }
+                  if (readCache && writeBuffer) {
+                    return row;
+                  }
                   row.splice(1, 1);
                   return row;
                 };
@@ -286,16 +317,14 @@ describe(__filename, () => {
                 ].map(filterColumn));
                 console.log(acceptableTable.toString());
                 if (readCache && writeBuffer) {
-                  equal(setMax >= timePerOp.set,true);
-                  equal(getMax >= timePerOp.get,true);
-                  equal(findKeysMax >= timePerOp.findKeys,true);
-                  equal(removeMax >= timePerOp.remove,true);
+                  expect(setMax >= timePerOp.set).toBeTruthy();
+                  expect(getMax >= timePerOp.get).toBeTruthy();
+                  expect(findKeysMax >= timePerOp.findKeys).toBeTruthy();
+                  expect(removeMax >= timePerOp.remove).toBeTruthy();
                 }
               });
             });
           }
         });
       }
-    });
-  });
-});
+    })})});

@@ -49,7 +49,7 @@ export const Database = class {
   private readonly dbSettings: any;
   private readonly wrapperSettings: any | {};
   private readonly logger: Function | null;
-  private readonly db: any;
+  private db: any;
   private metrics: any;
   /**
    * @param type The type of the database
@@ -60,7 +60,7 @@ export const Database = class {
    *     from another logging library should also work, but performance may be reduced if the logger
    *     object does not have is${Level}Enabled() methods (isDebugEnabled(), etc.).
    */
-  constructor(type: undefined | string, dbSettings: Settings | null | string, wrapperSettings?: null | {}, logger:any = null) {
+  constructor(type: undefined | string, dbSettings: Settings | null | string, wrapperSettings?: null | {}, logger: any = null) {
     if (!type) {
       type = 'sqlite';
       dbSettings = null;
@@ -69,25 +69,21 @@ export const Database = class {
 
     // saves all settings and require the db module
     this.type = type;
-    this.dbModule = require(`./databases/${type}_db`);
     this.dbSettings = dbSettings;
     this.wrapperSettings = wrapperSettings;
     this.logger = normalizeLogger(logger);
-    const db = new this.dbModule.Database(this.dbSettings);
-    db.logger = this.logger;
-    this.db = new DatabaseCache(db, this.wrapperSettings, this.logger);
 
-    // Expose the cache wrapper's metrics to the user. See lib/CacheAndBufferLayer.js for details.
-    //
-    // WARNING: This feature is EXPERIMENTAL -- do not assume it will continue to exist in its
-    // current form in a future version.
-    this.metrics = this.db.metrics;
   }
 
   /**
    * @param callback - Deprecated. Node-style callback. If null, a Promise is returned.
    */
-  init(callback = null) {
+  async init(callback = null) {
+    this.dbModule = await import(`./databases/${this.type}_db`);
+    const db = new this.dbModule.Database(this.dbSettings);
+    db.logger = this.logger;
+    this.db = new DatabaseCache(db, this.wrapperSettings, this.logger);
+    this.metrics = this.db.metrics;
     if (callback != null) {
       return cbDb.init.call(this.db);
     }

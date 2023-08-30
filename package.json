@@ -42,7 +42,6 @@
   },
   "devDependencies": {
     "@types/async": "^3.2.20",
-    "@types/mocha": "^10.0.1",
     "@types/mssql": "^8.1.2",
     "@types/mysql": "^2.15.21",
     "@types/node": "^20.5.7",
@@ -51,8 +50,8 @@
     "cli-table": "^0.3.11",
     "eslint": "^8.47.0",
     "eslint-config-etherpad": "^3.0.22",
-    "mocha": "^10.2.0",
-    "randexp-ts": "^1.0.2",
+    "randexp-ts": "^1.0.5",
+    "vitest": "^0.34.3",
     "typescript": "^4.9.5",
     "wtfnode": "^0.9.1",
     "rollup": "^3.28.1",
@@ -78,9 +77,6 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "test": "mocha ./dist/test/test*.js",
-    "test:watch": "mocha ./dist/test/test*.js --watch",
-    "test-debug": "npx rollup -c rollup.config.cjs && mocha --inspect-brk ./dist/test/test*.js",
     "build": "npx rollup -c rollup.config.cjs"
   },
   "_npmUser": {
