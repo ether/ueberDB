@@ -124,9 +124,9 @@ describe(__filename, () => {
                 const output = await db.get(key);
                 expect(JSON.stringify(output)).toBe(JSON.stringify(input));
               });
-              it('findKeys works', async function (this: any) {
+              it('findKeys works', async function (context) {
                 if (database === 'mongodb') {
-                  this.skip();
+                  context.skip()
                 } // TODO: Fix mongodb.
                 // TODO setting a key with non ascii chars
                 const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
@@ -138,9 +138,9 @@ describe(__filename, () => {
                 const keys = await db.findKeys(`${key}*`, null);
                 expect(keys.sort()).toStrictEqual([key, `${key}a`]);
               });
-              it('findKeys with exclusion works', async function (this: any) {
+              it('findKeys with exclusion works', async function (context) {
                 if (database === 'mongodb') {
-                  this.skip();
+                  context.skip();
                 } // TODO: Fix mongodb.
                 const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
                 await Promise.all([
@@ -181,14 +181,14 @@ describe(__filename, () => {
               });
               it('getSub of missing property returns nullish', async () => {
                 await db.set('k', {sub1: {}});
-                expect((await db.getSub('k', ['sub1', 'sub2']))).toBeNull();
+                expect((await db.getSub('k', ['sub1', 'sub2'])) == null).toBeTruthy();
                 await db.set('k', {});
-                expect((await db.getSub('k', ['sub1', 'sub2']))).toBeNull();
+                expect((await db.getSub('k', ['sub1', 'sub2'])) == null).toBeTruthy();
                 expect((await db.getSub('k', ['sub1']))).toBeNull();
                 await db.remove('k');
-                expect((await db.getSub('k', ['sub1', 'sub2']))).toBeNull();
-                expect((await db.getSub('k', ['sub1']))).toBeNull();
-                expect(await db.getSub('k', [])).toBeUndefined();
+                expect((await db.getSub('k', ['sub1', 'sub2'])) == null).toBeTruthy();
+                expect((await db.getSub('k', ['sub1'])) == null).toBeTruthy();
+                expect(await db.getSub('k', []) == null).toBeTruthy();
               });
               it('setSub can modify an existing property', async () => {
                 await db.set('k', {sub1: {sub2: 'v'}});

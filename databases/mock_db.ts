@@ -10,7 +10,7 @@ export const Database = class extends events.EventEmitter {
       writeInterval: 1,
       ...settings,
     };
-    settings.mock = this;
+    this.settings.mock = this;
   }
 
   close(cb: ()=>{}) {

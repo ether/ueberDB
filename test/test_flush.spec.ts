@@ -8,7 +8,7 @@ describe(__filename, () => {
   const createDb = async (wrapperSettings = {}) => {
     const settings = {};
     db = new ueberdb.Database('mock', settings, {json: false, ...wrapperSettings}, logger);
-    // @ts-expect-error TS(2339): Property 'mock' does not exist on type '{}'.
+    // @ts-ignore
     mock = settings.mock;
     mock.once('init', (cb: any) => cb());
     await db.init();

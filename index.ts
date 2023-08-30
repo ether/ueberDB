@@ -44,7 +44,7 @@ const makeDoneCallback = (callback: (err?:any)=>{}, deprecated:(err:any)=>{}) =>
 };
 
 export const Database = class {
-  private type: any;
+  private readonly type: any;
   private dbModule: any;
   private readonly dbSettings: any;
   private readonly wrapperSettings: any | {};
