@@ -13,7 +13,6 @@ export const Database = class extends events.EventEmitter {
     };
     settings.mock = this;
     this.settings = settings;
-    console.log("Initialized")
   }
 
   close(cb: ()=>{}) {

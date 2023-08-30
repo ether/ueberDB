@@ -57,6 +57,12 @@ jobs:
         image: redis
         ports:
           - 6379:6379
+      surrealdb:
+        image: surrealdb/surrealdb:latest
+        options: >-
+         start --user root --pass root file:/data/database.db
+        ports:
+          - "8000:8000"
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v3

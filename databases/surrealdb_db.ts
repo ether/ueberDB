@@ -1,3 +1,4 @@
+// @ts-ignore
 import {Surreal} from 'surrealdb.js'
 import AbstractDatabase, {Settings} from "../lib/AbstractDatabase";
 
@@ -23,7 +24,6 @@ export const Database = class SurrealDB extends AbstractDatabase{
             })
             await this.db!.use({db: this.settings.url, ns: this.settings.clientOptions.ns})
             await this.db!.create(Database.TABLE)
-            console.log("Database initialized")
         }
         catch (e) {
             console.log(e)
@@ -36,10 +36,10 @@ export const Database = class SurrealDB extends AbstractDatabase{
             key: key
         }
         await this.db!.query("SELECT * FROM " + Database.TABLE + " WHERE key = $key", vars)
-            .then((result) => {
+            .then((result:any) => {
                 callback(null, result[0].result);
             })
-            .catch((e)=>callback(e, null))
+            .catch((e:Error)=>callback(e, null))
     }
 
     async findKeys(key:string, notKey:string, callback:(v:any, keys:string[])=>{}) {
@@ -53,7 +53,7 @@ export const Database = class SurrealDB extends AbstractDatabase{
         }
 
        await this.db!.query(query, vars)
-            .then((result) => {
+            .then((result:any) => {
                 const keys:string[] = [];
                 for (let i = 0; i < result.length; i++) {
                     keys.push(result[i].result! as string);
