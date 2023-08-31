@@ -15,9 +15,10 @@
  */
 
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
-import mysql from 'mysql';
+import * as mysql from 'mysql';
 import util from 'util';
 import {BulkObject} from './cassandra_db';
+import {PoolConfig} from "mysql";
 
 export const Database = class extends AbstractDatabase {
   private readonly _mysqlSettings: Settings;
@@ -54,8 +55,7 @@ export const Database = class extends AbstractDatabase {
   }
 
   async init() {
-    // @ts-ignore
-    this._pool = mysql.createPool(this._mysqlSettings);
+    this._pool = mysql.createPool(this._mysqlSettings as PoolConfig);
     const {database, charset} = this._mysqlSettings;
 
     const sqlCreate = `${'CREATE TABLE IF NOT EXISTS `store` ( ' +
@@ -72,7 +72,6 @@ export const Database = class extends AbstractDatabase {
     const dbCharSet =
         'SELECT DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME ' +
         `FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '${database}'`;
-    // @ts-ignore
     let [result] = await this._query({sql: dbCharSet});
 
     result = JSON.parse(JSON.stringify(result));

@@ -44,13 +44,13 @@ const makeDoneCallback = (callback: (err?:any)=>{}, deprecated:(err:any)=>{}) =>
 };
 
 export const Database = class {
-  private readonly type: any;
-  private dbModule: any;
-  private readonly dbSettings: any;
-  private readonly wrapperSettings: any | {};
-  private readonly logger: Function | null;
-  private db: any;
-  private metrics: any;
+  public readonly type: any;
+  public dbModule: any;
+  public readonly dbSettings: any;
+  public readonly wrapperSettings: any | {};
+  public readonly logger: Function | null;
+  public db: any;
+  public metrics: any;
   /**
    * @param type The type of the database
    * @param dbSettings The settings for that specific database type

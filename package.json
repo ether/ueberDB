@@ -41,6 +41,9 @@
     "sqlite3": "^5.1.6"
   },
   "devDependencies": {
+    "vite": "^4.4.9",
+    "vite-plugin-dts": "^3.5.3",
+    "@rollup/plugin-commonjs": "^25.0.4",
     "@types/async": "^3.2.20",
     "@types/mssql": "^8.1.2",
     "@types/mysql": "^2.15.21",
@@ -54,9 +57,6 @@
     "vitest": "^0.34.3",
     "typescript": "^4.9.5",
     "wtfnode": "^0.9.1",
-    "rollup": "^3.28.1",
-    "rollup-plugin-typescript2": "^0.35.0",
-    "@rollup/plugin-node-resolve": "^15.2.1",
     "glob": "^10.3.3"
   },
   "repository": {
@@ -71,13 +71,14 @@
   "files": [
     "dist/databases",
     "dist/index.js",
+    "dist/*.d.ts",
     "dist/lib"
   ],
   "homepage": "https://github.com/ether/ueberDB",
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "build": "npx rollup -c rollup.config.cjs",
+    "build": "vite build",
     "test": "vitest"
   },
   "_npmUser": {

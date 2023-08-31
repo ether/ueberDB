@@ -16,7 +16,7 @@
 
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
 import async from 'async';
-import pg, {Pool, QueryResult} from 'pg';
+import  {Pool, QueryResult} from 'pg';
 import {BulkObject} from './cassandra_db';
 
 export const Database = class extends AbstractDatabase {
