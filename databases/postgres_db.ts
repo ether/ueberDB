@@ -16,11 +16,11 @@
 
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
 import async from 'async';
-import  {Pool, QueryResult, PoolConfig} from 'pg';
+import  * as pg from 'pg';
 import {BulkObject} from './cassandra_db';
 
 export const Database = class extends AbstractDatabase {
-  private db: Pool;
+  private db: pg.Pool;
   private upsertStatement: string | null | undefined;
   constructor(settings:Settings | string) {
     super();
@@ -36,7 +36,7 @@ export const Database = class extends AbstractDatabase {
     this.settings.min = this.settings.min || 4;
     this.settings.idleTimeoutMillis = this.settings.idleTimeoutMillis || 1000;
 
-    this.db = new Pool(this.settings as PoolConfig);
+    this.db = new pg.Pool(this.settings as pg.PoolConfig);
   }
 
   init(callback: (err: Error)=>{}) {
@@ -152,7 +152,7 @@ export const Database = class extends AbstractDatabase {
     });
   }
 
-  set(key:string, value:string, callback:(err: Error, result: QueryResult<any>) => void) {
+  set(key:string, value:string, callback:(err: Error, result: pg.QueryResult) => void) {
     if (key.length > 100) {
       const val = '' as any;
       callback(Error('Your Key can only be 100 chars'), val);
