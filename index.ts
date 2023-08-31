@@ -21,6 +21,23 @@ import {Database as DatabaseCache} from './lib/CacheAndBufferLayer';
 import {normalizeLogger} from './lib/logging';
 import {callbackify} from 'util';
 import {Settings} from './lib/AbstractDatabase';
+import {Database as CassandraDatabase} from './databases/cassandra_db'
+import {Database as CouchDatabase} from './databases/couch_db'
+import {Database as DirtyDatabase} from './databases/dirty_db'
+import {Database as DirtyGitDatabase} from './databases/dirty_git_db'
+import {Database as ElasticSearchDatabase} from './databases/elasticsearch_db'
+import {Database as MemoryDatabase} from './databases/memory_db'
+import {Database as MockDatabase} from './databases/mock_db'
+import {Database as MongoDBDatabase} from './databases/mongodb_db'
+import {Database as MSSQLDatabase} from './databases/mssql_db'
+import {Database as MYSQLDatabase} from './databases/mysql_db'
+import {Database as PostgresDatabase} from './databases/postgres_db'
+import {Database as PostgresPoolDatabase} from './databases/postgrespool_db'
+import {Database as RedisDatabase} from './databases/redis_db'
+import {Database as RethinkDatabase} from './databases/rethink_db'
+import {Database as SQLiteDatabase} from './databases/sqlite_db'
+
+
 
 const cbDb = {
   init: () => {},
@@ -79,8 +96,7 @@ export const Database = class {
    * @param callback - Deprecated. Node-style callback. If null, a Promise is returned.
    */
   async init(callback = null) {
-    this.dbModule = await import(`./databases/${this.type}_db`);
-    const db = new this.dbModule.Database(this.dbSettings);
+    const db:any = this.initDB();
     db.logger = this.logger;
     this.db = new DatabaseCache(db, this.wrapperSettings, this.logger);
     this.metrics = this.db.metrics;
@@ -88,6 +104,43 @@ export const Database = class {
       return cbDb.init.call(this.db);
     }
     return this.db.init();
+  }
+
+  initDB(){
+    switch (this.type){
+        case 'mysql':
+            return new MYSQLDatabase(this.dbSettings);
+        case 'postgres':
+          return new PostgresDatabase(this.dbSettings);
+        case 'sqlite':
+          return new SQLiteDatabase(this.dbSettings);
+        case 'mongodb':
+          return new MongoDBDatabase(this.dbSettings);
+        case 'redis':
+          return new RedisDatabase(this.dbSettings);
+        case 'cassandra':
+          return new CassandraDatabase(this.dbSettings);
+        case 'dirty':
+          return new DirtyDatabase(this.dbSettings);
+        case 'dirtygit':
+            return new DirtyGitDatabase(this.dbSettings);
+        case 'elasticsearch':
+            return new ElasticSearchDatabase(this.dbSettings);
+        case 'memory':
+            return new MemoryDatabase(this.dbSettings);
+        case 'mock':
+            return new MockDatabase(this.dbSettings);
+        case 'mssql':
+            return new MSSQLDatabase(this.dbSettings);
+        case 'postgrespool':
+            return new PostgresPoolDatabase(this.dbSettings);
+        case 'rethink':
+            return new RethinkDatabase(this.dbSettings);
+        case 'couch':
+            return new CouchDatabase(this.dbSettings);
+        default:
+            throw new Error('Invalid database type');
+    }
   }
 
   /**

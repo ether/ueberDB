@@ -6,15 +6,14 @@ import {glob} from "glob";
 export default defineConfig({
   build: {
     lib: {
-      entry:  ['./index.ts'].concat(glob.sync('./databases/*.ts')),
+      entry:  ['./index.ts'],
       name: 'ueberdb2',
-      fileName: (format) => `[name].${format === "cjs" ? "" : "m"}js`,
       formats: ["cjs"],
     },
     rollupOptions:{
       external: ['console', 'process', 'util', '@aws-crypto/crc32', 'crypto', 'assert'],
       output:{
-        preserveModules: true,
+        preserveModules: false,
         dir: './dist',
         format: 'cjs',
       }
