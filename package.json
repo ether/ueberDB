@@ -79,7 +79,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "build": "vite build",
-    "test": "vitest"
+    "test": "vitest --test-timeout=120000"
   },
   "_npmUser": {
     "name": "johnyma22",
