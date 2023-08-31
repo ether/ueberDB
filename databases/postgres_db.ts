@@ -16,7 +16,7 @@
 
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
 import async from 'async';
-import  {Pool, QueryResult} from 'pg';
+import  {Pool, QueryResult, PoolConfig} from 'pg';
 import {BulkObject} from './cassandra_db';
 
 export const Database = class extends AbstractDatabase {
@@ -36,8 +36,7 @@ export const Database = class extends AbstractDatabase {
     this.settings.min = this.settings.min || 4;
     this.settings.idleTimeoutMillis = this.settings.idleTimeoutMillis || 1000;
 
-    // @ts-ignore
-    this.db = new pg.Pool(this.settings);
+    this.db = new Pool(this.settings as PoolConfig);
   }
 
   init(callback: (err: Error)=>{}) {
@@ -192,18 +191,15 @@ export const Database = class extends AbstractDatabase {
     }
 
 
-    // @ts-ignore
-    const functions = replaceVALs.map((v) => (cb:()=>{}) => this.db.query(this.upsertStatement, v, cb));
+    const functions:any = replaceVALs.map((v) => (cb:()=>{}) => this.db.query(this.upsertStatement as string, v, cb));
 
     const removeFunction = (callback: ()=>{}) => {
-      // @ts-ignore
-      if (!(removeVALs.length) > 1) {
+      if (!(removeVALs.length as number > 1)) {
         this.db.query(removeSQL, removeVALs, callback);
       } else { callback(); }
     };
     functions.push(removeFunction);
 
-    // @ts-ignore
     async.parallel(functions, callback);
   }
 
