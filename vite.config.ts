@@ -5,6 +5,7 @@ import {glob} from "glob";
 
 export default defineConfig({
   build: {
+    minify: false,
     lib: {
       entry:  ['./index.ts'],
       name: 'ueberdb2',
