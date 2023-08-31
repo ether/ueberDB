@@ -8,7 +8,7 @@ export default defineConfig({
     lib: {
       entry:  ['./index.ts'].concat(glob.sync('./databases/*.ts')),
       name: 'ueberdb2',
-      fileName: (format) => `[name].${format === "cjs" ? "c" : "m"}js`,
+      fileName: (format) => `[name].${format === "cjs" ? "" : "m"}js`,
       formats: ["cjs"],
     },
     rollupOptions:{

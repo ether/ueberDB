@@ -63,14 +63,14 @@
     "type": "git",
     "url": "https://github.com/ether/ueberDB.git"
   },
-  "main": "./dist/index.cjs",
+  "main": "./dist/index.js",
   "version": "4.1.27",
   "bugs": {
     "url": "https://github.com/ether/ueberDB/issues"
   },
   "files": [
     "dist/databases",
-    "dist/index.cjs",
+    "dist/index.js",
     "dist/*.d.ts",
     "dist/lib"
   ],
