@@ -70,7 +70,7 @@
   },
   "files": [
     "dist/databases",
-    "dist/index.js",
+    "dist/index.cjs",
     "dist/*.d.ts",
     "dist/lib"
   ],
