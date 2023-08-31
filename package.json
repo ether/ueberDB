@@ -43,7 +43,6 @@
   "devDependencies": {
     "vite": "^4.4.9",
     "vite-plugin-dts": "^3.5.3",
-    "@rollup/plugin-commonjs": "^25.0.4",
     "@types/async": "^3.2.20",
     "@types/mssql": "^8.1.2",
     "@types/mysql": "^2.15.21",
@@ -56,8 +55,7 @@
     "randexp-ts": "^1.0.5",
     "vitest": "^0.34.3",
     "typescript": "^4.9.5",
-    "wtfnode": "^0.9.1",
-    "glob": "^10.3.4"
+    "wtfnode": "^0.9.1"
   },
   "repository": {
     "type": "git",

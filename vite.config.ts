@@ -1,7 +1,5 @@
 import {defineConfig} from "vite";
 import dts from "vite-plugin-dts";
-import commonjs from '@rollup/plugin-commonjs';
-import {glob} from "glob";
 
 export default defineConfig({
   build: {
@@ -24,7 +22,6 @@ export default defineConfig({
     dts({
       include:'./index.ts',
       insertTypesEntry: true,
-    }),
-    commonjs(),
+    })
   ],
 });
