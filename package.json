@@ -41,8 +41,10 @@
     "sqlite3": "^5.1.6"
   },
   "devDependencies": {
-    "vite": "^4.4.9",
-    "vite-plugin-dts": "^3.5.3",
+    "@liuli-util/vite-plugin-node": "^0.7.0",
+    "@rollup/plugin-commonjs": "^25.0.4",
+    "@rollup/plugin-json": "^6.0.0",
+    "@rollup/plugin-node-resolve": "^15.2.1",
     "@types/async": "^3.2.20",
     "@types/mssql": "^8.1.2",
     "@types/mysql": "^2.15.21",
@@ -53,8 +55,11 @@
     "eslint": "^8.48.0",
     "eslint-config-etherpad": "^3.0.22",
     "randexp-ts": "^1.0.5",
-    "vitest": "^0.34.3",
+    "rollup-plugin-typescript2": "^0.35.0",
     "typescript": "^4.9.5",
+    "vite": "^4.4.9",
+    "vite-plugin-dts": "^3.5.3",
+    "vitest": "^0.34.3",
     "wtfnode": "^0.9.1"
   },
   "repository": {
@@ -76,7 +81,7 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "build": "vite build",
+    "build": "npx rollup -c rollup.config.cjs.js",
     "test": "vitest --test-timeout=120000"
   },
   "_npmUser": {
