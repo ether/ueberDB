@@ -18,15 +18,7 @@ import {Settings} from "../lib/AbstractDatabase";
  * limitations under the License.
  */
 
-let SQDB: any;
-try {
-  SQDB = require('sqlite3').Database;
-} catch (err) {
-  throw new Error(
-      'sqlite3 not found. It was removed from ueberdb\'s dependencies because it requires ' +
-      'compilation which fails on several systems. If you still want to use sqlite, run ' +
-      '"npm install sqlite3" in your etherpad-lite ./src directory.');
-}
+import  {Database as SQDB} from 'sqlite3'
 
 import AbstractDatabase from '../lib/AbstractDatabase';
 import util from 'util';
@@ -34,7 +26,7 @@ import util from 'util';
 const escape = (val:string) => `'${val.replace(/'/g, "''")}'`;
 
 export const Database = class SQLiteDB extends AbstractDatabase {
-  private db: typeof SQDB|null;
+  private db: SQDB|null;
   constructor(settings:Settings) {
     super();
     this.db = null;
