@@ -64,8 +64,6 @@ jobs:
         with:
           node-version: 20
       - run: npm ci
-      # Optional dependencies must be installed manually.
-      - run: npm i sqlite3
 
       # Verify databases are reachable.
       - name: MySQL client and server check
