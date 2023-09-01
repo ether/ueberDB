@@ -4,24 +4,14 @@ import dts from "vite-plugin-dts";
 export default defineConfig({
   build: {
     minify: false,
+    outDir: './dist',
     lib: {
-      entry:  ['./index.ts'],
+      entry: ['./index.ts'],
       name: 'ueberdb2',
       formats: ["cjs"],
     },
-    rollupOptions:{
-      external: ['console', 'process', 'util', '@aws-crypto/crc32', 'crypto', 'assert'],
-      output:{
-        preserveModules: false,
-        dir: './dist',
-        format: 'cjs',
-      }
+    rollupOptions: {
+      external: ['console', 'process', 'util', '@aws-crypto/crc32', 'crypto', 'assert']
     }
-  },
-  plugins: [
-    dts({
-      include:'./index.ts',
-      insertTypesEntry: true,
-    })
-  ],
+  }
 });
