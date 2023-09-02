@@ -24,13 +24,17 @@ const STORE_WITH_DOT = 'store:';
 const STORE = 'store';
 
 const WILDCARD= '*';
-const simpleGlobToRegExp = (s:string) => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*');
 
 type StoreVal = {
     id: string;
     key: string;
     value: string;
 }
+
+const escapeId = (id:string) => {
+   return id.replace(/[\W_]+/g,"_");
+}
+
 export const Database = class SurrealDB extends AbstractDatabase {
     private _client: Surreal | null;
     constructor(settings:Settings) {
@@ -58,9 +62,14 @@ export const Database = class SurrealDB extends AbstractDatabase {
 
     async get(key:string) {
         if (this._client == null) return null;
-        const res = await this._client.select<StoreVal>(STORE_WITH_DOT+key)
+        const keyEscaped = escapeId(key);
+        const res = await this._client.select<StoreVal>(STORE_WITH_DOT+keyEscaped)
         if(res.length>0){
-            return res[0].value
+            console.log("Get: ",res[0].key,key)
+            if(res[0].key === key){
+                return res[0].value
+            }
+            return null
         }
         else{
             return null;
@@ -73,8 +82,9 @@ export const Database = class SurrealDB extends AbstractDatabase {
         if (notKey != null){
             const query  = `SELECT key FROM store WHERE ${this.transformWildcard(key, 'key')} AND ${this.transformWildcardNegative(notKey, 'notKey')}`
             key = key.replace(WILDCARD, '')
+            key = escapeId(key);
             notKey = notKey.replace(WILDCARD, '')
-            console.log("Key ",key, " notKey ", notKey)
+            notKey = escapeId(notKey);
             const res = await this._client.query<StoreVal[]>(query, {key:key, notKey:notKey})
             // @ts-ignore
             return this.transformResult(res)
@@ -82,6 +92,7 @@ export const Database = class SurrealDB extends AbstractDatabase {
         else{
             const query  = `SELECT key FROM store WHERE ${this.transformWildcard(key, 'key')}`
             key = key.replace(WILDCARD, '')
+            key = escapeId(key);
             const res = await this._client.query<StoreVal[]>(query, {key})
             // @ts-ignore
             return this.transformResult(res)
@@ -120,46 +131,35 @@ export const Database = class SurrealDB extends AbstractDatabase {
 
     transformResult(res: QueryResult<StoreVal[]>[]){
         const value: string[] = [];
-        console.log("Outer result ", res)
         res[0].result!.forEach(k=>{
-            console.log("Resultat ",k)
             value.push(k.key);
         })
         return value
     }
 
-    /**
-     * For findKey regex. Used by document dbs like mongodb or dirty.
-     */
-    createFindRegex(key:string, notKey?:string) {
-        let regex = `^(?=${simpleGlobToRegExp(key)}$)`;
-        if (notKey != null) regex += `(?!${simpleGlobToRegExp(notKey)}$)`;
-        return new RegExp(regex);
-    }
-
     async set(key:string, value:string) {
         if (this._client == null) return null;
+        const keyEscaped = escapeId(key);
         const exists = await this.get(key)
         if(exists){
-           const updatE = await this._client.update<StoreVal>(STORE, {
-                id:  key,
+           await this._client.update<StoreVal>(STORE, {
+                id:  keyEscaped,
                 key: key,
                 value: value
             })
-            console.log("Update ", updatE)
         }
         else {
-                const created  = await this._client.create<StoreVal>(STORE, {
-                    id: key,
+                await this._client.create<StoreVal>(STORE, {
+                    id: keyEscaped,
                     key:key,
                     value: value
                 })
-                console.log("Created ", created)
             }
     }
 
     async remove(key:string) {
         if (this._client == null) return null
+        key = escapeId(key);
         return await this._client.delete<StoreVal>(STORE_WITH_DOT+key)
     }
 
@@ -167,10 +167,11 @@ export const Database = class SurrealDB extends AbstractDatabase {
         if (this._client == null) return null;
 
         bulk.forEach(b=>{
+            const key = escapeId(b.key);
             if (b.type === 'set') {
-                this._client!.update(STORE+b.key, {key: b.key, value: b.value});
+                this._client!.update(STORE+key, {key: key, value: b.value});
             } else if (b.type === 'remove') {
-                this._client!.delete(STORE+b.key);
+                this._client!.delete(STORE+key);
             }
         })
     }
