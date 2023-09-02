@@ -9,22 +9,6 @@ on:
       - v[0-9]+
 
 jobs:
-  test-surreal:
-    runs-on: ubuntu-latest
-    only: manual
-    steps:
-        - uses: actions/checkout@v3
-        - name: Start SurrealDB
-          run: docker run -it -d --rm --name surrealdb -p 8000:8000 -v /mydata:/mydata surrealdb/surrealdb:latest start file:/mydata/mydatabase.db --allow-funcs start  --user root --pass root
-        - uses: actions/setup-node@v3
-          with:
-            node-version: 20
-        - run: npm ci
-        - run: npm run test
-          env:
-            SURREALDB_CI: true
-        - name: Stop SurrealDB
-          run: docker stop -t 1 surrealdb
   test:
     runs-on: ubuntu-latest
     services:
