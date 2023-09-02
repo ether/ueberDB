@@ -86,7 +86,9 @@ export const Database = class SurrealDB extends AbstractDatabase {
         })
         return value
          */
+        console.log("findKeys with ", key)
         let res = await this._client.select<StoreVal>(STORE)
+        console.log("stored entries",res)
         const keys:string[] = [];
         const regex = this.createFindRegex(key, notKey);
         res.forEach((key) => {
