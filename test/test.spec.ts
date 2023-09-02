@@ -14,7 +14,11 @@ const SURREALDB = process.env.SURREALDB_CI;
 
 const fs = {promises}.promises;
 const maxKeyLength = 100;
-const randomString = (length = maxKeyLength) => new Randexp(new RegExp(/\w+/)).gen();
+
+const randomString = (length = maxKeyLength) => {
+  const regexPattern = new Randexp(new RegExp(`[a-z0-9]{1,${length}}`));
+  return regexPattern.gen();
+}
 // eslint-disable-next-line mocha/no-top-level-hooks
 afterAll(async () => {
   // Add a timeout to forcibly exit if something is keeping node from exiting cleanly.
