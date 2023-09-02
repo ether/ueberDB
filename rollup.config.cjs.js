@@ -4,7 +4,7 @@ const typescript = require('rollup-plugin-typescript2');
 const nodeResolve = require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
 const json = require('@rollup/plugin-json');
-
+const minify = require('@rollup/plugin-terser');
 module.exports = {
   input: ['./index.ts'], // Matches all TypeScript files in the 'src' directory and its subdirectories
   plugins: [
@@ -14,8 +14,10 @@ module.exports = {
     nodeResolve(),
     commonjs(),
     json(),
+    minify(),
   ],
   output: {
+    compact: true,
     preserveModules: false,
     dir: './dist',
     format: 'cjs',

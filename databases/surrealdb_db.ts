@@ -18,7 +18,6 @@ import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
 import Surreal from 'surrealdb.js';
 import {BulkObject} from "./cassandra_db";
 import {QueryResult} from "surrealdb.js/script/types";
-
 const DATABASE = 'ueberdb';
 const STORE_WITH_DOT = 'store:';
 const STORE = 'store';
@@ -65,11 +64,7 @@ export const Database = class SurrealDB extends AbstractDatabase {
         const keyEscaped = escapeId(key);
         const res = await this._client.select<StoreVal>(STORE_WITH_DOT+keyEscaped)
         if(res.length>0){
-            console.log("Get: ",res[0].key,key)
-            if(res[0].key === key){
-                return res[0].value
-            }
-            return null
+            return res[0].value
         }
         else{
             return null;
