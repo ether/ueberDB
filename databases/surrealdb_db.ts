@@ -17,10 +17,13 @@
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
 import Surreal from 'surrealdb.js';
 import {BulkObject} from "./cassandra_db";
+import {QueryResult} from "surrealdb.js/script/types";
 
 const DATABASE = 'ueberdb';
 const STORE_WITH_DOT = 'store:';
 const STORE = 'store';
+
+const WILDCARD= '*';
 const simpleGlobToRegExp = (s:string) => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*');
 
 type StoreVal = {
@@ -66,37 +69,63 @@ export const Database = class SurrealDB extends AbstractDatabase {
 
     async findKeys(key:string, notKey:string) {
         if (this._client == null) return null;
-        /*
-        let query = "SELECT key FROM store WHERE key CONTAINS $key"
-        if (notKey != null) {
-            query += " AND key CONTAINSNOT $notKey"
 
-            const keys = await this._client.query<StoreVal[]>(query, {key, notKey})
-            const value: string[] = [];
-            keys.forEach(k=>{
-                value.push(k.result!.id);
-            })
-            return value
+        if (notKey != null){
+            const query  = `SELECT key FROM store WHERE ${this.transformWildcard(key, 'key')} AND ${this.transformWildcardNegative(notKey, 'notKey')}`
+            key = key.replace(WILDCARD, '')
+            notKey = notKey.replace(WILDCARD, '')
+            console.log("Key ",key, " notKey ", notKey)
+            const res = await this._client.query<StoreVal[]>(query, {key:key, notKey:notKey})
+            // @ts-ignore
+            return this.transformResult(res)
         }
+        else{
+            const query  = `SELECT key FROM store WHERE ${this.transformWildcard(key, 'key')}`
+            key = key.replace(WILDCARD, '')
+            const res = await this._client.query<StoreVal[]>(query, {key})
+            // @ts-ignore
+            return this.transformResult(res)
+        }
+    }
 
-        const keys = await this._client.query<StoreVal[]>(query, {key})
+    transformWildcard(key: string, keyExpr: string){
+        if (key.startsWith(WILDCARD) && key.endsWith(WILDCARD)) {
+            return `${keyExpr} CONTAINS $${keyExpr}`
+        }
+        else if (key.startsWith(WILDCARD)) {
+            return `string::endsWith(${keyExpr}, $${keyExpr})`
+        }
+        else if (key.endsWith(WILDCARD)) {
+            return `string::startsWith(${keyExpr}, $${keyExpr})`
+        }
+        else {
+            return `${keyExpr} = $${keyExpr}`
+        }
+    }
+
+    transformWildcardNegative(key: string, keyExpr: string){
+        if (key.startsWith(WILDCARD) && key.endsWith(WILDCARD)) {
+            return `key CONTAINSNOT $${keyExpr}`
+        }
+        else if (key.startsWith(WILDCARD)) {
+            return `string::endsWith(key, $${keyExpr})==false`
+        }
+        else if (key.endsWith(WILDCARD)) {
+            return `string::startsWith(key, $${keyExpr})==false`
+        }
+        else {
+            return `key != $${keyExpr}`
+        }
+    }
+
+    transformResult(res: QueryResult<StoreVal[]>[]){
         const value: string[] = [];
-        keys.forEach(k=>{
-            value.push(k.result!.id);
+        console.log("Outer result ", res)
+        res[0].result!.forEach(k=>{
+            console.log("Resultat ",k)
+            value.push(k.key);
         })
         return value
-         */
-        console.log("findKeys with ", key)
-        let res = await this._client.select<StoreVal>(STORE)
-        console.log("stored entries",res)
-        const keys:string[] = [];
-        const regex = this.createFindRegex(key, notKey);
-        res.forEach((key) => {
-            if (key.key.search(regex) !== -1) {
-                keys.push(key.key);
-            }
-        });
-        return keys
     }
 
     /**
@@ -112,18 +141,20 @@ export const Database = class SurrealDB extends AbstractDatabase {
         if (this._client == null) return null;
         const exists = await this.get(key)
         if(exists){
-           await this._client.update<StoreVal>(STORE, {
+           const updatE = await this._client.update<StoreVal>(STORE, {
                 id:  key,
                 key: key,
                 value: value
             })
+            console.log("Update ", updatE)
         }
         else {
-                const res = await this._client.create<StoreVal>(STORE, {
+                const created  = await this._client.create<StoreVal>(STORE, {
                     id: key,
                     key:key,
                     value: value
                 })
+                console.log("Created ", created)
             }
     }
 

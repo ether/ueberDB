@@ -50,7 +50,6 @@ describe(__filename, () => {
     console.log(speedTable.toString());
   });
   Object.keys(databases)
-      .filter((database) => database == 'surrealdb')
       .forEach((database) => {
     const dbSettings = databases[database];
     describe(database, () => {
@@ -136,11 +135,11 @@ describe(__filename, () => {
                 } // TODO: Fix mongodb.
                 // TODO setting a key with non ascii chars
                 const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
-                await Promise.all([
-                  db.set(key, true),
-                  db.set(`${key}a`, true),
-                  db.set(`nonmatching_${key}`, false),
-                ]);
+
+                await db.set(key, true)
+                await db.set(`${key}a`, true)
+                await db.set(`nonmatching_${key}`, false)
+
                 const keys = await db.findKeys(`${key}*`, null);
                 expect(keys.sort()).toStrictEqual([key, `${key}a`]);
               });
@@ -149,13 +148,12 @@ describe(__filename, () => {
                   context.skip();
                 } // TODO: Fix mongodb.
                 const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
-                await Promise.all([
-                  db.set(key, true),
-                  db.set(`${key}a`, true),
-                  db.set(`${key}b`, false),
-                  db.set(`${key}b2`, false),
-                  db.set(`nonmatching_${key}`, false),
-                ]);
+
+                await db.set(key, true)
+                await db.set(`${key}a`, true)
+                await db.set(`${key}b`, false)
+                await db.set(`${key}b2`, false)
+                await db.set(`nonmatching_${key}`, false)
                 const keys = await db.findKeys(`${key}*`, `${key}b*`);
                 expect(keys.sort()).toStrictEqual([key, `${key}a`]);
               });
