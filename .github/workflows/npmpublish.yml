@@ -9,6 +9,22 @@ on:
       - v[0-9]+
 
 jobs:
+  test-surreal:
+    runs-on: ubuntu-latest
+
+    steps:
+        - uses: actions/checkout@v3
+        - name: Start SurrealDB
+          run: docker run -it -d --rm --name surrealdb -p 8000:8000 surrealdb/surrealdb --allow-funcs start  --user root --pass root memory
+        - uses: actions/setup-node@v3
+          with:
+            node-version: 20
+        - run: npm ci
+        - run: npm run test
+          env:
+            SURREALDB_CI: true
+        - name: Stop SurrealDB
+          run: docker stop -t 1 surrealdb
   test:
     runs-on: ubuntu-latest
     services:
@@ -60,9 +76,6 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v3
-      - name: Start SurrealDB
-        run: docker run -it -d --rm --name surrealdb -p 8000:8000 surrealdb/surrealdb --allow-funcs start  --user root --pass root memory
-      - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
           node-version: 20
@@ -79,11 +92,10 @@ jobs:
           psql -d postgresql://ueberdb:ueberdb@127.0.0.1/ueberdb -c '\dt'
       - name: Create javascript files from typescript
         run: npm run build
-
       - run: npm test
+        env:
+          SURREALDB_CI: false
       - run: npm run lint
-      - name: Stop SurrealDB
-        run: docker stop -t 1 surrealdb
 
   publish-npm:
     if: github.event_name == 'push'

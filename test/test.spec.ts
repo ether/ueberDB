@@ -10,6 +10,7 @@ import * as ueberdb from '../index';
 import {afterAll, describe, it, afterEach, beforeEach, beforeAll, expect} from 'vitest'
 import {rejects} from "assert";
 
+const SURREALDB = process.env.SURREALDB_CI;
 
 const fs = {promises}.promises;
 const maxKeyLength = 100;
@@ -25,6 +26,18 @@ afterAll(async () => {
     process.exit(1); // eslint-disable-line n/no-process-exit
   }, 5000).unref();
 });
+
+
+let databasesToTest: string[] = Object.keys(databases).filter(database=>database !== 'surrealdb');
+
+// test only surrealdb if SURREALDB is set to true
+if (SURREALDB && SURREALDB.includes("true")){
+  databasesToTest = ["surrealdb"]
+}
+else if (SURREALDB === undefined) {
+  // test every database if unset
+    databasesToTest  = Object.keys(databases)
+}
 
 describe(__filename, () => {
   let speedTable: any;
@@ -49,7 +62,7 @@ describe(__filename, () => {
   afterAll(async () => {
     console.log(speedTable.toString());
   });
-  Object.keys(databases)
+  databasesToTest
       .forEach((database) => {
     const dbSettings = databases[database];
     describe(database, () => {
