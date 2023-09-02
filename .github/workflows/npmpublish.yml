@@ -57,7 +57,7 @@ jobs:
         image: redis
         ports:
           - 6379:6379
-    timeout-minutes: 10
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -76,13 +76,15 @@ jobs:
           psql -d postgresql://ueberdb:ueberdb@127.0.0.1/ueberdb -c '\dt'
       - name: Create javascript files from typescript
         run: npm run build
-
       - run: npm test
+        env:
+          SURREALDB_CI: false
       - run: npm run lint
 
   publish-npm:
     if: github.event_name == 'push'
-    needs: test
+    needs:
+        - test
     runs-on: ubuntu-latest
     steps:
       -

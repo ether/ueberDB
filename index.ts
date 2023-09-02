@@ -36,7 +36,7 @@ import {Database as PostgresPoolDatabase} from './databases/postgrespool_db'
 import {Database as RedisDatabase} from './databases/redis_db'
 import {Database as RethinkDatabase} from './databases/rethink_db'
 import {Database as SQLiteDatabase} from './databases/sqlite_db'
-
+import {Database as Surrealb} from './databases/surrealdb_db'
 
 
 const cbDb = {
@@ -138,6 +138,8 @@ export const Database = class {
             return new RethinkDatabase(this.dbSettings);
         case 'couch':
             return new CouchDatabase(this.dbSettings);
+        case 'surrealdb':
+            return new Surrealb(this.dbSettings);
         default:
             throw new Error('Invalid database type');
     }
