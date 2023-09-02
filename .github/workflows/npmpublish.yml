@@ -11,7 +11,7 @@ on:
 jobs:
   test-surreal:
     runs-on: ubuntu-latest
-
+    only: manual
     steps:
         - uses: actions/checkout@v3
         - name: Start SurrealDB
@@ -99,7 +99,8 @@ jobs:
 
   publish-npm:
     if: github.event_name == 'push'
-    needs: test
+    needs:
+        - test
     runs-on: ubuntu-latest
     steps:
       -
