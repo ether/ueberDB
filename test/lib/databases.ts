@@ -74,4 +74,11 @@ export const databases:DatabaseType = {
     port: '9200',
 
   },
+  surrealdb: {
+    url: 'http://127.0.0.1:8000/rpc',
+    port: 0,
+    speeds: {
+        findKeysMax: 30,
+    },
+  }
 };

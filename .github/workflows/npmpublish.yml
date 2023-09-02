@@ -60,6 +60,9 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v3
+      - name: Start SurrealDB
+        run: docker run -it -d --rm --name surrealdb -p 8000:8000 surrealdb/surrealdb start -u root -p root
+      - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
           node-version: 20
@@ -79,6 +82,8 @@ jobs:
 
       - run: npm test
       - run: npm run lint
+      - name: Stop SurrealDB
+        run: docker stop -t 1 surrealdb
 
   publish-npm:
     if: github.event_name == 'push'
