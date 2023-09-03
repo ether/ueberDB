@@ -19,14 +19,32 @@ import Surreal from 'surrealdb.js';
 import {BulkObject} from "./cassandra_db";
 import {QueryResult} from "surrealdb.js/script/types";
 const DATABASE = 'ueberdb';
-const STORE_WITH_DOT = 'store:';
-const STORE = 'store';
 
 const WILDCARD= '*';
 
 type StoreVal = {
     key: string;
     value: string;
+    raw: string;
+}
+
+const replaceAt = function(index:number, replacement:string, original:string) {
+    return original.substring(0, index) + replacement + original.substring(index + replacement.length);
+}
+const escapeKey = (key:string)=>{
+    const index = key.indexOf(':')
+    if (index>-1){
+        return replaceAt(index, "_", key)
+    }
+    return key
+}
+
+const unescapeKey = (key:string, originalKey:string)=>{
+    const index = originalKey.indexOf(':')
+    if(index>-1){
+        return replaceAt(index, ":", key)
+    }
+    return key
 }
 
 export const Database = class SurrealDB extends AbstractDatabase {
@@ -55,9 +73,9 @@ export const Database = class SurrealDB extends AbstractDatabase {
     }
 
     async get(key:string) {
-        console.log("get by key ", key)
         if (this._client == null) return null;
-        const res = await this._client.query( "SELECT key,value FROM store WHERE key=$key", {key}) as QueryResult<StoreVal[]>[]
+        key = escapeKey(key)
+        const res = await this._client.query( "SELECT key,value FROM store WHERE key= $key", {key}) as QueryResult<StoreVal[]>[]
         if(res[0].result!.length>0){
             return res[0].result![0].value
         }
@@ -71,18 +89,16 @@ export const Database = class SurrealDB extends AbstractDatabase {
 
         if (notKey != null){
             const query  = `SELECT key FROM store WHERE ${this.transformWildcard(key, 'key')} AND ${this.transformWildcardNegative(notKey, 'notKey')}`
-            key = key.replace(WILDCARD, '')
             notKey = notKey.replace(WILDCARD, '')
-            const res = await this._client.query<StoreVal[]>(query, {key:key, notKey:notKey})
-            // @ts-ignore
-            return this.transformResult(res)
+            key = key.replace(WILDCARD, '')
+            const res = await this._client.query<StoreVal[]>(query, {key:key, notKey:notKey})  as QueryResult<StoreVal[]>[]
+            return this.transformResult(res,key)
         }
         else{
             const query  = `SELECT key FROM store WHERE ${this.transformWildcard(key, 'key')}`
             key = key.replace(WILDCARD, '')
-            const res = await this._client.query<StoreVal[]>(query, {key})
-            // @ts-ignore
-            return this.transformResult(res)
+            const res = await this._client.query<StoreVal[]>(query, {key}) as QueryResult<StoreVal[]>[]
+            return this.transformResult(res, key)
         }
     }
 
@@ -116,11 +132,10 @@ export const Database = class SurrealDB extends AbstractDatabase {
         }
     }
 
-    transformResult(res: QueryResult<StoreVal[]>[]){
+    transformResult(res: QueryResult<StoreVal[]>[], originalKey:string){
         const value: string[] = [];
-        console.log("Result",res)
         res[0].result!.forEach(k=>{
-            value.push(k.key);
+            value.push(unescapeKey(k.key, originalKey));
         })
         return value
     }
@@ -129,15 +144,18 @@ export const Database = class SurrealDB extends AbstractDatabase {
         if (this._client == null) return null;
         const exists = await this.get(key)
         if(exists){
-           await this._client.query("UPDATE store SET value = $value WHERE key = $key", {key, value})
+            key = escapeKey(key)
+            await this._client.query("UPDATE store SET value = $value WHERE key = $key", {key, value})
         }
         else {
-                await this._client.query("INSERT INTO store (key, value) VALUES ($key, $value)", {key, value})
+            key = escapeKey(key)
+            await this._client.query("INSERT INTO store (key, value) VALUES ($key, $value)", {key, value})
             }
     }
 
     async remove(key:string) {
         if (this._client == null) return null
+        key = escapeKey(key)
         return await this._client.query("DELETE FROM store WHERE key = $key", {key})
     }
 
