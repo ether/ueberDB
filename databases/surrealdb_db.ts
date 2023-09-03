@@ -118,6 +118,7 @@ export const Database = class SurrealDB extends AbstractDatabase {
 
     transformResult(res: QueryResult<StoreVal[]>[]){
         const value: string[] = [];
+        console.log("Result",res)
         res[0].result!.forEach(k=>{
             value.push(k.key);
         })
