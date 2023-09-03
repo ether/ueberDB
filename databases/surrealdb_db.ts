@@ -25,13 +25,8 @@ const STORE = 'store';
 const WILDCARD= '*';
 
 type StoreVal = {
-    id: string;
     key: string;
     value: string;
-}
-
-const escapeId = (id:string) => {
-   return id.replace(/[\W_]+/g,"_");
 }
 
 export const Database = class SurrealDB extends AbstractDatabase {
@@ -61,10 +56,9 @@ export const Database = class SurrealDB extends AbstractDatabase {
 
     async get(key:string) {
         if (this._client == null) return null;
-        const keyEscaped = escapeId(key);
-        const res = await this._client.select<StoreVal>(STORE_WITH_DOT+keyEscaped)
-        if(res.length>0){
-            return res[0].value
+        const res = await this._client.query( "SELECT key,value FROM store WHERE key=$key", {key}) as QueryResult<StoreVal[]>[]
+        if(res[0].result!.length>0){
+            return res[0].result![0].value
         }
         else{
             return null;
@@ -77,9 +71,7 @@ export const Database = class SurrealDB extends AbstractDatabase {
         if (notKey != null){
             const query  = `SELECT key FROM store WHERE ${this.transformWildcard(key, 'key')} AND ${this.transformWildcardNegative(notKey, 'notKey')}`
             key = key.replace(WILDCARD, '')
-            key = escapeId(key);
             notKey = notKey.replace(WILDCARD, '')
-            notKey = escapeId(notKey);
             const res = await this._client.query<StoreVal[]>(query, {key:key, notKey:notKey})
             // @ts-ignore
             return this.transformResult(res)
@@ -87,7 +79,6 @@ export const Database = class SurrealDB extends AbstractDatabase {
         else{
             const query  = `SELECT key FROM store WHERE ${this.transformWildcard(key, 'key')}`
             key = key.replace(WILDCARD, '')
-            key = escapeId(key);
             const res = await this._client.query<StoreVal[]>(query, {key})
             // @ts-ignore
             return this.transformResult(res)
@@ -134,18 +125,15 @@ export const Database = class SurrealDB extends AbstractDatabase {
 
     async set(key:string, value:string) {
         if (this._client == null) return null;
-        const keyEscaped = escapeId(key);
         const exists = await this.get(key)
         if(exists){
            await this._client.update<StoreVal>(STORE, {
-                id:  keyEscaped,
                 key: key,
                 value: value
             })
         }
         else {
                 await this._client.create<StoreVal>(STORE, {
-                    id: keyEscaped,
                     key:key,
                     value: value
                 })
@@ -154,19 +142,17 @@ export const Database = class SurrealDB extends AbstractDatabase {
 
     async remove(key:string) {
         if (this._client == null) return null
-        key = escapeId(key);
-        return await this._client.delete<StoreVal>(STORE_WITH_DOT+key)
+        return await this._client.query("DELETE FROM store WHERE key = $key", {key})
     }
 
     async doBulk(bulk: BulkObject[]) {
         if (this._client == null) return null;
 
         bulk.forEach(b=>{
-            const key = escapeId(b.key);
             if (b.type === 'set') {
-                this._client!.update(STORE+key, {key: key, value: b.value});
+                this._client!.query("UPDATE store SET value = $value WHERE key = $key", {key:b.key, value:b.value})
             } else if (b.type === 'remove') {
-                this._client!.delete(STORE+key);
+                this.remove(b.key);
             }
         })
     }
