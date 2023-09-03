@@ -101,25 +101,16 @@ describe(__filename, () => {
                       await db.set(key, input);
                     });
                     it('get(key) -> record', async (context) => {
-                      if(database === 'surrealdb' && space){
-                        context.skip()
-                      }
                       const output = await db.get(key);
                       expect(JSON.stringify(output)).toBe(JSON.stringify(input));
                     });
                     it('get(`${key} `) -> nullish', async (context) => {
-                      if(database === 'surrealdb'  && space){
-                        context.skip()
-                      }
                       const output = await db.get(`${key} `);
                       console.log("output ",output)
                       expect(output == null).toBeTruthy();
                     });
                     if (space) {
                       it('get(key.slice(0, -1)) -> nullish', async (context) => {
-                        if(database === 'surrealdb'  && space){
-                          context.skip()
-                        }
                         const output = await db.get(key.slice(0, -1));
                         expect(output == null).toBeTruthy();
                       });
