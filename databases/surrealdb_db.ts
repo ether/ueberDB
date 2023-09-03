@@ -55,6 +55,7 @@ export const Database = class SurrealDB extends AbstractDatabase {
     }
 
     async get(key:string) {
+        console.log("get by key ", key)
         if (this._client == null) return null;
         const res = await this._client.query( "SELECT key,value FROM store WHERE key=$key", {key}) as QueryResult<StoreVal[]>[]
         if(res[0].result!.length>0){
@@ -127,16 +128,10 @@ export const Database = class SurrealDB extends AbstractDatabase {
         if (this._client == null) return null;
         const exists = await this.get(key)
         if(exists){
-           await this._client.update<StoreVal>(STORE, {
-                key: key,
-                value: value
-            })
+           await this._client.query("UPDATE store SET value = $value WHERE key = $key", {key, value})
         }
         else {
-                await this._client.create<StoreVal>(STORE, {
-                    key:key,
-                    value: value
-                })
+                await this._client.query("INSERT INTO store (key, value) VALUES ($key, $value)", {key, value})
             }
     }
 
@@ -150,7 +145,7 @@ export const Database = class SurrealDB extends AbstractDatabase {
 
         bulk.forEach(b=>{
             if (b.type === 'set') {
-                this._client!.query("UPDATE store SET value = $value WHERE key = $key", {key:b.key, value:b.value})
+                this.set(b.key, b.value!)
             } else if (b.type === 'remove') {
                 this.remove(b.key);
             }
