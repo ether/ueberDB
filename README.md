@@ -26,7 +26,8 @@ writes are done in a bulk. This can be turned off.
 * Redis
 * Rethink
 * SQLite
-
+* Surrealdb
+* 
 ## Install
 
 ```
@@ -208,19 +209,20 @@ const ueberdb = require('ueberdb2');
 
 ## Feature support
 
-|        | Get | Set | findKeys | Remove | getSub | setSub | doBulk |CI Coverage|
-|--------|-----|-----|----------|--------|--------|--------|--------|--------|
-|  cassandra |  ✓  |  ✓  |    *     |   ✓    |   ✓    |   ✓    |   ✓    |
-|  couchdb |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
-|  dirty |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |        |   ✓   |
-|  dirty_git |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |        |
-|  elasticsearch |  ✓  |  ✓  |    *     |   ✓    |   ✓    |   ✓    |   ✓    |
-|  maria |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |
-|  mysql |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |   ✓   |
-|  postgres  |  ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |   ✓   |
-|  redis |  ✓  |  ✓  |    *     |   ✓    |   ✓    |   ✓    |   ✓    |   ✓   |
-|  rethinkdb |  ✓  |  ✓  |    *     |   ✓    |   ✓    |   ✓    |   ✓    |
-|  sqlite | ✓  |  ✓  |    ✓     |   ✓    |   ✓    |   ✓    |   ✓    |   ✓    |
+|               | Get | Set | findKeys | Remove | getSub | setSub | doBulk | CI Coverage |
+|---------------|-----|-----|----------|--------|--------|--------|--------|-------------|
+| cassandra     | ✓   | ✓   | *        | ✓      | ✓      | ✓      | ✓      |             |
+| couchdb       | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      | ✓      |             |
+| dirty         | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      |        | ✓           |
+| dirty_git     | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      |        |             |
+| elasticsearch | ✓   | ✓   | *        | ✓      | ✓      | ✓      | ✓      |             |
+| maria         | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      | ✓      |             |
+| mysql         | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      | ✓      | ✓           |
+| postgres      | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      | ✓      | ✓           |
+| redis         | ✓   | ✓   | *        | ✓      | ✓      | ✓      | ✓      | ✓           |
+| rethinkdb     | ✓   | ✓   | *        | ✓      | ✓      | ✓      | ✓      |
+| sqlite        | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      | ✓      | ✓           |
+| surrealdb     | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      | ✓      |             |
 
 ## Limitations
 
@@ -286,16 +288,16 @@ environment variable `NODE_TLS_REJECT_UNAUTHORIZED = 0` and add the flag
 
 1. Add the database driver to `packages.json`, this will happen automatically if
    you run `npm install %yourdatabase%`
-1. Create `databases/DATABASENAME_db.js` and have it export a `Database` class
+2. Create `databases/DATABASENAME_db.js` and have it export a `Database` class
    that derives from `lib/AbstractDatabase.js`. Implement the required
    functions.
-1. Add a service for the database to the test job in
+3. Add a service for the database to the test job in
    `.github/workflows/npmpublish.yml`.
-1. Add an entry to `test/lib/databases.js` for your database and configure it to
+4. Add an entry to `test/lib/databases.js` for your database and configure it to
    work with the service added to the GitHub workflow.
-1. Install and start the database server and configure it to work with the
+5. Install and start the database server and configure it to work with the
    settings in your `test/lib/databases.js` entry.
-1. Run `npm test` to ensure that it works.
+6. Run `npm test` to ensure that it works.
 
 ## License
 
@@ -323,5 +325,5 @@ Dirty_git will `commit` and `push` to Git on every `set`. To use `git init` or
 `git clone` within your dirty database location and then set your upstream IE
 `git remote add origin git://whztevz`.
 
-The logic behind dirty git is that you can still use dirty but you can also have
-offsite backups. It's noisy and spammy but it can be useful.
+The logic behind dirty git is that you can still use dirty, but you can also have
+offsite backups. It's noisy and spammy, but it can be useful.
