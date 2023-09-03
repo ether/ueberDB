@@ -17,7 +17,6 @@ import AbstractDatabase, {Settings} from "../lib/AbstractDatabase";
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import SQDatabase, {Database as SQDB} from 'better-sqlite3'
 
 const escape = (val:string) => `'${val.replace(/'/g, "''")}'`;
 
@@ -26,7 +25,7 @@ type RequestVal = {
 }
 
 export const Database = class SQLiteDB extends AbstractDatabase {
-  private db: SQDB|null;
+  private db: any|null;
   constructor(settings:Settings) {
     super();
     this.db = null;
@@ -50,9 +49,17 @@ export const Database = class SQLiteDB extends AbstractDatabase {
   }
 
   init(callback: Function) {
-    this.db = new SQDatabase(this.settings.filename as string)
-    this._query('CREATE TABLE IF NOT EXISTS store (key TEXT PRIMARY KEY, value TEXT)');
-    callback();
+    try {
+      const SQLITEDB = require('better-sqlite3');
+      this.db = new SQLITEDB(this.settings.filename as string)
+      this._query('CREATE TABLE IF NOT EXISTS store (key TEXT PRIMARY KEY, value TEXT)');
+      callback();
+    } catch (err) {
+      throw new Error(
+          'better-sqlite3 not found. It was removed from ueberdb\'s dependencies because it requires ' +
+          'compilation which fails on several systems. If you still want to use sqlite, run ' +
+          '"npm install better-sqlite3" in your etherpad-lite ./src directory.');
+    }
   }
 
   async _query(sql:string, params = []) {

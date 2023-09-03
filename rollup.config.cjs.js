@@ -16,6 +16,7 @@ module.exports = {
     json(),
     minify(),
   ],
+  external: ['better-sqlite3'],
   output: {
     compact: true,
     preserveModules: false,
