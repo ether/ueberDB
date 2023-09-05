@@ -28,25 +28,6 @@ type StoreVal = {
     raw: string;
 }
 
-const replaceAt = function(index:number, replacement:string, original:string) {
-    return original.substring(0, index) + replacement + original.substring(index + replacement.length);
-}
-const escapeKey = (key:string)=>{
-    const index = key.indexOf(':')
-    if (index>-1){
-        return replaceAt(index, "_", key)
-    }
-    return key
-}
-
-const unescapeKey = (key:string, originalKey:string)=>{
-    const index = originalKey.indexOf(':')
-    if(index>-1){
-        return replaceAt(index, ":", key)
-    }
-    return key
-}
-
 export const Database = class SurrealDB extends AbstractDatabase {
     private _client: Surreal | null;
     constructor(settings:Settings) {
@@ -78,7 +59,6 @@ export const Database = class SurrealDB extends AbstractDatabase {
 
     async get(key:string) {
         if (this._client == null) return null;
-        key = escapeKey(key)
         const res = await this._client.query( "SELECT key,value FROM store WHERE key= $key", {key}) as QueryResult<StoreVal[]>[]
         if(res[0].result!.length>0){
             return res[0].result![0].value
@@ -96,13 +76,13 @@ export const Database = class SurrealDB extends AbstractDatabase {
             notKey = notKey.replace(WILDCARD, '')
             key = key.replace(WILDCARD, '')
             const res = await this._client.query<StoreVal[]>(query, {key:key, notKey:notKey})  as QueryResult<StoreVal[]>[]
-            return this.transformResult(res,key)
+            return this.transformResult(res)
         }
         else{
             const query  = `SELECT key FROM store WHERE ${this.transformWildcard(key, 'key')}`
             key = key.replace(WILDCARD, '')
             const res = await this._client.query<StoreVal[]>(query, {key}) as QueryResult<StoreVal[]>[]
-            return this.transformResult(res, key)
+            return this.transformResult(res)
         }
     }
 
@@ -136,10 +116,10 @@ export const Database = class SurrealDB extends AbstractDatabase {
         }
     }
 
-    transformResult(res: QueryResult<StoreVal[]>[], originalKey:string){
+    transformResult(res: QueryResult<StoreVal[]>[]){
         const value: string[] = [];
         res[0].result!.forEach(k=>{
-            value.push(unescapeKey(k.key, originalKey));
+            value.push(k.key);
         })
         return value
     }
@@ -148,18 +128,15 @@ export const Database = class SurrealDB extends AbstractDatabase {
         if (this._client == null) return null;
         const exists = await this.get(key)
         if(exists){
-            key = escapeKey(key)
             await this._client.query("UPDATE store SET value = $value WHERE key = $key", {key, value})
         }
         else {
-            key = escapeKey(key)
-            await this._client.query("INSERT INTO store (key, value) VALUES ($key, $value)", {key, value})
+            await this._client.query("CREATE store SET key=<string> $key, value=$value", {key, value})
             }
     }
 
     async remove(key:string) {
         if (this._client == null) return null
-        key = escapeKey(key)
         return await this._client.query("DELETE FROM store WHERE key = $key", {key})
     }
 
