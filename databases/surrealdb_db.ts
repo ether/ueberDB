@@ -59,7 +59,7 @@ export const Database = class SurrealDB extends AbstractDatabase {
 
     async get(key:string) {
         if (this._client == null) return null;
-        const res = await this._client.query( "SELECT key,value FROM store WHERE key= $key", {key}) as QueryResult<StoreVal[]>[]
+        const res = await this._client.query( "SELECT key,value FROM store WHERE key = <string> $key", {key}) as QueryResult<StoreVal[]>[]
         if(res[0].result!.length>0){
             return res[0].result![0].value
         }
@@ -88,31 +88,31 @@ export const Database = class SurrealDB extends AbstractDatabase {
 
     transformWildcard(key: string, keyExpr: string){
         if (key.startsWith(WILDCARD) && key.endsWith(WILDCARD)) {
-            return `${keyExpr} CONTAINS $${keyExpr}`
+            return `<string> ${keyExpr} CONTAINS $${keyExpr}`
         }
         else if (key.startsWith(WILDCARD)) {
-            return `string::endsWith(${keyExpr}, $${keyExpr})`
+            return `string::endsWith(<string> ${keyExpr}, $${keyExpr})`
         }
         else if (key.endsWith(WILDCARD)) {
-            return `string::startsWith(${keyExpr}, $${keyExpr})`
+            return `string::startsWith(<string> ${keyExpr}, $${keyExpr})`
         }
         else {
-            return `${keyExpr} = $${keyExpr}`
+            return `<string> ${keyExpr} = $${keyExpr}`
         }
     }
 
     transformWildcardNegative(key: string, keyExpr: string){
         if (key.startsWith(WILDCARD) && key.endsWith(WILDCARD)) {
-            return `key CONTAINSNOT $${keyExpr}`
+            return `<string> key CONTAINSNOT $${keyExpr}`
         }
         else if (key.startsWith(WILDCARD)) {
-            return `string::endsWith(key, $${keyExpr})==false`
+            return `string::endsWith(<string> key, $${keyExpr})==false`
         }
         else if (key.endsWith(WILDCARD)) {
-            return `string::startsWith(key, $${keyExpr})==false`
+            return `string::startsWith(<string> key, $${keyExpr})==false`
         }
         else {
-            return `key != $${keyExpr}`
+            return `<string> key != $${keyExpr}`
         }
     }
 
@@ -128,7 +128,7 @@ export const Database = class SurrealDB extends AbstractDatabase {
         if (this._client == null) return null;
         const exists = await this.get(key)
         if(exists){
-            await this._client.query("UPDATE store SET value = $value WHERE key = $key", {key, value})
+            await this._client.query("UPDATE store SET value = $value WHERE <string> key = $key", {key, value})
         }
         else {
             await this._client.query("CREATE store SET key=<string> $key, value=$value", {key, value})
