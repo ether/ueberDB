@@ -18,10 +18,9 @@ import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
 import Surreal from 'surrealdb.js';
 import {BulkObject} from "./cassandra_db";
 import {QueryResult} from "surrealdb.js/script/types";
-
 const DATABASE = 'ueberdb';
 
-const WILDCARD = '*';
+const WILDCARD= '*';
 
 type StoreVal = {
     key: string;
@@ -29,18 +28,34 @@ type StoreVal = {
     raw: string;
 }
 
+const replaceAt = function(index:number, replacement:string, original:string) {
+    return original.substring(0, index) + replacement + original.substring(index + replacement.length);
+}
+const escapeKey = (key:string)=>{
+    const index = key.indexOf(':')
+    if (index>-1){
+        return replaceAt(index, "_", key)
+    }
+    return key
+}
+
+const unescapeKey = (key:string, originalKey:string)=>{
+    const index = originalKey.indexOf(':')
+    if(index>-1){
+        return replaceAt(index, ":", key)
+    }
+    return key
+}
+
 export const Database = class SurrealDB extends AbstractDatabase {
     private _client: Surreal | null;
-
-    constructor(settings: Settings) {
+    constructor(settings:Settings) {
         super();
         this._client = null;
         this.settings = settings || {};
     }
 
-    get isAsync() {
-        return true;
-    }
+    get isAsync() { return true; }
 
     async init() {
         if (this.settings.url) {
@@ -50,101 +65,108 @@ export const Database = class SurrealDB extends AbstractDatabase {
             const protocol = this.settings.clientOptions.protocol || 'http://';
             const path = this.settings.clientOptions.path || '/rpc';
             const host = this.settings.host;
-            this._client = new Surreal(protocol + host + ':' + port + path);
+            this._client = new Surreal(protocol+host+':'+port+path);
         }
-        if (this.settings.user && this.settings.password) {
+        if(this.settings.user && this.settings.password) {
             await this._client!.signin({
                 user: this.settings.user!,
                 pass: this.settings.password!
             })
         }
-        await this._client!.use({ns: DATABASE, db: DATABASE});
+        await this._client!.use({ns:DATABASE, db:DATABASE});
     }
 
-    async get(key: string) {
+    async get(key:string) {
         if (this._client == null) return null;
-        const res = await this._client.query("SELECT key,value FROM store WHERE key = <string> $key", {key}) as QueryResult<StoreVal[]>[]
-        if (res[0].result!.length > 0) {
+        key = escapeKey(key)
+        const res = await this._client.query( "SELECT key,value FROM store WHERE key= $key", {key}) as QueryResult<StoreVal[]>[]
+        if(res[0].result!.length>0){
             return res[0].result![0].value
-        } else {
+        }
+        else{
             return null;
         }
     }
 
-    async findKeys(key: string, notKey: string) {
+    async findKeys(key:string, notKey:string) {
         if (this._client == null) return null;
 
-        if (notKey != null) {
-            const query = `SELECT key FROM store WHERE ${this.transformWildcard(key, 'key')} AND ${this.transformWildcardNegative(notKey, 'notKey')}`
+        if (notKey != null){
+            const query  = `SELECT key FROM store WHERE ${this.transformWildcard(key, 'key')} AND ${this.transformWildcardNegative(notKey, 'notKey')}`
             notKey = notKey.replace(WILDCARD, '')
             key = key.replace(WILDCARD, '')
-            const res = await this._client.query<StoreVal[]>(query, {
-                key: key,
-                notKey: notKey
-            }) as QueryResult<StoreVal[]>[]
-            return this.transformResult(res)
-        } else {
-            const query = `SELECT key FROM store WHERE ${this.transformWildcard(key, 'key')}`
+            const res = await this._client.query<StoreVal[]>(query, {key:key, notKey:notKey})  as QueryResult<StoreVal[]>[]
+            return this.transformResult(res,key)
+        }
+        else{
+            const query  = `SELECT key FROM store WHERE ${this.transformWildcard(key, 'key')}`
             key = key.replace(WILDCARD, '')
             const res = await this._client.query<StoreVal[]>(query, {key}) as QueryResult<StoreVal[]>[]
-            return this.transformResult(res)
+            return this.transformResult(res, key)
         }
     }
 
-    transformWildcard(key: string, keyExpr: string) {
+    transformWildcard(key: string, keyExpr: string){
         if (key.startsWith(WILDCARD) && key.endsWith(WILDCARD)) {
             return `${keyExpr} CONTAINS $${keyExpr}`
-        } else if (key.startsWith(WILDCARD)) {
-            return `string::endsWith(<string> ${keyExpr}, $${keyExpr})`
-        } else if (key.endsWith(WILDCARD)) {
-            return `string::startsWith(<string> ${keyExpr}, $${keyExpr})`
-        } else {
+        }
+        else if (key.startsWith(WILDCARD)) {
+            return `string::endsWith(${keyExpr}, $${keyExpr})`
+        }
+        else if (key.endsWith(WILDCARD)) {
+            return `string::startsWith(${keyExpr}, $${keyExpr})`
+        }
+        else {
             return `${keyExpr} = $${keyExpr}`
         }
     }
 
-    transformWildcardNegative(key: string, keyExpr: string) {
+    transformWildcardNegative(key: string, keyExpr: string){
         if (key.startsWith(WILDCARD) && key.endsWith(WILDCARD)) {
-            return `<string> key CONTAINSNOT $${keyExpr}`
-        } else if (key.startsWith(WILDCARD)) {
-            return `string::endsWith(<string> key, $${keyExpr})==false`
-        } else if (key.endsWith(WILDCARD)) {
-            return `string::startsWith(<string> key, $${keyExpr})==false`
-        } else {
+            return `key CONTAINSNOT $${keyExpr}`
+        }
+        else if (key.startsWith(WILDCARD)) {
+            return `string::endsWith(key, $${keyExpr})==false`
+        }
+        else if (key.endsWith(WILDCARD)) {
+            return `string::startsWith(key, $${keyExpr})==false`
+        }
+        else {
             return `key != $${keyExpr}`
         }
     }
 
-    transformResult(res: QueryResult<StoreVal[]>[]) {
+    transformResult(res: QueryResult<StoreVal[]>[], originalKey:string){
         const value: string[] = [];
-        res[0].result!.forEach(k => {
-            value.push(k.key);
+        res[0].result!.forEach(k=>{
+            value.push(unescapeKey(k.key, originalKey));
         })
         return value
     }
 
-    async set(key: string, value: string) {
+    async set(key:string, value:string) {
         if (this._client == null) return null;
         const exists = await this.get(key)
-        if (exists) {
-            await this._client.query("UPDATE store SET value = $value WHERE key = $key", {
-                key,
-                value
-            })
-        } else {
-            await this._client.query("CREATE store SET key=$key, value = $value", {key, value})
+        if(exists){
+            key = escapeKey(key)
+            await this._client.query("UPDATE store SET value = $value WHERE key = $key", {key, value})
+        }
+        else {
+            key = escapeKey(key)
+            await this._client.query("INSERT INTO store (key, value) VALUES ($key, $value)", {key, value})
         }
     }
 
-    async remove(key: string) {
+    async remove(key:string) {
         if (this._client == null) return null
+        key = escapeKey(key)
         return await this._client.query("DELETE FROM store WHERE key = $key", {key})
     }
 
     async doBulk(bulk: BulkObject[]) {
         if (this._client == null) return null;
 
-        bulk.forEach(b => {
+        bulk.forEach(b=>{
             if (b.type === 'set') {
                 this.set(b.key, b.value!)
             } else if (b.type === 'remove') {
