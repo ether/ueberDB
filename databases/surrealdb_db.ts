@@ -59,13 +59,15 @@ export const Database = class SurrealDB extends AbstractDatabase {
 
     async init() {
         if (this.settings.url) {
-            this._client = new Surreal(this.settings.url);
+            this._client = new Surreal();
+            this._client.connect(this.settings.url)
         } else if (this.settings.host) {
             const port = this.settings.port || 8000;
             const protocol = this.settings.clientOptions.protocol || 'http://';
             const path = this.settings.clientOptions.path || '/rpc';
             const host = this.settings.host;
-            this._client = new Surreal(protocol+host+':'+port+path);
+            this._client = new Surreal();
+            this._client.connect(protocol + host + ':' + port + path)
         }
         if(this.settings.user && this.settings.password) {
             await this._client!.signin({
