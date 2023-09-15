@@ -5,6 +5,8 @@ const nodeResolve = require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
 const json = require('@rollup/plugin-json');
 const minify = require('@rollup/plugin-terser');
+
+
 module.exports = {
   input: ['./index.ts'], // Matches all TypeScript files in the 'src' directory and its subdirectories
   plugins: [
@@ -14,7 +16,9 @@ module.exports = {
     nodeResolve(),
     commonjs(),
     json(),
-    minify(),
+    minify({
+      keep_fnames: /Packet|ChangeUser|Handshake|Ping|Query|Quit|Sequence|Statistics/,
+    }),
   ],
   external: ['better-sqlite3'],
   output: {
