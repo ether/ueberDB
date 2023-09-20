@@ -55,6 +55,7 @@ export const Database = class extends AbstractDatabase {
     MongoClient.connect(this.settings.url!).then((v)=>{
         this.client = v;
         this.database = v.db(this.settings.database);
+       this.schedulePing();
         this.collection = this.database.collection(this.settings.collection!);
         callback(null);
     })
@@ -62,7 +63,7 @@ export const Database = class extends AbstractDatabase {
             callback(v);
         })
 
-    this.schedulePing();
+
   }
 
   get(key:string, callback:Function) {
