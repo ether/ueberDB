@@ -48,7 +48,7 @@
     "nano": "^10.1.2",
     "pg": "^8.11.3",
     "randexp-ts": "^1.0.5",
-    "redis": "^4.6.8",
+    "redis": "^4.6.9",
     "rethinkdb": "^2.4.2",
     "rollup-plugin-typescript2": "^0.35.0",
     "semver": "^7.5.4",
