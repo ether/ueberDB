@@ -30,7 +30,7 @@
     "@types/better-sqlite3": "^7.6.5",
     "@types/mssql": "^9.1.0",
     "@types/mysql": "^2.15.21",
-    "@types/node": "^20.6.2",
+    "@types/node": "^20.6.3",
     "@types/pg": "^8.10.2",
     "@types/rethinkdb": "^2.3.17",
     "async": "^3.2.4",
