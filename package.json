@@ -28,7 +28,7 @@
     "@rollup/plugin-terser": "^0.4.3",
     "@types/async": "^3.2.21",
     "@types/better-sqlite3": "^7.6.5",
-    "@types/mssql": "^9.1.0",
+    "@types/mssql": "^9.1.1",
     "@types/mysql": "^2.15.21",
     "@types/node": "^20.6.5",
     "@types/pg": "^8.10.2",
