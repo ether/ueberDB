@@ -172,6 +172,7 @@ export const Database = class extends AbstractDatabase {
 
     let removeCount = 0;
 
+    console.log("BulkObjs",bulk)
     for (const i in bulk) {
       if (bulk[i].type === 'set') {
         replaceVALs.push([bulk[i].key, bulk[i].value]);
@@ -193,8 +194,9 @@ export const Database = class extends AbstractDatabase {
 
     const functions:any = replaceVALs.map((v) => (cb:()=>{}) => this.db.query(this.upsertStatement as string, v, cb));
 
+    console.log("Vals",removeSQL, removeVALs)
     const removeFunction = (callback: ()=>{}) => {
-      if (!(removeVALs.length as number > 1)) {
+      if ((removeVALs.length == 1)) {
         this.db.query(removeSQL, removeVALs, callback);
       } else { callback(); }
     };
