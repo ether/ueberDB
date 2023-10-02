@@ -50,7 +50,7 @@
     "randexp-ts": "^1.0.5",
     "redis": "^4.6.10",
     "rethinkdb": "^2.4.2",
-    "rollup-plugin-typescript2": "^0.35.0",
+    "rollup-plugin-typescript2": "^0.36.0",
     "semver": "^7.5.4",
     "simple-git": "^3.20.0",
     "surrealdb.js": "^0.9.1",
