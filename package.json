@@ -25,7 +25,7 @@
     "@rollup/plugin-commonjs": "^25.0.5",
     "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.2.2",
-    "@rollup/plugin-terser": "^0.4.3",
+    "@rollup/plugin-terser": "^0.4.4",
     "@types/async": "^3.2.21",
     "@types/better-sqlite3": "^7.6.5",
     "@types/mssql": "^9.1.1",
