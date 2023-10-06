@@ -220,7 +220,7 @@ export const Database = class {
    */
   set(key:string, value:string, cb = null, deprecated = null) {
     if (cb != null) { // @ts-ignore
-      return cbDb.get.call(this.db, key, value, makeDoneCallback(cb, deprecated));
+      return cbDb.set.call(this.db, key, value, makeDoneCallback(cb, deprecated));
     }
     return this.db.set(key, value);
   }
