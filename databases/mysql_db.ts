@@ -46,10 +46,8 @@ export const Database = class extends AbstractDatabase {
       return await new Promise((resolve, reject) => {
         options = {timeout: this.settings.queryTimeout, ...options};
         console.log("Options",options)
-        this._pool && this._pool.query(options, (err, ...args:string[]) => {
-          console.log(err)
-          return err != null ? reject(err) : resolve(args)
-        });
+        this._pool && this._pool.query(options, (err, ...args:string[]) => err != null ? reject(err) : resolve(args)
+        );
       });
     } catch (err:any) {
       this.logger.error(`${err.fatal ? 'Fatal ' : ''}MySQL error: ${err.stack || err}`);
