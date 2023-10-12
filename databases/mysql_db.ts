@@ -15,14 +15,13 @@
  */
 
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
-import * as mysql from 'mysql';
 import util from 'util';
 import {BulkObject} from './cassandra_db';
-import {PoolConfig} from "mysql";
+import {ConnectionConfig, createPool, Pool, QueryError} from "mysql2";
 
 export const Database = class extends AbstractDatabase {
   private readonly _mysqlSettings: Settings;
-  private _pool: any;
+  private _pool: Pool|null;
   constructor(settings:Settings) {
     super();
     this.logger = console;
@@ -46,7 +45,9 @@ export const Database = class extends AbstractDatabase {
     try {
       return await new Promise((resolve, reject) => {
         options = {timeout: this.settings.queryTimeout, ...options};
-        this._pool && this._pool.query(options, (err:Error, ...args:string[]) => err != null ? reject(err) : resolve(args));
+        console.log("Options",options)
+        this._pool && this._pool.query(options, (err, ...args:string[]) => err != null ? reject(err) : resolve(args)
+        );
       });
     } catch (err:any) {
       this.logger.error(`${err.fatal ? 'Fatal ' : ''}MySQL error: ${err.stack || err}`);
@@ -55,7 +56,10 @@ export const Database = class extends AbstractDatabase {
   }
 
   async init() {
-    this._pool = mysql.createPool(this._mysqlSettings as PoolConfig);
+    if("speeds" in this._mysqlSettings){
+      delete this._mysqlSettings.speeds
+    }
+    this._pool = createPool(this._mysqlSettings as ConnectionConfig);
     const {database, charset} = this._mysqlSettings;
 
     const sqlCreate = `${'CREATE TABLE IF NOT EXISTS `store` ( ' +
@@ -176,6 +180,6 @@ export const Database = class extends AbstractDatabase {
   }
 
   async close() {
-    await util.promisify(this._pool.end.bind(this._pool))();
+    await util.promisify(this._pool!.end.bind(this._pool))();
   }
 };
