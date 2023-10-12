@@ -15,10 +15,10 @@
  */
 
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
-import * as mysql from 'mysql';
+import * as mysql from 'mysql2';
 import util from 'util';
 import {BulkObject} from './cassandra_db';
-import {PoolConfig} from "mysql";
+import {ConnectionConfig, Pool} from "mysql2";
 
 export const Database = class extends AbstractDatabase {
   private readonly _mysqlSettings: Settings;
@@ -55,7 +55,7 @@ export const Database = class extends AbstractDatabase {
   }
 
   async init() {
-    this._pool = mysql.createPool(this._mysqlSettings as PoolConfig);
+    this._pool = mysql.createConnection(this._mysqlSettings as ConnectionConfig);
     const {database, charset} = this._mysqlSettings;
 
     const sqlCreate = `${'CREATE TABLE IF NOT EXISTS `store` ( ' +
