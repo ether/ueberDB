@@ -21,7 +21,7 @@ describe(__filename, () => {
     // An error is expected; prevent it from being logged.
     db.logger = Object.setPrototypeOf({error() { }}, db.logger);
     // Sleep longer than the timeout to force a fatal error.
-    await assert.rejects(db._query({sql: 'DO SLEEP(1);', timeout: 1}), {fatal: true});
+    await assert.rejects(db._query({sql: 'DO SLEEP(1);', timeout: 2}), {fatal: true});
     await assert.doesNotReject(db._query({sql: 'SELECT 1;'}));
     await db.close();
   });
