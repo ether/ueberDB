@@ -55,6 +55,9 @@ export const Database = class extends AbstractDatabase {
   }
 
   async init() {
+    if("speeds" in this._mysqlSettings){
+      delete this._mysqlSettings.speeds
+    }
     this._pool = mysql.createConnection(this._mysqlSettings as ConnectionConfig);
     const {database, charset} = this._mysqlSettings;
 
