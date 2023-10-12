@@ -17,11 +17,11 @@
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
 import util from 'util';
 import {BulkObject} from './cassandra_db';
-import {ConnectionConfig, createPool} from "mysql2";
+import {ConnectionConfig, createPool, Pool, QueryError} from "mysql2";
 
 export const Database = class extends AbstractDatabase {
   private readonly _mysqlSettings: Settings;
-  private _pool: any;
+  private _pool: Pool|null;
   constructor(settings:Settings) {
     super();
     this.logger = console;
@@ -45,7 +45,11 @@ export const Database = class extends AbstractDatabase {
     try {
       return await new Promise((resolve, reject) => {
         options = {timeout: this.settings.queryTimeout, ...options};
-        this._pool && this._pool.query(options, (err:Error, ...args:string[]) => err != null ? reject(err) : resolve(args));
+        console.log("Options",options)
+        this._pool && this._pool.query(options, (err, ...args:string[]) => {
+          console.log(err)
+          return err != null ? reject(err) : resolve(args)
+        });
       });
     } catch (err:any) {
       this.logger.error(`${err.fatal ? 'Fatal ' : ''}MySQL error: ${err.stack || err}`);
@@ -178,6 +182,6 @@ export const Database = class extends AbstractDatabase {
   }
 
   async close() {
-    await util.promisify(this._pool.end.bind(this._pool))();
+    await util.promisify(this._pool!.end.bind(this._pool))();
   }
 };
