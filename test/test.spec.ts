@@ -332,8 +332,6 @@ describe(__filename, () => {
                   expect(findKeysMax >= timePerOp.findKeys).toBeTruthy();
                   expect(removeMax >= timePerOp.remove).toBeTruthy();
                 }
-              }, {
-                timeout: 50000
               })
             });
           }
