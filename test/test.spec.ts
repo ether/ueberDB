@@ -106,7 +106,6 @@ describe(__filename, () => {
                     });
                     it('get(`${key} `) -> nullish', async (context) => {
                       const output = await db.get(`${key} `);
-                      console.log("output ",output)
                       expect(output == null).toBeTruthy();
                     });
                     if (space) {
