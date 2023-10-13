@@ -16,9 +16,9 @@ module.exports = {
     nodeResolve(),
     commonjs(),
     json(),
-    /*minify({
+    /* minify({
       keep_fnames: /Packet|ChangeUser|Handshake|Ping|Query|Quit|Sequence|Statistics/,
-    }),*/
+    }), */
   ],
   external: ['better-sqlite3'],
   output: {
