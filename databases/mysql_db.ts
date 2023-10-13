@@ -45,7 +45,7 @@ export const Database = class extends AbstractDatabase {
     try {
       return await new Promise((resolve, reject) => {
         options = {timeout: this.settings.queryTimeout, ...options};
-        this._pool && this._pool.query(options, (err, ...args:string[]) => err != null ? reject(err) : resolve(args)
+        this._pool && this._pool.query(options, (err:QueryError|null, ...args:string[]) => err != null ? reject(err) : resolve(args)
         );
       });
     } catch (err:any) {
@@ -86,14 +86,14 @@ export const Database = class extends AbstractDatabase {
     if (result[0].DEFAULT_CHARACTER_SET_NAME !== charset) {
       this.logger.error(`Database is not configured with charset ${charset} -- ` +
                         'This may lead to crashes when certain characters are pasted in pads');
-      this.logger.log(result[0], charset);
+      this.logger.warn(result[0], charset);
     }
 
     if (result[0].DEFAULT_COLLATION_NAME.indexOf(charset) === -1) {
       this.logger.error(
           `Database is not configured with collation name that includes ${charset} -- ` +
             'This may lead to crashes when certain characters are pasted in pads');
-      this.logger.log(result[0], charset, result[0].DEFAULT_COLLATION_NAME);
+      this.logger.warn(result[0], charset, result[0].DEFAULT_COLLATION_NAME);
     }
 
     const tableCharSet =
@@ -111,7 +111,7 @@ export const Database = class extends AbstractDatabase {
     if (result[0] && (result[0].character_set_name !== charset)) {
       this.logger.error(`table is not configured with charset ${charset} -- ` +
                         'This may lead to crashes when certain characters are pasted in pads');
-      this.logger.log(result[0], charset);
+      this.logger.warn(result[0], charset);
     }
 
     // check migration level, alter if not migrated
