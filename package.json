@@ -43,7 +43,7 @@
     "eslint-plugin-import": "^2.28.1",
     "mongodb": "^6.1.0",
     "mssql": "^10.0.1",
-    "mysql2": "^3.6.1",
+    "mysql2": "^3.6.2",
     "nano": "^10.1.2",
     "pg": "^8.11.3",
     "randexp-ts": "^1.0.5",
