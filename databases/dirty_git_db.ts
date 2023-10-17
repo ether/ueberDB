@@ -17,8 +17,7 @@ import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
  */
 
 
-// @ts-ignore
-import {Dirty} from 'dirty';
+import Dirty from 'dirty-ts';
 
 export const Database = class extends AbstractDatabase {
   private db: any;
