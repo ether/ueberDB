@@ -22,8 +22,7 @@
 */
 
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
-// @ts-ignore
-import Dirty from 'dirty';
+import Dirty from 'dirty-ts';
 
 type DirtyDBCallback = (p?:any, keys?: string[])=>{};
 
@@ -49,7 +48,7 @@ export const Database = class extends AbstractDatabase {
 
   init(callback: ()=>{}) {
     this.db = new Dirty(this.settings.filename);
-    this.db.on('load', (err:string) => {
+    this.db.on('load', () => {
       callback();
     });
   }
@@ -61,7 +60,7 @@ export const Database = class extends AbstractDatabase {
   findKeys(key:string, notKey:string, callback:DirtyDBCallback) {
     const keys:string[] = [];
     const regex = this.createFindRegex(key, notKey);
-    this.db.forEach((key:string, val:string) => {
+    this.db.forEach((key:string) => {
       if (key.search(regex) !== -1) {
         keys.push(key);
       }
