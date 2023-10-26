@@ -40,7 +40,7 @@
     "elasticsearch8": "npm:@elastic/elasticsearch@^8.8.1",
     "eslint": "^8.52.0",
     "eslint-config-etherpad": "^3.0.22",
-    "eslint-plugin-import": "^2.28.1",
+    "eslint-plugin-import": "^2.29.0",
     "mongodb": "^6.2.0",
     "mssql": "^10.0.1",
     "mysql2": "^3.6.2",
