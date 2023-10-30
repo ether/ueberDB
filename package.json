@@ -52,7 +52,7 @@
     "rollup-plugin-typescript2": "^0.36.0",
     "semver": "^7.5.4",
     "simple-git": "^3.20.0",
-    "surrealdb.js": "^0.9.1",
+    "surrealdb.js": "^0.10.0",
     "typescript": "^4.9.5",
     "vitest": "^0.34.6",
     "wtfnode": "^0.9.1"
