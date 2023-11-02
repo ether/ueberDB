@@ -97,13 +97,13 @@ export const Database = class SurrealDB extends AbstractDatabase {
             const query  = `SELECT key FROM store WHERE ${this.transformWildcard(key, 'key')} AND ${this.transformWildcardNegative(notKey, 'notKey')}`
             notKey = notKey.replace(WILDCARD, '')
             key = key.replace(WILDCARD, '')
-            const res = await this._client.query<StoreVal[]>(query, {key:key, notKey:notKey})  as QueryResult<StoreVal[]>[]
+            const res = await this._client.query_raw<StoreVal[]>(query, {key:key, notKey:notKey})  as QueryResult<StoreVal[]>[]
             return this.transformResult(res,key)
         }
         else{
             const query  = `SELECT key FROM store WHERE ${this.transformWildcard(key, 'key')}`
             key = key.replace(WILDCARD, '')
-            const res = await this._client.query<StoreVal[]>(query, {key}) as QueryResult<StoreVal[]>[]
+            const res = await this._client.query_raw<StoreVal[]>(query, {key}) as QueryResult<StoreVal[]>[]
             return this.transformResult(res, key)
         }
     }
