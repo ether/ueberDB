@@ -31,7 +31,7 @@
     "@types/mssql": "^9.1.3",
     "@types/node": "^20.8.10",
     "@types/pg": "^8.10.8",
-    "@types/rethinkdb": "^2.3.19",
+    "@types/rethinkdb": "^2.3.20",
     "async": "^3.2.5",
     "better-sqlite3": "^9.0.0",
     "cassandra-driver": "^4.7.2",
