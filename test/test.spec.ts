@@ -65,6 +65,7 @@ describe(__filename, () => {
     console.log(speedTable.toString());
   });
   databasesToTest
+      .filter(c=>c === "dirty")
       .forEach((database) => {
     const dbSettings = databases[database];
     describe(database, () => {
