@@ -1,6 +1,7 @@
 'use strict';
 import {BulkObject} from "./cassandra_db";
 import AbstractDatabase, {Settings} from "../lib/AbstractDatabase";
+import SQLITEDB from "better-sqlite3";
 
 /**
  * 2011 Peter 'Pita' Martischka
@@ -49,17 +50,18 @@ export const Database = class SQLiteDB extends AbstractDatabase {
   }
 
   init(callback: Function) {
+    let SQLITEDB
     try {
-      const SQLITEDB = require('better-sqlite3');
-      this.db = new SQLITEDB(this.settings.filename as string)
-      this._query('CREATE TABLE IF NOT EXISTS store (key TEXT PRIMARY KEY, value TEXT)');
-      callback();
+      SQLITEDB = require('better-sqlite3');
     } catch (err) {
       throw new Error(
           'better-sqlite3 not found. It was removed from ueberdb\'s dependencies because it requires ' +
           'compilation which fails on several systems. If you still want to use sqlite, run ' +
           '"npm install better-sqlite3" in your etherpad-lite ./src directory.');
     }
+    this.db = new SQLITEDB(this.settings.filename as string)
+    this._query('CREATE TABLE IF NOT EXISTS store (key TEXT PRIMARY KEY, value TEXT)');
+    callback();
   }
 
   async _query(sql:string, params = []) {
