@@ -27,7 +27,7 @@
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
     "@types/async": "^3.2.24",
-    "@types/better-sqlite3": "^7.6.8",
+    "@types/better-sqlite3": "^7.6.9",
     "@types/mssql": "^9.1.4",
     "@types/node": "^20.11.15",
     "@types/pg": "^8.11.0",
