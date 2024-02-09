@@ -1,10 +1,10 @@
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
 
 
-export const Database = class MemoryDB extends AbstractDatabase {
-  private _data: any;
+export default class MemoryDB extends AbstractDatabase {
+  public _data: any;
   constructor(settings:Settings) {
-    super();
+    super(settings);
     this.settings = settings;
     settings.json = false;
     settings.cache = 0;

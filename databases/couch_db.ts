@@ -29,11 +29,11 @@ type CouchDBSettings = {
       agent: Agent
     }
 };
-export const Database = class Couch_db extends AbstractDatabase {
-  private agent: Agent | null;
-  private db: nano.DocumentScope<string> | null;
+export default class Couch_db extends AbstractDatabase {
+  public agent: Agent | null;
+  public db: nano.DocumentScope<string> | null;
   constructor(settings: Settings) {
-    super();
+    super(settings);
     this.agent = null;
     this.db = null;
     this.settings = settings;

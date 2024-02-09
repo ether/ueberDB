@@ -1,6 +1,6 @@
 import assert$0 from 'assert';
 import {databases} from './lib/databases';
-import * as mysql from '../databases/mysql_db';
+import Mysql_db from '../databases/mysql_db';
 import {afterAll, describe, it, afterEach, beforeEach, beforeAll, expect} from 'vitest'
 
 const assert = assert$0.strict;
@@ -10,13 +10,13 @@ describe(__filename, () => {
   });
   it('connect error is detected during init()', async () => {
     // Use an invalid TCP port to force a connection error.
-    const db = new mysql.Database({...databases.mysql, port: 65536});
+    const db = new Mysql_db({...databases.mysql, port: 65536});
     // An error is expected; prevent it from being logged.
     db.logger = Object.setPrototypeOf({error() { }}, db.logger);
     await assert.rejects(db.init());
   });
   it('query after fatal error works', async () => {
-    const db = new mysql.Database(databases.mysql);
+    const db = new Mysql_db(databases.mysql);
     await db.init();
     // An error is expected; prevent it from being logged.
     db.logger = Object.setPrototypeOf({error() { }}, db.logger);
@@ -26,7 +26,7 @@ describe(__filename, () => {
     await db.close();
   });
   it('query times out', async () => {
-    const db = new mysql.Database(databases.mysql);
+    const db = new Mysql_db(databases.mysql);
     await db.init();
     // Timeout error messages are expected; prevent them from being logged.
     db.logger = Object.setPrototypeOf({error() { }}, db.logger);
@@ -37,7 +37,7 @@ describe(__filename, () => {
   });
   it('queries run concurrently and are queued when pool is busy', async () => {
     const connectionLimit = 10;
-    const db = new mysql.Database({...databases.mysql, connectionLimit});
+    const db = new Mysql_db({...databases.mysql, connectionLimit});
     await db.init();
     // Set the query duration high enough to avoid flakiness on slow machines but low enough to keep
     // the overall test duration short.

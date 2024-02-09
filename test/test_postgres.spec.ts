@@ -2,7 +2,7 @@ import {databases} from './lib/databases';
 import * as ueberdb from '../index';
 'use strict';
 import {equal} from 'assert';
-import {afterAll, describe, it, afterEach, beforeEach, beforeAll, expect} from 'vitest'
+import {describe, it} from 'vitest'
 
 describe(__filename, () => {
   it('connection string instead of settings object', async () => {

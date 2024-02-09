@@ -3,6 +3,7 @@
   "description": "Transform every database into a object key value store",
   "url": "https://github.com/ether/ueberDB",
   "type": "commonjs",
+  "types": "./dist/index.d.ts",
   "keywords": [
     "database",
     "keyvalue"

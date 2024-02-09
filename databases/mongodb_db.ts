@@ -19,13 +19,13 @@ import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
 import {BulkObject} from './cassandra_db';
 import {Collection, Db, MongoClient} from 'mongodb';
 
-export const Database = class extends AbstractDatabase {
-  private interval: NodeJS.Timer | undefined;
-  private database:  Db|undefined;
-  private client: MongoClient|undefined;
-  private collection:  Collection|undefined;
+export default class extends AbstractDatabase {
+  public interval: NodeJS.Timer | undefined;
+  public database:  Db|undefined;
+  public client: MongoClient|undefined;
+  public collection:  Collection|undefined;
   constructor(settings:Settings) {
-    super();
+    super(settings);
     this.settings = settings;
 
     if (!this.settings.url) throw new Error('You must specify a mongodb url');

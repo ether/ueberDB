@@ -46,10 +46,9 @@ export type Settings = {
 
 
 class AbstractDatabase {
-  logger: any;
-  // @ts-ignore
-  settings: Settings;
-  constructor() {
+  public logger: any;
+    public settings: Settings;
+  constructor(settings: Settings) {
     if (new.target === module.exports) {
       throw new TypeError('cannot instantiate Abstract Database directly');
     }
@@ -58,6 +57,7 @@ class AbstractDatabase {
       if (typeof this[fn] !== 'function') throw new TypeError(`method ${fn} not defined`);
     }
     this.logger = nullLogger;
+    this.settings = settings
   }
 
   /**

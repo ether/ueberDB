@@ -21,25 +21,28 @@ import {Database as DatabaseCache} from './lib/CacheAndBufferLayer';
 import {normalizeLogger} from './lib/logging';
 import {callbackify} from 'util';
 import {Settings} from './lib/AbstractDatabase';
-import {Database as CassandraDatabase} from './databases/cassandra_db'
-import {Database as CouchDatabase} from './databases/couch_db'
-import {Database as DirtyDatabase} from './databases/dirty_db'
-import {Database as DirtyGitDatabase} from './databases/dirty_git_db'
-import {Database as ElasticSearchDatabase} from './databases/elasticsearch_db'
-import {Database as MemoryDatabase} from './databases/memory_db'
-import {Database as MockDatabase} from './databases/mock_db'
-import {Database as MongoDBDatabase} from './databases/mongodb_db'
-import {Database as MSSQLDatabase} from './databases/mssql_db'
-import {Database as MYSQLDatabase} from './databases/mysql_db'
-import {Database as PostgresDatabase} from './databases/postgres_db'
-import {Database as PostgresPoolDatabase} from './databases/postgrespool_db'
-import {Database as RedisDatabase} from './databases/redis_db'
-import {Database as RethinkDatabase} from './databases/rethink_db'
-import {Database as SQLiteDatabase} from './databases/sqlite_db'
-import {Database as Surrealb} from './databases/surrealdb_db'
+import Cassandra_db from './databases/cassandra_db'
+import Couch_db from './databases/couch_db'
+import Dirty_db from './databases/dirty_db'
+import Dirty_git_db from './databases/dirty_git_db'
+import Elasticsearch_db from './databases/elasticsearch_db'
+import MemoryDB from './databases/memory_db'
+import Mock_db from './databases/mock_db'
+import Mongodb_db from './databases/mongodb_db'
+import MSSQL from './databases/mssql_db'
+import Mysql_db from './databases/mysql_db'
+import Postgres_db from './databases/postgres_db'
+import Postgrespool_db from './databases/postgrespool_db'
+import RedisDB from './databases/redis_db'
+import Rethink_db from './databases/rethink_db'
+import SQLiteDB from './databases/sqlite_db'
+import SurrealDB from './databases/surrealdb_db'
 
+type CBDBType = {
+  [key: string]:Function
+}
 
-const cbDb = {
+const cbDb: CBDBType= {
   init: () => {},
   flush: () => {},
   get: () => {},
@@ -51,8 +54,10 @@ const cbDb = {
 };
 const fns = ['close', 'findKeys', 'flush', 'get', 'getSub', 'init', 'remove', 'set', 'setSub'];
 for (const fn of fns) {
-  // @ts-ignore
-  cbDb[fn] = callbackify(DatabaseCache.prototype[fn]);
+  if (fn in cbDb){
+    // @ts-ignore
+    cbDb[fn] =  callbackify(DatabaseCache.prototype[fn]);
+  }
 }
 const makeDoneCallback = (callback: (err?:any)=>{}, deprecated:(err:any)=>{}) => (err: null) => {
   if (callback) callback(err);
@@ -60,9 +65,8 @@ const makeDoneCallback = (callback: (err?:any)=>{}, deprecated:(err:any)=>{}) =>
   if (err != null && callback == null && deprecated == null) throw err;
 };
 
-export const Database = class {
+export class Database {
   public readonly type: any;
-  public dbModule: any;
   public readonly dbSettings: any;
   public readonly wrapperSettings: any | {};
   public readonly logger: Function | null;
@@ -109,37 +113,37 @@ export const Database = class {
   initDB(){
     switch (this.type){
         case 'mysql':
-            return new MYSQLDatabase(this.dbSettings);
+            return new Mysql_db(this.dbSettings);
         case 'postgres':
-          return new PostgresDatabase(this.dbSettings);
+          return new Postgres_db(this.dbSettings);
         case 'sqlite':
-          return new SQLiteDatabase(this.dbSettings);
+          return new SQLiteDB(this.dbSettings);
         case 'mongodb':
-          return new MongoDBDatabase(this.dbSettings);
+          return new Mongodb_db(this.dbSettings);
         case 'redis':
-          return new RedisDatabase(this.dbSettings);
+          return new RedisDB(this.dbSettings);
         case 'cassandra':
-          return new CassandraDatabase(this.dbSettings);
+          return new Cassandra_db(this.dbSettings);
         case 'dirty':
-          return new DirtyDatabase(this.dbSettings);
+          return new Dirty_db(this.dbSettings);
         case 'dirtygit':
-            return new DirtyGitDatabase(this.dbSettings);
+            return new Dirty_git_db(this.dbSettings);
         case 'elasticsearch':
-            return new ElasticSearchDatabase(this.dbSettings);
+            return new Elasticsearch_db(this.dbSettings);
         case 'memory':
-            return new MemoryDatabase(this.dbSettings);
+            return new MemoryDB(this.dbSettings);
         case 'mock':
-            return new MockDatabase(this.dbSettings);
+            return new Mock_db(this.dbSettings);
         case 'mssql':
-            return new MSSQLDatabase(this.dbSettings);
+            return new MSSQL(this.dbSettings);
         case 'postgrespool':
-            return new PostgresPoolDatabase(this.dbSettings);
+            return new Postgrespool_db(this.dbSettings);
         case 'rethink':
-            return new RethinkDatabase(this.dbSettings);
+            return new Rethink_db(this.dbSettings);
         case 'couch':
-            return new CouchDatabase(this.dbSettings);
+            return new Couch_db(this.dbSettings);
         case 'surrealdb':
-            return new Surrealb(this.dbSettings);
+            return new SurrealDB(this.dbSettings);
         default:
             throw new Error('Invalid database type');
     }

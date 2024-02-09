@@ -2,8 +2,8 @@ import {Settings} from '../lib/AbstractDatabase';
 
 import events from 'events';
 
-export const Database = class extends events.EventEmitter {
-  private settings: Settings;
+export default class extends events.EventEmitter {
+  public settings: Settings;
   public mock: any;
   constructor(settings:Settings) {
     super();

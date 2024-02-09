@@ -19,11 +19,11 @@ import util from 'util';
 import {BulkObject} from './cassandra_db';
 import {ConnectionConfig, createPool, Pool, QueryError} from "mysql2";
 
-export const Database = class extends AbstractDatabase {
-  private readonly _mysqlSettings: Settings;
-  private _pool: Pool|null;
+export default class extends AbstractDatabase {
+  public readonly _mysqlSettings: Settings;
+  public _pool: Pool|null;
   constructor(settings:Settings) {
-    super();
+    super(settings);
     this.logger = console;
     this._mysqlSettings = {
       charset: 'utf8mb4', // temp hack needs a proper fix..

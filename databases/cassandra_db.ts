@@ -27,9 +27,9 @@ export type BulkObject = {
   value?: string
 };
 
-export const Database = class Cassandra_db extends AbstractDatabase {
-  private client: Client | undefined;
-  private pool: any;
+export default class Cassandra_db extends AbstractDatabase {
+  public client: Client | undefined;
+  public pool: any;
   /**
    * @param {Object} settings The required settings object to initiate the Cassandra database
    * @param {String[]} settings.clientOptions See
@@ -42,7 +42,7 @@ export const Database = class Cassandra_db extends AbstractDatabase {
    *     information
    */
   constructor(settings:Settings) {
-    super();
+    super(settings);
     if (!settings.clientOptions) {
       throw new Error('The Cassandra client options should be defined');
     }

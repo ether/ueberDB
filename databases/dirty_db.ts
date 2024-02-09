@@ -27,10 +27,10 @@ import Dirty from 'dirty-ts';
 type DirtyDBCallback = (p?:any, keys?: string[])=>{};
 
 
-export const Database = class extends AbstractDatabase {
-  private db: any;
+export default class extends AbstractDatabase {
+  public db: any;
   constructor(settings:Settings) {
-    super();
+    super(settings);
     this.db = null;
 
     if (!settings || !settings.filename) {
