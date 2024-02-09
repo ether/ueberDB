@@ -18,10 +18,10 @@ import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
 import {createClient,  RedisClientOptions} from 'redis';
 import {BulkObject} from './cassandra_db';
 
-export const Database = class RedisDB extends AbstractDatabase {
-  private _client: any
+export default class RedisDB extends AbstractDatabase {
+  public _client: any
   constructor(settings:Settings) {
-    super();
+    super(settings);
     this._client = null;
     this.settings = settings || {};
   }

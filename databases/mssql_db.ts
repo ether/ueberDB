@@ -30,10 +30,10 @@ type RowResult = {
 };
 
 
-export const Database = class MSSQL extends AbstractDatabase {
-  private db: ConnectionPool | undefined;
+export default class MSSQL extends AbstractDatabase {
+  public db: ConnectionPool | undefined;
   constructor(settings:Settings) {
-    super();
+    super(settings);
     settings = settings || {};
 
     if (settings.json != null) {

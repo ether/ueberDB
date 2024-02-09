@@ -19,14 +19,14 @@ import r from 'rethinkdb';
 import async from 'async';
 import {BulkObject} from './cassandra_db';
 
-export const Database = class extends AbstractDatabase {
-  private host: string;
-  private db: string;
-  private port: number | string;
-  private table: string;
-  private connection: r.Connection | null;
+export default class Rethink_db extends AbstractDatabase {
+  public host: string;
+  public db: string;
+  public port: number | string;
+  public table: string;
+  public connection: r.Connection | null;
   constructor(settings:Settings) {
-    super();
+    super(settings);
     if (!settings) settings = {};
     if (!settings.host) { settings.host = 'localhost'; }
     if (!settings.port) { settings.port = 28015; }

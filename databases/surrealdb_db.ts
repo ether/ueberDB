@@ -47,12 +47,11 @@ const unescapeKey = (key:string, originalKey:string)=>{
     return key
 }
 
-export const Database = class SurrealDB extends AbstractDatabase {
-    private _client: Surreal | null;
+export default class SurrealDB extends AbstractDatabase {
+    public _client: Surreal | null;
     constructor(settings:Settings) {
-        super();
+        super(settings);
         this._client = null;
-        this.settings = settings || {};
     }
 
     get isAsync() { return true; }

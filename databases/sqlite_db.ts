@@ -25,10 +25,10 @@ type RequestVal = {
   value: string;
 }
 
-export const Database = class SQLiteDB extends AbstractDatabase {
-  private db: any|null;
+export default class SQLiteDB extends AbstractDatabase {
+  public db: any|null;
   constructor(settings:Settings) {
-    super();
+    super(settings);
     this.db = null;
 
     if (!settings || !settings.filename) {

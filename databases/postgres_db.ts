@@ -19,11 +19,11 @@ import async from 'async';
 import  * as pg from 'pg';
 import {BulkObject} from './cassandra_db';
 
-export const Database = class extends AbstractDatabase {
-  private db: pg.Pool;
-  private upsertStatement: string | null | undefined;
+export default class extends AbstractDatabase {
+  public db: pg.Pool;
+  public upsertStatement: string | null | undefined;
   constructor(settings:Settings | string) {
-    super();
+    super(settings as Settings);
     if (typeof settings === 'string') settings = {connectionString: settings};
     this.settings = settings;
 

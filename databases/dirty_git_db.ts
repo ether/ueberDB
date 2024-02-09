@@ -19,10 +19,10 @@ import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
 
 import Dirty from 'dirty-ts';
 
-export const Database = class extends AbstractDatabase {
-  private db: any;
+export default class extends AbstractDatabase {
+  public db: any;
   constructor(settings: Settings) {
-    super();
+    super(settings);
     // @ts-ignore
     this.db = null;
 
