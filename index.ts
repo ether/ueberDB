@@ -38,8 +38,11 @@ import Rethink_db from './databases/rethink_db'
 import SQLiteDB from './databases/sqlite_db'
 import SurrealDB from './databases/surrealdb_db'
 
+type CBDBType = {
+  [key: string]:Function
+}
 
-const cbDb = {
+const cbDb: CBDBType= {
   init: () => {},
   flush: () => {},
   get: () => {},
@@ -51,8 +54,10 @@ const cbDb = {
 };
 const fns = ['close', 'findKeys', 'flush', 'get', 'getSub', 'init', 'remove', 'set', 'setSub'];
 for (const fn of fns) {
-  // @ts-ignore
-  cbDb[fn] = callbackify(DatabaseCache.prototype[fn]);
+  if (fn in cbDb){
+    // @ts-ignore
+    cbDb[fn] =  callbackify(DatabaseCache.prototype[fn]);
+  }
 }
 const makeDoneCallback = (callback: (err?:any)=>{}, deprecated:(err:any)=>{}) => (err: null) => {
   if (callback) callback(err);
