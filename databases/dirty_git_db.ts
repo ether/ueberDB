@@ -1,5 +1,6 @@
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
-
+import {dirname} from 'node:path'
+import {simpleGit} from 'simple-git'
 /**
  * 2011 Peter 'Pita' Martischka
  *
@@ -62,8 +63,8 @@ export default class extends AbstractDatabase {
 
   set(key:string, value: string, callback: ()=>{}) {
     this.db.set(key, value, callback);
-    const databasePath = require('path').dirname(this.settings.filename);
-    require('simple-git')(databasePath)
+    const databasePath = dirname(this.settings.filename!);
+    simpleGit(databasePath)
         .silent(true)
         .add('./*.db')
         .commit('Automated commit...')

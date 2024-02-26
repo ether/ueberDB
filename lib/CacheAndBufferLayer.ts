@@ -34,7 +34,7 @@
  * overwriden by the driver and by the module user.
  */
 
-const util = require('util');
+import util from 'util';
 
 /**
  * Cache with Least Recently Used eviction policy.
