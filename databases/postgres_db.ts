@@ -194,7 +194,7 @@ export default class extends AbstractDatabase {
     const functions:any = replaceVALs.map((v) => (cb:()=>{}) => this.db.query(this.upsertStatement as string, v, cb));
 
     const removeFunction = (callback: ()=>{}) => {
-      if ((removeVALs.length == 1)) {
+      if (!(removeVALs.length < 1)) {
         this.db.query(removeSQL, removeVALs, callback);
       } else { callback(); }
     };
