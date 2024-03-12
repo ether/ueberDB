@@ -60,10 +60,25 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      -
+        uses: actions/setup-node@v4
+      - uses: pnpm/action-setup@v3
+        name: Install pnpm
         with:
-          node-version: 21
-      - run: npm ci
+          version: 8
+          run_install: false
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+      - uses: actions/cache@v4
+        name: Setup pnpm cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+      - run: pnpm i
 
       # Verify databases are reachable.
       - name: MySQL client and server check
@@ -75,11 +90,11 @@ jobs:
           psql --version &&
           psql -d postgresql://ueberdb:ueberdb@127.0.0.1/ueberdb -c '\dt'
       - name: Create javascript files from typescript
-        run: npm run build
-      - run: npm test
+        run: pnpm run build
+      - run: pnpm run test
         env:
           SURREALDB_CI: false
-      - run: npm run lint
+      - run: pnpm run lint
 
   publish-npm:
     if: github.event_name == 'push'
@@ -93,15 +108,27 @@ jobs:
           fetch-depth: 0
       -
         uses: actions/setup-node@v4
+      - uses: pnpm/action-setup@v3
+        name: Install pnpm
         with:
-          node-version: 21
-          registry-url: https://registry.npmjs.org/
-          cache: 'npm'
+          version: 8
+          run_install: false
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+      - uses: actions/cache@v4
+        name: Setup pnpm cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
       # This is required if the package has a prepare script that uses something
       # in dependencies or devDependencies. This is also needed for bumping the
       # version.
       -
-        run: npm ci
+        run: pnpm i
       -
         name: Bump version (patch)
         run: |
@@ -110,7 +137,7 @@ jobs:
           [ "${NEW_COMMITS}" -gt 0 ] || exit 0
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          npm version patch
+          pnpm version patch
           # Update the branch before pushing the tag in case the branch can't be
           # fast-forwarded.
           git push
@@ -127,13 +154,13 @@ jobs:
       # the second's will succeed.
       -
         name: Convert typescript and create dist folder
-        run: npm run build
+        run: pnpm run build
       -
-        run: npm publish
+        run: pnpm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       -
         name: Add package to etherpad organization
-        run: npm access grant read-write etherpad:developers ueberdb2
+        run: pnpm access grant read-write etherpad:developers ueberdb2
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
