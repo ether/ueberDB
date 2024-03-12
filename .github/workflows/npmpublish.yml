@@ -156,11 +156,11 @@ jobs:
         name: Convert typescript and create dist folder
         run: pnpm run build
       -
-        run: pnpm publish
+        run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       -
         name: Add package to etherpad organization
-        run: pnpm access grant read-write etherpad:developers ueberdb2
+        run: npm access grant read-write etherpad:developers ueberdb2
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
