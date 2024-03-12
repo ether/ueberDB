@@ -77,7 +77,7 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "build": "npx rollup -c rollup.config.cjs.js",
+    "build": "pnpm exec rollup -c rollup.config.cjs.js",
     "test": "vitest --test-timeout=120000"
   },
   "_npmUser": {
