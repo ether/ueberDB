@@ -54,7 +54,7 @@
     "semver": "^7.6.0",
     "simple-git": "^3.24.0",
     "surrealdb.js": "^0.11.0",
-    "typescript": "^5.4.2",
+    "typescript": "^5.4.3",
     "vitest": "^1.4.0",
     "wtfnode": "^0.9.1",
     "rollup": "^4.13.2"
