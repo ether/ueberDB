@@ -39,8 +39,8 @@ devDependencies:
     specifier: ^3.2.5
     version: 3.2.5
   better-sqlite3:
-    specifier: ^9.4.3
-    version: 9.4.3
+    specifier: ^9.4.4
+    version: 9.4.4
   cassandra-driver:
     specifier: ^4.7.2
     version: 4.7.2
@@ -1401,8 +1401,8 @@ packages:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
     dev: true
 
-  /better-sqlite3@9.4.3:
-    resolution: {integrity: sha512-ud0bTmD9O3uWJGuXDltyj3R47Nz0OHX8iqPOT5PMspGqlu/qQFn+5S2eFBUCrySpavTjFXbi4EgrfVvPAHlImw==}
+  /better-sqlite3@9.4.4:
+    resolution: {integrity: sha512-h/gmKmmcTBHg9kDE05ZfocXyfQ7UzPlLVwHVD3yCZ5iXdj3x0hK5x2VTm4BRavBqxTGBOsmYcjOOHHMxuM0BVw==}
     requiresBuild: true
     dependencies:
       bindings: 1.5.0
