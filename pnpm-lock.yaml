@@ -27,8 +27,8 @@ devDependencies:
     specifier: ^9.1.5
     version: 9.1.5
   '@types/node':
-    specifier: ^20.12.4
-    version: 20.12.4
+    specifier: ^20.12.6
+    version: 20.12.6
   '@types/pg':
     specifier: ^8.11.4
     version: 8.11.4
@@ -106,7 +106,7 @@ devDependencies:
     version: 5.4.4
   vitest:
     specifier: ^1.4.0
-    version: 1.4.0(@types/node@20.12.4)
+    version: 1.4.0(@types/node@20.12.6)
   wtfnode:
     specifier: ^0.9.2
     version: 0.9.2
@@ -958,7 +958,7 @@ packages:
   /@types/better-sqlite3@7.6.9:
     resolution: {integrity: sha512-FvktcujPDj9XKMJQWFcl2vVl7OdRIqsSRX9b0acWwTmwLK9CF2eqo/FRcmMLNpugKoX/avA6pb7TorDLmpgTnQ==}
     dependencies:
-      '@types/node': 20.12.4
+      '@types/node': 20.12.6
     dev: true
 
   /@types/estree@1.0.5:
@@ -983,13 +983,13 @@ packages:
   /@types/mssql@9.1.5:
     resolution: {integrity: sha512-Q9EsgXwuRoX5wvUSu24YfbKMbFChv7pZ/jeCzPkj47ehcuXYsBcfogwrtVFosSjinD4Q/MY2YPGk9Yy1cM2Ywg==}
     dependencies:
-      '@types/node': 20.12.4
+      '@types/node': 20.12.6
       '@types/tedious': 4.0.14
       tarn: 3.0.2
     dev: true
 
-  /@types/node@20.12.4:
-    resolution: {integrity: sha512-E+Fa9z3wSQpzgYQdYmme5X3OTuejnnTx88A6p6vkkJosR3KBz+HpE3kqNm98VE6cfLFcISx7zW7MsJkH6KwbTw==}
+  /@types/node@20.12.6:
+    resolution: {integrity: sha512-3KurE8taB8GCvZBPngVbp0lk5CKi8M9f9k1rsADh0Evdz5SzJ+Q+Hx9uHoFGsLnLnd1xmkDQr2hVhlA0Mn0lKQ==}
     dependencies:
       undici-types: 5.26.5
     dev: true
@@ -997,7 +997,7 @@ packages:
   /@types/pg@8.11.4:
     resolution: {integrity: sha512-yw3Bwbda6vO+NvI1Ue/YKOwtl31AYvvd/e73O3V4ZkNzuGpTDndLSyc0dQRB2xrQqDePd20pEGIfqSp/GH3pRw==}
     dependencies:
-      '@types/node': 20.12.4
+      '@types/node': 20.12.6
       pg-protocol: 1.6.0
       pg-types: 4.0.2
     dev: true
@@ -1005,7 +1005,7 @@ packages:
   /@types/readable-stream@4.0.10:
     resolution: {integrity: sha512-AbUKBjcC8SHmImNi4yK2bbjogQlkFSg7shZCcicxPQapniOlajG8GCc39lvXzCWX4lLRRs7DM3VAeSlqmEVZUA==}
     dependencies:
-      '@types/node': 20.12.4
+      '@types/node': 20.12.6
       safe-buffer: 5.1.2
     dev: true
 
@@ -1016,7 +1016,7 @@ packages:
   /@types/rethinkdb@2.3.21:
     resolution: {integrity: sha512-mtihQPnluyf+7zfScz+xxmPyHm6K8Dm5Y9t40zOtQqH+b/O4LeTXBZz2Zn7Pu++/ND3XWb4Xnl0R1crXOU5Srw==}
     dependencies:
-      '@types/node': 20.12.4
+      '@types/node': 20.12.6
     dev: true
 
   /@types/semver@7.5.8:
@@ -1026,7 +1026,7 @@ packages:
   /@types/tedious@4.0.14:
     resolution: {integrity: sha512-KHPsfX/FoVbUGbyYvk1q9MMQHLPeRZhRJZdO45Q4YjvFkv4hMNghCWTvy7rdKessBsmtz4euWCWAB6/tVpI1Iw==}
     dependencies:
-      '@types/node': 20.12.4
+      '@types/node': 20.12.6
     dev: true
 
   /@types/webidl-conversions@7.0.3:
@@ -1520,7 +1520,7 @@ packages:
     engines: {node: '>=16'}
     dependencies:
       '@types/long': 5.0.0
-      '@types/node': 20.12.4
+      '@types/node': 20.12.6
       adm-zip: 0.5.10
       long: 5.2.3
     dev: true
@@ -4355,7 +4355,7 @@ packages:
     hasBin: true
     dev: true
 
-  /vite-node@1.4.0(@types/node@20.12.4):
+  /vite-node@1.4.0(@types/node@20.12.6):
     resolution: {integrity: sha512-VZDAseqjrHgNd4Kh8icYHWzTKSCZMhia7GyHfhtzLW33fZlG9SwsB6CEhgyVOWkJfJ2pFLrp/Gj1FSfAiqH9Lw==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
@@ -4364,7 +4364,7 @@ packages:
       debug: 4.3.4
       pathe: 1.1.2
       picocolors: 1.0.0
-      vite: 5.2.8(@types/node@20.12.4)
+      vite: 5.2.8(@types/node@20.12.6)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -4376,7 +4376,7 @@ packages:
       - terser
     dev: true
 
-  /vite@5.2.8(@types/node@20.12.4):
+  /vite@5.2.8(@types/node@20.12.6):
     resolution: {integrity: sha512-OyZR+c1CE8yeHw5V5t59aXsUPPVTHMDjEZz8MgguLL/Q7NblxhZUlTu9xSPqlsUO/y+X7dlU05jdhvyycD55DA==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
@@ -4404,7 +4404,7 @@ packages:
       terser:
         optional: true
     dependencies:
-      '@types/node': 20.12.4
+      '@types/node': 20.12.6
       esbuild: 0.20.2
       postcss: 8.4.38
       rollup: 4.14.0
@@ -4412,7 +4412,7 @@ packages:
       fsevents: 2.3.3
     dev: true
 
-  /vitest@1.4.0(@types/node@20.12.4):
+  /vitest@1.4.0(@types/node@20.12.6):
     resolution: {integrity: sha512-gujzn0g7fmwf83/WzrDTnncZt2UiXP41mHuFYFrdwaLRVQ6JYQEiME2IfEjU3vcFL3VKa75XhI3lFgn+hfVsQw==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
@@ -4437,7 +4437,7 @@ packages:
       jsdom:
         optional: true
     dependencies:
-      '@types/node': 20.12.4
+      '@types/node': 20.12.6
       '@vitest/expect': 1.4.0
       '@vitest/runner': 1.4.0
       '@vitest/snapshot': 1.4.0
@@ -4455,8 +4455,8 @@ packages:
       strip-literal: 2.0.0
       tinybench: 2.6.0
       tinypool: 0.8.2
-      vite: 5.2.8(@types/node@20.12.4)
-      vite-node: 1.4.0(@types/node@20.12.4)
+      vite: 5.2.8(@types/node@20.12.6)
+      vite-node: 1.4.0(@types/node@20.12.6)
       why-is-node-running: 2.2.2
     transitivePeerDependencies:
       - less
