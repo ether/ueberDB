@@ -129,6 +129,11 @@ jobs:
       # version.
       -
         run: pnpm i
+      # Workaround based on https://github.com/pnpm/pnpm/issues/3141
+      - name: Set publishing config
+        run: pnpm config set '//registry.npmjs.org/:_authToken' "${NODE_AUTH_TOKEN}"
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       -
         name: Bump version (patch)
         run: |
@@ -156,9 +161,7 @@ jobs:
         name: Convert typescript and create dist folder
         run: pnpm run build
       -
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+        run: pnpm publish
       -
         name: Add package to etherpad organization
         run: npm access grant read-write etherpad:developers ueberdb2
