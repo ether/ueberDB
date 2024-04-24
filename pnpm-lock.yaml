@@ -69,8 +69,8 @@ devDependencies:
     specifier: ^10.0.2
     version: 10.0.2
   mysql2:
-    specifier: ^3.9.3
-    version: 3.9.3
+    specifier: ^3.9.7
+    version: 3.9.7
   nano:
     specifier: ^10.1.3
     version: 10.1.3
@@ -3207,8 +3207,8 @@ packages:
       - supports-color
     dev: true
 
-  /mysql2@3.9.3:
-    resolution: {integrity: sha512-+ZaoF0llESUy7BffccHG+urErHcWPZ/WuzYAA9TEeLaDYyke3/3D+VQDzK9xzRnXpd0eMtRf0WNOeo4Q1Baung==}
+  /mysql2@3.9.7:
+    resolution: {integrity: sha512-KnJT8vYRcNAZv73uf9zpXqNbvBG7DJrs+1nACsjZP1HMJ1TgXEy8wnNilXAn/5i57JizXKtrUtwDB7HxT9DDpw==}
     engines: {node: '>= 8.0'}
     dependencies:
       denque: 2.1.0
