@@ -21,8 +21,8 @@ devDependencies:
     specifier: ^3.2.24
     version: 3.2.24
   '@types/better-sqlite3':
-    specifier: ^7.6.9
-    version: 7.6.9
+    specifier: ^7.6.10
+    version: 7.6.10
   '@types/mssql':
     specifier: ^9.1.5
     version: 9.1.5
@@ -963,8 +963,8 @@ packages:
     resolution: {integrity: sha512-8iHVLHsCCOBKjCF2KwFe0p9Z3rfM9mL+sSP8btyR5vTjJRAqpBYD28/ZLgXPf0pjG1VxOvtCV/BgXkQbpSe8Hw==}
     dev: true
 
-  /@types/better-sqlite3@7.6.9:
-    resolution: {integrity: sha512-FvktcujPDj9XKMJQWFcl2vVl7OdRIqsSRX9b0acWwTmwLK9CF2eqo/FRcmMLNpugKoX/avA6pb7TorDLmpgTnQ==}
+  /@types/better-sqlite3@7.6.10:
+    resolution: {integrity: sha512-TZBjD+yOsyrUJGmcUj6OS3JADk3+UZcNv3NOBqGkM09bZdi28fNZw8ODqbMOLfKCu7RYCO62/ldq1iHbzxqoPw==}
     dependencies:
       '@types/node': 20.12.7
     dev: true
