@@ -35,7 +35,6 @@ export default class extends AbstractDatabase {
     this.settings.max = this.settings.max || 20;
     this.settings.min = this.settings.min || 4;
     this.settings.idleTimeoutMillis = this.settings.idleTimeoutMillis || 1000;
-
     this.db = new pg.Pool(this.settings as pg.PoolConfig);
   }
 
