@@ -52,7 +52,7 @@
     "rethinkdb": "^2.4.2",
     "rollup-plugin-typescript2": "^0.36.0",
     "semver": "^7.6.2",
-    "simple-git": "^3.24.0",
+    "simple-git": "^3.25.0",
     "surrealdb.js": "^0.11.1",
     "typescript": "^5.4.5",
     "vitest": "^1.5.3",
