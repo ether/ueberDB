@@ -48,8 +48,8 @@ devDependencies:
     specifier: ^0.3.11
     version: 0.3.11
   dirty-ts:
-    specifier: ^1.1.7
-    version: 1.1.7
+    specifier: ^1.1.8
+    version: 1.1.8
   elasticsearch8:
     specifier: npm:@elastic/elasticsearch@^8.8.1
     version: /@elastic/elasticsearch@8.13.1
@@ -1788,8 +1788,8 @@ packages:
       path-type: 4.0.0
     dev: true
 
-  /dirty-ts@1.1.7:
-    resolution: {integrity: sha512-9sSHbVD7wcckRUxxl0gKFuNUbvqsHhiQIfgFoXyJBhMRoejUQpD4OKNVLNj+bPBI7vKHOqIsbT2/Rf3E825ZQQ==}
+  /dirty-ts@1.1.8:
+    resolution: {integrity: sha512-RvnzXCdg5GuAvUgAUa5b5O74fXd11JJxZD5OoBXOQrkjuQwDV6LBJYdtX9hjxBA7Q9y9gcp4mZnDWVVpCzftvQ==}
     engines: {node: '>=12.13.0'}
     dependencies:
       '3': 2.1.0
