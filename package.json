@@ -37,7 +37,7 @@
     "better-sqlite3": "^11.0.0",
     "cassandra-driver": "^4.7.2",
     "cli-table": "^0.3.11",
-    "dirty-ts": "^1.1.7",
+    "dirty-ts": "^1.1.8",
     "elasticsearch8": "npm:@elastic/elasticsearch@^8.8.1",
     "eslint": "^8.57.0",
     "eslint-config-etherpad": "^4.0.4",
