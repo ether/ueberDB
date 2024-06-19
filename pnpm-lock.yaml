@@ -4229,8 +4229,8 @@ packages:
   /surrealdb.js@0.11.1:
     resolution: {integrity: sha512-VgIO8uym/+VR7pBvLDSZYXV51CKYIN8eUj9kM44rDLGg3lMlmhnQrFPgi1wD+OZ/c85cLwO2zicVvmA8C0MmIg==}
     dependencies:
-      unws: 0.2.4(ws@8.17.0)
-      ws: 8.17.0
+      unws: 0.2.4(ws@8.17.1)
+      ws: 8.17.1
       zod: 3.23.8
     transitivePeerDependencies:
       - bufferutil
@@ -4451,13 +4451,13 @@ packages:
     engines: {node: '>= 10.0.0'}
     dev: true
 
-  /unws@0.2.4(ws@8.17.0):
+  /unws@0.2.4(ws@8.17.1):
     resolution: {integrity: sha512-/N1ajiqrSp0A/26/LBg7r10fOcPtGXCqJRJ61sijUFoGZMr6ESWGYn7i0cwr7fR7eEECY5HsitqtjGHDZLAu2w==}
     engines: {node: '>=16.14.0'}
     peerDependencies:
       ws: '*'
     dependencies:
-      ws: 8.17.0
+      ws: 8.17.1
     dev: true
 
   /uri-js@4.4.1:
@@ -4666,8 +4666,8 @@ packages:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
     dev: true
 
-  /ws@8.17.0:
-    resolution: {integrity: sha512-uJq6108EgZMAl20KagGkzCKfMEjxmKvZHG7Tlq0Z6nOky7YF7aq4mOx6xK8TJ/i1LeK4Qus7INktacctDgY8Ow==}
+  /ws@8.17.1:
+    resolution: {integrity: sha512-6XQFvXTkbfUOZOKKILFG1PDK2NDQs4azKQl26T0YS5CxqWLgXajbPZ+h4gZekJyRqFU8pvnbAbbs/3TgRPy+GQ==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
