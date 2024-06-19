@@ -66,8 +66,8 @@ devDependencies:
     specifier: ^6.7.0
     version: 6.7.0
   mssql:
-    specifier: ^10.0.2
-    version: 10.0.2
+    specifier: ^11.0.0
+    version: 11.0.0
   mysql2:
     specifier: ^3.10.1
     version: 3.10.1
@@ -224,9 +224,9 @@ packages:
       tslib: 2.6.2
     dev: true
 
-  /@azure/identity@3.4.2:
-    resolution: {integrity: sha512-0q5DL4uyR0EZ4RXQKD8MadGH6zTIcloUoS/RVbCpNpej4pwte0xpqYxk8K97Py2RiuUvI7F4GXpoT4046VfufA==}
-    engines: {node: '>=14.0.0'}
+  /@azure/identity@4.3.0:
+    resolution: {integrity: sha512-LHZ58/RsIpIWa4hrrE2YuJ/vzG1Jv9f774RfTTAVDZDriubvJ0/S5u4pnw4akJDlS0TiJb6VMphmVUFsWmgodQ==}
+    engines: {node: '>=18.0.0'}
     dependencies:
       '@azure/abort-controller': 1.1.0
       '@azure/core-auth': 1.7.2
@@ -1271,7 +1271,7 @@ packages:
     resolution: {integrity: sha512-H0TSyFNDMomMNJQBn8wFV5YC/2eJ+VXECwOadZJT554xP6cODZHPX3H9QMQECxvrgiSOP1pHjy1sMWQVYJOUOA==}
     engines: {node: '>= 14'}
     dependencies:
-      debug: 4.3.4
+      debug: 4.3.5
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -1902,20 +1902,6 @@ packages:
       typed-array-length: 1.0.6
       unbox-primitive: 1.0.2
       which-typed-array: 1.1.15
-    dev: true
-
-  /es-aggregate-error@1.0.13:
-    resolution: {integrity: sha512-KkzhUUuD2CUMqEc8JEqsXEMDHzDPE8RCjZeUBitsnB1eNcAJWQPiciKsMXe3Yytj4Flw1XLl46Qcf9OxvZha7A==}
-    engines: {node: '>= 0.4'}
-    dependencies:
-      define-data-property: 1.1.4
-      define-properties: 1.2.1
-      es-abstract: 1.23.3
-      es-errors: 1.3.0
-      function-bind: 1.1.2
-      globalthis: 1.0.4
-      has-property-descriptors: 1.0.2
-      set-function-name: 2.0.2
     dev: true
 
   /es-define-property@1.0.0:
@@ -2709,7 +2695,7 @@ packages:
     engines: {node: '>= 14'}
     dependencies:
       agent-base: 7.1.1
-      debug: 4.3.4
+      debug: 4.3.5
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -2719,7 +2705,7 @@ packages:
     engines: {node: '>= 14'}
     dependencies:
       agent-base: 7.1.1
-      debug: 4.3.4
+      debug: 4.3.5
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -2980,10 +2966,6 @@ packages:
     hasBin: true
     dependencies:
       argparse: 2.0.1
-    dev: true
-
-  /jsbi@4.3.0:
-    resolution: {integrity: sha512-SnZNcinB4RIcnEyZqFPdGPVgrg2AcnykiBy0sHVJQKHYeaLUvi3Exj+iaPpLnFVkDPZIV4U0yvgC9/R4uEAZ9g==}
     dev: true
 
   /json-buffer@3.0.1:
@@ -3294,17 +3276,17 @@ packages:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
     dev: true
 
-  /mssql@10.0.2:
-    resolution: {integrity: sha512-GrQ6gzv2xA7ndOvONyZ++4RZsNkr8qDiIpvuFn2pR3TPiSk/cKdmvOrDU3jWgon7EPj7CPgmDiMh7Hgtft2xLg==}
-    engines: {node: '>=14'}
+  /mssql@11.0.0:
+    resolution: {integrity: sha512-XvfsSHeHD/hPIWjnfati1h2/K05pbJNIOOhf32xJ+9dnViSNF95XU6QgkI+CmNx4oYDTMBNN3b7p460PUbq0tw==}
+    engines: {node: '>=18'}
     hasBin: true
     dependencies:
       '@tediousjs/connection-string': 0.5.0
       commander: 11.1.0
-      debug: 4.3.4
+      debug: 4.3.5
       rfdc: 1.3.1
       tarn: 3.0.2
-      tedious: 16.7.1
+      tedious: 18.2.1
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -4285,20 +4267,18 @@ packages:
     engines: {node: '>=8.0.0'}
     dev: true
 
-  /tedious@16.7.1:
-    resolution: {integrity: sha512-NmedZS0NJiTv3CoYnf1FtjxIDUgVYzEmavrc8q2WHRb+lP4deI9BpQfmNnBZZaWusDbP5FVFZCcvzb3xOlNVlQ==}
-    engines: {node: '>=16'}
+  /tedious@18.2.1:
+    resolution: {integrity: sha512-DKsTgGBC0ZeZexAd5OObfeKd0Tlx3jx3kNoKImsxfBKdRuV216u9n6Sr+4w6vzn+S4r43XmWAXQwM7UkDkbIEg==}
+    engines: {node: '>=18'}
     dependencies:
-      '@azure/identity': 3.4.2
+      '@azure/identity': 4.3.0
       '@azure/keyvault-keys': 4.8.0
       '@js-joda/core': 5.6.2
+      '@types/node': 20.14.2
       bl: 6.0.12
-      es-aggregate-error: 1.0.13
       iconv-lite: 0.6.3
       js-md4: 0.3.2
-      jsbi: 4.3.0
       native-duplexpair: 1.0.0
-      node-abort-controller: 3.1.1
       sprintf-js: 1.1.3
     transitivePeerDependencies:
       - supports-color
