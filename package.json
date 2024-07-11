@@ -64,7 +64,7 @@
     "url": "https://github.com/ether/ueberDB.git"
   },
   "main": "./dist/index.js",
-  "version": "4.2.81",
+  "version": "4.2.82",
   "bugs": {
     "url": "https://github.com/ether/ueberDB/issues"
   },
