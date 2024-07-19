@@ -55,7 +55,7 @@
     "simple-git": "^3.25.0",
     "surrealdb.js": "^0.11.1",
     "typescript": "^5.5.3",
-    "vitest": "^2.0.2",
+    "vitest": "^2.0.3",
     "wtfnode": "^0.9.3",
     "rollup": "^4.18.1"
   },
