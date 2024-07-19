@@ -222,7 +222,7 @@ export class Database {
    *     underlying database driver. If null, a Promise is returned.
    * @param deprecated Deprecated callback that is called just after cb. Ignored if cb is null.
    */
-  set(key:string, value:string, cb = null, deprecated = null) {
+  set(key:string, value:any, cb = null, deprecated = null) {
     if (cb != null) { // @ts-ignore
       return cbDb.set.call(this.db, key, value, makeDoneCallback(cb, deprecated));
     }
@@ -234,8 +234,8 @@ export class Database {
    * @param sub
    * @param callback - Deprecated. Node-style callback. If null, a Promise is returned.
    */
-  getSub(key:string, sub:string, callback = null) {
-    if (callback != null) { // @ts-ignore
+  getSub(key:string, sub: string[], callback: Function|null = null) {
+    if (callback != null) {
       return cbDb.getSub.call(this.db, key, sub, callback);
     }
     return this.db.getSub(key, sub);
@@ -251,7 +251,7 @@ export class Database {
    *     underlying database driver. If null, a Promise is returned.
    * @param deprecated Deprecated callback that is called just after cb. Ignored if cb is null.
    */
-  setSub(key:string, sub:string, value:string, cb = null, deprecated = null) {
+  setSub(key:string, sub:string, value:string, cb:Function|null = null, deprecated: Function|null = null) {
     if (cb != null) {
       // @ts-ignore
       return cbDb.setSub.call(this.db, key, sub, value, makeDoneCallback(cb, deprecated));
@@ -265,7 +265,7 @@ export class Database {
    *
    * @param callback - Deprecated. Node-style callback. If null, a Promise is returned.
    */
-  close(callback = null) {
+  close(callback:Function|null = null) {
     if (callback != null) { // @ts-ignore
       return cbDb.close.call(this.db, callback);
     }
@@ -276,4 +276,4 @@ export class Database {
 /**
  * Deprecated synonym of Database.
  */
-exports.database = exports.Database;
+export default Database;

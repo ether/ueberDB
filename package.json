@@ -79,7 +79,9 @@
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "build": "pnpm exec rollup -c rollup.config.cjs.js",
-    "test": "vitest --test-timeout=120000"
+    "test": "vitest --test-timeout=120000",
+    "ts-check": "tsc --noEmit",
+    "ts-check:watch": "tsc --noEmit --watch"
   },
   "_npmUser": {
     "name": "johnyma22",

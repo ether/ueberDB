@@ -3,7 +3,7 @@ import * as ueberdb from '../index';
 import {afterAll, describe, it, afterEach, beforeEach, beforeAll, expect} from 'vitest'
 const assert = assert$0.strict;
 describe(__filename, () => {
-  let db: any;
+  let db: ueberdb.Database|null;
   beforeEach(async () => {
     db = new ueberdb.Database('memory', {}, {});
     await db.init();
