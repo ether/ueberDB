@@ -57,7 +57,7 @@
     "typescript": "^5.5.3",
     "vitest": "^2.0.2",
     "wtfnode": "^0.9.3",
-    "rollup": "^4.18.1"
+    "rollup": "^4.19.0"
   },
   "repository": {
     "type": "git",
