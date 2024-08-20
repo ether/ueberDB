@@ -33,7 +33,7 @@
     "@types/node": "^22.3.0",
     "@types/pg": "^8.11.5",
     "@types/rethinkdb": "^2.3.21",
-    "async": "^3.2.5",
+    "async": "^3.2.6",
     "better-sqlite3": "^11.1.2",
     "cassandra-driver": "^4.7.2",
     "cli-table": "^0.3.11",
