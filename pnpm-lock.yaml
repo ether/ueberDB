@@ -30,8 +30,8 @@ importers:
         specifier: ^9.1.5
         version: 9.1.5
       '@types/node':
-        specifier: ^22.3.0
-        version: 22.3.0
+        specifier: ^22.4.2
+        version: 22.4.2
       '@types/pg':
         specifier: ^8.11.5
         version: 8.11.6
@@ -109,7 +109,7 @@ importers:
         version: 5.5.4
       vitest:
         specifier: ^2.0.5
-        version: 2.0.5(@types/node@22.3.0)(terser@5.31.0)
+        version: 2.0.5(@types/node@22.4.2)(terser@5.31.0)
       wtfnode:
         specifier: ^0.9.3
         version: 0.9.3
@@ -616,8 +616,8 @@ packages:
   '@types/mssql@9.1.5':
     resolution: {integrity: sha512-Q9EsgXwuRoX5wvUSu24YfbKMbFChv7pZ/jeCzPkj47ehcuXYsBcfogwrtVFosSjinD4Q/MY2YPGk9Yy1cM2Ywg==}
 
-  '@types/node@22.3.0':
-    resolution: {integrity: sha512-nrWpWVaDZuaVc5X84xJ0vNrLvomM205oQyLsRt7OHNZbSHslcWsvgFR7O7hire2ZonjLrWBbedmotmIlJDVd6g==}
+  '@types/node@22.4.2':
+    resolution: {integrity: sha512-nAvM3Ey230/XzxtyDcJ+VjvlzpzoHwLsF7JaDRfoI0ytO0mVheerNmM45CtA0yOILXwXXxOrcUWH3wltX+7PSw==}
 
   '@types/pg@8.11.6':
     resolution: {integrity: sha512-/2WmmBXHLsfRqzfHW7BNZ8SbYzE8OSk7i3WjFYvfgRHj7S1xj+16Je5fUKv3lVdVzk/zn9TXOqf+avFCFIE0yQ==}
@@ -2408,8 +2408,8 @@ packages:
   unbox-primitive@1.0.2:
     resolution: {integrity: sha512-61pPlCD9h51VoreyJ0BReideM3MDKMKnh6+V9L08331ipq6Q8OFXZYiqP6n/tbHx4s5I9uRhcye6BrbkizkBDw==}
 
-  undici-types@6.18.2:
-    resolution: {integrity: sha512-5ruQbENj95yDYJNS3TvcaxPMshV7aizdv/hWYjGIKoANWKjhWNBsr2YEuYZKodQulB1b8l7ILOuDQep3afowQQ==}
+  undici-types@6.19.8:
+    resolution: {integrity: sha512-ve2KP6f/JnbPBFyobGHuerC9g1FYGn/F8n1LWTwNxCEzd6IfqTwUQcNXgEtmmQ6DlRrC1hrSrBnCZPokRrDHjw==}
 
   undici@5.28.4:
     resolution: {integrity: sha512-72RFADWFqKmUb2hmmvNODKL3p9hcB6Gt2DOQMis1SEBaV6a4MH8soBvzg+95CYhCKPFedut2JY9bMfrDl9D23g==}
@@ -3013,7 +3013,7 @@ snapshots:
 
   '@types/better-sqlite3@7.6.11':
     dependencies:
-      '@types/node': 22.3.0
+      '@types/node': 22.4.2
 
   '@types/estree@1.0.5': {}
 
@@ -3027,36 +3027,36 @@ snapshots:
 
   '@types/mssql@9.1.5':
     dependencies:
-      '@types/node': 22.3.0
+      '@types/node': 22.4.2
       '@types/tedious': 4.0.14
       tarn: 3.0.2
 
-  '@types/node@22.3.0':
+  '@types/node@22.4.2':
     dependencies:
-      undici-types: 6.18.2
+      undici-types: 6.19.8
 
   '@types/pg@8.11.6':
     dependencies:
-      '@types/node': 22.3.0
+      '@types/node': 22.4.2
       pg-protocol: 1.6.1
       pg-types: 4.0.2
 
   '@types/readable-stream@4.0.12':
     dependencies:
-      '@types/node': 22.3.0
+      '@types/node': 22.4.2
       safe-buffer: 5.1.2
 
   '@types/resolve@1.20.2': {}
 
   '@types/rethinkdb@2.3.21':
     dependencies:
-      '@types/node': 22.3.0
+      '@types/node': 22.4.2
 
   '@types/semver@7.5.8': {}
 
   '@types/tedious@4.0.14':
     dependencies:
-      '@types/node': 22.3.0
+      '@types/node': 22.4.2
 
   '@types/webidl-conversions@7.0.3': {}
 
@@ -3370,7 +3370,7 @@ snapshots:
   cassandra-driver@4.7.2:
     dependencies:
       '@types/long': 5.0.0
-      '@types/node': 22.3.0
+      '@types/node': 22.4.2
       adm-zip: 0.5.12
       long: 5.2.3
 
@@ -4955,7 +4955,7 @@ snapshots:
       '@azure/identity': 4.3.0
       '@azure/keyvault-keys': 4.8.0
       '@js-joda/core': 5.6.2
-      '@types/node': 22.3.0
+      '@types/node': 22.4.2
       bl: 6.0.12
       iconv-lite: 0.6.3
       js-md4: 0.3.2
@@ -5053,7 +5053,7 @@ snapshots:
       has-symbols: 1.0.3
       which-boxed-primitive: 1.0.2
 
-  undici-types@6.18.2: {}
+  undici-types@6.19.8: {}
 
   undici@5.28.4:
     dependencies:
@@ -5073,13 +5073,13 @@ snapshots:
 
   uuid@8.3.2: {}
 
-  vite-node@2.0.5(@types/node@22.3.0)(terser@5.31.0):
+  vite-node@2.0.5(@types/node@22.4.2)(terser@5.31.0):
     dependencies:
       cac: 6.7.14
       debug: 4.3.5
       pathe: 1.1.2
       tinyrainbow: 1.2.0
-      vite: 5.2.11(@types/node@22.3.0)(terser@5.31.0)
+      vite: 5.2.11(@types/node@22.4.2)(terser@5.31.0)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -5090,17 +5090,17 @@ snapshots:
       - supports-color
       - terser
 
-  vite@5.2.11(@types/node@22.3.0)(terser@5.31.0):
+  vite@5.2.11(@types/node@22.4.2)(terser@5.31.0):
     dependencies:
       esbuild: 0.20.2
       postcss: 8.4.38
       rollup: 4.20.0
     optionalDependencies:
-      '@types/node': 22.3.0
+      '@types/node': 22.4.2
       fsevents: 2.3.3
       terser: 5.31.0
 
-  vitest@2.0.5(@types/node@22.3.0)(terser@5.31.0):
+  vitest@2.0.5(@types/node@22.4.2)(terser@5.31.0):
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@vitest/expect': 2.0.5
@@ -5118,11 +5118,11 @@ snapshots:
       tinybench: 2.8.0
       tinypool: 1.0.0
       tinyrainbow: 1.2.0
-      vite: 5.2.11(@types/node@22.3.0)(terser@5.31.0)
-      vite-node: 2.0.5(@types/node@22.3.0)(terser@5.31.0)
+      vite: 5.2.11(@types/node@22.4.2)(terser@5.31.0)
+      vite-node: 2.0.5(@types/node@22.4.2)(terser@5.31.0)
       why-is-node-running: 2.3.0
     optionalDependencies:
-      '@types/node': 22.3.0
+      '@types/node': 22.4.2
     transitivePeerDependencies:
       - less
       - lightningcss
