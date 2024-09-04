@@ -7,7 +7,7 @@ export default class Rusty_db extends AbstractDatabase {
 
     constructor(settings: {filename: string}) {
         super(settings);
-        this.db = new KeyValueDB(settings.filename);
+        this.db = new KeyValueDB(this.settings.filename!);
     }
 
     get isAsync() {
@@ -23,6 +23,10 @@ export default class Rusty_db extends AbstractDatabase {
     }
 
     init() {
+    }
+
+    close() {
+
     }
 
     remove(key: string) {
