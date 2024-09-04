@@ -23,6 +23,15 @@ export const databases:DatabaseType = {
       removeMax: 0.5,
     },
   },
+  rusty: {
+    filename: `${os.tmpdir()}/rusty.db`,
+    speeds: {
+      setMax: 0.6,
+      getMax: 0.5,
+      findKeysMax: 2.5,
+      removeMax: 0.5,
+    },
+  },
   mysql: {
     user: 'ueberdb',
     host: '127.0.0.1',

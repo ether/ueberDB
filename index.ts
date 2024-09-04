@@ -37,6 +37,7 @@ import RedisDB from './databases/redis_db'
 import Rethink_db from './databases/rethink_db'
 import SQLiteDB from './databases/sqlite_db'
 import SurrealDB from './databases/surrealdb_db'
+import Rusty_db from "./databases/rusty_db";
 
 type CBDBType = {
   [key: string]:Function
@@ -118,6 +119,8 @@ export class Database {
           return new Postgres_db(this.dbSettings);
         case 'sqlite':
           return new SQLiteDB(this.dbSettings);
+        case 'rustydb':
+            return new Rusty_db(this.dbSettings);
         case 'mongodb':
           return new Mongodb_db(this.dbSettings);
         case 'redis':
