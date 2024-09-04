@@ -80,4 +80,4 @@ describe(__filename, () => {
   afterAll(async () => {
     await container.stop()
   })
-});
+}, 120000);
