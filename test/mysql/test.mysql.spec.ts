@@ -22,6 +22,8 @@ describe('postgres test', ()=>{
     test_db('mysql')
 
     afterAll(async () => {
-        await container.stop()
+        if (container){
+            await container.stop()
+        }
     })
 }, 120000)
