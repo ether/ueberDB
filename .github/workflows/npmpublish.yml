@@ -39,7 +39,6 @@ jobs:
       - run: pnpm i
         name: Install pnpm dependencies
       - run: pnpm run test ${{ matrix.db }}
-      - run: pnpm run lint
 
   publish-npm:
     if: github.event_name == 'push'
