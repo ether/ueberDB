@@ -37,10 +37,31 @@ import RedisDB from './databases/redis_db'
 import Rethink_db from './databases/rethink_db'
 import SQLiteDB from './databases/sqlite_db'
 import SurrealDB from './databases/surrealdb_db'
+import Rusty_db from "./databases/rusty_db";
 
 type CBDBType = {
   [key: string]:Function
 }
+
+
+export type DatabaseType =
+    | 'mysql'
+    | 'postgres'
+    | 'sqlite'
+    | 'rustydb'
+    | 'mongodb'
+    | 'redis'
+    | 'cassandra'
+    | 'dirty'
+    | 'dirtygit'
+    | 'elasticsearch'
+    | 'memory'
+    | 'mock'
+    | 'mssql'
+    | 'postgrespool'
+    | 'rethink'
+    | 'couch'
+    | 'surrealdb';
 
 const cbDb: CBDBType= {
   init: () => {},
@@ -66,7 +87,7 @@ const makeDoneCallback = (callback: (err?:any)=>{}, deprecated:(err:any)=>{}) =>
 };
 
 export class Database {
-  public readonly type: any;
+  public readonly type: DatabaseType;
   public readonly dbSettings: any;
   public readonly wrapperSettings: any | {};
   public readonly logger: Function | null;
@@ -81,7 +102,7 @@ export class Database {
    *     from another logging library should also work, but performance may be reduced if the logger
    *     object does not have is${Level}Enabled() methods (isDebugEnabled(), etc.).
    */
-  constructor(type: undefined | string, dbSettings: Settings | null | string, wrapperSettings?: null | {}, logger: any = null) {
+  constructor(type: undefined | DatabaseType, dbSettings: Settings | null | string, wrapperSettings?: null | {}, logger: any = null) {
     if (!type) {
       type = 'sqlite';
       dbSettings = null;
@@ -99,7 +120,7 @@ export class Database {
   /**
    * @param callback - Deprecated. Node-style callback. If null, a Promise is returned.
    */
-  async init(callback = null) {
+  init(callback = null) {
     const db:any = this.initDB();
     db.logger = this.logger;
     this.db = new DatabaseCache(db, this.wrapperSettings, this.logger);
@@ -118,6 +139,8 @@ export class Database {
           return new Postgres_db(this.dbSettings);
         case 'sqlite':
           return new SQLiteDB(this.dbSettings);
+        case 'rustydb':
+            return new Rusty_db(this.dbSettings);
         case 'mongodb':
           return new Mongodb_db(this.dbSettings);
         case 'redis':
@@ -191,7 +214,7 @@ export class Database {
    * @param notKey
    * @param callback - Deprecated. Node-style callback. If null, a Promise is returned.
    */
-  findKeys(key:string, notKey:string, callback = null) {
+  findKeys(key:string, notKey?:string, callback = null) {
     if (callback != null) { // @ts-ignore
       return cbDb.findKeys.call(this.db, key, notKey, callback);
     }

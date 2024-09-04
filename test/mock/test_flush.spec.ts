@@ -1,5 +1,5 @@
-import {ConsoleLogger} from '../lib/logging';
-import * as ueberdb from '../index';
+import {ConsoleLogger} from '../../lib/logging';
+import * as ueberdb from '../../index';
 import {afterAll, describe, it, afterEach, beforeEach, beforeAll, expect} from 'vitest'
 const logger = new ConsoleLogger();
 

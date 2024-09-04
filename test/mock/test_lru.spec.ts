@@ -1,4 +1,4 @@
-import {exportedForTesting} from '../lib/CacheAndBufferLayer';
+import {exportedForTesting} from '../../lib/CacheAndBufferLayer';
 import assert$0 from 'assert';
 import {afterAll, describe, it, afterEach, beforeEach, beforeAll, expect} from 'vitest'
 const LRU = {exportedForTesting}.exportedForTesting.LRU;

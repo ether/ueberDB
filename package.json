@@ -53,9 +53,11 @@
     "rethinkdb": "^2.4.2",
     "rollup": "^4.21.2",
     "rollup-plugin-typescript2": "^0.36.0",
+    "rusty-store-kv": "^1.1.2",
     "semver": "^7.6.3",
     "simple-git": "^3.26.0",
     "surrealdb.js": "^0.11.1",
+    "testcontainers": "^10.13.0",
     "typescript": "^5.5.4",
     "vitest": "^2.0.5",
     "wtfnode": "^0.9.3"

@@ -1,5 +1,5 @@
 import {strict} from 'assert';
-import {Database} from '../index';
+import {Database} from '../../index';
 import util from 'util';
 const assert = strict
 const range = (N: any) => [...Array(N).keys()];
