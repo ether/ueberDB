@@ -1,5 +1,5 @@
 import assert$0 from 'assert';
-import * as ueberdb from '../index';
+import * as ueberdb from '../../index';
 import {afterAll, describe, it, afterEach, beforeEach, beforeAll, expect} from 'vitest'
 const assert = assert$0.strict;
 // Gate is a normal Promise that resolves when its open() method is called.

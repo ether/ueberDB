@@ -1,6 +1,6 @@
 import assert$0 from 'assert';
-import * as ueberdb from '../index';
-import {afterAll, describe, it, afterEach, beforeEach, beforeAll, expect} from 'vitest'
+import * as ueberdb from '../../index';
+import {describe, it, afterEach, beforeEach} from 'vitest'
 const assert = assert$0.strict;
 describe(__filename, () => {
   let db: ueberdb.Database|null;

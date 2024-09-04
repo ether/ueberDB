@@ -11,57 +11,13 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    services:
-      couchdb:
-        image: couchdb
-        ports:
-          - 5984:5984
-        env:
-          COUCHDB_USER: ueberdb
-          COUCHDB_PASSWORD: ueberdb
-      elasticsearch:
-        image: elasticsearch:7.17.3
-        ports:
-          - 9200:9200
-        env:
-          discovery.type: single-node
-      mongo:
-        image: mongo
-        ports:
-          - 27017:27017
-      mysql:
-        # The default authentication used in MySQL 8.0 isn't supported by the
-        # mysql npm package: https://github.com/mysqljs/mysql/issues/2002
-        image: mariadb
-        ports:
-          - 3306:3306
-        env:
-          MYSQL_ROOT_PASSWORD: password
-          MYSQL_USER: ueberdb
-          MYSQL_PASSWORD: ueberdb
-          MYSQL_DATABASE: ueberdb
-      postgres:
-        image: postgres
-        ports:
-          - 5432:5432
-        env:
-          POSTGRES_USER: ueberdb
-          POSTGRES_PASSWORD: ueberdb
-          POSTGRES_DB: ueberdb
-        options: >-
-          --health-cmd="pg_isready -d postgresql://ueberdb:ueberdb@127.0.0.1/ueberdb"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-      redis:
-        image: redis
-        ports:
-          - 6379:6379
+    strategy:
+      matrix:
+        db: [couch, elasticsearch, mongo, mysql, postgres, redis, mock, sqlite, redis, memory]
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-      -
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
       - uses: pnpm/action-setup@v4
         name: Install pnpm
         with:
@@ -78,22 +34,11 @@ jobs:
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
       - run: pnpm i
-
-      # Verify databases are reachable.
-      - name: MySQL client and server check
-        run: |
-          mysql --version &&
-          mysql -h 127.0.0.1 -u ueberdb -pueberdb -e "SHOW TABLES;" ueberdb
-      - name: PostgreSQL client and server check
-        run: |
-          psql --version &&
-          psql -d postgresql://ueberdb:ueberdb@127.0.0.1/ueberdb -c '\dt'
-      - name: Create javascript files from typescript
-        run: pnpm run build
-      - run: pnpm run test
-        env:
-          SURREALDB_CI: false
+        name: Install pnpm dependencies
+      - run: pnpm run test ${{ matrix.db }}
       - run: pnpm run lint
 
   publish-npm:

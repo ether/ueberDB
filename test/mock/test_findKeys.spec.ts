@@ -1,6 +1,6 @@
 import assert$0 from 'assert';
-import {ConsoleLogger} from '../lib/logging';
-import * as ueberdb from '../index';
+import {ConsoleLogger} from '../../lib/logging';
+import * as ueberdb from '../../index';
 'use strict';
 const assert = assert$0.strict;
 const logger = new ConsoleLogger();

@@ -1,8 +1,8 @@
 import {deepEqual, rejects} from 'assert';
 import es from 'elasticsearch8';
-import {databases} from './lib/databases';
-import {ConsoleLogger} from '../lib/logging';
-import * as ueberdb from '../index';
+import {databases} from '../lib/databases';
+import {ConsoleLogger} from '../../lib/logging';
+import * as ueberdb from '../../index';
 'use strict';
 const {databases: {elasticsearch: cfg}} = {databases};
 const logger = new class extends ConsoleLogger {

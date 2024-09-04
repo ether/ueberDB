@@ -1,7 +1,7 @@
 import assert$0 from 'assert';
-import {databases} from './lib/databases';
-import Mysql_db from '../databases/mysql_db';
-import {afterAll, describe, it, afterEach, beforeEach, beforeAll, expect} from 'vitest'
+import {databases} from '../lib/databases';
+import Mysql_db from '../../databases/mysql_db';
+import {describe, it, beforeEach} from 'vitest'
 
 const assert = assert$0.strict;
 describe(__filename, () => {
