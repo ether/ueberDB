@@ -1,7 +1,6 @@
 'use strict';
 import {BulkObject} from "./cassandra_db";
 import AbstractDatabase, {Settings} from "../lib/AbstractDatabase";
-import SQLITEDB from "better-sqlite3";
 
 /**
  * 2011 Peter 'Pita' Martischka
