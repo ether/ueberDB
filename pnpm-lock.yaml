@@ -67,7 +67,7 @@ importers:
         version: 4.0.4(eslint@8.57.0)(typescript@5.5.4)
       eslint-plugin-import:
         specifier: ^2.30.0
-        version: 2.30.0(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-plugin-import@2.30.0(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint@8.57.0))(eslint@8.57.0))(eslint@8.57.0)
+        version: 2.30.0(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
       mongodb:
         specifier: ^6.8.0
         version: 6.8.0
@@ -99,8 +99,8 @@ importers:
         specifier: ^0.36.0
         version: 0.36.0(rollup@4.21.2)(typescript@5.5.4)
       rusty-store-kv:
-        specifier: ^1.1.2
-        version: 1.1.2
+        specifier: ^1.1.4
+        version: 1.1.4
       semver:
         specifier: ^7.6.3
         version: 7.6.3
@@ -2341,68 +2341,68 @@ packages:
   run-parallel@1.2.0:
     resolution: {integrity: sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA==}
 
-  rusty-store-kv-darwin-arm64@1.1.2:
-    resolution: {integrity: sha512-9HnZXzYuLMCSzt+hQQo7yxoUsNF0zhufYtNc0gbZ1kI78ySBJDS5HWKvgSeDm+UMrK4Zd4MGWHlC8uB2eYHW0Q==}
+  rusty-store-kv-darwin-arm64@1.1.4:
+    resolution: {integrity: sha512-Pwedf7Fe0BBVmuM6Z/7JYGtwjVLI+rCEEUNoZ9jA31QtfWHHFYPk0XULk4mLnngP14eBy9opEpJO2wYAUra5bg==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [darwin]
 
-  rusty-store-kv-darwin-x64@1.1.2:
-    resolution: {integrity: sha512-LYWn6OvdWTCgEZYf6kl02AYOY4P/XK72d+mg5c7/xFlCI6Bt+TJ/UHYa8gszdQvd8rHNA/wCb+xYwz5M2snBWw==}
+  rusty-store-kv-darwin-x64@1.1.4:
+    resolution: {integrity: sha512-R1vuflgIjP6JtFGnxRoDgZaw9kVF+m9FYEIZH0dG3v4AU55Zh53lQBflHLhqsC10OuCo3ZO0w++bSVmcGXmSJg==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [darwin]
 
-  rusty-store-kv-freebsd-x64@1.1.2:
-    resolution: {integrity: sha512-tbJ/s2WujdUPtU8QB2ZuWps9HFYAgRx7Se7LAkQGjY+1esd2rruDclJlntjPf0Wz6Qf5PHC13na2EZFTYFfHhQ==}
+  rusty-store-kv-freebsd-x64@1.1.4:
+    resolution: {integrity: sha512-GbYN5+k44RJS2n6mqdDQz64ZLXl2mEZFIpdk5KblmUZaf7JPai6o6d/2kaldw+htTlVabdXVrmVRhytsHtmdcQ==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [freebsd]
 
-  rusty-store-kv-linux-arm-gnueabihf@1.1.2:
-    resolution: {integrity: sha512-KcRvxqNE0lEezeYDjeAMU/GhwVPdzL4MJnaOICRern6Kg+1hWpM3mpEdhauJDfPWwC3ou15/Ua71z4z1x8J/kQ==}
+  rusty-store-kv-linux-arm-gnueabihf@1.1.4:
+    resolution: {integrity: sha512-hdPJTo/UR8kYSf6m6g530hzCRFCewyKhae/Dtol12fRqHlzr+RhygVkrxPblqwUFt8XJGG2A9xkc9CFJwbS7lg==}
     engines: {node: '>= 10'}
     cpu: [arm]
     os: [linux]
 
-  rusty-store-kv-linux-arm64-gnu@1.1.2:
-    resolution: {integrity: sha512-Z3rZN/QyhUGw4Kk4cwm3lAwGRNc4a07R1JihZNiKztY2vYGLdOGvlIbwYTmurazsoZjeo1uWz1pkRz8G2heRYg==}
+  rusty-store-kv-linux-arm64-gnu@1.1.4:
+    resolution: {integrity: sha512-KEsvvdbYHf6o01RY6DPGLt1x3BbDUnLvkJuMr6NLcX2mDgtvDtC2auNGuslb+mzVG3GqtCfiEesz4JRrJkfimA==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
 
-  rusty-store-kv-linux-arm64-musl@1.1.2:
-    resolution: {integrity: sha512-VNY3/fI7rRdbey3wkGHJvEclF5cmQuIR5KFQNZ/AEc1Hdk/yjcMD1QUo9tjeKtLZk5Eb82WyYWU9ZkqlKCmyhg==}
+  rusty-store-kv-linux-arm64-musl@1.1.4:
+    resolution: {integrity: sha512-o1PMDeMFc3nWHksO0pBHNdr5n2ZRFje8WmK6fwRMcicdsiK+fqv2zJyAjdDfVoP0RS4QXkM9DwCyqN+bziBz6A==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
 
-  rusty-store-kv-linux-x64-gnu@1.1.2:
-    resolution: {integrity: sha512-XCSGfWNMv5dSiFxyJxI/hdfITFYBF6XD+OvzJLJDU5M9X1TvH3LhpHkcOcteJilTXCO+7VbBZFjaxp2FYXemnA==}
+  rusty-store-kv-linux-x64-gnu@1.1.4:
+    resolution: {integrity: sha512-EG7qO20CLY5F5kki0CFQY+p+CXyCVYtcah3vWI/Opbd6HcVlcoaZJ24KYWuoUCpRS4qIHAue/JtZ7kANlRUwCQ==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
 
-  rusty-store-kv-linux-x64-musl@1.1.2:
-    resolution: {integrity: sha512-j/syYKk9eXU2SObcufjXSKwRXqbf6U3Jj35Af5/BPRPgEZyLrGH9ICAtzQnd67kCj/iezjF4ZgjihFcfqugZ4g==}
+  rusty-store-kv-linux-x64-musl@1.1.4:
+    resolution: {integrity: sha512-oJ5AJVjnTaWwvahGWceH73mVOjolE+BcBghJsxmlRgw0y4sYwk7qaF0r2heh1GDeMZsYMhZV0o8GAa3FH0W3lQ==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
 
-  rusty-store-kv-win32-arm64-msvc@1.1.2:
-    resolution: {integrity: sha512-BUBfuI0erx8JSpuzi7Btxc37mV12Lbvh2LVMKeOBK4eM33b+Egpzu6x8i7P6RxQFg9JH+S9yHduQuBr1E9GdUA==}
+  rusty-store-kv-win32-arm64-msvc@1.1.4:
+    resolution: {integrity: sha512-kqvaa4DqNNmOMQDBOoRBbiesTkE4E/nrghIk5eSalLaUHt1TNZpuOeWGS1+xRIYuRDBeHAqD72AkcqrP+9dzcQ==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [win32]
 
-  rusty-store-kv-win32-x64-msvc@1.1.2:
-    resolution: {integrity: sha512-jDaP8i//0DCCH4PnT33WrUoVTgrEbDR/KOH1/iE0LegfpGZAZD4pcO5cUY6ZnP6EPXAxie1fg4+tWD9nuTy+BQ==}
+  rusty-store-kv-win32-x64-msvc@1.1.4:
+    resolution: {integrity: sha512-SPI/Up8QF46MA2PkADeyIUd82PTa89i91TjkE81vVyKNIwcfXb9lFDOJThWds8gwMjiWcsMiMA1TclyCDZ0HoQ==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
 
-  rusty-store-kv@1.1.2:
-    resolution: {integrity: sha512-5xNupyt6GCxVNS8t3TFdkxGu9LEeUw71KQ6yLKMVJ1ITuBAq3d7H0IZ05S9anpEiMr+oPsNrgFnSMQkrmcthkw==}
+  rusty-store-kv@1.1.4:
+    resolution: {integrity: sha512-B8ibg3j9Wq2uY0FysjSpZ71GPj9x+oJUTvjzh0YUF4m+y7/4Lo+DwNLNU/4u5DTnGiXeAhWmXypjp+mWIN3GiQ==}
     engines: {node: '>= 10'}
 
   safe-array-concat@1.1.2:
@@ -4104,10 +4104,10 @@ snapshots:
       '@rushstack/eslint-patch': 1.10.2
       '@typescript-eslint/eslint-plugin': 7.8.0(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint@8.57.0)(typescript@5.5.4)
       '@typescript-eslint/parser': 7.8.0(eslint@8.57.0)(typescript@5.5.4)
-      eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-plugin-import@2.30.0(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint@8.57.0))(eslint@8.57.0)
+      eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-plugin-import@2.30.0)(eslint@8.57.0)
       eslint-plugin-cypress: 2.15.2(eslint@8.57.0)
       eslint-plugin-eslint-comments: 3.2.0(eslint@8.57.0)
-      eslint-plugin-import: 2.30.0(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-plugin-import@2.30.0(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint@8.57.0))(eslint@8.57.0))(eslint@8.57.0)
+      eslint-plugin-import: 2.30.0(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
       eslint-plugin-mocha: 10.4.3(eslint@8.57.0)
       eslint-plugin-n: 16.6.2(eslint@8.57.0)
       eslint-plugin-prefer-arrow: 1.2.3(eslint@8.57.0)
@@ -4128,13 +4128,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-plugin-import@2.30.0(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint@8.57.0))(eslint@8.57.0):
+  eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-plugin-import@2.30.0)(eslint@8.57.0):
     dependencies:
       debug: 4.3.5
       enhanced-resolve: 5.16.1
       eslint: 8.57.0
-      eslint-module-utils: 2.8.1(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-plugin-import@2.30.0(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint@8.57.0))(eslint@8.57.0))(eslint@8.57.0)
-      eslint-plugin-import: 2.30.0(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-plugin-import@2.30.0(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint@8.57.0))(eslint@8.57.0))(eslint@8.57.0)
+      eslint-module-utils: 2.8.1(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-plugin-import@2.30.0)(eslint@8.57.0))(eslint@8.57.0)
+      eslint-plugin-import: 2.30.0(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
       fast-glob: 3.3.2
       get-tsconfig: 4.7.5
       is-core-module: 2.13.1
@@ -4145,24 +4145,24 @@ snapshots:
       - eslint-import-resolver-webpack
       - supports-color
 
-  eslint-module-utils@2.8.1(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-plugin-import@2.30.0(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint@8.57.0))(eslint@8.57.0))(eslint@8.57.0):
+  eslint-module-utils@2.8.1(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-plugin-import@2.30.0)(eslint@8.57.0))(eslint@8.57.0):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
       '@typescript-eslint/parser': 7.8.0(eslint@8.57.0)(typescript@5.5.4)
       eslint: 8.57.0
-      eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-plugin-import@2.30.0(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint@8.57.0))(eslint@8.57.0)
+      eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-plugin-import@2.30.0)(eslint@8.57.0)
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.9.0(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-plugin-import@2.30.0(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint@8.57.0))(eslint@8.57.0))(eslint@8.57.0):
+  eslint-module-utils@2.9.0(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-plugin-import@2.30.0)(eslint@8.57.0))(eslint@8.57.0):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
       '@typescript-eslint/parser': 7.8.0(eslint@8.57.0)(typescript@5.5.4)
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-plugin-import@2.30.0(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint@8.57.0))(eslint@8.57.0)
+      eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-plugin-import@2.30.0)(eslint@8.57.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -4184,7 +4184,7 @@ snapshots:
       eslint: 8.57.0
       ignore: 5.3.1
 
-  eslint-plugin-import@2.30.0(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-plugin-import@2.30.0(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint@8.57.0))(eslint@8.57.0))(eslint@8.57.0):
+  eslint-plugin-import@2.30.0(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.1.8
@@ -4195,7 +4195,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.9.0(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-plugin-import@2.30.0(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint@8.57.0))(eslint@8.57.0))(eslint@8.57.0)
+      eslint-module-utils: 2.9.0(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.5.4))(eslint-plugin-import@2.30.0)(eslint@8.57.0))(eslint@8.57.0)
       hasown: 2.0.2
       is-core-module: 2.15.1
       is-glob: 4.0.3
@@ -5287,48 +5287,48 @@ snapshots:
     dependencies:
       queue-microtask: 1.2.3
 
-  rusty-store-kv-darwin-arm64@1.1.2:
+  rusty-store-kv-darwin-arm64@1.1.4:
     optional: true
 
-  rusty-store-kv-darwin-x64@1.1.2:
+  rusty-store-kv-darwin-x64@1.1.4:
     optional: true
 
-  rusty-store-kv-freebsd-x64@1.1.2:
+  rusty-store-kv-freebsd-x64@1.1.4:
     optional: true
 
-  rusty-store-kv-linux-arm-gnueabihf@1.1.2:
+  rusty-store-kv-linux-arm-gnueabihf@1.1.4:
     optional: true
 
-  rusty-store-kv-linux-arm64-gnu@1.1.2:
+  rusty-store-kv-linux-arm64-gnu@1.1.4:
     optional: true
 
-  rusty-store-kv-linux-arm64-musl@1.1.2:
+  rusty-store-kv-linux-arm64-musl@1.1.4:
     optional: true
 
-  rusty-store-kv-linux-x64-gnu@1.1.2:
+  rusty-store-kv-linux-x64-gnu@1.1.4:
     optional: true
 
-  rusty-store-kv-linux-x64-musl@1.1.2:
+  rusty-store-kv-linux-x64-musl@1.1.4:
     optional: true
 
-  rusty-store-kv-win32-arm64-msvc@1.1.2:
+  rusty-store-kv-win32-arm64-msvc@1.1.4:
     optional: true
 
-  rusty-store-kv-win32-x64-msvc@1.1.2:
+  rusty-store-kv-win32-x64-msvc@1.1.4:
     optional: true
 
-  rusty-store-kv@1.1.2:
+  rusty-store-kv@1.1.4:
     optionalDependencies:
-      rusty-store-kv-darwin-arm64: 1.1.2
-      rusty-store-kv-darwin-x64: 1.1.2
-      rusty-store-kv-freebsd-x64: 1.1.2
-      rusty-store-kv-linux-arm-gnueabihf: 1.1.2
-      rusty-store-kv-linux-arm64-gnu: 1.1.2
-      rusty-store-kv-linux-arm64-musl: 1.1.2
-      rusty-store-kv-linux-x64-gnu: 1.1.2
-      rusty-store-kv-linux-x64-musl: 1.1.2
-      rusty-store-kv-win32-arm64-msvc: 1.1.2
-      rusty-store-kv-win32-x64-msvc: 1.1.2
+      rusty-store-kv-darwin-arm64: 1.1.4
+      rusty-store-kv-darwin-x64: 1.1.4
+      rusty-store-kv-freebsd-x64: 1.1.4
+      rusty-store-kv-linux-arm-gnueabihf: 1.1.4
+      rusty-store-kv-linux-arm64-gnu: 1.1.4
+      rusty-store-kv-linux-arm64-musl: 1.1.4
+      rusty-store-kv-linux-x64-gnu: 1.1.4
+      rusty-store-kv-linux-x64-musl: 1.1.4
+      rusty-store-kv-win32-arm64-msvc: 1.1.4
+      rusty-store-kv-win32-x64-msvc: 1.1.4
 
   safe-array-concat@1.1.2:
     dependencies:

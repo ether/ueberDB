@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        db: [couch, elasticsearch, mongo, mysql, redis, mock, sqlite, redis, memory]
+        db: [couch, elasticsearch, mongo, mysql, redis, mock, sqlite, redis, memory, rusty]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

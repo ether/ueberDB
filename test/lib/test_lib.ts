@@ -7,6 +7,7 @@ import Clitable from "cli-table3";
 import {databases} from "./databases";
 import {promises} from "fs";
 import {DatabaseType} from "../../index";
+import {existsSync} from "node:fs";
 
 
 const fs = {promises}.promises;
@@ -45,9 +46,20 @@ export const test_db = (database: DatabaseType)=>{
                     describe(`${writeBuffer ? '' : 'no '}write buffer`, function (this: any) {
                         beforeEach(async () => {
                             if (dbSettings.filename) {
-                                await fs.unlink(dbSettings.filename).catch(() => {
-                                });
+                                if (existsSync(dbSettings.filename)) {
+                                    await fs.unlink(dbSettings.filename).catch((e) => {
+                                        console.log(e)
+                                    });
+                                }
                             }
+
+                            let setting = dbSettings.filename
+
+                            if (database === 'rustydb') {
+
+                            }
+
+
                             db = new ueberdb.Database(database, dbSettings, {
                                 ...(readCache ? {} : {cache: 0}),
                                 ...(writeBuffer ? {} : {writeInterval: 0}),
@@ -57,8 +69,11 @@ export const test_db = (database: DatabaseType)=>{
                         afterEach(async () => {
                             await db.close();
                             if (dbSettings.filename) {
-                                await fs.unlink(dbSettings.filename).catch(() => {
-                                });
+                                if (existsSync(dbSettings.filename)) {
+                                    await fs.unlink(dbSettings.filename).catch((e) => {
+                                        console.log(e)
+                                    });
+                                }
                             }
                         });
                         describe('white space in key is not ignored', () => {
