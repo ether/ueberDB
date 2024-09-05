@@ -2,21 +2,22 @@ import {afterAll, beforeAll, describe} from "vitest";
 import {test_db} from "../lib/test_lib";
 import {GenericContainer, PortWithOptionalBinding, StartedTestContainer} from "testcontainers";
 
-describe('surrealdb test', ()=>{
+describe('cassandra test', ()=>{
     const portMappings: PortWithOptionalBinding[] = [
-        { container: 8000, host: 8000 }
+        { container: 9042, host: 9042 },
+        {container: 10000, host: 10000}
     ];
     let container: StartedTestContainer
 
     beforeAll(async () => {
-        container = await new GenericContainer("surrealdb/surrealdb:latest")
+        container = await new GenericContainer("scylladb/scylla:latest")
+            .withCommand([" --smp 1"])
             .withExposedPorts(...portMappings)
-            .withCommand(["start"])
             .start()
     })
 
 
-    test_db('surrealdb')
+    test_db('cassandra')
 
     afterAll(async () => {
         await container.stop()

@@ -91,5 +91,13 @@ export const databases:DatabaseType = {
     speeds: {
         findKeysMax: 30,
     },
+  },
+  cassandra: {
+    columnFamily: 'test',
+    clientOptions: {
+      contactPoints: ['h1', 'h2'],
+      localDataCenter: 'datacenter1',
+      keyspace: 'ks1'
+    }
   }
 };
