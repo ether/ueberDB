@@ -56,7 +56,7 @@ export default class SQLiteDB extends AbstractDatabase {
       throw new Error(
           'better-sqlite3 not found. It was removed from ueberdb\'s dependencies because it requires ' +
           'compilation which fails on several systems. If you still want to use sqlite, run ' +
-          '"npm install better-sqlite3" in your etherpad-lite ./src directory.');
+          '"pnpm install better-sqlite3" in your etherpad-lite ./src directory.');
     }
     this.db = new SQLITEDB(this.settings.filename as string)
     this._query('CREATE TABLE IF NOT EXISTS store (key TEXT PRIMARY KEY, value TEXT)');

@@ -41,7 +41,7 @@ export default class Rusty_db extends AbstractDatabase {
             throw new Error(
                 'better-sqlite3 not found. It was removed from ueberdb\'s dependencies because it requires ' +
                 'compilation which fails on several systems. If you still want to use sqlite, run ' +
-                '"npm install better-sqlite3" in your etherpad-lite ./src directory.');
+                '"pnpm install rusty-store-kv" in your etherpad-lite ./src directory.');
         }
         this.db = new RUSTY_DB.KeyValueDB(this.settings.filename!);
     }
