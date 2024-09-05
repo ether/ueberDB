@@ -1,4 +1,4 @@
-import {describe} from "vitest";
+import {describe, it} from "vitest";
 import {test_db} from "../lib/test_lib";
 
 describe('rusty test', ()=>{

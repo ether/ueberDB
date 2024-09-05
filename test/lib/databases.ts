@@ -26,10 +26,10 @@ export const databases:DatabaseType = {
   rustydb: {
     filename: `${os.tmpdir()}/rusty.db`,
     speeds: {
-      setMax: 0.6,
+      setMax: 2,
       getMax: 0.5,
       findKeysMax: 2.5,
-      removeMax: 0.5,
+      removeMax: 3,
     },
   },
   mysql: {

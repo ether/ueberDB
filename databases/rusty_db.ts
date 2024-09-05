@@ -2,12 +2,11 @@ import AbstractDatabase from "../lib/AbstractDatabase";
 import {KeyValueDB} from "rusty-store-kv";
 
 export default class Rusty_db extends AbstractDatabase {
-    db: KeyValueDB|null
+    db: KeyValueDB | null | undefined
 
 
     constructor(settings: {filename: string}) {
         super(settings);
-        this.db = new KeyValueDB(this.settings.filename!);
 
         // set default settings
         this.settings.cache = 0;
@@ -24,15 +23,24 @@ export default class Rusty_db extends AbstractDatabase {
     }
 
     get(key: string) {
-        return this.db!.get(key);
+        const val = this.db!.get(key);
+        if (!val) {
+            return val
+        }
+        try {
+            return JSON.parse(val)
+        } catch (e) {
+            return val
+        }
     }
 
     async init() {
-        console.log("Init")
+        this.db = new KeyValueDB(this.settings.filename!);
     }
 
     close() {
-
+        this.db?.close()
+        this.db = null
     }
 
     remove(key: string) {
@@ -40,7 +48,12 @@ export default class Rusty_db extends AbstractDatabase {
     }
 
     set(key: string, value: string) {
-        this.db!.set(key, value);
+        if (typeof value ===  "object") {
+            const valStr = JSON.stringify(value)
+            this.db!.set(key, valStr);
+        } else {
+            this.db!.set(key, value.toString());
+        }
     }
 
     destroy() {
