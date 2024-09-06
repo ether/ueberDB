@@ -23,9 +23,6 @@ importers:
       '@types/async':
         specifier: ^3.2.24
         version: 3.2.24
-      '@types/better-sqlite3':
-        specifier: ^7.6.11
-        version: 7.6.11
       '@types/mssql':
         specifier: ^9.1.5
         version: 9.1.5
@@ -44,9 +41,6 @@ importers:
       async:
         specifier: ^3.2.6
         version: 3.2.6
-      better-sqlite3:
-        specifier: ^11.2.1
-        version: 11.2.1
       cassandra-driver:
         specifier: ^4.7.2
         version: 4.7.2
@@ -99,8 +93,8 @@ importers:
         specifier: ^0.36.0
         version: 0.36.0(rollup@4.21.2)(typescript@5.5.4)
       rusty-store-kv:
-        specifier: ^1.1.4
-        version: 1.1.4
+        specifier: ^1.2.0
+        version: 1.2.0
       semver:
         specifier: ^7.6.3
         version: 7.6.3
@@ -616,9 +610,6 @@ packages:
   '@types/async@3.2.24':
     resolution: {integrity: sha512-8iHVLHsCCOBKjCF2KwFe0p9Z3rfM9mL+sSP8btyR5vTjJRAqpBYD28/ZLgXPf0pjG1VxOvtCV/BgXkQbpSe8Hw==}
 
-  '@types/better-sqlite3@7.6.11':
-    resolution: {integrity: sha512-i8KcD3PgGtGBLl3+mMYA8PdKkButvPyARxA7IQAd6qeslht13qxb1zzO8dRCtE7U3IoJS782zDBAeoKiM695kg==}
-
   '@types/docker-modem@3.0.6':
     resolution: {integrity: sha512-yKpAGEuKRSS8wwx0joknWxsmLha78wNMe9R2S3UNsVOkZded8UqOrV8KoeDXoXsjndxwyF3eIhyClGbO1SEhEg==}
 
@@ -896,12 +887,6 @@ packages:
   bcrypt-pbkdf@1.0.2:
     resolution: {integrity: sha512-qeFIXtP4MSoi6NLqO12WfqARWWuCKi2Rn/9hJLEmtB5yTNr9DqFWkJRCf2qShWzPeAMRnOgCrq0sg/KLv5ES9w==}
 
-  better-sqlite3@11.2.1:
-    resolution: {integrity: sha512-Xbt1d68wQnUuFIEVsbt6V+RG30zwgbtCGQ4QOcXVrOH0FE4eHk64FWZ9NUfRHS4/x1PXqwz/+KOrnXD7f0WieA==}
-
-  bindings@1.5.0:
-    resolution: {integrity: sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==}
-
   bl@4.1.0:
     resolution: {integrity: sha512-1W07cM9gS6DcLperZfFSj+bWLtaPGSOHWhPiGzXmvVJbRLdG82sH/Kn8EtW1VqWVA54AKf2h5k5BbnIbwF3h6w==}
 
@@ -1084,17 +1069,9 @@ packages:
       supports-color:
         optional: true
 
-  decompress-response@6.0.0:
-    resolution: {integrity: sha512-aW35yZM6Bb/4oJlZncMH2LCoZtJXTRxES17vE3hoRiowU2kWHaJKFkSBDnDR+cm9J+9QhXmREyIfv0pji9ejCQ==}
-    engines: {node: '>=10'}
-
   deep-eql@5.0.2:
     resolution: {integrity: sha512-h5k/5U50IJJFpzfL6nO9jaaumfjO/f2NjK/oYB2Djzm4p9L+3T9qWpZqZ2hAbLPuuYq9wrU08WQyBTL5GbPk5Q==}
     engines: {node: '>=6'}
-
-  deep-extend@0.6.0:
-    resolution: {integrity: sha512-LOHxIOaPYdHlJRtCQfDIVZtfw/ufM8+rVj649RIHzcm/vGwQRXFt6OPqIFWsm2XEMrNIEtWR64sY1LEKD2vAOA==}
-    engines: {node: '>=4.0.0'}
 
   deep-is@0.1.4:
     resolution: {integrity: sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==}
@@ -1122,10 +1099,6 @@ packages:
   denque@2.1.0:
     resolution: {integrity: sha512-HVQE3AAb/pxF8fQAoiqpvg9i3evqug3hoiwakOyZAwJm+6vZehbkYXZ0l4JxS+I3QxM97v5aaRNhj8v5oBhekw==}
     engines: {node: '>=0.10'}
-
-  detect-libc@2.0.3:
-    resolution: {integrity: sha512-bwy0MGW55bG41VqxxypOsdSdGqLwXPI/focwgTYCFMbdUiBAxLg9CFzG08sz2aqzknwiX7Hkl0bQENjg8iLByw==}
-    engines: {node: '>=8'}
 
   dir-glob@3.0.1:
     resolution: {integrity: sha512-WkrWp9GR4KXfKGYzOLmTuGVi1UWFfws377n9cc55/tb6DuqyF6pcQ5AbiHEshaDpY9v6oaSr2XCDidGmMwdzIA==}
@@ -1398,10 +1371,6 @@ packages:
     resolution: {integrity: sha512-VyhnebXciFV2DESc+p6B+y0LjSm0krU4OgJN44qFAhBY0TJ+1V61tYD2+wHusZ6F9n5K+vl8k0sTy7PEfV4qpg==}
     engines: {node: '>=16.17'}
 
-  expand-template@2.0.3:
-    resolution: {integrity: sha512-XYfuKMvj4O35f/pOXLObndIRvyQ+/+6AhODh+OKWj9S9498pHHn/IMszH+gt0fBCRWMNfk1ZSp5x3AifmnI2vg==}
-    engines: {node: '>=6'}
-
   fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
 
@@ -1424,9 +1393,6 @@ packages:
   file-entry-cache@6.0.1:
     resolution: {integrity: sha512-7Gps/XWymbLk2QLYK4NzpMOrYjMhdIxXuIvy2QBsLE6ljuodKvdkWs/cpyJJ3CVIVpH0Oi1Hvg1ovbMzLdFBBg==}
     engines: {node: ^10.12.0 || >=12.0.0}
-
-  file-uri-to-path@1.0.0:
-    resolution: {integrity: sha512-0Zt+s3L7Vf1biwWZ29aARiVYLx7iMGnEUl9x33fbB/j3jR81u/O2LbqK+Bm1CDSNDKVtJ/YjwY7TUd5SkeLQLw==}
 
   fill-range@7.1.1:
     resolution: {integrity: sha512-YsGpe3WHLK8ZYi4tWDg2Jy3ebRz2rXowDxnld4bkQB00cc/1Zw9AWnC0i9ztDJitivtQvaI9KaLyKrc+hBW0yg==}
@@ -1524,9 +1490,6 @@ packages:
 
   get-tsconfig@4.7.5:
     resolution: {integrity: sha512-ZCuZCnlqNzjb4QprAzXKdpp/gh6KTxSJuw3IBsPnV/7fV4NxC9ckB+vPTt8w7fJA0TaSD7c55BR47JD6MEDyDw==}
-
-  github-from-package@0.0.0:
-    resolution: {integrity: sha512-SyHy3T1v2NUXn29OsWdxmK6RwHD+vkj3v8en8AOBZ1wBQ/hCAQ5bAQTD02kW4W9tUp/3Qh6J8r9EvntiyCmOOw==}
 
   glob-parent@5.1.2:
     resolution: {integrity: sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow==}
@@ -1633,9 +1596,6 @@ packages:
 
   inherits@2.0.4:
     resolution: {integrity: sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==}
-
-  ini@1.3.8:
-    resolution: {integrity: sha512-JV/yugV2uzW5iMRSiZAyDtQd+nxtUnjeLt0acNdw98kKLrvuRVyB80tsREOE7yvGVgalhZ6RNXCmEHkUKBKxew==}
 
   internal-slot@1.0.7:
     resolution: {integrity: sha512-NGnrKwXzSms2qUUih/ILZ5JBqNTSa1+ZmP6flaIp6KmSElgE9qdndzS3cqjrDovwFdmwsGsLdeFgB6suw+1e9g==}
@@ -1904,10 +1864,6 @@ packages:
     resolution: {integrity: sha512-vqiC06CuhBTUdZH+RYl8sFrL096vA45Ok5ISO6sE/Mr1jRbGH4Csnhi8f3wKVl7x8mO4Au7Ir9D3Oyv1VYMFJw==}
     engines: {node: '>=12'}
 
-  mimic-response@3.1.0:
-    resolution: {integrity: sha512-z0yWI+4FDrrweS8Zmt4Ej5HdJmky15+L2e6Wgn3+iK5fWzb6T3fhNFq2+MeTRb064c6Wr4N/wv0DzQTjNzHNGQ==}
-    engines: {node: '>=10'}
-
   minimatch@3.1.2:
     resolution: {integrity: sha512-J7p63hRiAjw1NDEww1W7i37+ByIrOWO5XQQAzZ3VOcL0PNybwpfmV/N05zFAzwQ9USyEcX6t3UO+K5aqBQOIHw==}
 
@@ -1995,18 +1951,11 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
-  napi-build-utils@1.0.2:
-    resolution: {integrity: sha512-ONmRUqK7zj7DWX0D9ADe03wbwOBZxNAfF20PlGfCWQcD3+/MakShIHrMqx9YwPTfxDdF1zLeL+RGZiR9kGMLdg==}
-
   native-duplexpair@1.0.0:
     resolution: {integrity: sha512-E7QQoM+3jvNtlmyfqRZ0/U75VFgCls+fSkbml2MpgWkWyz3ox8Y58gNhfuziuQYGNNQAbFZJQck55LHCnCK6CA==}
 
   natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
-
-  node-abi@3.62.0:
-    resolution: {integrity: sha512-CPMcGa+y33xuL1E0TcNIu4YyaZCxnnvkVaEXrsosR3FxN+fV8xvb7Mzpb7IgKler10qeMkE6+Dp8qJhpzdq35g==}
-    engines: {node: '>=10'}
 
   node-abort-controller@3.1.1:
     resolution: {integrity: sha512-AGK2yQKIjRuqnc6VkX2Xj5d+QW8xZ87pa1UK6yA6ouUyuxfHuMP6umE5QK7UmTeOAymo+Zx1Fxiuw9rVx8taHQ==}
@@ -2214,11 +2163,6 @@ packages:
   postgres-range@1.1.4:
     resolution: {integrity: sha512-i/hbxIE9803Alj/6ytL7UHQxRvZkI9O4Sy+J3HGc4F4oo/2eQAjTSNJ0bfxyse3bH0nuVesCk+3IRLaMtG3H6w==}
 
-  prebuild-install@7.1.2:
-    resolution: {integrity: sha512-UnNke3IQb6sgarcZIDU3gbMeTp/9SSU1DAIkil7PrqG1vZlBtY5msYccSKSHDqa3hNg436IXK+SNImReuA1wEQ==}
-    engines: {node: '>=10'}
-    hasBin: true
-
   prelude-ls@1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
@@ -2266,10 +2210,6 @@ packages:
 
   randombytes@2.1.0:
     resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
-
-  rc@1.2.8:
-    resolution: {integrity: sha512-y3bGgqKj3QBdxLbLkomlohkvsA8gdAiUQlSBJnBhfn+BPxg4bc62d8TcBW15wavDfgexCgccckhcZvywyQYPOw==}
-    hasBin: true
 
   readable-stream@2.3.8:
     resolution: {integrity: sha512-8p0AUk4XODgIewSi0l8Epjs+EVnWiK7NoDIEGU0HhE7+ZyY8D1IMY7odu5lRrFXGg71L15KG8QrPmum45RTtdA==}
@@ -2341,68 +2281,68 @@ packages:
   run-parallel@1.2.0:
     resolution: {integrity: sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA==}
 
-  rusty-store-kv-darwin-arm64@1.1.4:
-    resolution: {integrity: sha512-Pwedf7Fe0BBVmuM6Z/7JYGtwjVLI+rCEEUNoZ9jA31QtfWHHFYPk0XULk4mLnngP14eBy9opEpJO2wYAUra5bg==}
+  rusty-store-kv-darwin-arm64@1.2.0:
+    resolution: {integrity: sha512-3kj/Sgs1WH+6edE8l7Db5+gpROpelYFX8PNloX0y6KzvUQgO1ZDs0Wa8kYG8MEDWIJlmw+7UcwpMmskMleU3Vw==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [darwin]
 
-  rusty-store-kv-darwin-x64@1.1.4:
-    resolution: {integrity: sha512-R1vuflgIjP6JtFGnxRoDgZaw9kVF+m9FYEIZH0dG3v4AU55Zh53lQBflHLhqsC10OuCo3ZO0w++bSVmcGXmSJg==}
+  rusty-store-kv-darwin-x64@1.2.0:
+    resolution: {integrity: sha512-svSiGraZRukY6m330epEnJdu2D54JPzQfMjPRg8LT6f70MELGNxWRirnM/ACIBpWUfh1Ojm9jyK8OoY5IeI4UA==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [darwin]
 
-  rusty-store-kv-freebsd-x64@1.1.4:
-    resolution: {integrity: sha512-GbYN5+k44RJS2n6mqdDQz64ZLXl2mEZFIpdk5KblmUZaf7JPai6o6d/2kaldw+htTlVabdXVrmVRhytsHtmdcQ==}
+  rusty-store-kv-freebsd-x64@1.2.0:
+    resolution: {integrity: sha512-h2/r4PKrRY92z2Ku5I5ACc8yaKdCma0rqak1l5ue/LsR6Zl2oXmzYKXJnzwrqCSIWDRrs5RG2TXMKuPO4telfw==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [freebsd]
 
-  rusty-store-kv-linux-arm-gnueabihf@1.1.4:
-    resolution: {integrity: sha512-hdPJTo/UR8kYSf6m6g530hzCRFCewyKhae/Dtol12fRqHlzr+RhygVkrxPblqwUFt8XJGG2A9xkc9CFJwbS7lg==}
+  rusty-store-kv-linux-arm-gnueabihf@1.2.0:
+    resolution: {integrity: sha512-ivrCOriUYOc/nedCszyPHFATtnLaSaMfNM8h6Cjv4S0gzScpd9rOKVg2hrPh+zApzV/O3dvf6haDtLL1WViKUg==}
     engines: {node: '>= 10'}
     cpu: [arm]
     os: [linux]
 
-  rusty-store-kv-linux-arm64-gnu@1.1.4:
-    resolution: {integrity: sha512-KEsvvdbYHf6o01RY6DPGLt1x3BbDUnLvkJuMr6NLcX2mDgtvDtC2auNGuslb+mzVG3GqtCfiEesz4JRrJkfimA==}
+  rusty-store-kv-linux-arm64-gnu@1.2.0:
+    resolution: {integrity: sha512-dZ3ZWsltagzP3U1J6WqWBRoIakqBP7i7y9MDBnKIFFYALVkvY2q2AhrN5cTBxZHaZTbrjyZyhE/rNbyqLZjXLg==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
 
-  rusty-store-kv-linux-arm64-musl@1.1.4:
-    resolution: {integrity: sha512-o1PMDeMFc3nWHksO0pBHNdr5n2ZRFje8WmK6fwRMcicdsiK+fqv2zJyAjdDfVoP0RS4QXkM9DwCyqN+bziBz6A==}
+  rusty-store-kv-linux-arm64-musl@1.2.0:
+    resolution: {integrity: sha512-J0Zg+wYzy+03DTFZgMPiTaRTk8dfFJv7zQGpeGgeyma3k7SUmUYT2P1b+0NNjbVxr5xNdFJURyJVglUMP3SJRA==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
 
-  rusty-store-kv-linux-x64-gnu@1.1.4:
-    resolution: {integrity: sha512-EG7qO20CLY5F5kki0CFQY+p+CXyCVYtcah3vWI/Opbd6HcVlcoaZJ24KYWuoUCpRS4qIHAue/JtZ7kANlRUwCQ==}
+  rusty-store-kv-linux-x64-gnu@1.2.0:
+    resolution: {integrity: sha512-8EK6nzC4o13v7zOtLucoQcSOPSsJe9Rw1cAWk7F5qYg/lfFAQNzOpp68rkCBnrHix8yswcafzcSktJHTKuO4yA==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
 
-  rusty-store-kv-linux-x64-musl@1.1.4:
-    resolution: {integrity: sha512-oJ5AJVjnTaWwvahGWceH73mVOjolE+BcBghJsxmlRgw0y4sYwk7qaF0r2heh1GDeMZsYMhZV0o8GAa3FH0W3lQ==}
+  rusty-store-kv-linux-x64-musl@1.2.0:
+    resolution: {integrity: sha512-8Z6xAYWBFKfspSJ1XrRs8P5qYE/aDl6LGhX/5IXg/9mr54quH+pH6YXx88SD0lTgRh+mAD3brCNfr15fOKZftA==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
 
-  rusty-store-kv-win32-arm64-msvc@1.1.4:
-    resolution: {integrity: sha512-kqvaa4DqNNmOMQDBOoRBbiesTkE4E/nrghIk5eSalLaUHt1TNZpuOeWGS1+xRIYuRDBeHAqD72AkcqrP+9dzcQ==}
+  rusty-store-kv-win32-arm64-msvc@1.2.0:
+    resolution: {integrity: sha512-YmhUBOzJc6yj1Im/WXcD20iuaZ2GWANG/heTk09enzwgza8i68sSlA39TPTyLE0tOZFdbT76GEuIXPHB0peRRg==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [win32]
 
-  rusty-store-kv-win32-x64-msvc@1.1.4:
-    resolution: {integrity: sha512-SPI/Up8QF46MA2PkADeyIUd82PTa89i91TjkE81vVyKNIwcfXb9lFDOJThWds8gwMjiWcsMiMA1TclyCDZ0HoQ==}
+  rusty-store-kv-win32-x64-msvc@1.2.0:
+    resolution: {integrity: sha512-z0/Snn9bZwsT9YnnG18Ol+pkLQpBHkAISq99NhbVdYj5lAYED/n2qIJpP1ROLJlFMJQ4PvftjCmAHUHy0tnkxA==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
 
-  rusty-store-kv@1.1.4:
-    resolution: {integrity: sha512-B8ibg3j9Wq2uY0FysjSpZ71GPj9x+oJUTvjzh0YUF4m+y7/4Lo+DwNLNU/4u5DTnGiXeAhWmXypjp+mWIN3GiQ==}
+  rusty-store-kv@1.2.0:
+    resolution: {integrity: sha512-XlzClGSiIfOrpCUEh/eAAktFbsF4IPpDDeOEIP+cWmLkbVzWuqXVLIBouBH4ybKBlw+bQCyjOnZwBdyM9UVpUg==}
     engines: {node: '>= 10'}
 
   safe-array-concat@1.1.2:
@@ -2469,12 +2409,6 @@ packages:
   signal-exit@4.1.0:
     resolution: {integrity: sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==}
     engines: {node: '>=14'}
-
-  simple-concat@1.0.1:
-    resolution: {integrity: sha512-cSFtAPtRhljv69IK0hTVZQ+OfE9nePi/rtJmw5UjHeVyVroEqJXP1sFztKUy1qU+xvz3u/sfYJLa947b7nAN2Q==}
-
-  simple-get@4.0.1:
-    resolution: {integrity: sha512-brv7p5WgH0jmQJr1ZDDfKDOSeWWg+OVypG99A/5vYGPqJ6pxiaHLy8nxtFjBA7oMa01ebA9gfh1uMCFqOuXxvA==}
 
   simple-git@3.26.0:
     resolution: {integrity: sha512-5tbkCSzuskR6uA7uA23yjasmA0RzugVo8QM2bpsnxkrgP13eisFT7TMS4a+xKEJvbmr4qf+l0WT3eKa9IxxUyw==}
@@ -2575,10 +2509,6 @@ packages:
     resolution: {integrity: sha512-dOESqjYr96iWYylGObzd39EuNTa5VJxyvVAEm5Jnh7KGo75V43Hk1odPQkNDyXNmUR6k+gEiDVXnjB8HJ3crXw==}
     engines: {node: '>=12'}
 
-  strip-json-comments@2.0.1:
-    resolution: {integrity: sha512-4gB8na07fecVVkOI6Rs4e7T6NOTki5EmL7TUduTs6bu3EdnSycntVJ4re8kgZA+wx9IueI2Y11bfbgwtzuE0KQ==}
-    engines: {node: '>=0.10.0'}
-
   strip-json-comments@3.1.1:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
     engines: {node: '>=8'}
@@ -2600,9 +2530,6 @@ packages:
 
   tar-fs@2.0.1:
     resolution: {integrity: sha512-6tzWDMeroL87uF/+lin46k+Q+46rAJ0SyPGz7OW7wTgblI273hsBqk2C1j0/xNadNLKDTUL9BukSjB7cwgmlPA==}
-
-  tar-fs@2.1.1:
-    resolution: {integrity: sha512-V0r2Y9scmbDRLCNex/+hYzvp/zyYjvFbHPNgVTKfQvVrb6guiE/fxP+XblDNR011utopbkex2nM4dHNV6GDsng==}
 
   tar-fs@3.0.6:
     resolution: {integrity: sha512-iokBDQQkUyeXhgPYaZxmczGPhnhXZ0CmrqI+MOb/WFGS9DW5wnfrLgtjUJBvz50vQ3qfRwJ62QVoCFu8mPVu5w==}
@@ -2674,9 +2601,6 @@ packages:
 
   tslib@2.6.2:
     resolution: {integrity: sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==}
-
-  tunnel-agent@0.6.0:
-    resolution: {integrity: sha512-McnNiV1l8RYeY8tBgEpuodCC1mLUdbSN+CYBL7kJsJNInOP8UjDDEwdk6Mw60vdLLrr5NHKZhMAOSrR2NZuQ+w==}
 
   tweetnacl@0.14.5:
     resolution: {integrity: sha512-KXXFFdAbFXY4geFIwoyNK+f5Z1b7swfXABfL7HXCmoIWMKU3dmS26672A4EeQtDzLKy7SXmfBu51JolvEKwtGA==}
@@ -3335,10 +3259,6 @@ snapshots:
 
   '@types/async@3.2.24': {}
 
-  '@types/better-sqlite3@7.6.11':
-    dependencies:
-      '@types/node': 22.5.4
-
   '@types/docker-modem@3.0.6':
     dependencies:
       '@types/node': 22.5.4
@@ -3706,15 +3626,6 @@ snapshots:
     dependencies:
       tweetnacl: 0.14.5
 
-  better-sqlite3@11.2.1:
-    dependencies:
-      bindings: 1.5.0
-      prebuild-install: 7.1.2
-
-  bindings@1.5.0:
-    dependencies:
-      file-uri-to-path: 1.0.0
-
   bl@4.1.0:
     dependencies:
       buffer: 5.7.1
@@ -3895,13 +3806,7 @@ snapshots:
     dependencies:
       ms: 2.1.2
 
-  decompress-response@6.0.0:
-    dependencies:
-      mimic-response: 3.1.0
-
   deep-eql@5.0.2: {}
-
-  deep-extend@0.6.0: {}
 
   deep-is@0.1.4: {}
 
@@ -3924,8 +3829,6 @@ snapshots:
   delayed-stream@1.0.0: {}
 
   denque@2.1.0: {}
-
-  detect-libc@2.0.3: {}
 
   dir-glob@3.0.1:
     dependencies:
@@ -4343,8 +4246,6 @@ snapshots:
       signal-exit: 4.1.0
       strip-final-newline: 3.0.0
 
-  expand-template@2.0.3: {}
-
   fast-deep-equal@3.1.3: {}
 
   fast-fifo@1.3.2: {}
@@ -4368,8 +4269,6 @@ snapshots:
   file-entry-cache@6.0.1:
     dependencies:
       flat-cache: 3.2.0
-
-  file-uri-to-path@1.0.0: {}
 
   fill-range@7.1.1:
     dependencies:
@@ -4469,8 +4368,6 @@ snapshots:
   get-tsconfig@4.7.5:
     dependencies:
       resolve-pkg-maps: 1.0.0
-
-  github-from-package@0.0.0: {}
 
   glob-parent@5.1.2:
     dependencies:
@@ -4582,8 +4479,6 @@ snapshots:
       wrappy: 1.0.2
 
   inherits@2.0.4: {}
-
-  ini@1.3.8: {}
 
   internal-slot@1.0.7:
     dependencies:
@@ -4837,8 +4732,6 @@ snapshots:
 
   mimic-fn@4.0.0: {}
 
-  mimic-response@3.1.0: {}
-
   minimatch@3.1.2:
     dependencies:
       brace-expansion: 1.1.11
@@ -4914,15 +4807,9 @@ snapshots:
 
   nanoid@3.3.7: {}
 
-  napi-build-utils@1.0.2: {}
-
   native-duplexpair@1.0.0: {}
 
   natural-compare@1.4.0: {}
-
-  node-abi@3.62.0:
-    dependencies:
-      semver: 7.6.3
 
   node-abort-controller@3.1.1: {}
 
@@ -5115,21 +5002,6 @@ snapshots:
 
   postgres-range@1.1.4: {}
 
-  prebuild-install@7.1.2:
-    dependencies:
-      detect-libc: 2.0.3
-      expand-template: 2.0.3
-      github-from-package: 0.0.0
-      minimist: 1.2.8
-      mkdirp-classic: 0.5.3
-      napi-build-utils: 1.0.2
-      node-abi: 3.62.0
-      pump: 3.0.0
-      rc: 1.2.8
-      simple-get: 4.0.1
-      tar-fs: 2.1.1
-      tunnel-agent: 0.6.0
-
   prelude-ls@1.2.1: {}
 
   process-nextick-args@2.0.1: {}
@@ -5173,13 +5045,6 @@ snapshots:
   randombytes@2.1.0:
     dependencies:
       safe-buffer: 5.2.1
-
-  rc@1.2.8:
-    dependencies:
-      deep-extend: 0.6.0
-      ini: 1.3.8
-      minimist: 1.2.8
-      strip-json-comments: 2.0.1
 
   readable-stream@2.3.8:
     dependencies:
@@ -5287,48 +5152,48 @@ snapshots:
     dependencies:
       queue-microtask: 1.2.3
 
-  rusty-store-kv-darwin-arm64@1.1.4:
+  rusty-store-kv-darwin-arm64@1.2.0:
     optional: true
 
-  rusty-store-kv-darwin-x64@1.1.4:
+  rusty-store-kv-darwin-x64@1.2.0:
     optional: true
 
-  rusty-store-kv-freebsd-x64@1.1.4:
+  rusty-store-kv-freebsd-x64@1.2.0:
     optional: true
 
-  rusty-store-kv-linux-arm-gnueabihf@1.1.4:
+  rusty-store-kv-linux-arm-gnueabihf@1.2.0:
     optional: true
 
-  rusty-store-kv-linux-arm64-gnu@1.1.4:
+  rusty-store-kv-linux-arm64-gnu@1.2.0:
     optional: true
 
-  rusty-store-kv-linux-arm64-musl@1.1.4:
+  rusty-store-kv-linux-arm64-musl@1.2.0:
     optional: true
 
-  rusty-store-kv-linux-x64-gnu@1.1.4:
+  rusty-store-kv-linux-x64-gnu@1.2.0:
     optional: true
 
-  rusty-store-kv-linux-x64-musl@1.1.4:
+  rusty-store-kv-linux-x64-musl@1.2.0:
     optional: true
 
-  rusty-store-kv-win32-arm64-msvc@1.1.4:
+  rusty-store-kv-win32-arm64-msvc@1.2.0:
     optional: true
 
-  rusty-store-kv-win32-x64-msvc@1.1.4:
+  rusty-store-kv-win32-x64-msvc@1.2.0:
     optional: true
 
-  rusty-store-kv@1.1.4:
+  rusty-store-kv@1.2.0:
     optionalDependencies:
-      rusty-store-kv-darwin-arm64: 1.1.4
-      rusty-store-kv-darwin-x64: 1.1.4
-      rusty-store-kv-freebsd-x64: 1.1.4
-      rusty-store-kv-linux-arm-gnueabihf: 1.1.4
-      rusty-store-kv-linux-arm64-gnu: 1.1.4
-      rusty-store-kv-linux-arm64-musl: 1.1.4
-      rusty-store-kv-linux-x64-gnu: 1.1.4
-      rusty-store-kv-linux-x64-musl: 1.1.4
-      rusty-store-kv-win32-arm64-msvc: 1.1.4
-      rusty-store-kv-win32-x64-msvc: 1.1.4
+      rusty-store-kv-darwin-arm64: 1.2.0
+      rusty-store-kv-darwin-x64: 1.2.0
+      rusty-store-kv-freebsd-x64: 1.2.0
+      rusty-store-kv-linux-arm-gnueabihf: 1.2.0
+      rusty-store-kv-linux-arm64-gnu: 1.2.0
+      rusty-store-kv-linux-arm64-musl: 1.2.0
+      rusty-store-kv-linux-x64-gnu: 1.2.0
+      rusty-store-kv-linux-x64-musl: 1.2.0
+      rusty-store-kv-win32-arm64-msvc: 1.2.0
+      rusty-store-kv-win32-x64-msvc: 1.2.0
 
   safe-array-concat@1.1.2:
     dependencies:
@@ -5395,14 +5260,6 @@ snapshots:
   signal-exit@3.0.7: {}
 
   signal-exit@4.1.0: {}
-
-  simple-concat@1.0.1: {}
-
-  simple-get@4.0.1:
-    dependencies:
-      decompress-response: 6.0.0
-      once: 1.4.0
-      simple-concat: 1.0.1
 
   simple-git@3.26.0:
     dependencies:
@@ -5515,8 +5372,6 @@ snapshots:
 
   strip-final-newline@3.0.0: {}
 
-  strip-json-comments@2.0.1: {}
-
   strip-json-comments@3.1.1: {}
 
   supports-color@7.2.0:
@@ -5537,13 +5392,6 @@ snapshots:
   tapable@2.2.1: {}
 
   tar-fs@2.0.1:
-    dependencies:
-      chownr: 1.1.4
-      mkdirp-classic: 0.5.3
-      pump: 3.0.0
-      tar-stream: 2.2.0
-
-  tar-fs@2.1.1:
     dependencies:
       chownr: 1.1.4
       mkdirp-classic: 0.5.3
@@ -5651,10 +5499,6 @@ snapshots:
       strip-bom: 3.0.0
 
   tslib@2.6.2: {}
-
-  tunnel-agent@0.6.0:
-    dependencies:
-      safe-buffer: 5.2.1
 
   tweetnacl@0.14.5: {}
 

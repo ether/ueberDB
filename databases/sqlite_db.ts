@@ -1,6 +1,7 @@
 'use strict';
 import {BulkObject} from "./cassandra_db";
 import AbstractDatabase, {Settings} from "../lib/AbstractDatabase";
+import {SQLite} from 'rusty-store-kv'
 
 /**
  * 2011 Peter 'Pita' Martischka
@@ -25,7 +26,7 @@ type RequestVal = {
 }
 
 export default class SQLiteDB extends AbstractDatabase {
-  public db: any|null;
+  public db: SQLite|null;
   constructor(settings:Settings) {
     super(settings);
     this.db = null;
@@ -49,82 +50,35 @@ export default class SQLiteDB extends AbstractDatabase {
   }
 
   init(callback: Function) {
-    let SQLITEDB
-    try {
-      SQLITEDB = require('better-sqlite3');
-    } catch (err) {
-      throw new Error(
-          'better-sqlite3 not found. It was removed from ueberdb\'s dependencies because it requires ' +
-          'compilation which fails on several systems. If you still want to use sqlite, run ' +
-          '"pnpm install better-sqlite3" in your etherpad-lite ./src directory.');
-    }
-    this.db = new SQLITEDB(this.settings.filename as string)
-    this._query('CREATE TABLE IF NOT EXISTS store (key TEXT PRIMARY KEY, value TEXT)');
+    this.db = new SQLite(this.settings.filename as string)
     callback();
   }
 
-  async _query(sql:string, params = []) {
-    // It is unclear how util.promisify() deals with variadic functions, so it is not used here.
-      // According to sqlite3's documentation, .run() method (and maybe .all() and .get(); the
-      // documentation is unclear) might call the callback multiple times. That's OK -- ECMAScript
-      // guarantees that it is safe to call a Promise executor's resolve and reject functions
-      // multiple times. The subsequent calls are ignored, except Node.js's 'process' object emits a
-      // 'multipleResolves' event to aid in debugging.
-    return this.db!.prepare(sql).run(params)
-  }
-
-
 
   get(key:string, callback:Function) {
-    const res = this.db!.prepare('SELECT value FROM store WHERE key = ?').get(key) as RequestVal
-    callback(null, res ? res.value : null)
+    const res = this.db!.get(key)
+    callback(null, res ? res : null)
   }
 
   findKeys(key:string, notKey:string, callback:Function) {
-    let query = 'SELECT key FROM store WHERE key LIKE ?';
-    const params = [];
-    // desired keys are %key:%, e.g. pad:%
-    key = key.replace(/\*/g, '%');
-    params.push(key);
-
-    if (notKey != null) {
-      // not desired keys are notKey:%, e.g. %:%:%
-      notKey = notKey.replace(/\*/g, '%');
-      query += ' AND key NOT LIKE ?';
-      params.push(notKey);
-    }
-    const res = this.db!.prepare(query).all(params).map((row:any) => row.key)
+    const res = this.db!.findKeys(key, notKey)
 
     callback(null, res);
   }
 
   set(key:string, value:string, callback:Function) {
-    const res = this.db!.prepare('REPLACE INTO store VALUES (?,?)').run(key, value);
-    res.changes === 0 ? callback(null, null) : callback(null, res.lastInsertRowid)
+    const res = this.db!.set(key, value)
+    res ? callback(null, null) : callback(null, res)
   }
 
   remove(key:string, callback:Function) {
-    this.db!.prepare('DELETE FROM store WHERE key = ?').run(key)
+    this.db!.remove(key)
     callback(null, null)
   }
 
-  handleBulk(bulk:BulkObject){
-    let statement = '';
-    if (bulk.type === 'set') {
-      statement = `REPLACE INTO store VALUES (${escape(bulk.key)}, ${escape(bulk.value as string)});`;
-    } else if (bulk.type === 'remove') {
-      statement = `DELETE FROM store WHERE key = ${escape(bulk.key)};\n`;
-    }
-    return statement
-  }
+
   doBulk(bulk:BulkObject[], callback:Function) {
-    const transaction = this.db!.transaction((bulk:BulkObject[])=>{
-      bulk.forEach(b=>{
-        let sql = this.handleBulk(b)
-        this.db!.prepare(sql).run()
-      })
-    });
-    transaction(bulk);
+    this.db!.doBulk(bulk)
     callback();
   }
 
