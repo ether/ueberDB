@@ -17,7 +17,7 @@ module.exports = {
     commonjs(),
     json(),
   ],
-  external: ['better-sqlite3', 'rusty-store-kv'],
+  external: ['rusty-store-kv'],
   output: {
     compact: true,
     preserveModules: false,
