@@ -61,7 +61,13 @@ export default class SQLiteDB extends AbstractDatabase {
   }
 
   findKeys(key:string, notKey:string, callback:Function) {
-    const res = this.db!.findKeys(key, notKey)
+    let res;
+
+    if (notKey === null) {
+      res = this.db!.findKeys(key, notKey)
+    } else {
+      res = this.db?.findKeys(key)
+    }
 
     callback(null, res);
   }
@@ -78,7 +84,18 @@ export default class SQLiteDB extends AbstractDatabase {
 
 
   doBulk(bulk:BulkObject[], callback:Function) {
-    this.db!.doBulk(bulk)
+    const convertedBulk = bulk.map(b=>{
+      if (b.value === null) {
+        return {
+          key: b.key,
+          type: b.type
+        } satisfies BulkObject
+      } else {
+        return b
+      }
+    })
+
+    this.db!.doBulk(convertedBulk)
     callback();
   }
 
