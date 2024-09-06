@@ -61,13 +61,7 @@ export default class SQLiteDB extends AbstractDatabase {
   }
 
   findKeys(key:string, notKey:string, callback:Function) {
-    let res;
-
-    if (notKey === null) {
-      res = this.db!.findKeys(key, notKey)
-    } else {
-      res = this.db?.findKeys(key)
-    }
+    const res = this.db?.findKeys(key, notKey)
 
     callback(null, res);
   }
