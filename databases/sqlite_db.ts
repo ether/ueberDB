@@ -1,7 +1,6 @@
 'use strict';
 import {BulkObject} from "./cassandra_db";
 import AbstractDatabase, {Settings} from "../lib/AbstractDatabase";
-import {SQLite} from 'rusty-store-kv'
 
 /**
  * 2011 Peter 'Pita' Martischka
@@ -20,7 +19,7 @@ import {SQLite} from 'rusty-store-kv'
  */
 
 export default class SQLiteDB extends AbstractDatabase {
-  public db: SQLite|null;
+  public db: any|null;
   constructor(settings:Settings) {
     super(settings);
     this.db = null;
