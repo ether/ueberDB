@@ -41,7 +41,7 @@
     "eslint": "^8.57.0",
     "eslint-config-etherpad": "^4.0.4",
     "eslint-plugin-import": "^2.30.0",
-    "mongodb": "^6.8.0",
+    "mongodb": "^6.8.1",
     "mssql": "^11.0.1",
     "mysql2": "^3.11.0",
     "nano": "^10.1.4",
