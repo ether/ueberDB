@@ -19,12 +19,6 @@ import {SQLite} from 'rusty-store-kv'
  * limitations under the License.
  */
 
-const escape = (val:string) => `'${val.replace(/'/g, "''")}'`;
-
-type RequestVal = {
-  value: string;
-}
-
 export default class SQLiteDB extends AbstractDatabase {
   public db: SQLite|null;
   constructor(settings:Settings) {
@@ -50,7 +44,16 @@ export default class SQLiteDB extends AbstractDatabase {
   }
 
   init(callback: Function) {
-    this.db = new SQLite(this.settings.filename as string)
+    let SQLITEDB
+    try {
+      SQLITEDB = require('rusty-store-kv');
+    } catch (err) {
+      throw new Error(
+          'rusty-store-kv not found. It was removed from ueberdb\'s dependencies because it requires ' +
+          'compilation which fails on several systems. If you still want to use sqlite, run ' +
+          '"pnpm install rusty-store-kv" in your etherpad-lite ./src directory.');
+    }
+    this.db = new SQLITEDB.SQLite(this.settings.filename as string)
     callback();
   }
 
