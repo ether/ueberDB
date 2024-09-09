@@ -1,4 +1,5 @@
 import AbstractDatabase from "../lib/AbstractDatabase";
+import {KeyValueDB} from 'rusty-store-kv'
 
 export default class Rusty_db extends AbstractDatabase {
     db: any |null| undefined
@@ -33,16 +34,8 @@ export default class Rusty_db extends AbstractDatabase {
     }
 
     async init() {
-        let RUSTY_DB
-        try {
-            RUSTY_DB = await import('rusty-store-kv');
-        } catch (err) {
-            throw new Error(
-                'rusty-store-kv not found. It was removed from ueberdb\'s dependencies because it requires ' +
-                'compilation which fails on several systems. If you still want to use rusty store kv, run ' +
-                '"pnpm install rusty-store-kv" in your etherpad-lite ./src directory.');
-        }
-        this.db = new RUSTY_DB.KeyValueDB(this.settings.filename!);
+
+        this.db = new KeyValueDB(this.settings.filename!);
     }
 
     close() {
