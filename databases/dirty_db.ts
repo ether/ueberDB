@@ -22,20 +22,20 @@
 */
 
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
-import Dirty from 'dirty-ts';
+import {Dirty} from 'rusty-store-kv';
+import {convertToDynamicType} from "../lib/utils";
 
 type DirtyDBCallback = (p?:any, keys?: string[])=>{};
 
 
 export default class extends AbstractDatabase {
-  public db: any;
+  public db: Dirty|null;
   constructor(settings:Settings) {
     super(settings);
     this.db = null;
 
     if (!settings || !settings.filename) {
-      // @ts-ignore
-      settings = {filename: null};
+      throw new Error('No filename specified')
     }
 
     this.settings = settings;
@@ -47,37 +47,38 @@ export default class extends AbstractDatabase {
   }
 
   init(callback: ()=>{}) {
-    this.db = new Dirty(this.settings.filename);
-    this.db.on('load', () => {
+    this.db = new Dirty(this.settings.filename!);
       callback();
-    });
   }
 
-  get(key:string, callback:DirtyDBCallback) {
-    callback(null, this.db.get(key));
+  get(key:string, callback:Function) {
+    const getVal = this.db!.get(key)
+
+    if (getVal === null) {
+      return callback(null, null)
+    } else {
+      callback(null, convertToDynamicType(getVal));
+    }
   }
 
   findKeys(key:string, notKey:string, callback:DirtyDBCallback) {
-    const keys:string[] = [];
-    const regex = this.createFindRegex(key, notKey);
-    this.db.forEach((key:string) => {
-      if (key.search(regex) !== -1) {
-        keys.push(key);
-      }
-    });
+    const keys = this.db?.findKeys(key, notKey)
     callback(null, keys);
   }
 
   set(key:string, value:string, callback:DirtyDBCallback) {
-    this.db.set(key, value, callback);
+    const stringVal = JSON.stringify(value)
+    this.db!.set(key,stringVal)
+    callback()
   }
 
   remove(key:string, callback:DirtyDBCallback) {
-    this.db.rm(key, callback);
+    this.db?.remove(key);
+    callback()
   }
 
   close(callback:DirtyDBCallback) {
-    this.db.close();
+    this.db!.close();
     this.db = null;
     if (callback) callback();
   }

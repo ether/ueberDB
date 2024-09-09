@@ -17,11 +17,11 @@ import {simpleGit} from 'simple-git'
  * limitations under the License.
  */
 
-
-import Dirty from 'dirty-ts';
+import {Dirty} from 'rusty-store-kv'
+import {convertToDynamicType} from "../lib/utils";
 
 export default class extends AbstractDatabase {
-  public db: any;
+  public db: Dirty;
   constructor(settings: Settings) {
     super(settings);
     // @ts-ignore
@@ -40,39 +40,41 @@ export default class extends AbstractDatabase {
   }
 
   init(callback: ()=>void) {
-    this.db = new Dirty(this.settings.filename);
-    this.db.on('load', (err: Error) => {
-      callback();
-    });
+    this.db = new Dirty(this.settings.filename!);
+    callback()
   }
 
-  get(key:string, callback: (err: string | any, value: string)=>void) {
-    callback(null, this.db.get(key));
+  get(key:string, callback:Function) {
+    const getVal = this.db!.get(key)
+
+    if (getVal === null) {
+      return callback(null, null)
+    } else {
+      callback(null, convertToDynamicType(getVal));
+    }
   }
 
   findKeys(key:string, notKey:string, callback:(v:any, keys:string[])=>{}) {
-    const keys:string[] = [];
-    const regex = this.createFindRegex(key, notKey);
-    this.db.forEach((key:string, val:string) => {
-      if (key.search(regex) !== -1) {
-        keys.push(key);
-      }
-    });
+    const keys = this.db.findKeys(key, notKey)
     callback(null, keys);
   }
 
   set(key:string, value: string, callback: ()=>{}) {
-    this.db.set(key, value, callback);
+    this.db.set(key, value);
     const databasePath = dirname(this.settings.filename!);
     simpleGit(databasePath)
         .silent(true)
         .add('./*.db')
         .commit('Automated commit...')
         .push(['-u', 'origin', 'master'], () => console.debug('Stored git commit'));
+    if (callback) {
+      callback()
+    }
   }
 
   remove(key:string, callback:()=> {}) {
-    this.db.rm(key, callback);
+    this.db.remove(key);
+    callback()
   }
 
   close(callback: ()=>void) {

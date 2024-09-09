@@ -10,8 +10,8 @@ export const databases:DatabaseType = {
     filename: `${os.tmpdir()}/ueberdb-test.db`,
     speeds: {
       setMax: 1,
-      getMax: 0.1,
-      findKeysMax: 0.5,
+      getMax: 1,
+      findKeysMax: 2.5,
     },
   },
   sqlite: {

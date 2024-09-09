@@ -1,41 +1,56 @@
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
-
+import {MemoryDB as MemInternal} from 'rusty-store-kv'
+import {convertToDynamicType} from "../lib/utils";
 
 export default class MemoryDB extends AbstractDatabase {
-  public _data: any;
+  public db: null|MemInternal;
   constructor(settings:Settings) {
     super(settings);
     this.settings = settings;
     settings.json = false;
     settings.cache = 0;
     settings.writeInterval = 0;
-    this._data = null;
+    this.db = null;
   }
 
   get isAsync() { return true; }
 
   close() {
-    this._data = null;
+    this.db = null;
   }
 
   findKeys(key:string, notKey:string) {
-    const regex = this.createFindRegex(key, notKey);
-    return [...this._data.keys()].filter((k) => regex.test(k));
+    return this.db!.findKeys(key, notKey)
   }
 
   get(key:string) {
-    return this._data.get(key);
+    const getVal = this.db!.get(key)
+
+    if (getVal === undefined|| getVal === null) {
+      return null
+    }
+
+    return convertToDynamicType(getVal);
   }
 
   init() {
-    this._data = this.settings.data || new Map();
+    this.db = new MemInternal()
+    if (this.settings.data) {
+      this.settings.data.forEach((v,k)=>{
+        console.log(k,v)
+        this.db!.set(k,v)
+      })
+    }
+
   }
 
   remove(key:string) {
-    this._data.delete(key);
+    this.db!.remove(key)
   }
 
   set(key:string, value:string) {
-    this._data.set(key, value);
+    const json = JSON.stringify(value)
+    console.log("Test", json)
+    this.db!.set(key, json)
   }
 };
