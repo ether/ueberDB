@@ -30,7 +30,7 @@
     "@types/async": "^3.2.24",
     "@types/mssql": "^9.1.5",
     "@types/node": "^22.5.4",
-    "@types/pg": "^8.11.8",
+    "@types/pg": "^8.11.9",
     "@types/rethinkdb": "^2.3.21",
     "@types/wtfnode": "^0.7.3",
     "async": "^3.2.6",
