@@ -38,7 +38,7 @@
     "cli-table3": "^0.6.5",
     "dirty-ts": "^1.1.8",
     "elasticsearch8": "npm:@elastic/elasticsearch@^8.8.1",
-    "eslint": "^8.57.0",
+    "eslint": "^8.57.1",
     "eslint-config-etherpad": "^4.0.4",
     "eslint-plugin-import": "^2.30.0",
     "mongodb": "^6.8.1",
