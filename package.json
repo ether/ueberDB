@@ -57,7 +57,7 @@
     "surrealdb.js": "^1.0.0",
     "testcontainers": "^10.13.1",
     "typescript": "^5.6.3",
-    "vitest": "^2.1.2",
+    "vitest": "^2.1.4",
     "wtfnode": "^0.9.3"
   },
   "repository": {
