@@ -105,8 +105,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       testcontainers:
-        specifier: ^10.13.1
-        version: 10.13.1
+        specifier: ^10.15.0
+        version: 10.15.0
       typescript:
         specifier: ^5.6.3
         version: 5.6.3
@@ -2571,8 +2571,8 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  testcontainers@10.13.1:
-    resolution: {integrity: sha512-JBbOhxmygj/ouH/47GnoVNt+c55Telh/45IjVxEbDoswsLchVmJiuKiw/eF6lE5i7LN+/99xsrSCttI3YRtirg==}
+  testcontainers@10.15.0:
+    resolution: {integrity: sha512-fQbWIdXverYhOVS7WJk3egII1b4OtUl3C9mXIJk7Q95o5HeY/PRbAif5Gxi8tzck7Lmer0rMbq2jSbSbMyYm8Q==}
 
   text-decoder@1.1.1:
     resolution: {integrity: sha512-8zll7REEv4GDD3x4/0pW+ppIxSNs7H1J10IKFZsuOMscumCdM2a+toDGLPA3T+1+fLBql4zbt5z83GEQGGV5VA==}
@@ -2980,7 +2980,7 @@ snapshots:
 
   '@elastic/transport@8.4.1':
     dependencies:
-      debug: 4.3.5
+      debug: 4.3.7
       hpagent: 1.2.0
       ms: 2.1.3
       secure-json-parse: 2.7.0
@@ -3068,7 +3068,7 @@ snapshots:
   '@eslint/eslintrc@2.1.4':
     dependencies:
       ajv: 6.12.6
-      debug: 4.3.5
+      debug: 4.3.7
       espree: 9.6.1
       globals: 13.24.0
       ignore: 5.3.1
@@ -3086,7 +3086,7 @@ snapshots:
   '@humanwhocodes/config-array@0.13.0':
     dependencies:
       '@humanwhocodes/object-schema': 2.0.3
-      debug: 4.3.5
+      debug: 4.3.7
       minimatch: 3.1.2
     transitivePeerDependencies:
       - supports-color
@@ -3134,7 +3134,7 @@ snapshots:
 
   '@kwsites/file-exists@1.1.1':
     dependencies:
-      debug: 4.3.5
+      debug: 4.3.7
     transitivePeerDependencies:
       - supports-color
 
@@ -3379,7 +3379,7 @@ snapshots:
       '@typescript-eslint/type-utils': 7.8.0(eslint@8.57.1)(typescript@5.6.3)
       '@typescript-eslint/utils': 7.8.0(eslint@8.57.1)(typescript@5.6.3)
       '@typescript-eslint/visitor-keys': 7.8.0
-      debug: 4.3.5
+      debug: 4.3.7
       eslint: 8.57.1
       graphemer: 1.4.0
       ignore: 5.3.1
@@ -3397,7 +3397,7 @@ snapshots:
       '@typescript-eslint/types': 7.8.0
       '@typescript-eslint/typescript-estree': 7.8.0(typescript@5.6.3)
       '@typescript-eslint/visitor-keys': 7.8.0
-      debug: 4.3.5
+      debug: 4.3.7
       eslint: 8.57.1
     optionalDependencies:
       typescript: 5.6.3
@@ -3413,7 +3413,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/typescript-estree': 7.8.0(typescript@5.6.3)
       '@typescript-eslint/utils': 7.8.0(eslint@8.57.1)(typescript@5.6.3)
-      debug: 4.3.5
+      debug: 4.3.7
       eslint: 8.57.1
       ts-api-utils: 1.3.0(typescript@5.6.3)
     optionalDependencies:
@@ -3427,7 +3427,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 7.8.0
       '@typescript-eslint/visitor-keys': 7.8.0
-      debug: 4.3.5
+      debug: 4.3.7
       globby: 11.1.0
       is-glob: 4.0.3
       minimatch: 9.0.4
@@ -3513,7 +3513,7 @@ snapshots:
 
   agent-base@7.1.1:
     dependencies:
-      debug: 4.3.5
+      debug: 4.3.7
     transitivePeerDependencies:
       - supports-color
 
@@ -3895,7 +3895,7 @@ snapshots:
 
   docker-modem@3.0.8:
     dependencies:
-      debug: 4.3.5
+      debug: 4.3.7
       readable-stream: 3.6.2
       split-ca: 1.0.1
       ssh2: 1.15.0
@@ -4084,7 +4084,7 @@ snapshots:
 
   eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@7.8.0(eslint@8.57.1)(typescript@5.6.3))(eslint-plugin-import@2.31.0)(eslint@8.57.1):
     dependencies:
-      debug: 4.3.5
+      debug: 4.3.7
       enhanced-resolve: 5.16.1
       eslint: 8.57.1
       eslint-module-utils: 2.9.0(@typescript-eslint/parser@7.8.0(eslint@8.57.1)(typescript@5.6.3))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@7.8.0(eslint@8.57.1)(typescript@5.6.3))(eslint-plugin-import@2.31.0)(eslint@8.57.1))(eslint@8.57.1)
@@ -4487,14 +4487,14 @@ snapshots:
   http-proxy-agent@7.0.2:
     dependencies:
       agent-base: 7.1.1
-      debug: 4.3.5
+      debug: 4.3.7
     transitivePeerDependencies:
       - supports-color
 
   https-proxy-agent@7.0.4:
     dependencies:
       agent-base: 7.1.1
-      debug: 4.3.5
+      debug: 4.3.7
     transitivePeerDependencies:
       - supports-color
 
@@ -5479,14 +5479,14 @@ snapshots:
       commander: 2.20.3
       source-map-support: 0.5.21
 
-  testcontainers@10.13.1:
+  testcontainers@10.15.0:
     dependencies:
       '@balena/dockerignore': 1.0.2
       '@types/dockerode': 3.3.31
       archiver: 7.0.1
       async-lock: 1.4.1
       byline: 5.0.0
-      debug: 4.3.5
+      debug: 4.3.7
       docker-compose: 0.24.8
       dockerode: 3.3.5
       get-port: 5.1.1
