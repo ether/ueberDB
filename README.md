@@ -25,6 +25,7 @@ writes are done in a bulk. This can be turned off.
 * Postgres (single connection and with connection pool)
 * Redis
 * Rethink
+* `rustydb`
 * SQLite
 * Surrealdb
 * 
@@ -221,6 +222,7 @@ const ueberdb = require('ueberdb2');
 | postgres      | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      | ✓      | ✓           |
 | redis         | ✓   | ✓   | *        | ✓      | ✓      | ✓      | ✓      | ✓           |
 | rethinkdb     | ✓   | ✓   | *        | ✓      | ✓      | ✓      | ✓      |
+| rustydb       | ?   | ?   | ?        | ?      | ?      | ?      | ?      | ?           |
 | sqlite        | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      | ✓      | ✓           |
 | surrealdb     | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      | ✓      |             |
 
