@@ -27,8 +27,8 @@ importers:
         specifier: ^9.1.5
         version: 9.1.5
       '@types/node':
-        specifier: ^22.7.6
-        version: 22.7.6
+        specifier: ^22.10.6
+        version: 22.10.6
       '@types/pg':
         specifier: ^8.11.10
         version: 8.11.10
@@ -112,7 +112,7 @@ importers:
         version: 5.6.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@22.7.6)(terser@5.31.0)
+        version: 2.1.8(@types/node@22.10.6)(terser@5.31.0)
       wtfnode:
         specifier: ^0.9.3
         version: 0.9.3
@@ -646,8 +646,8 @@ packages:
   '@types/node@18.19.49':
     resolution: {integrity: sha512-ALCeIR6n0nQ7j0FUF1ycOhrp6+XutJWqEu/vtdEqXFUQwkBfgUA5cEg3ZNmjWGF/ZYA/FcF9QMkL55Ar0O6UrA==}
 
-  '@types/node@22.7.6':
-    resolution: {integrity: sha512-/d7Rnj0/ExXDMcioS78/kf1lMzYk4BZV8MZGTBKzTGZ6/406ukkbYlIsZmMPhcR5KlkunDHQLrtAVmSq7r+mSw==}
+  '@types/node@22.10.6':
+    resolution: {integrity: sha512-qNiuwC4ZDAUNcY47xgaSuS92cjf8JbSUoaKS77bmLG1rU7MlATVSiw/IlrjtIyyskXBZ8KkNfjK/P5na7rgXbQ==}
 
   '@types/pg@8.11.10':
     resolution: {integrity: sha512-LczQUW4dbOQzsH2RQ5qoeJ6qJPdrcM/DcMLoqWQkMLMsq83J5lAX3LXjdkWdpscFy67JSOWDnh7Ny/sPFykmkg==}
@@ -2669,8 +2669,8 @@ packages:
   undici-types@5.26.5:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
 
-  undici-types@6.19.8:
-    resolution: {integrity: sha512-ve2KP6f/JnbPBFyobGHuerC9g1FYGn/F8n1LWTwNxCEzd6IfqTwUQcNXgEtmmQ6DlRrC1hrSrBnCZPokRrDHjw==}
+  undici-types@6.20.0:
+    resolution: {integrity: sha512-Ny6QZ2Nju20vw1SRHe3d9jVu6gJ+4e3+MMpqu7pqE5HT6WsTSlce++GQmK5UXS8mzV8DSYHrQH+Xrf2jVcuKNg==}
 
   undici@5.28.4:
     resolution: {integrity: sha512-72RFADWFqKmUb2hmmvNODKL3p9hcB6Gt2DOQMis1SEBaV6a4MH8soBvzg+95CYhCKPFedut2JY9bMfrDl9D23g==}
@@ -3301,13 +3301,13 @@ snapshots:
 
   '@types/docker-modem@3.0.6':
     dependencies:
-      '@types/node': 22.7.6
+      '@types/node': 22.10.6
       '@types/ssh2': 1.15.1
 
   '@types/dockerode@3.3.31':
     dependencies:
       '@types/docker-modem': 3.0.6
-      '@types/node': 22.7.6
+      '@types/node': 22.10.6
       '@types/ssh2': 1.15.1
 
   '@types/estree@1.0.5': {}
@@ -3324,7 +3324,7 @@ snapshots:
 
   '@types/mssql@9.1.5':
     dependencies:
-      '@types/node': 22.7.6
+      '@types/node': 22.10.6
       '@types/tedious': 4.0.14
       tarn: 3.0.2
 
@@ -3332,36 +3332,36 @@ snapshots:
     dependencies:
       undici-types: 5.26.5
 
-  '@types/node@22.7.6':
+  '@types/node@22.10.6':
     dependencies:
-      undici-types: 6.19.8
+      undici-types: 6.20.0
 
   '@types/pg@8.11.10':
     dependencies:
-      '@types/node': 22.7.6
+      '@types/node': 22.10.6
       pg-protocol: 1.6.1
       pg-types: 4.0.2
 
   '@types/readable-stream@4.0.12':
     dependencies:
-      '@types/node': 22.7.6
+      '@types/node': 22.10.6
       safe-buffer: 5.1.2
 
   '@types/resolve@1.20.2': {}
 
   '@types/rethinkdb@2.3.21':
     dependencies:
-      '@types/node': 22.7.6
+      '@types/node': 22.10.6
 
   '@types/semver@7.5.8': {}
 
   '@types/ssh2-streams@0.1.12':
     dependencies:
-      '@types/node': 22.7.6
+      '@types/node': 22.10.6
 
   '@types/ssh2@0.5.52':
     dependencies:
-      '@types/node': 22.7.6
+      '@types/node': 22.10.6
       '@types/ssh2-streams': 0.1.12
 
   '@types/ssh2@1.15.1':
@@ -3370,7 +3370,7 @@ snapshots:
 
   '@types/tedious@4.0.14':
     dependencies:
-      '@types/node': 22.7.6
+      '@types/node': 22.10.6
 
   '@types/webidl-conversions@7.0.3': {}
 
@@ -3475,13 +3475,13 @@ snapshots:
       chai: 5.1.2
       tinyrainbow: 1.2.0
 
-  '@vitest/mocker@2.1.8(vite@5.4.8(@types/node@22.7.6)(terser@5.31.0))':
+  '@vitest/mocker@2.1.8(vite@5.4.8(@types/node@22.10.6)(terser@5.31.0))':
     dependencies:
       '@vitest/spy': 2.1.8
       estree-walker: 3.0.3
       magic-string: 0.30.14
     optionalDependencies:
-      vite: 5.4.8(@types/node@22.7.6)(terser@5.31.0)
+      vite: 5.4.8(@types/node@22.10.6)(terser@5.31.0)
 
   '@vitest/pretty-format@2.1.8':
     dependencies:
@@ -3752,7 +3752,7 @@ snapshots:
   cassandra-driver@4.7.2:
     dependencies:
       '@types/long': 5.0.0
-      '@types/node': 22.7.6
+      '@types/node': 22.10.6
       adm-zip: 0.5.12
       long: 5.2.3
 
@@ -4098,7 +4098,7 @@ snapshots:
       debug: 4.3.7
       enhanced-resolve: 5.16.1
       eslint: 8.57.1
-      eslint-module-utils: 2.9.0(@typescript-eslint/parser@7.8.0(eslint@8.57.1)(typescript@5.6.3))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@7.8.0(eslint@8.57.1)(typescript@5.6.3))(eslint-plugin-import@2.31.0)(eslint@8.57.1))(eslint@8.57.1)
+      eslint-module-utils: 2.9.0(@typescript-eslint/parser@7.8.0(eslint@8.57.1)(typescript@5.6.3))(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.1)
       eslint-plugin-import: 2.31.0(@typescript-eslint/parser@7.8.0(eslint@8.57.1)(typescript@5.6.3))(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.1)
       fast-glob: 3.3.2
       get-tsconfig: 4.7.5
@@ -4110,7 +4110,7 @@ snapshots:
       - eslint-import-resolver-webpack
       - supports-color
 
-  eslint-module-utils@2.12.0(@typescript-eslint/parser@7.8.0(eslint@8.57.1)(typescript@5.6.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@7.8.0(eslint@8.57.1)(typescript@5.6.3))(eslint-plugin-import@2.31.0)(eslint@8.57.1))(eslint@8.57.1):
+  eslint-module-utils@2.12.0(@typescript-eslint/parser@7.8.0(eslint@8.57.1)(typescript@5.6.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.1):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
@@ -4121,7 +4121,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.9.0(@typescript-eslint/parser@7.8.0(eslint@8.57.1)(typescript@5.6.3))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@7.8.0(eslint@8.57.1)(typescript@5.6.3))(eslint-plugin-import@2.31.0)(eslint@8.57.1))(eslint@8.57.1):
+  eslint-module-utils@2.9.0(@typescript-eslint/parser@7.8.0(eslint@8.57.1)(typescript@5.6.3))(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.1):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
@@ -4160,7 +4160,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 8.57.1
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.0(@typescript-eslint/parser@7.8.0(eslint@8.57.1)(typescript@5.6.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@7.8.0(eslint@8.57.1)(typescript@5.6.3))(eslint-plugin-import@2.31.0)(eslint@8.57.1))(eslint@8.57.1)
+      eslint-module-utils: 2.12.0(@typescript-eslint/parser@7.8.0(eslint@8.57.1)(typescript@5.6.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.1)
       hasown: 2.0.2
       is-core-module: 2.15.1
       is-glob: 4.0.3
@@ -5478,7 +5478,7 @@ snapshots:
       '@azure/identity': 4.3.0
       '@azure/keyvault-keys': 4.8.0
       '@js-joda/core': 5.6.2
-      '@types/node': 22.7.6
+      '@types/node': 22.10.6
       bl: 6.0.12
       iconv-lite: 0.6.3
       js-md4: 0.3.2
@@ -5604,7 +5604,7 @@ snapshots:
 
   undici-types@5.26.5: {}
 
-  undici-types@6.19.8: {}
+  undici-types@6.20.0: {}
 
   undici@5.28.4:
     dependencies:
@@ -5627,13 +5627,13 @@ snapshots:
 
   uuidv7@0.6.3: {}
 
-  vite-node@2.1.8(@types/node@22.7.6)(terser@5.31.0):
+  vite-node@2.1.8(@types/node@22.10.6)(terser@5.31.0):
     dependencies:
       cac: 6.7.14
       debug: 4.3.7
       es-module-lexer: 1.5.4
       pathe: 1.1.2
-      vite: 5.4.8(@types/node@22.7.6)(terser@5.31.0)
+      vite: 5.4.8(@types/node@22.10.6)(terser@5.31.0)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -5645,20 +5645,20 @@ snapshots:
       - supports-color
       - terser
 
-  vite@5.4.8(@types/node@22.7.6)(terser@5.31.0):
+  vite@5.4.8(@types/node@22.10.6)(terser@5.31.0):
     dependencies:
       esbuild: 0.21.5
       postcss: 8.4.47
       rollup: 4.24.0
     optionalDependencies:
-      '@types/node': 22.7.6
+      '@types/node': 22.10.6
       fsevents: 2.3.3
       terser: 5.31.0
 
-  vitest@2.1.8(@types/node@22.7.6)(terser@5.31.0):
+  vitest@2.1.8(@types/node@22.10.6)(terser@5.31.0):
     dependencies:
       '@vitest/expect': 2.1.8
-      '@vitest/mocker': 2.1.8(vite@5.4.8(@types/node@22.7.6)(terser@5.31.0))
+      '@vitest/mocker': 2.1.8(vite@5.4.8(@types/node@22.10.6)(terser@5.31.0))
       '@vitest/pretty-format': 2.1.8
       '@vitest/runner': 2.1.8
       '@vitest/snapshot': 2.1.8
@@ -5674,11 +5674,11 @@ snapshots:
       tinyexec: 0.3.1
       tinypool: 1.0.2
       tinyrainbow: 1.2.0
-      vite: 5.4.8(@types/node@22.7.6)(terser@5.31.0)
-      vite-node: 2.1.8(@types/node@22.7.6)(terser@5.31.0)
+      vite: 5.4.8(@types/node@22.10.6)(terser@5.31.0)
+      vite-node: 2.1.8(@types/node@22.10.6)(terser@5.31.0)
       why-is-node-running: 2.3.0
     optionalDependencies:
-      '@types/node': 22.7.6
+      '@types/node': 22.10.6
     transitivePeerDependencies:
       - less
       - lightningcss
