@@ -212,19 +212,19 @@ const ueberdb = require('ueberdb2');
 
 |               | Get | Set | findKeys | Remove | getSub | setSub | doBulk | CI Coverage |
 |---------------|-----|-----|----------|--------|--------|--------|--------|-------------|
-| cassandra     | ✓   | ✓   | *        | ✓      | ✓      | ✓      | ✓      |             |
-| couchdb       | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      | ✓      |             |
+| cassandra     | ✓   | ✓   | *        | ✓      | ✓      | ✓      | ✓      | ✓           |
+| couchdb       | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      | ✓      | ✓           |
 | dirty         | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      |        | ✓           |
-| dirty_git     | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      |        |             |
-| elasticsearch | ✓   | ✓   | *        | ✓      | ✓      | ✓      | ✓      |             |
-| maria         | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      | ✓      |             |
+| dirty_git     | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      |        | ✓           |
+| elasticsearch | ✓   | ✓   | *        | ✓      | ✓      | ✓      | ✓      | ✓           |
+| maria         | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      | ✓      | ✓           |
 | mysql         | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      | ✓      | ✓           |
 | postgres      | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      | ✓      | ✓           |
 | redis         | ✓   | ✓   | *        | ✓      | ✓      | ✓      | ✓      | ✓           |
-| rethinkdb     | ✓   | ✓   | *        | ✓      | ✓      | ✓      | ✓      |
-| rustydb       | ?   | ?   | ?        | ?      | ?      | ?      | ?      | ?           |
+| rethinkdb     | ✓   | ✓   | *        | ✓      | ✓      | ✓      | ✓      | 
+| rustydb       | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      | ✓      | ✓           |
 | sqlite        | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      | ✓      | ✓           |
-| surrealdb     | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      | ✓      |             |
+| surrealdb     | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      | ✓      | ✓           |
 
 ## Limitations
 
