@@ -66,6 +66,7 @@ export type DatabaseType =
 const cbDb: CBDBType= {
   init: () => {},
   flush: () => {},
+  set: () => {},
   get: () => {},
   remove: () => {},
   findKeys: () => {},
