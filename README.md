@@ -25,6 +25,7 @@ writes are done in a bulk. This can be turned off.
 * Postgres (single connection and with connection pool)
 * Redis
 * Rethink
+* `rustydb`
 * SQLite
 * Surrealdb
 * 
@@ -211,18 +212,19 @@ const ueberdb = require('ueberdb2');
 
 |               | Get | Set | findKeys | Remove | getSub | setSub | doBulk | CI Coverage |
 |---------------|-----|-----|----------|--------|--------|--------|--------|-------------|
-| cassandra     | ✓   | ✓   | *        | ✓      | ✓      | ✓      | ✓      |             |
-| couchdb       | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      | ✓      |             |
+| cassandra     | ✓   | ✓   | *        | ✓      | ✓      | ✓      | ✓      | ✓           |
+| couchdb       | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      | ✓      | ✓           |
 | dirty         | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      |        | ✓           |
-| dirty_git     | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      |        |             |
-| elasticsearch | ✓   | ✓   | *        | ✓      | ✓      | ✓      | ✓      |             |
-| maria         | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      | ✓      |             |
+| dirty_git     | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      |        | ✓           |
+| elasticsearch | ✓   | ✓   | *        | ✓      | ✓      | ✓      | ✓      | ✓           |
+| maria         | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      | ✓      | ✓           |
 | mysql         | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      | ✓      | ✓           |
 | postgres      | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      | ✓      | ✓           |
 | redis         | ✓   | ✓   | *        | ✓      | ✓      | ✓      | ✓      | ✓           |
-| rethinkdb     | ✓   | ✓   | *        | ✓      | ✓      | ✓      | ✓      |
+| rethinkdb     | ✓   | ✓   | *        | ✓      | ✓      | ✓      | ✓      | 
+| rustydb       | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      | ✓      | ✓           |
 | sqlite        | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      | ✓      | ✓           |
-| surrealdb     | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      | ✓      |             |
+| surrealdb     | ✓   | ✓   | ✓        | ✓      | ✓      | ✓      | ✓      | ✓           |
 
 ## Limitations
 
