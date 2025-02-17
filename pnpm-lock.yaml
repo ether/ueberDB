@@ -96,8 +96,8 @@ importers:
         specifier: ^1.3.1
         version: 1.3.1
       semver:
-        specifier: ^7.6.3
-        version: 7.6.3
+        specifier: ^7.7.1
+        version: 7.7.1
       simple-git:
         specifier: ^3.27.0
         version: 3.27.0
@@ -2401,8 +2401,8 @@ packages:
     resolution: {integrity: sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==}
     hasBin: true
 
-  semver@7.6.3:
-    resolution: {integrity: sha512-oVekP1cKtI+CTDvHWYFUcMtsK/00wmAEfyqKfNdARm8u1wNVhSgaX7A8d4UuIlUI5e84iEwOhs7ZPYRmzU9U6A==}
+  semver@7.7.1:
+    resolution: {integrity: sha512-hlq8tAfn0m/61p4BVRcPzIGr6LKiMwo4VM6dGi6pt4qcRkmNzTcWq6eCEjEh+qXjkMDvPlOFFSGwQjoEa6gyMA==}
     engines: {node: '>=10'}
     hasBin: true
 
@@ -3395,7 +3395,7 @@ snapshots:
       graphemer: 1.4.0
       ignore: 5.3.1
       natural-compare: 1.4.0
-      semver: 7.6.3
+      semver: 7.7.1
       ts-api-utils: 1.3.0(typescript@5.7.3)
     optionalDependencies:
       typescript: 5.7.3
@@ -3442,7 +3442,7 @@ snapshots:
       globby: 11.1.0
       is-glob: 4.0.3
       minimatch: 9.0.4
-      semver: 7.6.3
+      semver: 7.7.1
       ts-api-utils: 1.3.0(typescript@5.7.3)
     optionalDependencies:
       typescript: 5.7.3
@@ -3458,7 +3458,7 @@ snapshots:
       '@typescript-eslint/types': 7.8.0
       '@typescript-eslint/typescript-estree': 7.8.0(typescript@5.7.3)
       eslint: 8.57.1
-      semver: 7.6.3
+      semver: 7.7.1
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -3735,7 +3735,7 @@ snapshots:
 
   builtins@5.1.0:
     dependencies:
-      semver: 7.6.3
+      semver: 7.7.1
 
   byline@5.0.0: {}
 
@@ -4068,7 +4068,7 @@ snapshots:
   eslint-compat-utils@0.5.0(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
-      semver: 7.6.3
+      semver: 7.7.1
 
   eslint-config-etherpad@4.0.4(eslint@8.57.1)(typescript@5.7.3):
     dependencies:
@@ -4204,7 +4204,7 @@ snapshots:
       is-core-module: 2.15.1
       minimatch: 3.1.2
       resolve: 1.22.8
-      semver: 7.6.3
+      semver: 7.7.1
 
   eslint-plugin-prefer-arrow@1.2.3(eslint@8.57.1):
     dependencies:
@@ -4683,7 +4683,7 @@ snapshots:
       lodash.isstring: 4.0.1
       lodash.once: 4.1.1
       ms: 2.1.3
-      semver: 7.6.3
+      semver: 7.7.1
 
   jwa@1.4.1:
     dependencies:
@@ -5172,7 +5172,7 @@ snapshots:
       find-cache-dir: 3.3.2
       fs-extra: 10.1.0
       rollup: 4.24.0
-      semver: 7.6.3
+      semver: 7.7.1
       tslib: 2.6.2
       typescript: 5.7.3
 
@@ -5268,7 +5268,7 @@ snapshots:
 
   semver@6.3.1: {}
 
-  semver@7.6.3: {}
+  semver@7.7.1: {}
 
   seq-queue@0.0.5: {}
 
@@ -5434,7 +5434,7 @@ snapshots:
       cbor-redux: 1.0.0
       decimal.js: 10.4.3
       isows: 1.0.6(ws@8.17.1(bufferutil@4.0.8)(utf-8-validate@6.0.4))
-      semver: 7.6.3
+      semver: 7.7.1
       uuidv7: 0.6.3
       ws: 8.17.1(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       zod: 3.23.8
