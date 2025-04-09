@@ -34,7 +34,7 @@
     "@types/rethinkdb": "^2.3.21",
     "@types/wtfnode": "^0.7.3",
     "async": "^3.2.6",
-    "cassandra-driver": "^4.7.2",
+    "cassandra-driver": "^4.8.0",
     "cli-table3": "^0.6.5",
     "dirty-ts": "^1.1.8",
     "elasticsearch8": "npm:@elastic/elasticsearch@^8.8.1",
