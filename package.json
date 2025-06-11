@@ -65,7 +65,7 @@
     "url": "https://github.com/ether/ueberDB.git"
   },
   "main": "./dist/index.js",
-  "version": "5.0.13",
+  "version": "5.0.14",
   "bugs": {
     "url": "https://github.com/ether/ueberDB/issues"
   },
