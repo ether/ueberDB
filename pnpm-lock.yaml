@@ -2199,8 +2199,8 @@ packages:
   node-abort-controller@3.1.1:
     resolution: {integrity: sha512-AGK2yQKIjRuqnc6VkX2Xj5d+QW8xZ87pa1UK6yA6ouUyuxfHuMP6umE5QK7UmTeOAymo+Zx1Fxiuw9rVx8taHQ==}
 
-  node-gyp-build@4.8.2:
-    resolution: {integrity: sha512-IRUxE4BVsHWXkV/SFOut4qTlagw2aM8T5/vnTsmrHJvVoKueJHRc/JaFND7QDDc61kLYUJ6qlZM3sqTSyx2dTw==}
+  node-gyp-build@4.8.4:
+    resolution: {integrity: sha512-LA4ZjwlnUblHVgq0oBF3Jl/6h/Nvs5fzBLwdEF4nuxnFdsfajde4WfxtJr3CaiH+F6ewcIB/q4jQ4UzPyid+CQ==}
     hasBin: true
 
   normalize-path@3.0.0:
@@ -4087,7 +4087,7 @@ snapshots:
 
   bufferutil@4.0.8:
     dependencies:
-      node-gyp-build: 4.8.2
+      node-gyp-build: 4.8.4
     optional: true
 
   buildcheck@0.0.6:
@@ -5226,7 +5226,7 @@ snapshots:
 
   node-abort-controller@3.1.1: {}
 
-  node-gyp-build@4.8.2:
+  node-gyp-build@4.8.4:
     optional: true
 
   normalize-path@3.0.0: {}
@@ -6010,7 +6010,7 @@ snapshots:
 
   utf-8-validate@6.0.4:
     dependencies:
-      node-gyp-build: 4.8.2
+      node-gyp-build: 4.8.4
     optional: true
 
   util-deprecate@1.0.2: {}
