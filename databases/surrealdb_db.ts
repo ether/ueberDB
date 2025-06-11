@@ -15,9 +15,9 @@
  */
 
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
-import Surreal from 'surrealdb.js';
+import Surreal from 'surrealdb';
 import {BulkObject} from "./cassandra_db";
-import {QueryResult} from "surrealdb.js/script/types";
+import {QueryResult} from "surrealdb";
 const DATABASE = 'ueberdb';
 
 const WILDCARD= '*';
@@ -79,10 +79,17 @@ export default class SurrealDB extends AbstractDatabase {
 
     async get(key:string) {
         if (this._client == null) return null;
+
+
         key = escapeKey(key)
         const res = await this._client.query( "SELECT key,value FROM store WHERE key= $key", {key}) as QueryResult<StoreVal[]>[]
         if(res[0].result!.length>0){
-            return res[0].result![0].value
+            if (typeof res[0].result![0] === 'string') {
+                return res[0].result![0]
+            } else {
+                const storeVal = res[0].result![0] as StoreVal;
+                return unescapeKey(storeVal.value, key);
+            }
         }
         else{
             return null;
@@ -139,6 +146,10 @@ export default class SurrealDB extends AbstractDatabase {
 
     transformResult(res: QueryResult<StoreVal[]>[], originalKey:string){
         const value: string[] = [];
+        if (typeof res[0].result == "string") {
+            value.push(unescapeKey(res[0].result, originalKey));
+            return value;
+        }
         res[0].result!.forEach(k=>{
             value.push(unescapeKey(k.key, originalKey));
         })

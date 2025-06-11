@@ -1,0 +1,7 @@
+onlyBuiltDependencies:
+  - bufferutil
+  - cpu-features
+  - esbuild
+  - protobufjs
+  - ssh2
+  - utf-8-validate
