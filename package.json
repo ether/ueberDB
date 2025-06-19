@@ -49,7 +49,7 @@
     "randexp-ts": "^1.0.5",
     "redis": "^4.7.0",
     "rethinkdb": "^2.4.2",
-    "rollup": "^4.24.0",
+    "rollup": "^4.44.0",
     "rollup-plugin-typescript2": "^0.36.0",
     "rusty-store-kv": "^1.3.1",
     "semver": "^7.6.3",
