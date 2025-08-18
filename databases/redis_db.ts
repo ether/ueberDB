@@ -59,7 +59,7 @@ export default class RedisDB extends AbstractDatabase {
 
   async findKeys(key:string, notKey:string) {
     if (this._client == null) return null;
-    const [type] = /^([^:*]+):\*$/.exec(key) || [];
+    const [_, type] = /^([^:*]+):\*$/.exec(key) || [];
     if (type != null && ['*:*:*', `${key}:*`].includes(notKey)) {
       // Performance optimization for a common Etherpad case.
       return await this._client.sMembers(`ueberDB:keys:${type}`);
