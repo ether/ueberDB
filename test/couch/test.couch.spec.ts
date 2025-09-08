@@ -7,7 +7,7 @@ describe('couch test', async () => {
         { container: 5984, host: 5984 }
     ];
 
-    let container = await new GenericContainer("couchdb:latest")
+    let container = await new GenericContainer("couchdb:3.5.0")
         .withExposedPorts(...portMappings)
         .withEnvironment({
             COUCHDB_USER: "ueberdb",

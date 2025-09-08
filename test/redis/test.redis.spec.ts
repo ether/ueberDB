@@ -9,7 +9,7 @@ describe('redis test', ()=>{
     let container: StartedTestContainer
 
     beforeAll(async () => {
-        container = await new GenericContainer("redis:latest")
+        container = await new GenericContainer("redis:bookworm")
             .withExposedPorts(...portMappings)
             .start()
     })

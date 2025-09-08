@@ -12,7 +12,7 @@ describe('postgres test', async () => {
     let container: StartedTestContainer
 
     beforeAll(async () => {
-        container = await new GenericContainer("postgres:latest")
+        container = await new GenericContainer("postgres:alpine3.21")
             .withExposedPorts(...portMappings)
             .withEnvironment({
                 POSTGRES_USER: "ueberdb",
@@ -38,7 +38,7 @@ describe('postgres test individual', async () => {
     let container: StartedTestContainer
 
     beforeAll(async () => {
-        container = await new GenericContainer("postgres:latest")
+        container = await new GenericContainer("postgres:alpine3.21")
             .withExposedPorts(...portMappings)
             .withHealthCheck({
                 test: ["CMD-SHELL", "pg_isready -d postgresql://ueberdb:ueberdb@127.0.0.1/ueberdb"],

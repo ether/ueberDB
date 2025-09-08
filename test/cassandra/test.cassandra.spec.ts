@@ -10,7 +10,7 @@ describe('cassandra test', ()=>{
     let container: StartedTestContainer
 
     beforeAll(async () => {
-        container = await new GenericContainer("scylladb/scylla:latest")
+        container = await new GenericContainer("scylladb/scylla:2025.3")
             .withCommand([" --smp 1"])
             .withExposedPorts(...portMappings)
             .start()
