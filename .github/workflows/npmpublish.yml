@@ -35,7 +35,7 @@ jobs:
             ${{ runner.os }}-pnpm-store-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      - run: pnpm i
+      - run: pnpm install --frozen-lockfile
         name: Install pnpm dependencies
       - run: pnpm run test ${{ matrix.db }}
 
@@ -70,9 +70,7 @@ jobs:
       # This is required if the package has a prepare script that uses something
       # in dependencies or devDependencies. This is also needed for bumping the
       # version.
-      -
-        run: pnpm i
-      # Workaround based on https://github.com/pnpm/pnpm/issues/3141
+      - run: pnpm install --frozen-lockfile      # Workaround based on https://github.com/pnpm/pnpm/issues/3141
       - name: Set publishing config
         run: pnpm config set '//registry.npmjs.org/:_authToken' "${NODE_AUTH_TOKEN}"
         env:
