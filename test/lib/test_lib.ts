@@ -161,6 +161,9 @@ export const test_db = (database: DatabaseType)=>{
                             const keys = await db.findKeys(key, null);
                             expect(keys).toStrictEqual([key]);
                         });
+
+
+
                         it('remove works', async () => {
                             const input = {a: 1, b: new Randexp(/.+/)};
                             const key = randomString();
@@ -217,7 +220,21 @@ export const test_db = (database: DatabaseType)=>{
                                 expect(await db.get('k')).toBe(v);
                             }
                         });
-                        it('speed is acceptable', async function (context) {
+                        it('setSub can delete a property', async () => {
+                            await db.set('k', {sub1: {sub2: 'v', sub3: 'v'}, sub4: 'v'});
+                            await db.setSub('k', ['sub1', 'sub2'], undefined);
+                            expect(await db.get('k')).toStrictEqual({sub1: {sub3: 'v'}, sub4: 'v'});
+                            await db.setSub('k', ['sub1', 'sub3'], undefined);
+                            expect(await db.get('k')).toStrictEqual({sub1: {}, sub4: 'v'});
+                            await db.setSub('k', ['sub1'], undefined);
+                            expect(await db.get('k')).toStrictEqual({sub4: 'v'});
+                            await db.setSub('k', ['sub4'], undefined);
+                            expect(await db.get('k')).toStrictEqual({});
+                            await db.setSub('k', [], undefined);
+                            expect((await db.get('k')) == null).toBeTruthy();
+                        });
+
+                        it('speed is acceptable', async function () {
                             type TimeSettings = {
                                 remove?: string | number;
                                 findKeys?: number;

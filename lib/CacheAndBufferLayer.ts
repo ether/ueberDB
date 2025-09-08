@@ -485,7 +485,12 @@ export const Database = class {
             ptr.obj = ptr.obj[ptr.prop];
             ptr.prop = sub[i];
           }
-          ptr.obj[ptr.prop] = value;
+          // Delete the property if value is undefined. JSON.stringify() ignores such properties.
+          if (value == null) {
+              delete ptr.obj[ptr.prop];
+          } else {
+              ptr.obj[ptr.prop] = value;
+          }
         } catch (err) {
           // this._setLocked() will not be called but it should still count as a write failure.
           ++this.metrics.writes;
@@ -495,7 +500,7 @@ export const Database = class {
         }
         p = this._setLocked(key, base.fullValue);
       } finally {
-        this._unlock(key);
+        await this._unlock(key);
       }
     } finally {
       this._resumeFlush();
