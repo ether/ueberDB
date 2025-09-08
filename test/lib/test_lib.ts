@@ -220,7 +220,7 @@ export const test_db = (database: DatabaseType)=>{
                                 expect(await db.get('k')).toBe(v);
                             }
                         });
-                        it.only('setSub can delete a property', async () => {
+                        it('setSub can delete a property', async () => {
                             await db.set('k', {sub1: {sub2: 'v', sub3: 'v'}, sub4: 'v'});
                             await db.setSub('k', ['sub1', 'sub2'], undefined);
                             expect(await db.get('k')).toStrictEqual({sub1: {sub3: 'v'}, sub4: 'v'});
