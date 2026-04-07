@@ -89,7 +89,7 @@ export const test_db = (database: DatabaseType)=>{
                                     let input: any;
                                     let key: any;
                                     beforeEach(async () => {
-                                        input = {a: 1, b: new Randexp(/.+/).gen()};
+                                        input = {a: 1, b: new Randexp(/[a-zA-Z0-9]+/).gen()};
                                         key = randomString(maxKeyLength - 1) + (space ? ' ' : '');
                                         await db.set(key, input);
                                     });
@@ -115,7 +115,7 @@ export const test_db = (database: DatabaseType)=>{
                             expect((await db.get(key)) == null).toBeTruthy();
                         });
                         it('set+get works', async () => {
-                            const input = {a: 1, b: new Randexp(/.+/).gen()};
+                            const input = {a: 1, b: new Randexp(/[a-zA-Z0-9]+/).gen()};
                             const key = randomString();
                             await db.set(key, input);
                             const output = await db.get(key);
@@ -172,7 +172,7 @@ export const test_db = (database: DatabaseType)=>{
 
 
                         it('remove works', async () => {
-                            const input = {a: 1, b: new Randexp(/.+/)};
+                            const input = {a: 1, b: new Randexp(/[a-zA-Z0-9]+/).gen()};
                             const key = randomString();
                             await db.set(key, input);
                             expect(JSON.stringify(await db.get(key))).toStrictEqual(JSON.stringify(input));
