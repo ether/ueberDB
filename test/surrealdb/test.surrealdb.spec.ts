@@ -13,7 +13,8 @@ describe('surrealdb test', () => {
         // Configure root credentials and start in-memory storage so the
         // ueberdb test can sign in and use it. Wait for the HTTP root to
         // respond so testcontainers doesn't return before SurrealDB is ready.
-        container = await new GenericContainer("surrealdb/surrealdb:v2.0.0")
+        // surrealdb client 2.0.3 requires server >= 2.1.0 < 4.0.0
+        container = await new GenericContainer("surrealdb/surrealdb:v2.3.10")
             .withExposedPorts(...portMappings)
             .withCommand([
                 "start",
