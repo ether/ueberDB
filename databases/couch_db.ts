@@ -50,13 +50,12 @@ export default class Couch_db extends AbstractDatabase {
     });
 
     // nano 11 dropped support for requestDefaults.auth = {username, password}.
-    // The supported way to pass credentials is now embedding them in the URL.
-    let url = `http://${this.settings.host}:${this.settings.port}`;
-    if (this.settings.user && this.settings.password) {
-      const u = encodeURIComponent(this.settings.user);
-      const p = encodeURIComponent(this.settings.password);
-      url = `http://${u}:${p}@${this.settings.host}:${this.settings.port}`;
-    }
+    // We start from a URL WITHOUT credentials and then explicitly post to
+    // /_session to establish a CouchDB session cookie. This is more reliable
+    // than embedding the credentials in the URL because CouchDB 3.5 returns
+    // 401 from session middleware on the first basic-auth request to a fresh
+    // connection — even when the credentials are correct.
+    const url = `http://${this.settings.host}:${this.settings.port}`;
 
     const coudhDBSettings: CouchDBSettings = {
       url,
@@ -66,13 +65,22 @@ export default class Couch_db extends AbstractDatabase {
     };
 
     const client = nano(coudhDBSettings);
+
+    // Establish a real CouchDB session before doing anything else. nano's
+    // auth() POSTs /_session and stores the resulting AuthSession cookie
+    // in its CookieJar; subsequent requests on this client are authenticated
+    // by that cookie. This avoids the basic-auth-on-first-request flake.
+    if (this.settings.user && this.settings.password) {
+      await client.auth(this.settings.user, this.settings.password);
+    }
+
     try {
-        await client.db.get(this.settings.database!);
+      await client.db.get(this.settings.database!);
     } catch (err: any) {
       if (err.statusCode !== 404) throw err;
-        await client.db.create(this.settings.database!);
+      await client.db.create(this.settings.database!);
     }
-      this.db = client.use(this.settings.database!);
+    this.db = client.use(this.settings.database!);
   }
 
   async get(key:string): Promise<null | string> {
