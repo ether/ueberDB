@@ -13,7 +13,14 @@ import {existsSync} from "node:fs";
 const fs = {promises}.promises;
 const maxKeyLength = 100;
 
-const randomString = (length = maxKeyLength) => new Randexp(new RegExp(`.{${length}}`)).gen().replace("_","");
+// Use a URL-safe character set for generated keys. The previous regex
+// (`.{n}`) matches any printable ASCII, which includes `/` `?` `#` `:`
+// `@` `&` and other characters that confuse drivers that put the key
+// in a URL path (notably the couch driver via nano). The "white space
+// in key is not ignored" test still works because it explicitly appends
+// a space — the random part is now guaranteed not to contain one.
+const randomString = (length = maxKeyLength) =>
+  new Randexp(new RegExp(`[a-zA-Z0-9.-]{${length}}`)).gen();
 
 export let db: any;
 export const test_db = (database: DatabaseType)=>{
