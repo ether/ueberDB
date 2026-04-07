@@ -22,10 +22,6 @@ import {BulkObject} from './cassandra_db';
 type CouchDBSettings = {
     url: string,
     requestDefaults: {
-      auth?: {
-        username: string,
-        password: string,
-      },
       agent: Agent
     }
 };
@@ -53,20 +49,21 @@ export default class Couch_db extends AbstractDatabase {
       maxSockets: this.settings.maxListeners || 1,
     });
 
+    // nano 11 dropped support for requestDefaults.auth = {username, password}.
+    // The supported way to pass credentials is now embedding them in the URL.
+    let url = `http://${this.settings.host}:${this.settings.port}`;
+    if (this.settings.user && this.settings.password) {
+      const u = encodeURIComponent(this.settings.user);
+      const p = encodeURIComponent(this.settings.password);
+      url = `http://${u}:${p}@${this.settings.host}:${this.settings.port}`;
+    }
+
     const coudhDBSettings: CouchDBSettings = {
-      url: `http://${this.settings.host}:${this.settings.port}`,
+      url,
       requestDefaults: {
         agent: this.agent,
       },
     };
-
-    if (this.settings.user && this.settings.password) {
-      coudhDBSettings.requestDefaults.auth = {
-        username: this.settings.user,
-        password: this.settings.password,
-      };
-    }
-
 
     const client = nano(coudhDBSettings);
     try {
