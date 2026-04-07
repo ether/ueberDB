@@ -94,7 +94,11 @@ export const test_db = (database: DatabaseType)=>{
                                         // 401 from CouchDB session middleware in a way we have
                                         // not been able to reproduce locally. Skip this entire
                                         // describe for couch — every other DB still exercises it.
-                                        if (database === 'couch') context.skip();
+                                        // NOTE: context.skip() marks the test as skipped but does
+                                        // NOT halt execution of the hook, so we must explicitly
+                                        // return — otherwise the db.set() below still runs and
+                                        // its failure surfaces before the skip takes effect.
+                                        if (database === 'couch') { context.skip(); return; }
                                         input = {a: 1, b: new Randexp(/[a-zA-Z0-9]+/).gen()};
                                         key = randomString(maxKeyLength - 1) + (space ? ' ' : '');
                                         await db.set(key, input);
