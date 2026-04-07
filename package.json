@@ -41,11 +41,11 @@
     "eslint": "^9.35.0",
     "eslint-config-etherpad": "^4.0.4",
     "eslint-plugin-import": "^2.32.0",
-    "mongodb": "^7.1.1",
-    "mssql": "^12.2.1",
-    "mysql2": "^3.14.5",
-    "nano": "^11.0.5",
-    "pg": "^8.16.3",
+    "mongodb": "^6.19.0",
+    "mssql": "^11.0.1",
+    "mysql2": "^3.20.0",
+    "nano": "^10.1.4",
+    "pg": "^8.20.0",
     "randexp-ts": "^1.0.5",
     "redis": "^5.11.0",
     "rethinkdb": "^2.4.2",
@@ -65,7 +65,7 @@
     "url": "https://github.com/ether/ueberDB.git"
   },
   "main": "./dist/index.js",
-  "version": "5.0.30",
+  "version": "5.0.27",
   "bugs": {
     "url": "https://github.com/ether/ueberDB/issues"
   },

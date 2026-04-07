@@ -45,7 +45,12 @@ export default class extends AbstractDatabase {
     try {
       return await new Promise((resolve, reject) => {
         options = {timeout: this.settings.queryTimeout, ...options};
-        this._pool && this._pool.query(options, (err:QueryError|null, ...args:string[]) => err != null ? reject(err) : resolve(args)
+        // mysql2 3.20+ tightened the query() overloads so the
+        // (options, callback) signature is no longer matched directly;
+        // pool.query(options, cb) still works at runtime but the types
+        // expect (sql, values, cb) or (sql, cb). Cast to any to call
+        // the runtime-correct (options, cb) form.
+        this._pool && (this._pool as any).query(options, (err:QueryError|null, ...args:string[]) => err != null ? reject(err) : resolve(args)
         );
       });
     } catch (err:any) {
