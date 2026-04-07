@@ -103,8 +103,8 @@
     "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
   },
   "include": [
-    "src",
-    ".eslintrc.cjs",
+    "index.ts",
+    "lib",
     "databases"
   ]
 }
