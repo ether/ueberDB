@@ -36,6 +36,11 @@ describe('elasticsearch test', ()=>{
                 "xpack.security.http.ssl.enabled": "false",
                 "bootstrap.memory_lock": "false",
                 "cluster.routing.allocation.disk.threshold_enabled": "false",
+                // ES 8 defaults to action.destructive_requires_name=true,
+                // which blocks the test cleanup `DELETE /ueberdb_test*` with
+                // "Wildcard expressions or all indices are not allowed".
+                // The test environment is throw-away, so allow wildcard deletes.
+                "action.destructive_requires_name": "false",
             })
             .withExposedPorts(...portMappings)
             .withWaitStrategy(
