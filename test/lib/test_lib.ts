@@ -83,39 +83,30 @@ export const test_db = (database: DatabaseType)=>{
                                 }
                             }
                         });
-                        describe('white space in key is not ignored', () => {
+                        // The couch driver via nano routes trailing-space and adjacent-key
+                        // requests through a code path that returns 401 from CouchDB session
+                        // middleware in a way we have not been able to reproduce locally.
+                        // Skip this entire describe for couch — every other DB still exercises it.
+                        describe.skipIf(database === 'couch')('white space in key is not ignored', () => {
                             for (const space of [false, true]) {
                                 describe(`key ${space ? 'has' : 'does not have'} a trailing space`, () => {
                                     let input: any;
                                     let key: any;
-                                    beforeEach(async (context) => {
-                                        // The couch driver via nano routes trailing-space and
-                                        // adjacent-key requests through a code path that returns
-                                        // 401 from CouchDB session middleware in a way we have
-                                        // not been able to reproduce locally. Skip this entire
-                                        // describe for couch — every other DB still exercises it.
-                                        // NOTE: context.skip() marks the test as skipped but does
-                                        // NOT halt execution of the hook, so we must explicitly
-                                        // return — otherwise the db.set() below still runs and
-                                        // its failure surfaces before the skip takes effect.
-                                        if (database === 'couch') { context.skip(); return; }
+                                    beforeEach(async () => {
                                         input = {a: 1, b: new Randexp(/[a-zA-Z0-9]+/).gen()};
                                         key = randomString(maxKeyLength - 1) + (space ? ' ' : '');
                                         await db.set(key, input);
                                     });
-                                    it('get(key) -> record', async (context) => {
-                                        if (database === 'couch') context.skip();
+                                    it('get(key) -> record', async () => {
                                         const output = await db.get(key);
                                         expect(JSON.stringify(output)).toBe(JSON.stringify(input));
                                     });
-                                    it('get(`${key} `) -> nullish', async (context) => {
-                                        if (database === 'couch') context.skip();
+                                    it('get(`${key} `) -> nullish', async () => {
                                         const output = await db.get(`${key} `);
                                         expect(output == null).toBeTruthy();
                                     });
                                     if (space) {
-                                        it('get(key.slice(0, -1)) -> nullish', async (context) => {
-                                            if (database === 'couch') context.skip();
+                                        it('get(key.slice(0, -1)) -> nullish', async () => {
                                             const output = await db.get(key.slice(0, -1));
                                             expect(output == null).toBeTruthy();
                                         });
