@@ -18,22 +18,32 @@ describe('elasticsearch test', ()=>{
     let container: StartedTestContainer | undefined;
 
     beforeAll(async () => {
-        // Elasticsearch on CI needs constrained heap size and a wait strategy
-        // that actually waits for the HTTP API to respond — without these the
-        // container either OOMs during bootstrap or testcontainers returns
-        // before ES is ready, leading to "container stopped/paused" errors.
-        container = await new GenericContainer("elasticsearch:7.17.3")
+        // - Image bumped to 8.x to match the @elastic/elasticsearch@^8 client
+        //   in package.json (a 7.x server with an 8.x client can negotiate
+        //   compatibility but is more failure-prone in CI).
+        // - Heap is constrained to 512m so the container doesn't OOM during
+        //   bootstrap on the GitHub-hosted runner.
+        // - xpack.security disabled so we can hit the cluster over plain HTTP
+        //   without certificates.
+        // - Wait strategy hits /_cluster/health?wait_for_status=yellow which
+        //   is the canonical "elasticsearch is ready" probe and is more
+        //   reliable than the unauthenticated root URL.
+        container = await new GenericContainer("elasticsearch:8.15.3")
             .withEnvironment({
                 "discovery.type": "single-node",
                 "ES_JAVA_OPTS": "-Xms512m -Xmx512m",
                 "xpack.security.enabled": "false",
+                "xpack.security.http.ssl.enabled": "false",
                 "bootstrap.memory_lock": "false",
+                "cluster.routing.allocation.disk.threshold_enabled": "false",
             })
             .withExposedPorts(...portMappings)
-            .withWaitStrategy(Wait.forHttp("/", 9200).forStatusCode(200))
-            .withStartupTimeout(180000)
+            .withWaitStrategy(
+                Wait.forHttp("/_cluster/health?wait_for_status=yellow&timeout=60s", 9200)
+                    .forStatusCode(200))
+            .withStartupTimeout(240000)
             .start()
-    }, 300000)
+    }, 360000)
 
     test_db('elasticsearch')
     describe(__filename, function (this: any) {
