@@ -12,8 +12,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      # One DB failing should not cancel the other 9. Without this, every
+      # PR ends up red even when only a single integration container is flaky.
+      fail-fast: false
       matrix:
-        db: [couch, elasticsearch, mongo, mysql, redis, mock, sqlite, redis, memory, rusty]
+        db: [couch, elasticsearch, mongo, mysql, redis, mock, sqlite, memory, rusty]
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6

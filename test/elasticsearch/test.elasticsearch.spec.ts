@@ -1,6 +1,6 @@
 import {afterAll, afterEach, beforeAll, beforeEach, describe, it} from "vitest";
 import {test_db} from "../lib/test_lib";
-import {GenericContainer, PortWithOptionalBinding, StartedTestContainer} from "testcontainers";
+import {GenericContainer, PortWithOptionalBinding, StartedTestContainer, Wait} from "testcontainers";
 import * as ueberdb from "../../index";
 import {deepEqual, rejects} from "assert";
 import {databases} from "../lib/databases";
@@ -15,16 +15,38 @@ describe('elasticsearch test', ()=>{
     const portMappings: PortWithOptionalBinding[] = [
         { container: 9200, host: 9200 }
     ];
-    let container: StartedTestContainer
+    let container: StartedTestContainer | undefined;
 
     beforeAll(async () => {
-        container = await new GenericContainer("elasticsearch:7.17.3")
+        // We deliberately stay on Elasticsearch 7.17.x because the
+        // 'migration to schema v2 / existing data' tests below intentionally
+        // write data in the legacy ES7 type-based schema (via client.index
+        // with `type:`) to verify the v1 -> v2 migration code path. ES 8
+        // removed mapping types entirely so those tests literally cannot run
+        // against an ES 8 server.
+        //
+        // What we DO need to fix vs vanilla ES 7.17.3:
+        //  - constrain heap so the container doesn't OOM on GitHub runners
+        //  - disable xpack.security so we can hit it over plain HTTP
+        //  - use a /_cluster/health wait strategy so testcontainers actually
+        //    waits for ES to be ready instead of returning the moment the
+        //    container is started (which is what caused the original
+        //    "container stopped/paused" failures).
+        container = await new GenericContainer("elasticsearch:7.17.27")
             .withEnvironment({
-                "discovery.type": "single-node"
+                "discovery.type": "single-node",
+                "ES_JAVA_OPTS": "-Xms512m -Xmx512m",
+                "xpack.security.enabled": "false",
+                "bootstrap.memory_lock": "false",
+                "cluster.routing.allocation.disk.threshold_enabled": "false",
             })
             .withExposedPorts(...portMappings)
+            .withWaitStrategy(
+                Wait.forHttp("/_cluster/health?wait_for_status=yellow&timeout=60s", 9200)
+                    .forStatusCode(200))
+            .withStartupTimeout(240000)
             .start()
-    }, 120000)
+    }, 360000)
 
     test_db('elasticsearch')
     describe(__filename, function (this: any) {
@@ -145,6 +167,16 @@ describe('elasticsearch test', ()=>{
 
 
     afterAll(async () => {
-        await container.stop()
+        // Defensive: if beforeAll failed mid-flight, container may be undefined.
+        // Without the guard, afterAll throws "Cannot read properties of
+        // undefined (reading 'stop')" and masks the real beforeAll error.
+        if (container != null) {
+            try {
+                await container.stop();
+            } catch (err) {
+                // Best-effort cleanup; don't mask test failures.
+                console.warn("elasticsearch container stop failed:", err);
+            }
+        }
     })
 })
