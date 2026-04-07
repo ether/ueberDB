@@ -12,6 +12,13 @@ module.exports = {
   plugins: [
     typescript({
       tsconfig: 'tsconfig.json',
+      // rollup-plugin-typescript2@0.36 depends on @rollup/pluginutils@4,
+      // whose picomatch doesn't support extglobs — so the plugin's default
+      // include pattern (`*.ts+(|x)`) silently matches nothing and every
+      // .ts file is skipped, leaving rollup to parse raw TypeScript and
+      // crash. Pass explicit globs that pluginutils@4 can handle.
+      include: ['*.ts', '**/*.ts'],
+      exclude: ['*.d.ts', '**/*.d.ts'],
     }),
     nodeResolve(),
     commonjs(),
