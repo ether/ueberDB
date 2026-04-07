@@ -55,7 +55,7 @@
     "semver": "^7.7.2",
     "simple-git": "^3.30.0",
     "surrealdb": "^1.3.2",
-    "testcontainers": "^10.28.0",
+    "testcontainers": "^11.13.0",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4",
     "wtfnode": "^0.10.0"
