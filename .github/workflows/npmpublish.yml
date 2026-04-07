@@ -37,7 +37,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - run: pnpm install --frozen-lockfile
         name: Install pnpm dependencies
       - run: pnpm run test ${{ matrix.db }}
