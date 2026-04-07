@@ -118,9 +118,9 @@ export default class SurrealDB extends AbstractDatabase {
         if (key.startsWith(WILDCARD) && key.endsWith(WILDCARD)) {
             return `${keyExpr} CONTAINS $${keyExpr}`;
         } else if (key.startsWith(WILDCARD)) {
-            return `string::endsWith(${keyExpr}, $${keyExpr})`;
+            return `string::ends_with(${keyExpr}, $${keyExpr})`;
         } else if (key.endsWith(WILDCARD)) {
-            return `string::startsWith(${keyExpr}, $${keyExpr})`;
+            return `string::starts_with(${keyExpr}, $${keyExpr})`;
         } else {
             return `${keyExpr} = $${keyExpr}`;
         }
@@ -130,9 +130,9 @@ export default class SurrealDB extends AbstractDatabase {
         if (key.startsWith(WILDCARD) && key.endsWith(WILDCARD)) {
             return `key CONTAINSNOT $${keyExpr}`;
         } else if (key.startsWith(WILDCARD)) {
-            return `string::endsWith(key, $${keyExpr}) == false`;
+            return `string::ends_with(key, $${keyExpr}) == false`;
         } else if (key.endsWith(WILDCARD)) {
-            return `string::startsWith(key, $${keyExpr}) == false`;
+            return `string::starts_with(key, $${keyExpr}) == false`;
         } else {
             return `key != $${keyExpr}`;
         }
