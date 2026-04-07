@@ -18,29 +18,27 @@ describe('elasticsearch test', ()=>{
     let container: StartedTestContainer | undefined;
 
     beforeAll(async () => {
-        // - Image bumped to 8.x to match the @elastic/elasticsearch@^8 client
-        //   in package.json (a 7.x server with an 8.x client can negotiate
-        //   compatibility but is more failure-prone in CI).
-        // - Heap is constrained to 512m so the container doesn't OOM during
-        //   bootstrap on the GitHub-hosted runner.
-        // - xpack.security disabled so we can hit the cluster over plain HTTP
-        //   without certificates.
-        // - Wait strategy hits /_cluster/health?wait_for_status=yellow which
-        //   is the canonical "elasticsearch is ready" probe and is more
-        //   reliable than the unauthenticated root URL.
-        container = await new GenericContainer("elasticsearch:8.15.3")
+        // We deliberately stay on Elasticsearch 7.17.x because the
+        // 'migration to schema v2 / existing data' tests below intentionally
+        // write data in the legacy ES7 type-based schema (via client.index
+        // with `type:`) to verify the v1 -> v2 migration code path. ES 8
+        // removed mapping types entirely so those tests literally cannot run
+        // against an ES 8 server.
+        //
+        // What we DO need to fix vs vanilla ES 7.17.3:
+        //  - constrain heap so the container doesn't OOM on GitHub runners
+        //  - disable xpack.security so we can hit it over plain HTTP
+        //  - use a /_cluster/health wait strategy so testcontainers actually
+        //    waits for ES to be ready instead of returning the moment the
+        //    container is started (which is what caused the original
+        //    "container stopped/paused" failures).
+        container = await new GenericContainer("elasticsearch:7.17.27")
             .withEnvironment({
                 "discovery.type": "single-node",
                 "ES_JAVA_OPTS": "-Xms512m -Xmx512m",
                 "xpack.security.enabled": "false",
-                "xpack.security.http.ssl.enabled": "false",
                 "bootstrap.memory_lock": "false",
                 "cluster.routing.allocation.disk.threshold_enabled": "false",
-                // ES 8 defaults to action.destructive_requires_name=true,
-                // which blocks the test cleanup `DELETE /ueberdb_test*` with
-                // "Wildcard expressions or all indices are not allowed".
-                // The test environment is throw-away, so allow wildcard deletes.
-                "action.destructive_requires_name": "false",
             })
             .withExposedPorts(...portMappings)
             .withWaitStrategy(
