@@ -5,7 +5,7 @@ import * as ueberdb from "../../index";
 import {deepEqual, rejects} from "assert";
 import {databases} from "../lib/databases";
 import {ConsoleLogger} from "../../lib/logging";
-import es from "@elastic/elasticsearch";
+import {Client} from "@elastic/elasticsearch";
 const {databases: {elasticsearch: cfg}} = {databases};
 const logger = new class extends ConsoleLogger {
     info() { }
@@ -54,7 +54,7 @@ describe('elasticsearch test', ()=>{
         let client: any;
         let db: any;
         beforeEach(async () => {
-            client = new es.Client({
+            client = new Client({
                 node: `http://${cfg.host || '127.0.0.1'}:${cfg.port || '9200'}`,
             });
             await client.indices.delete({index: `${base_index}*`}, {ignore: [404]});
