@@ -15,8 +15,8 @@ importers:
         specifier: ^6.1.0
         version: 6.1.0(rollup@4.60.1)
       '@rollup/plugin-node-resolve':
-        specifier: ^16.0.1
-        version: 16.0.1(rollup@4.60.1)
+        specifier: ^16.0.3
+        version: 16.0.3(rollup@4.60.1)
       '@rollup/plugin-terser':
         specifier: ^0.4.4
         version: 0.4.4(rollup@4.60.1)
@@ -630,8 +630,8 @@ packages:
       rollup:
         optional: true
 
-  '@rollup/plugin-node-resolve@16.0.1':
-    resolution: {integrity: sha512-tk5YCxJWIG81umIvNkSod2qK5KyQW19qcBF/B78n1bjtOON6gzKoVeSzAE8yHCZEDmqkHKkxplExA8KzdJLJpA==}
+  '@rollup/plugin-node-resolve@16.0.3':
+    resolution: {integrity: sha512-lUYM3UBGuM93CnMPG1YocWu7X802BrNF3jW2zny5gQyLQgRFJhV1Sq0Zi74+dh/6NBx1DxFC4b4GXg9wUCG5Qg==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
       rollup: ^2.78.0||^3.0.0||^4.0.0
@@ -2656,8 +2656,8 @@ packages:
   resolve-pkg-maps@1.0.0:
     resolution: {integrity: sha512-seS2Tj26TBVOC2NIc2rOe2y2ZO7efxITtLZcGSOnHHNOQ7CkiUBfw0Iw2ck6xkIhPwLhKNLS8BO+hEpngQlqzw==}
 
-  resolve@1.22.10:
-    resolution: {integrity: sha512-NPRy+/ncIMeDlTAsuqwKIiferiawhefFJtkNSW0qZJEqMEb+qBt/77B/jGeeek+F0uOeN05CDa6HXbbIgtVX4w==}
+  resolve@1.22.11:
+    resolution: {integrity: sha512-RfqAvLnMl313r7c9oclB1HhUEAezcpLjz95wFH4LVuhk9JF/r22qmVP9AMmOU4vMX7Q8pN8jwNg/CSpdFnMjTQ==}
     engines: {node: '>= 0.4'}
     hasBin: true
 
@@ -3850,13 +3850,13 @@ snapshots:
     optionalDependencies:
       rollup: 4.60.1
 
-  '@rollup/plugin-node-resolve@16.0.1(rollup@4.60.1)':
+  '@rollup/plugin-node-resolve@16.0.3(rollup@4.60.1)':
     dependencies:
       '@rollup/pluginutils': 5.3.0(rollup@4.60.1)
       '@types/resolve': 1.20.2
       deepmerge: 4.3.1
       is-module: 1.0.0
-      resolve: 1.22.10
+      resolve: 1.22.11
     optionalDependencies:
       rollup: 4.60.1
 
@@ -4907,7 +4907,7 @@ snapshots:
     dependencies:
       debug: 3.2.7
       is-core-module: 2.16.1
-      resolve: 1.22.10
+      resolve: 1.22.11
     transitivePeerDependencies:
       - supports-color
 
@@ -5003,7 +5003,7 @@ snapshots:
       is-builtin-module: 3.2.1
       is-core-module: 2.16.1
       minimatch: 3.1.2
-      resolve: 1.22.10
+      resolve: 1.22.11
       semver: 7.7.2
 
   eslint-plugin-prefer-arrow@1.2.3(eslint@9.35.0(jiti@2.4.2)):
@@ -6025,7 +6025,7 @@ snapshots:
 
   resolve-pkg-maps@1.0.0: {}
 
-  resolve@1.22.10:
+  resolve@1.22.11:
     dependencies:
       is-core-module: 2.16.1
       path-parse: 1.0.7
