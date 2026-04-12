@@ -53,17 +53,26 @@ describe('elasticsearch test', ()=>{
         const {base_index = 'ueberdb_test'} = cfg;
         let client: any;
         let db: any;
+        const deleteTestIndices = async () => {
+            const res = await client.indices.get({index: `${base_index}*`}, {ignore: [404]});
+            const indices = Object.keys(res ?? {});
+            if (indices.length > 0) {
+                await client.indices.delete({index: indices}, {ignore: [404]});
+            }
+        };
         beforeEach(async () => {
             client = new Client({
                 node: `http://${cfg.host || '127.0.0.1'}:${cfg.port || '9200'}`,
             });
-            await client.indices.delete({index: `${base_index}*`}, {ignore: [404]});
+            await deleteTestIndices();
         });
         afterEach(async () => {
             if (db != null) { await db.close(); }
             db = null;
-            await client.indices.delete({index: `${base_index}*`}, {ignore: [404]});
-            client.close();
+            if (client != null) {
+                await deleteTestIndices();
+                client.close();
+            }
             client = null;
         });
         describe('migration to schema v2', () => {
