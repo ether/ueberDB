@@ -39,6 +39,28 @@ const mappings: estypes.MappingTypeMapping = {
   },
 };
 
+const legacyDocToSchema2Key = (index: string, id: string, type: unknown, v1BaseIndex?: string) => {
+  const legacyType = typeof type === 'string' && type !== '' && type !== '_doc' ? type : null;
+  if (v1BaseIndex && index !== v1BaseIndex) {
+    const parts = index.slice(v1BaseIndex.length + 1).split('-');
+    if (parts.length !== 2) {
+      throw new Error(`unable to migrate records from index ${index} due to data ambiguity`);
+    }
+    if (legacyType != null) return `${parts[0]}:${decodeURIComponent(legacyType)}:${parts[1]}:${id}`;
+    const idParts = id.split(':');
+    if (idParts.length !== 2) {
+      throw new Error(`unable to migrate records from index ${index} due to data ambiguity`);
+    }
+    return `${parts[0]}:${idParts[0]}:${parts[1]}:${idParts[1]}`;
+  }
+  if (legacyType != null) return `${legacyType}:${id}`;
+  const idParts = id.split(':');
+  if (idParts.length !== 2) {
+    throw new Error(`unable to migrate records from index ${index} due to missing legacy type metadata`);
+  }
+  return `${idParts[0]}:${idParts[1]}`;
+};
+
 const migrateToSchema2 = async (client: Client, v1BaseIndex: string | undefined, v2Index: string, logger: any) => {
   let recordsMigratedLastLogged = 0;
   let recordsMigrated = 0;
@@ -60,14 +82,7 @@ const migrateToSchema2 = async (client: Client, v1BaseIndex: string | undefined,
       totals.set(index, total);
       const body = [];
       for (const {_id, _type, _source: {val}} of hits) {
-        let key = `${_type}:${_id}`;
-        if (v1BaseIndex && index !== v1BaseIndex) {
-          const parts = index.slice(v1BaseIndex.length + 1).split('-');
-          if (parts.length !== 2) {
-            throw new Error(`unable to migrate records from index ${index} due to data ambiguity`);
-          }
-          key = `${parts[0]}:${decodeURIComponent(_type)}:${parts[1]}:${_id}`;
-        }
+        const key = legacyDocToSchema2Key(index, _id, _type, v1BaseIndex);
         body.push({index: {_id: keyToId(key)}}, {key, value: JSON.parse(val)});
       }
       await client.bulk({index: v2Index, body});
