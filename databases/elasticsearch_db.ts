@@ -19,9 +19,9 @@ import assert, {equal} from 'assert';
 
 import {Buffer} from 'buffer';
 import {createHash} from 'crypto';
-import {Client} from 'elasticsearch8';
+import {Client} from '@elastic/elasticsearch';
+import type {estypes} from '@elastic/elasticsearch';
 import {BulkObject} from './cassandra_db';
-import {MappingTypeMapping} from "elasticsearch8/lib/api/types";
 
 const schema = '2';
 
@@ -30,7 +30,7 @@ const keyToId = (key:string) => {
   return keyBuf.length > 512 ? createHash('sha512').update(keyBuf).digest('hex') : key;
 };
 
-const mappings: MappingTypeMapping = {
+const mappings: estypes.MappingTypeMapping = {
   // _id is expected to equal key, unless the UTF-8 encoded key is > 512 bytes, in which case it is
   // the hex-encoded sha512 hash of the UTF-8 encoded key.
   properties: {
