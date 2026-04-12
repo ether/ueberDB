@@ -18,7 +18,7 @@ describe('elasticsearch test', ()=>{
     let container: StartedTestContainer
 
     beforeAll(async () => {
-        container = await new GenericContainer("elasticsearch:7.17.3")
+        container = await new GenericContainer("elasticsearch:9.3.3")
             .withEnvironment({
                 "discovery.type": "single-node"
             })

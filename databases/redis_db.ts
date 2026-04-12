@@ -15,11 +15,11 @@
  */
 
 import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
-import {createClient,  RedisClientOptions} from 'redis';
+import {createClient,  RedisClientOptions, RedisClientType} from 'redis';
 import {BulkObject} from './cassandra_db';
 
 export default class RedisDB extends AbstractDatabase {
-  public _client: any
+  public _client:  RedisClientType | null
   constructor(settings:Settings) {
     super(settings);
     this._client = null;
