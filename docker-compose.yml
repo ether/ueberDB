@@ -9,7 +9,7 @@ services:
           COUCHDB_USER: ueberdb
           COUCHDB_PASSWORD: ueberdb
     elasticsearch:
-        image: elasticsearch:7.17.3
+        image: elasticsearch:9.3.3
         ports:
         - 9200:9200
         environment:

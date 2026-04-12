@@ -5,7 +5,7 @@ import * as ueberdb from "../../index";
 import {deepEqual, rejects} from "assert";
 import {databases} from "../lib/databases";
 import {ConsoleLogger} from "../../lib/logging";
-import es from "elasticsearch8";
+import es from "@elastic/elasticsearch";
 const {databases: {elasticsearch: cfg}} = {databases};
 const logger = new class extends ConsoleLogger {
     info() { }
@@ -32,7 +32,7 @@ describe('elasticsearch test', ()=>{
         //    waits for ES to be ready instead of returning the moment the
         //    container is started (which is what caused the original
         //    "container stopped/paused" failures).
-        container = await new GenericContainer("elasticsearch:7.17.27")
+        container = await new GenericContainer("elasticsearch:9.3.3")
             .withEnvironment({
                 "discovery.type": "single-node",
                 "ES_JAVA_OPTS": "-Xms512m -Xmx512m",
