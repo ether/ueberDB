@@ -29,7 +29,7 @@
     "@rollup/plugin-terser": "^0.4.4",
     "@types/async": "^3.2.25",
     "@types/mssql": "^9.1.8",
-    "@types/node": "^22.18.1",
+    "@types/node": "^25.6.0",
     "@types/pg": "^8.15.5",
     "@types/rethinkdb": "^2.3.21",
     "@types/wtfnode": "^0.7.3",
