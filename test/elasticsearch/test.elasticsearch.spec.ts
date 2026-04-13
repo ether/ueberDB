@@ -5,7 +5,7 @@ import * as ueberdb from "../../index";
 import {deepEqual, rejects} from "assert";
 import {databases} from "../lib/databases";
 import {ConsoleLogger} from "../../lib/logging";
-import es from "elasticsearch8";
+import {Client} from "@elastic/elasticsearch";
 const {databases: {elasticsearch: cfg}} = {databases};
 const logger = new class extends ConsoleLogger {
     info() { }
@@ -18,21 +18,17 @@ describe('elasticsearch test', ()=>{
     let container: StartedTestContainer | undefined;
 
     beforeAll(async () => {
-        // We deliberately stay on Elasticsearch 7.17.x because the
-        // 'migration to schema v2 / existing data' tests below intentionally
-        // write data in the legacy ES7 type-based schema (via client.index
-        // with `type:`) to verify the v1 -> v2 migration code path. ES 8
-        // removed mapping types entirely so those tests literally cannot run
-        // against an ES 8 server.
+        // Use a modern Elasticsearch image and seed legacy schema-v1 data
+        // without mapping types so migration coverage works on current releases.
         //
-        // What we DO need to fix vs vanilla ES 7.17.3:
+        // What we need for reliable CI:
         //  - constrain heap so the container doesn't OOM on GitHub runners
         //  - disable xpack.security so we can hit it over plain HTTP
         //  - use a /_cluster/health wait strategy so testcontainers actually
         //    waits for ES to be ready instead of returning the moment the
         //    container is started (which is what caused the original
         //    "container stopped/paused" failures).
-        container = await new GenericContainer("elasticsearch:7.17.27")
+        container = await new GenericContainer("elasticsearch:9.3.3")
             .withEnvironment({
                 "discovery.type": "single-node",
                 "ES_JAVA_OPTS": "-Xms512m -Xmx512m",
@@ -53,17 +49,26 @@ describe('elasticsearch test', ()=>{
         const {base_index = 'ueberdb_test'} = cfg;
         let client: any;
         let db: any;
+        const deleteTestIndices = async () => {
+            const res = await client.indices.get({index: `${base_index}*`}, {ignore: [404]});
+            const indices = Object.keys(res ?? {});
+            if (indices.length > 0) {
+                await client.indices.delete({index: indices}, {ignore: [404]});
+            }
+        };
         beforeEach(async () => {
-            client = new es.Client({
+            client = new Client({
                 node: `http://${cfg.host || '127.0.0.1'}:${cfg.port || '9200'}`,
             });
-            await client.indices.delete({index: `${base_index}*`}, {ignore: [404]});
+            await deleteTestIndices();
         });
         afterEach(async () => {
             if (db != null) { await db.close(); }
             db = null;
-            await client.indices.delete({index: `${base_index}*`}, {ignore: [404]});
-            client.close();
+            if (client != null) {
+                await deleteTestIndices();
+                client.close();
+            }
             client = null;
         });
         describe('migration to schema v2', () => {
@@ -100,10 +105,12 @@ describe('elasticsearch test', ()=>{
                 const setOld = async (k: any, v: any) => {
                     const kp = k.split(':');
                     const index = kp.length === 4 ? `${base_index}-${kp[0]}-${kp[2]}` : base_index;
+                    // In modern Elasticsearch, mapping types are gone. Persist legacy-v1 docs with
+                    // a composite _id so migration can reconstruct the original key components.
+                    const id = kp.length === 4 ? `${kp[1]}:${kp[3]}` : `${kp[0]}:${kp[1]}`;
                     await client.index({
                         index,
-                        type: kp.length === 4 ? encodeURIComponent(kp[1]) : kp[0],
-                        id: kp.length === 4 ? kp[3] : encodeURIComponent(kp[1]),
+                        id,
                         body: {
                             // The old elasticsearch driver was inconsistent: doBulk() called JSON.parse() on the
                             // value from ueberdb before writing, but set() did not. We'll assume that any existing

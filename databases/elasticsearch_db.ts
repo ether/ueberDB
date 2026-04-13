@@ -19,9 +19,9 @@ import assert, {equal} from 'assert';
 
 import {Buffer} from 'buffer';
 import {createHash} from 'crypto';
-import {Client} from 'elasticsearch8';
+import {Client} from '@elastic/elasticsearch';
+import type {estypes} from '@elastic/elasticsearch';
 import {BulkObject} from './cassandra_db';
-import {MappingTypeMapping} from "elasticsearch8/lib/api/types";
 
 const schema = '2';
 
@@ -30,13 +30,35 @@ const keyToId = (key:string) => {
   return keyBuf.length > 512 ? createHash('sha512').update(keyBuf).digest('hex') : key;
 };
 
-const mappings: MappingTypeMapping = {
+const mappings: estypes.MappingTypeMapping = {
   // _id is expected to equal key, unless the UTF-8 encoded key is > 512 bytes, in which case it is
   // the hex-encoded sha512 hash of the UTF-8 encoded key.
   properties: {
     key: {type: 'wildcard'}, // For findKeys, and because _id is limited to 512 bytes.
     value: {type: 'object', enabled: false}, // Values should be opaque to Elasticsearch.
   },
+};
+
+const legacyDocToSchema2Key = (index: string, id: string, type: unknown, v1BaseIndex?: string) => {
+  const legacyType = typeof type === 'string' && type !== '' && type !== '_doc' ? type : null;
+  if (v1BaseIndex && index !== v1BaseIndex) {
+    const parts = index.slice(v1BaseIndex.length + 1).split('-');
+    if (parts.length !== 2) {
+      throw new Error(`unable to migrate records from index ${index} due to data ambiguity`);
+    }
+    if (legacyType != null) return `${parts[0]}:${decodeURIComponent(legacyType)}:${parts[1]}:${id}`;
+    const idParts = id.split(':');
+    if (idParts.length !== 2) {
+      throw new Error(`unable to migrate records from index ${index} due to data ambiguity`);
+    }
+    return `${parts[0]}:${idParts[0]}:${parts[1]}:${idParts[1]}`;
+  }
+  if (legacyType != null) return `${legacyType}:${id}`;
+  const idParts = id.split(':');
+  if (idParts.length !== 2) {
+    throw new Error(`unable to migrate records from index ${index} due to missing legacy type metadata`);
+  }
+  return `${idParts[0]}:${idParts[1]}`;
 };
 
 const migrateToSchema2 = async (client: Client, v1BaseIndex: string | undefined, v2Index: string, logger: any) => {
@@ -60,14 +82,7 @@ const migrateToSchema2 = async (client: Client, v1BaseIndex: string | undefined,
       totals.set(index, total);
       const body = [];
       for (const {_id, _type, _source: {val}} of hits) {
-        let key = `${_type}:${_id}`;
-        if (v1BaseIndex && index !== v1BaseIndex) {
-          const parts = index.slice(v1BaseIndex.length + 1).split('-');
-          if (parts.length !== 2) {
-            throw new Error(`unable to migrate records from index ${index} due to data ambiguity`);
-          }
-          key = `${parts[0]}:${decodeURIComponent(_type)}:${parts[1]}:${_id}`;
-        }
+        const key = legacyDocToSchema2Key(index, _id, _type, v1BaseIndex);
         body.push({index: {_id: keyToId(key)}}, {key, value: JSON.parse(val)});
       }
       await client.bulk({index: v2Index, body});
