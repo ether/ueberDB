@@ -41,16 +41,36 @@
     "surrealdb": "^2.0.3"
   },
   "peerDependenciesMeta": {
-    "@elastic/elasticsearch": { "optional": true },
-    "cassandra-driver": { "optional": true },
-    "mongodb": { "optional": true },
-    "mssql": { "optional": true },
-    "mysql2": { "optional": true },
-    "nano": { "optional": true },
-    "pg": { "optional": true },
-    "redis": { "optional": true },
-    "rethinkdb": { "optional": true },
-    "surrealdb": { "optional": true }
+    "@elastic/elasticsearch": {
+      "optional": true
+    },
+    "cassandra-driver": {
+      "optional": true
+    },
+    "mongodb": {
+      "optional": true
+    },
+    "mssql": {
+      "optional": true
+    },
+    "mysql2": {
+      "optional": true
+    },
+    "nano": {
+      "optional": true
+    },
+    "pg": {
+      "optional": true
+    },
+    "redis": {
+      "optional": true
+    },
+    "rethinkdb": {
+      "optional": true
+    },
+    "surrealdb": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@elastic/elasticsearch": "^9.3.4",
@@ -85,7 +105,7 @@
     "url": "https://github.com/ether/ueberDB.git"
   },
   "main": "./dist/index.js",
-  "version": "5.0.41",
+  "version": "5.0.42",
   "bugs": {
     "url": "https://github.com/ether/ueberDB/issues"
   },
