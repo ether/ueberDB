@@ -110,11 +110,10 @@
     "url": "https://github.com/ether/ueberDB/issues"
   },
   "files": [
-    "dist/databases",
-    "dist/index.js",
+    "dist/*.js",
     "dist/*.d.ts",
-    "dist/lib",
-    "dist/_virtual"
+    "dist/databases",
+    "dist/lib"
   ],
   "homepage": "https://github.com/ether/ueberDB",
   "scripts": {
