@@ -67,7 +67,8 @@
     "dist/databases",
     "dist/index.js",
     "dist/*.d.ts",
-    "dist/lib"
+    "dist/lib",
+    "dist/_virtual"
   ],
   "homepage": "https://github.com/ether/ueberDB",
   "scripts": {
