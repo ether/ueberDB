@@ -22,6 +22,36 @@
       "name": "Peter Martischka"
     }
   ],
+  "dependencies": {
+    "async": "^3.2.6",
+    "dirty-ts": "^1.1.8",
+    "rusty-store-kv": "^1.3.1",
+    "simple-git": "^3.36.0"
+  },
+  "peerDependencies": {
+    "@elastic/elasticsearch": "^9.3.4",
+    "cassandra-driver": "^4.8.0",
+    "mongodb": "^7.1.1",
+    "mssql": "^12.2.1",
+    "mysql2": "^3.22.0",
+    "nano": "^11.0.5",
+    "pg": "^8.20.0",
+    "redis": "^5.11.0",
+    "rethinkdb": "^2.4.2",
+    "surrealdb": "^2.0.3"
+  },
+  "peerDependenciesMeta": {
+    "@elastic/elasticsearch": { "optional": true },
+    "cassandra-driver": { "optional": true },
+    "mongodb": { "optional": true },
+    "mssql": { "optional": true },
+    "mysql2": { "optional": true },
+    "nano": { "optional": true },
+    "pg": { "optional": true },
+    "redis": { "optional": true },
+    "rethinkdb": { "optional": true },
+    "surrealdb": { "optional": true }
+  },
   "devDependencies": {
     "@elastic/elasticsearch": "^9.3.4",
     "@types/async": "^3.2.25",
@@ -30,10 +60,8 @@
     "@types/pg": "^8.20.0",
     "@types/rethinkdb": "^2.3.21",
     "@types/wtfnode": "^0.10.0",
-    "async": "^3.2.6",
     "cassandra-driver": "^4.8.0",
     "cli-table3": "^0.6.5",
-    "dirty-ts": "^1.1.8",
     "mongodb": "^7.1.1",
     "oxfmt": "^0.45.0",
     "oxlint": "^1.60.0",
@@ -45,9 +73,7 @@
     "redis": "^5.11.0",
     "rethinkdb": "^2.4.2",
     "rolldown": "^1.0.0-rc.15",
-    "rusty-store-kv": "^1.3.1",
     "semver": "^7.7.4",
-    "simple-git": "^3.36.0",
     "surrealdb": "^2.0.3",
     "testcontainers": "^11.14.0",
     "typescript": "^6.0.2",
