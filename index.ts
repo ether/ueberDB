@@ -21,23 +21,9 @@ import {Database as DatabaseCache} from './lib/CacheAndBufferLayer';
 import {normalizeLogger} from './lib/logging';
 import {callbackify} from 'util';
 import {Settings} from './lib/AbstractDatabase';
-import Cassandra_db from './databases/cassandra_db'
-import Couch_db from './databases/couch_db'
-import Dirty_db from './databases/dirty_db'
-import Dirty_git_db from './databases/dirty_git_db'
-import Elasticsearch_db from './databases/elasticsearch_db'
-import MemoryDB from './databases/memory_db'
-import Mock_db from './databases/mock_db'
-import Mongodb_db from './databases/mongodb_db'
-import MSSQL from './databases/mssql_db'
-import Mysql_db from './databases/mysql_db'
-import Postgres_db from './databases/postgres_db'
-import Postgrespool_db from './databases/postgrespool_db'
-import RedisDB from './databases/redis_db'
-import Rethink_db from './databases/rethink_db'
-import SQLiteDB from './databases/sqlite_db'
-import SurrealDB from './databases/surrealdb_db'
-import Rusty_db from "./databases/rusty_db";
+// Database drivers are loaded lazily in initDB() so that only the selected
+// backend's dependencies need to be installed. This avoids crashes when
+// optional drivers (cassandra, mongodb, mssql, etc.) are not present.
 
 type CBDBType = {
   [key: string]:Function
@@ -122,52 +108,54 @@ export class Database {
    * @param callback - Deprecated. Node-style callback. If null, a Promise is returned.
    */
   init(callback = null) {
-    const db:any = this.initDB();
-    db.logger = this.logger;
-    this.db = new DatabaseCache(db, this.wrapperSettings, this.logger);
-    this.metrics = this.db.metrics;
+    const p = this.initDB().then((db: any) => {
+      db.logger = this.logger;
+      this.db = new DatabaseCache(db, this.wrapperSettings, this.logger);
+      this.metrics = this.db.metrics;
+      return this.db.init();
+    });
     if (callback != null) {
-      return cbDb.init.call(this.db);
+      return cbDb.init.call({init: () => p});
     }
-    return this.db.init();
+    return p;
   }
 
-  initDB(){
+  async initDB(){
     switch (this.type){
         case 'mysql':
-            return new Mysql_db(this.dbSettings);
+            return new (await import('./databases/mysql_db')).default(this.dbSettings);
         case 'postgres':
-          return new Postgres_db(this.dbSettings);
+            return new (await import('./databases/postgres_db')).default(this.dbSettings);
         case 'sqlite':
-          return new SQLiteDB(this.dbSettings);
+            return new (await import('./databases/sqlite_db')).default(this.dbSettings);
         case 'rustydb':
-            return new Rusty_db(this.dbSettings);
+            return new (await import('./databases/rusty_db')).default(this.dbSettings);
         case 'mongodb':
-          return new Mongodb_db(this.dbSettings);
+            return new (await import('./databases/mongodb_db')).default(this.dbSettings);
         case 'redis':
-          return new RedisDB(this.dbSettings);
+            return new (await import('./databases/redis_db')).default(this.dbSettings);
         case 'cassandra':
-          return new Cassandra_db(this.dbSettings);
+            return new (await import('./databases/cassandra_db')).default(this.dbSettings);
         case 'dirty':
-          return new Dirty_db(this.dbSettings);
+            return new (await import('./databases/dirty_db')).default(this.dbSettings);
         case 'dirtygit':
-            return new Dirty_git_db(this.dbSettings);
+            return new (await import('./databases/dirty_git_db')).default(this.dbSettings);
         case 'elasticsearch':
-            return new Elasticsearch_db(this.dbSettings);
+            return new (await import('./databases/elasticsearch_db')).default(this.dbSettings);
         case 'memory':
-            return new MemoryDB(this.dbSettings);
+            return new (await import('./databases/memory_db')).default(this.dbSettings);
         case 'mock':
-            return new Mock_db(this.dbSettings);
+            return new (await import('./databases/mock_db')).default(this.dbSettings);
         case 'mssql':
-            return new MSSQL(this.dbSettings);
+            return new (await import('./databases/mssql_db')).default(this.dbSettings);
         case 'postgrespool':
-            return new Postgrespool_db(this.dbSettings);
+            return new (await import('./databases/postgrespool_db')).default(this.dbSettings);
         case 'rethink':
-            return new Rethink_db(this.dbSettings);
+            return new (await import('./databases/rethink_db')).default(this.dbSettings);
         case 'couch':
-            return new Couch_db(this.dbSettings);
+            return new (await import('./databases/couch_db')).default(this.dbSettings);
         case 'surrealdb':
-            return new SurrealDB(this.dbSettings);
+            return new (await import('./databases/surrealdb_db')).default(this.dbSettings);
         default:
             throw new Error('Invalid database type');
     }
