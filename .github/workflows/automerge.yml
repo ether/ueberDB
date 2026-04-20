@@ -1,29 +1,27 @@
-name: Dependabot Automerge
+name: Dependabot auto-merge
+
+on: pull_request
+
 permissions:
   contents: write
   pull-requests: write
-on:
-  workflow_run:
-    workflows:
-      - CI
-    types:
-      - completed
 
 jobs:
   automerge:
-    if: >
-      github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.event == 'push' &&
-      github.event.workflow_run.actor.login == 'dependabot[bot]'
     runs-on: ubuntu-latest
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
+      - name: Fetch Dependabot metadata
+        id: meta
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
 
-      - name: Automerge
-        uses: "pascalgn/automerge-action@v0.16.4"
+      - name: Enable auto-merge for patch and minor updates
+        if: >-
+          steps.meta.outputs.update-type == 'version-update:semver-patch' ||
+          steps.meta.outputs.update-type == 'version-update:semver-minor'
+        run: gh pr merge --auto --squash "$PR_URL"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MERGE_METHOD: squash
-          MERGE_LABELS: ""
-          MERGE_RETRY_SLEEP: "100000"
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
