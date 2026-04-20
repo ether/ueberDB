@@ -58,7 +58,7 @@
     "randexp-ts": "^1.0.5",
     "redis": "^5.12.1",
     "rethinkdb": "^2.4.2",
-    "rolldown": "^1.0.0-rc.15",
+    "rolldown": "^1.0.0-rc.16",
     "semver": "^7.7.4",
     "surrealdb": "^2.0.3",
     "testcontainers": "^11.14.0",
