@@ -62,7 +62,7 @@
     "semver": "^7.7.4",
     "surrealdb": "^2.0.3",
     "testcontainers": "^11.14.0",
-    "typescript": "^6.0.2",
+    "typescript": "^6.0.3",
     "vitest": "^4.1.4",
     "wtfnode": "^0.10.1"
   },
