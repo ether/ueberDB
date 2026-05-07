@@ -24,8 +24,8 @@ importers:
         specifier: ^7.1.1
         version: 7.1.1
       mssql:
-        specifier: ^12.3.1
-        version: 12.3.1(@azure/core-client@1.10.1)
+        specifier: ^12.5.2
+        version: 12.5.2(@azure/core-client@1.10.1)
       mysql2:
         specifier: ^3.22.3
         version: 3.22.3(@types/node@25.6.0)
@@ -1659,9 +1659,9 @@ packages:
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
 
-  mssql@12.3.1:
-    resolution: {integrity: sha512-vejZVkcJE6QoXOwt0nwQ79zpnnyworRmIs81qSDWTFUPui6oVv2bs06Tx2iHxrslxUXuXAJevFzWwYjO7mVeOg==}
-    engines: {node: '>=18'}
+  mssql@12.5.2:
+    resolution: {integrity: sha512-rPXZdvYGCayb4+pRmqZ3oymDJB4ZrMpjnZfs3/EZYg8cXfYMWHZo8Kh5zVxny0GyRfPOCslcGuEEMUIyCWRRxg==}
+    engines: {node: '>=18.19.0'}
     hasBin: true
 
   mysql2@3.22.3:
@@ -3660,7 +3660,7 @@ snapshots:
 
   ms@2.1.3: {}
 
-  mssql@12.3.1(@azure/core-client@1.10.1):
+  mssql@12.5.2(@azure/core-client@1.10.1):
     dependencies:
       '@tediousjs/connection-string': 1.1.0
       commander: 11.1.0
