@@ -23,7 +23,7 @@
     }
   ],
   "dependencies": {
-    "@elastic/elasticsearch": "^9.3.4",
+    "@elastic/elasticsearch": "^9.4.0",
     "async": "^3.2.6",
     "cassandra-driver": "^4.8.0",
     "dirty-ts": "^1.1.8",
@@ -39,7 +39,7 @@
     "surrealdb": "^2.0.3"
   },
   "devDependencies": {
-    "@elastic/elasticsearch": "^9.3.4",
+    "@elastic/elasticsearch": "^9.4.0",
     "@types/async": "^3.2.25",
     "@types/mssql": "^12.3.0",
     "@types/node": "^25.6.0",
