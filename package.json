@@ -25,7 +25,7 @@
   "dependencies": {
     "@elastic/elasticsearch": "^9.4.0",
     "async": "^3.2.6",
-    "cassandra-driver": "^4.8.0",
+    "cassandra-driver": "^4.9.0",
     "dirty-ts": "^1.1.8",
     "mongodb": "^7.1.1",
     "mssql": "^12.5.2",
@@ -46,7 +46,7 @@
     "@types/pg": "^8.20.0",
     "@types/rethinkdb": "^2.3.21",
     "@types/wtfnode": "^0.10.0",
-    "cassandra-driver": "^4.8.0",
+    "cassandra-driver": "^4.9.0",
     "cli-table3": "^0.6.5",
     "mongodb": "^7.1.1",
     "oxfmt": "^0.48.0",
