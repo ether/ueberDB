@@ -19,27 +19,34 @@ jobs:
         db: [couch, elasticsearch, mongo, mysql, redis, mock, sqlite, memory, rusty, surrealdb]
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-      - uses: pnpm/action-setup@v5
-        name: Install pnpm
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v5
         with:
           version: 11
           run_install: false
+
+      - uses: actions/setup-node@v6
+
       - name: Get pnpm store directory
+        id: pnpm-cache
         shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-      - uses: actions/cache@v5
-        name: Setup pnpm cache
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v5
         with:
-          path: ${{ env.STORE_PATH }}
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
-      - run: pnpm install --frozen-lockfile
-        name: Install pnpm dependencies
+
+      - name: Install pnpm dependencies
+        run: pnpm install --frozen-lockfile
+
       - run: pnpm run test ${{ matrix.db }}
 
   publish-npm:
@@ -48,38 +55,42 @@ jobs:
         - test
     runs-on: ubuntu-latest
     steps:
-      -
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      -
-        uses: actions/setup-node@v6
-      - uses: pnpm/action-setup@v5
-        name: Install pnpm
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v5
         with:
           version: 10
           run_install: false
+
+      - uses: actions/setup-node@v6
+
       - name: Get pnpm store directory
+        id: pnpm-cache
         shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-      - uses: actions/cache@v5
-        name: Setup pnpm cache
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v5
         with:
-          path: ${{ env.STORE_PATH }}
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
+
       # This is required if the package has a prepare script that uses something
       # in dependencies or devDependencies. This is also needed for bumping the
       # version.
       - run: pnpm install --frozen-lockfile      # Workaround based on https://github.com/pnpm/pnpm/issues/3141
+
       - name: Set publishing config
         run: pnpm config set '//registry.npmjs.org/:_authToken' "${NODE_AUTH_TOKEN}"
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-      -
-        name: Bump version (patch)
+
+      - name: Bump version (patch)
         run: |
           LATEST_TAG=$(git describe --tags --abbrev=0) || exit 1
           NEW_COMMITS=$(git rev-list --count "${LATEST_TAG}"..) || exit 1
@@ -91,6 +102,7 @@ jobs:
           # fast-forwarded.
           git push
           git push --follow-tags
+
       # `npm publish` must come after `git push` otherwise there is a race
       # condition: If two PRs are merged back-to-back then master/main will be
       # updated with the commits from the second PR before the first PR's
@@ -101,13 +113,12 @@ jobs:
       # already-used version number. By running `npm publish` after `git push`,
       # back-to-back merges will cause the first merge's workflow to fail but
       # the second's will succeed.
-      -
-        name: Convert typescript and create dist folder
+      - name: Convert typescript and create dist folder
         run: pnpm run build
-      -
-        run: pnpm publish
-      -
-        name: Add package to etherpad organization
+
+      - run: pnpm publish
+
+      - name: Add package to etherpad organization
         run: npm access grant read-write etherpad:developers ueberdb2
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
