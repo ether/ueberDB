@@ -1,9 +1,10 @@
 import {exportedForTesting} from '../../lib/CacheAndBufferLayer';
 import assert$0 from 'assert';
-import {afterAll, describe, it, afterEach, beforeEach, beforeAll, expect} from 'vitest'
+import {fileURLToPath} from 'node:url';
+import {describe, it, afterEach, beforeEach} from 'node:test'
 const LRU = {exportedForTesting}.exportedForTesting.LRU;
 const assert = assert$0.strict;
-describe(__filename, () => {
+describe(fileURLToPath(import.meta.url), () => {
   describe('capacity = 0', () => {
     it('constructor does not throw', async () => {
       new LRU(0);

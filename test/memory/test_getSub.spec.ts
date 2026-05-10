@@ -1,8 +1,9 @@
 import assert$0 from 'assert';
 import * as ueberdb from '../../index';
-import {describe, it, afterEach, beforeEach} from 'vitest'
+import {fileURLToPath} from 'node:url';
+import {describe, it, afterEach, beforeEach} from 'node:test'
 const assert = assert$0.strict;
-describe(__filename, () => {
+describe(fileURLToPath(import.meta.url), () => {
   let db: ueberdb.Database|null;
   beforeEach(async () => {
     db = new ueberdb.Database('memory', {}, {});

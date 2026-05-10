@@ -1,19 +1,22 @@
-import {afterAll, beforeAll, describe} from "vitest";
+import {after, before, describe} from "node:test";
 import {test_db} from "../lib/test_lib";
-import {GenericContainer, PortWithOptionalBinding, StartedTestContainer} from "testcontainers";
+import {GenericContainer, type PortWithOptionalBinding, type StartedTestContainer} from "testcontainers";
 
-describe('mongo test', async () => {
+describe('mongo test', {timeout: 120000}, () => {
     const portMappings: PortWithOptionalBinding[] = [
         {container: 27017, host: 27017}
     ];
     let container: StartedTestContainer
 
-    container = await new GenericContainer("mongo:latest")
-        .withExposedPorts(...portMappings)
-        .start()
+    before(async () => {
+        container = await new GenericContainer("mongo:latest")
+            .withExposedPorts(...portMappings)
+            .start()
+    })
+
     test_db('mongodb')
 
-    afterAll(async () => {
+    after(async () => {
         await container.stop()
     })
-}, 120000)
+})

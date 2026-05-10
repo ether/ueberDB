@@ -1,11 +1,12 @@
-import {afterAll, afterEach, beforeAll, beforeEach, describe, it} from "vitest";
+import {after, afterEach, before, beforeEach, describe, it} from "node:test";
 import {test_db} from "../lib/test_lib";
-import {GenericContainer, PortWithOptionalBinding, StartedTestContainer, Wait} from "testcontainers";
+import {GenericContainer, type PortWithOptionalBinding, type StartedTestContainer, Wait} from "testcontainers";
 import * as ueberdb from "../../index";
 import {deepEqual, rejects} from "assert";
 import {databases} from "../lib/databases";
 import {ConsoleLogger} from "../../lib/logging";
 import {Client} from "@elastic/elasticsearch";
+import {fileURLToPath} from "node:url";
 const {databases: {elasticsearch: cfg}} = {databases};
 const logger = new class extends ConsoleLogger {
     info() { }
@@ -17,7 +18,7 @@ describe('elasticsearch test', ()=>{
     ];
     let container: StartedTestContainer | undefined;
 
-    beforeAll(async () => {
+    before(async () => {
         // Use a modern Elasticsearch image and seed legacy schema-v1 data
         // without mapping types so migration coverage works on current releases.
         //
@@ -42,10 +43,10 @@ describe('elasticsearch test', ()=>{
                     .forStatusCode(200))
             .withStartupTimeout(240000)
             .start()
-    }, 360000)
+    }, {timeout: 360000})
 
     test_db('elasticsearch')
-    describe(__filename, function (this: any) {
+    describe(fileURLToPath(import.meta.url), () => {
         const {base_index = 'ueberdb_test'} = cfg;
         let client: any;
         let db: any;
@@ -173,7 +174,7 @@ describe('elasticsearch test', ()=>{
     });
 
 
-    afterAll(async () => {
+    after(async () => {
         // Defensive: if beforeAll failed mid-flight, container may be undefined.
         // Without the guard, afterAll throws "Cannot read properties of
         // undefined (reading 'stop')" and masks the real beforeAll error.

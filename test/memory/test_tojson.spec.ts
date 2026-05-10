@@ -1,15 +1,16 @@
 import assert$0 from 'assert';
 import * as ueberdb from '../../index';
-import {afterAll, describe, it, afterEach, beforeEach, beforeAll, expect} from 'vitest'
+import {fileURLToPath} from 'node:url';
+import {after, describe, it, before} from 'node:test'
 
 const assert = assert$0.strict;
-describe(__filename, () => {
+describe(fileURLToPath(import.meta.url), () => {
   let db: any = null;
-  beforeAll(async () => {
+  before(async () => {
     db = new ueberdb.Database('memory', {}, {});
     await db.init();
   });
-  afterAll(async () => {
+  after(async () => {
     await db.close();
   });
   it('no .toJSON method', async () => {

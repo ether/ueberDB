@@ -1,16 +1,16 @@
 import assert$0 from 'assert';
 import {ConsoleLogger} from '../../lib/logging';
 import * as ueberdb from '../../index';
-'use strict';
+import {fileURLToPath} from 'node:url';
 const assert = assert$0.strict;
 const logger = new ConsoleLogger();
-import {afterAll, describe, it, afterEach, beforeEach, beforeAll, expect} from 'vitest'
+import {describe, it, afterEach} from 'node:test'
 
 type MockSettings = {
   mock?: any;
 }
 
-describe(__filename, () => {
+describe(fileURLToPath(import.meta.url), () => {
   let db: any = null;
   let mock: any = null;
   const createDb = async (wrapperSettings = {}) => {

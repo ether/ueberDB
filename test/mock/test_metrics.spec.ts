@@ -1,6 +1,7 @@
 import assert$0 from 'assert';
 import * as ueberdb from '../../index';
-import {afterAll, describe, it, afterEach, beforeEach, beforeAll, expect} from 'vitest'
+import {fileURLToPath} from 'node:url';
+import {after, describe, it, afterEach, beforeEach} from 'node:test'
 const assert = assert$0.strict;
 // Gate is a normal Promise that resolves when its open() method is called.
 // @ts-expect-error TS(2508): No base constructor has the specified number of ty... Remove this comment to see the full error message
@@ -47,7 +48,7 @@ type MockSettings = {
     mock?: any;
 }
 
-describe(__filename, () => {
+describe(fileURLToPath(import.meta.url), () => {
   let db: any;
   let key: any;
   let mock: any;
@@ -58,12 +59,12 @@ describe(__filename, () => {
     mock = settings.mock
     mock.once('init', (cb: any) => cb());
   });
-  afterAll(async () => {
+  after(async () => {
     mock.once('close', (cb: any) => cb());
     await db.close();
   });
-  beforeEach(async function (context) {
-    key = expect.getState().currentTestName
+  beforeEach(async (t) => {
+    key = t.name;
   });
   afterEach(async () => {
     mock.removeAllListeners();
@@ -129,7 +130,6 @@ describe(__filename, () => {
             let finishDbRead;
             const dbReadStarted = new Promise<void>((resolve) => {
               mock.once('get', (key: any, cb: any) => {
-                expect(!subtc.cacheHit).toBeTruthy //('value should have been cached');
                 resolve();
                 new Promise((resolve) => { finishDbRead = resolve; })
                     .then(() => cb(subtc.err, subtc.val));

@@ -1,5 +1,5 @@
-import {afterAll, beforeAll, describe} from "vitest";
-import {GenericContainer, PortWithOptionalBinding, StartedTestContainer} from "testcontainers";
+import {after, before, describe} from "node:test";
+import {GenericContainer, type PortWithOptionalBinding, type StartedTestContainer} from "testcontainers";
 import {test_db} from "../lib/test_lib";
 
 describe('rethinkdb test', ()=>{
@@ -8,7 +8,7 @@ describe('rethinkdb test', ()=>{
     ];
     let container: StartedTestContainer
 
-    beforeAll(async () => {
+    before(async () => {
         container = await new GenericContainer("rethinkdb:latest")
             .withExposedPorts(...portMappings)
             .start()
@@ -17,7 +17,7 @@ describe('rethinkdb test', ()=>{
 
     test_db('cassandra')
 
-    afterAll(async () => {
+    after(async () => {
         await container.stop()
     })
 })

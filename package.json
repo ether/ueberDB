@@ -121,7 +121,6 @@
     "surrealdb": "^2.0.3",
     "testcontainers": "^11.14.0",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.5",
     "wtfnode": "^0.10.1"
   },
   "repository": {
@@ -140,7 +139,7 @@
     "build": "pnpm run build:js && pnpm run build:types",
     "build:js": "pnpm exec rolldown -c rolldown.config.mjs",
     "build:types": "pnpm exec tsc --emitDeclarationOnly",
-    "test": "vitest --test-timeout=120000",
+    "test": "node --experimental-strip-types --test --test-timeout=120000 test/**/*.spec.ts",
     "ts-check": "tsc --noEmit",
     "ts-check:watch": "tsc --noEmit --watch"
   },

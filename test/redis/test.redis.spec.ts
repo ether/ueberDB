@@ -1,6 +1,6 @@
-import {afterAll, beforeAll, describe} from "vitest";
+import {after, before, describe} from "node:test";
 import {test_db} from "../lib/test_lib";
-import {GenericContainer, PortWithOptionalBinding, StartedTestContainer} from "testcontainers";
+import {GenericContainer, type PortWithOptionalBinding, type StartedTestContainer} from "testcontainers";
 
 describe('redis test', ()=>{
     const portMappings: PortWithOptionalBinding[] = [
@@ -8,14 +8,14 @@ describe('redis test', ()=>{
     ];
     let container: StartedTestContainer
 
-    beforeAll(async () => {
+    before(async () => {
         container = await new GenericContainer("redis:bookworm")
             .withExposedPorts(...portMappings)
             .start()
     })
 
 
-    afterAll(async () => {
+    after(async () => {
         await container.stop()
     })
     test_db('redis')

@@ -1,16 +1,17 @@
 import {strict} from 'assert';
 import {Database} from '../../index';
 import util from 'util';
+import {fileURLToPath} from 'node:url';
 const assert = strict
 const range = (N: any) => [...Array(N).keys()];
 
-import {describe, it, afterEach, expect} from 'vitest'
+import {describe, it, afterEach} from 'node:test'
 
 type MockSettings = {
   mock?: any;
 }
 
-describe(__filename, () => {
+describe(fileURLToPath(import.meta.url), () => {
   let db: any = null;
   let mock: any = null;
   const createDb = async (wrapperSettings: any) => {
@@ -44,7 +45,8 @@ describe(__filename, () => {
         await Promise.all(range(N).map((i) => db.set(`key${i}`, `val${i}`)));
         const wantLimit:any = bulkLimit || N;
         const wantWrites = range(N / wantLimit).map((i) => wantLimit);
-        expect(gotWrites).toStrictEqual(wantWrites);
+        // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
+        assert.deepEqual(gotWrites, wantWrites);
       });
     }
   });

@@ -1,6 +1,6 @@
-import {afterAll, beforeAll, describe} from "vitest";
+import {after, before, describe} from "node:test";
 import {test_db} from "../lib/test_lib";
-import {GenericContainer, PortWithOptionalBinding, StartedTestContainer, Wait} from "testcontainers";
+import {GenericContainer, type PortWithOptionalBinding, type StartedTestContainer, Wait} from "testcontainers";
 
 describe('couch test', () => {
     const portMappings: PortWithOptionalBinding[] = [
@@ -8,7 +8,7 @@ describe('couch test', () => {
     ];
     let container: StartedTestContainer | undefined;
 
-    beforeAll(async () => {
+    before(async () => {
         // CouchDB 3.5 enables [chttpd_auth_lockout] mode=enforce by default
         // (5 failed auth attempts within max_lifetime → 403/401 for the
         // rest of that window). On a fresh container with concurrent
@@ -32,11 +32,11 @@ describe('couch test', () => {
             .withWaitStrategy(Wait.forHttp('/_up', 5984).forStatusCode(200))
             .withStartupTimeout(120000)
             .start();
-    }, 180000);
+    }, {timeout: 180000});
 
     test_db('couch');
 
-    afterAll(async () => {
+    after(async () => {
         if (container != null) {
             try {
                 await container.stop();

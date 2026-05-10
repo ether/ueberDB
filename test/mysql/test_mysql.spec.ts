@@ -1,17 +1,18 @@
 import assert$0 from 'assert';
 import {databases} from '../lib/databases';
 import Mysql_db from '../../databases/mysql_db';
-import {describe, it, beforeEach, beforeAll, afterAll} from 'vitest'
-import {GenericContainer, PortWithOptionalBinding, StartedTestContainer} from "testcontainers";
+import {fileURLToPath} from 'node:url';
+import {describe, it, beforeEach, before, after} from 'node:test'
+import {GenericContainer, type PortWithOptionalBinding, type StartedTestContainer} from "testcontainers";
 
 const assert = assert$0.strict;
-describe(__filename, () => {
+describe(fileURLToPath(import.meta.url), {timeout: 120000}, () => {
   let container: StartedTestContainer
   const portMappings: PortWithOptionalBinding[] = [
     { container: 3306, host: 3307 }
   ];
 
-  beforeAll(async () => {
+  before(async () => {
     container = await new GenericContainer("mariadb:latest")
         .withExposedPorts(...portMappings)
         .withEnvironment({
@@ -22,8 +23,8 @@ describe(__filename, () => {
         }).start()
   })
 
-  beforeEach(async function (this: any) {
-    if (databases.mysql == null) return this.skip();
+  beforeEach(async (t) => {
+    if (databases.mysql == null) t.skip();
   });
   it('connect error is detected during init()', async () => {
     // Use an invalid TCP port to force a connection error.
@@ -77,7 +78,7 @@ describe(__filename, () => {
     await db.close();
   });
 
-  afterAll(async () => {
+  after(async () => {
     await container.stop()
   })
-}, 120000);
+});

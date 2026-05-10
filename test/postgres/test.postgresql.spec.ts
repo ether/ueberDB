@@ -1,17 +1,17 @@
-import {afterAll, beforeAll, describe, it} from "vitest";
+import {after, before, describe, it} from "node:test";
 import {db, test_db} from "../lib/test_lib";
-import {GenericContainer, PortWithOptionalBinding, StartedTestContainer} from "testcontainers";
+import {GenericContainer, type PortWithOptionalBinding, type StartedTestContainer} from "testcontainers";
 import {databases} from "../lib/databases";
 import * as ueberdb from "../../index";
 import {equal} from "assert";
 
-describe('postgres test', async () => {
+describe('postgres test', {timeout: 1200000}, async () => {
     const portMappings: PortWithOptionalBinding[] = [
         { container: 5432, host: 5432 }
     ];
     let container: StartedTestContainer
 
-    beforeAll(async () => {
+    before(async () => {
         container = await new GenericContainer("postgres:alpine3.21")
             .withExposedPorts(...portMappings)
             .withEnvironment({
@@ -25,19 +25,19 @@ describe('postgres test', async () => {
     test_db('postgres')
 
 
-    afterAll(async () => {
+    after(async () => {
         db.close()
         await container.stop()
     })
-}, 1200000)
+})
 
-describe('postgres test individual', async () => {
+describe('postgres test individual', {timeout: 120000}, async () => {
     const portMappings: PortWithOptionalBinding[] = [
         { container: 5432, host: 5444 }
     ];
     let container: StartedTestContainer
 
-    beforeAll(async () => {
+    before(async () => {
         container = await new GenericContainer("postgres:alpine3.21")
             .withExposedPorts(...portMappings)
             .withHealthCheck({
@@ -65,8 +65,8 @@ describe('postgres test individual', async () => {
         db.close()
     });
 
-    afterAll(async () => {
+    after(async () => {
         await container.stop()
     })
 
-}, 120000)
+})

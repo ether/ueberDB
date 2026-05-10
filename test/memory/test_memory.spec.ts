@@ -1,9 +1,10 @@
 import assert$0 from 'assert';
 import MemoryDB from '../../databases/memory_db';
-import {describe, it} from 'vitest'
+import {fileURLToPath} from 'node:url';
+import {describe, it} from 'node:test'
 const assert = assert$0.strict;
 
-describe(__filename, () => {
+describe(fileURLToPath(import.meta.url), () => {
   describe('data option', () => {
     it('uses existing records from data option', async () => {
       const db = new MemoryDB({data: new Map([['foo', 'bar']])});

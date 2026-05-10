@@ -1,14 +1,14 @@
-import {afterAll, beforeAll, describe} from "vitest";
+import {after, before, describe} from "node:test";
 import {test_db} from "../lib/test_lib";
-import {GenericContainer, PortWithOptionalBinding, StartedTestContainer} from "testcontainers";
+import {GenericContainer, type PortWithOptionalBinding, type StartedTestContainer} from "testcontainers";
 
-describe('postgres test', ()=>{
+describe('postgres test', {timeout: 120000}, ()=>{
     const portMappings: PortWithOptionalBinding[] = [
         { container: 3306, host: 3306 }
     ];
     let container: StartedTestContainer
 
-    beforeAll(async () => {
+    before(async () => {
         container = await new GenericContainer("mariadb:latest")
             .withExposedPorts(...portMappings)
             .withEnvironment({
@@ -21,9 +21,9 @@ describe('postgres test', ()=>{
 
     test_db('mysql')
 
-    afterAll(async () => {
+    after(async () => {
         if (container){
             await container.stop()
         }
     })
-}, 120000)
+})

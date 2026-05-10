@@ -1,10 +1,10 @@
 import wtfnode from 'wtfnode';
-import {afterAll, describe} from 'vitest'
+import {after, describe} from 'node:test'
 import {test_db} from "../lib/test_lib";
 
 
 // eslint-disable-next-line mocha/no-top-level-hooks
-afterAll(async () => {
+after(async () => {
   // Add a timeout to forcibly exit if something is keeping node from exiting cleanly.
   // The timeout is unref()ed so that it doesn't prevent node from exiting when done.
   setTimeout(() => {

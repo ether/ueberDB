@@ -1,6 +1,7 @@
 import {ConsoleLogger} from '../../lib/logging';
 import * as ueberdb from '../../index';
-import {afterAll, describe, it, afterEach, beforeEach, beforeAll, expect} from 'vitest'
+import {fileURLToPath} from 'node:url';
+import {describe, it, afterEach} from 'node:test'
 const logger = new ConsoleLogger();
 
 
@@ -9,7 +10,7 @@ type MockSettings = {
 }
 
 
-describe(__filename, () => {
+describe(fileURLToPath(import.meta.url), () => {
   let db: any = null;
   let mock: any = null;
   const createDb = async (wrapperSettings = {}) => {

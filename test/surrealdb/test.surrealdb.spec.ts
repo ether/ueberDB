@@ -1,6 +1,6 @@
-import {afterAll, beforeAll, describe} from "vitest";
+import {after, before, describe} from "node:test";
 import {test_db} from "../lib/test_lib";
-import {GenericContainer, PortWithOptionalBinding, StartedTestContainer, Wait} from "testcontainers";
+import {GenericContainer, type PortWithOptionalBinding, type StartedTestContainer, Wait} from "testcontainers";
 import {databases} from "../lib/databases";
 
 describe('surrealdb test', () => {
@@ -9,7 +9,7 @@ describe('surrealdb test', () => {
     ];
     let container: StartedTestContainer | undefined;
 
-    beforeAll(async () => {
+    before(async () => {
         // Configure root credentials and start in-memory storage so the
         // ueberdb test can sign in and use it. Wait for the HTTP root to
         // respond so testcontainers doesn't return before SurrealDB is ready.
@@ -26,11 +26,11 @@ describe('surrealdb test', () => {
             .withWaitStrategy(Wait.forHttp("/health", 8000).forStatusCode(200))
             .withStartupTimeout(120000)
             .start();
-    }, 180000);
+    }, {timeout: 180000});
 
     test_db('surrealdb');
 
-    afterAll(async () => {
+    after(async () => {
         if (container != null) {
             try {
                 await container.stop();

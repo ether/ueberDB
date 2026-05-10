@@ -1,12 +1,12 @@
-import {afterAll, afterEach, beforeAll, beforeEach, describe, expect, it} from "vitest";
+import {after, afterEach, before, beforeEach, describe, it} from "node:test";
+import assert from "node:assert/strict";
 import * as ueberdb from "../../index";
 import {ConsoleLogger} from "../../lib/logging";
 import Randexp from "randexp-ts";
-import {rejects} from "assert";
 import Clitable from "cli-table3";
 import {databases} from "./databases";
 import {promises} from "fs";
-import {DatabaseType} from "../../index";
+import type {DatabaseType} from "../../index";
 import {existsSync} from "node:fs";
 
 
@@ -26,7 +26,7 @@ export let db: any;
 export const test_db = (database: DatabaseType)=>{
     const dbSettings = databases[database];
     let speedTable: any;
-    beforeAll(async () => {
+    before(async () => {
         speedTable = new Clitable({
             head: [
                 'Database',
@@ -43,14 +43,14 @@ export const test_db = (database: DatabaseType)=>{
             colWidths: [15, 15, 15, 8, 13, 13, 13, 13, 13, 13],
         });
     });
-    afterAll(async () => {
+    after(async () => {
         console.log(speedTable.toString());
     });
 
         for (const readCache of [false, true]) {
             describe(`${readCache ? '' : 'no '}read cache`, () => {
                 for (const writeBuffer of [false, true]) {
-                    describe(`${writeBuffer ? '' : 'no '}write buffer`, function (this: any) {
+                    describe(`${writeBuffer ? '' : 'no '}write buffer`, () => {
                         beforeEach(async () => {
                             if (dbSettings.filename) {
                                 if (existsSync(dbSettings.filename)) {
@@ -59,13 +59,6 @@ export const test_db = (database: DatabaseType)=>{
                                     });
                                 }
                             }
-
-                            let setting = dbSettings.filename
-
-                            if (database === 'rustydb') {
-
-                            }
-
 
                             db = new ueberdb.Database(database, dbSettings, {
                                 ...(readCache ? {} : {cache: 0}),
@@ -87,7 +80,8 @@ export const test_db = (database: DatabaseType)=>{
                         // requests through a code path that returns 401 from CouchDB session
                         // middleware in a way we have not been able to reproduce locally.
                         // Skip this entire describe for couch — every other DB still exercises it.
-                        describe.skipIf(database === 'couch')('white space in key is not ignored', () => {
+                        const skipIfCouch = database === 'couch' ? describe.skip : describe;
+                        skipIfCouch('white space in key is not ignored', () => {
                             for (const space of [false, true]) {
                                 describe(`key ${space ? 'has' : 'does not have'} a trailing space`, () => {
                                     let input: any;
@@ -99,16 +93,16 @@ export const test_db = (database: DatabaseType)=>{
                                     });
                                     it('get(key) -> record', async () => {
                                         const output = await db.get(key);
-                                        expect(JSON.stringify(output)).toBe(JSON.stringify(input));
+                                        assert.strictEqual(JSON.stringify(output), JSON.stringify(input));
                                     });
                                     it('get(`${key} `) -> nullish', async () => {
                                         const output = await db.get(`${key} `);
-                                        expect(output == null).toBeTruthy();
+                                        assert.ok(output == null);
                                     });
                                     if (space) {
                                         it('get(key.slice(0, -1)) -> nullish', async () => {
                                             const output = await db.get(key.slice(0, -1));
-                                            expect(output == null).toBeTruthy();
+                                            assert.ok(output == null);
                                         });
                                     }
                                 });
@@ -116,25 +110,25 @@ export const test_db = (database: DatabaseType)=>{
                         });
                         it('get of unknown key -> nullish', async () => {
                             const key = randomString();
-                            expect((await db.get(key)) == null).toBeTruthy();
+                            assert.ok((await db.get(key)) == null);
                         });
                         it('set+get works', async () => {
                             const input = {a: 1, b: new Randexp(/[a-zA-Z0-9]+/).gen()};
                             const key = randomString();
                             await db.set(key, input);
                             const output = await db.get(key);
-                            expect(JSON.stringify(output)).toBe(JSON.stringify(input));
+                            assert.strictEqual(JSON.stringify(output), JSON.stringify(input));
                         });
                         it('set+get with random key/value works', async () => {
                             const input = {testLongString: new Randexp(/[a-f0-9]{50000}/).gen()};
                             const key = randomString();
                             await db.set(key, input);
                             const output = await db.get(key);
-                            expect(JSON.stringify(output)).toBe(JSON.stringify(input));
+                            assert.strictEqual(JSON.stringify(output), JSON.stringify(input));
                         });
-                        it('findKeys works', async function (context) {
+                        it('findKeys works', async (t) => {
                             if (database === 'mongodb') {
-                                context.skip()
+                                t.skip();
                             } // TODO: Fix mongodb.
                             // TODO setting a key with non ascii chars
                             const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
@@ -144,11 +138,11 @@ export const test_db = (database: DatabaseType)=>{
                             await db.set(`nonmatching_${key}`, false)
 
                             const keys = await db.findKeys(`${key}*`, null);
-                            expect(keys.sort()).toStrictEqual([key, `${key}a`]);
+                            assert.deepStrictEqual(keys.sort(), [key, `${key}a`]);
                         });
-                        it('findKeys with exclusion works', async function (context) {
+                        it('findKeys with exclusion works', async (t) => {
                             if (database === 'mongodb') {
-                                context.skip();
+                                t.skip();
                             } // TODO: Fix mongodb.
                             const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
 
@@ -158,19 +152,19 @@ export const test_db = (database: DatabaseType)=>{
                             await db.set(`${key}b2`, false)
                             await db.set(`nonmatching_${key}`, false)
                             const keys = await db.findKeys(`${key}*`, `${key}b*`);
-                            expect(keys.sort()).toStrictEqual([key, `${key}a`]);
+                            assert.deepStrictEqual(keys.sort(), [key, `${key}a`]);
                         });
                         it('findKeys with no matches works', async () => {
                             const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
                             await db.set(key, true);
                             const keys = await db.findKeys(`${key}_nomatch_*`, null);
-                            expect(keys).toStrictEqual([]);
+                            assert.deepStrictEqual(keys, []);
                         });
                         it('findKeys with no wildcard works', async () => {
                             const key = new Randexp(/([a-z]\w{0,20})foo\1/).gen();
                             await db.set(key, true);
                             const keys = await db.findKeys(key, null);
-                            expect(keys).toStrictEqual([key]);
+                            assert.deepStrictEqual(keys, [key]);
                         });
 
 
@@ -179,73 +173,73 @@ export const test_db = (database: DatabaseType)=>{
                             const input = {a: 1, b: new Randexp(/[a-zA-Z0-9]+/).gen()};
                             const key = randomString();
                             await db.set(key, input);
-                            expect(JSON.stringify(await db.get(key))).toStrictEqual(JSON.stringify(input));
+                            assert.strictEqual(JSON.stringify(await db.get(key)), JSON.stringify(input));
                             await db.remove(key);
-                            expect((await db.get(key)) == null).toBeTruthy();
+                            assert.ok((await db.get(key)) == null);
                         });
                         it('getSub of existing property works', async () => {
                             await db.set('k', {sub1: {sub2: 'v'}});
-                            expect(await db.getSub('k', ['sub1', 'sub2'])).toBe('v');
-                            expect(await db.getSub('k', ['sub1'])).toStrictEqual({sub2: 'v'});
-                            expect(await db.getSub('k', [])).toStrictEqual({sub1: {sub2: 'v'}});
+                            assert.strictEqual(await db.getSub('k', ['sub1', 'sub2']), 'v');
+                            assert.deepStrictEqual(await db.getSub('k', ['sub1']), {sub2: 'v'});
+                            assert.deepStrictEqual(await db.getSub('k', []), {sub1: {sub2: 'v'}});
                         });
                         it('getSub of missing property returns nullish', async () => {
                             await db.set('k', {sub1: {}});
-                            expect((await db.getSub('k', ['sub1', 'sub2'])) == null).toBeTruthy();
+                            assert.ok((await db.getSub('k', ['sub1', 'sub2'])) == null);
                             await db.set('k', {});
-                            expect((await db.getSub('k', ['sub1', 'sub2'])) == null).toBeTruthy();
-                            expect((await db.getSub('k', ['sub1']))).toBeNull();
+                            assert.ok((await db.getSub('k', ['sub1', 'sub2'])) == null);
+                            assert.strictEqual(await db.getSub('k', ['sub1']), null);
                             await db.remove('k');
-                            expect((await db.getSub('k', ['sub1', 'sub2'])) == null).toBeTruthy();
-                            expect((await db.getSub('k', ['sub1'])) == null).toBeTruthy();
-                            expect(await db.getSub('k', []) == null).toBeTruthy();
+                            assert.ok((await db.getSub('k', ['sub1', 'sub2'])) == null);
+                            assert.ok((await db.getSub('k', ['sub1'])) == null);
+                            assert.ok(await db.getSub('k', []) == null);
                         });
                         it('setSub can modify an existing property', async () => {
                             await db.set('k', {sub1: {sub2: 'v'}});
                             await db.setSub('k', ['sub1', 'sub2'], 'v2');
-                            expect(await db.get('k')).toStrictEqual({sub1: {sub2: 'v2'}});
+                            assert.deepStrictEqual(await db.get('k'), {sub1: {sub2: 'v2'}});
                             await db.setSub('k', ['sub1'], 'v2');
-                            expect(await db.get('k')).toStrictEqual({sub1: 'v2'});
+                            assert.deepStrictEqual(await db.get('k'), {sub1: 'v2'});
                             await db.setSub('k', [], 'v3');
-                            expect(await db.get('k')).toStrictEqual('v3');
+                            assert.deepStrictEqual(await db.get('k'), 'v3');
                         });
                         it('setSub can add a new property', async () => {
                             await db.remove('k');
                             await db.setSub('k', [], {});
-                            expect(await db.get('k')).toStrictEqual({});
+                            assert.deepStrictEqual(await db.get('k'), {});
                             await db.setSub('k', ['sub1'], {});
-                            expect(await db.get('k')).toStrictEqual({sub1: {}});
+                            assert.deepStrictEqual(await db.get('k'), {sub1: {}});
                             await db.setSub('k', ['sub1', 'sub2'], 'v');
-                            expect(await db.get('k')).toStrictEqual({sub1: {sub2: 'v'}});
+                            assert.deepStrictEqual(await db.get('k'), {sub1: {sub2: 'v'}});
                             await db.remove('k');
                             await db.setSub('k', ['sub1', 'sub2'], 'v');
-                            expect(await db.get('k')).toStrictEqual({sub1: {sub2: 'v'}});
+                            assert.deepStrictEqual(await db.get('k'), {sub1: {sub2: 'v'}});
                         });
                         it('setSub rejects attempts to set properties on primitives', async () => {
                             for (const v of ['hello world', 42, true]) {
                                 await db.set('k', v);
-                                await rejects(db.setSub('k', ['sub'], 'x'), {
+                                await assert.rejects(db.setSub('k', ['sub'], 'x'), {
                                     name: 'TypeError',
                                     message: /property "sub" on non-object/,
                                 });
-                                expect(await db.get('k')).toBe(v);
+                                assert.strictEqual(await db.get('k'), v);
                             }
                         });
                         it('setSub can delete a property', async () => {
                             await db.set('k', {sub1: {sub2: 'v', sub3: 'v'}, sub4: 'v'});
                             await db.setSub('k', ['sub1', 'sub2'], undefined);
-                            expect(await db.get('k')).toStrictEqual({sub1: {sub3: 'v'}, sub4: 'v'});
+                            assert.deepStrictEqual(await db.get('k'), {sub1: {sub3: 'v'}, sub4: 'v'});
                             await db.setSub('k', ['sub1', 'sub3'], undefined);
-                            expect(await db.get('k')).toStrictEqual({sub1: {}, sub4: 'v'});
+                            assert.deepStrictEqual(await db.get('k'), {sub1: {}, sub4: 'v'});
                             await db.setSub('k', ['sub1'], undefined);
-                            expect(await db.get('k')).toStrictEqual({sub4: 'v'});
+                            assert.deepStrictEqual(await db.get('k'), {sub4: 'v'});
                             await db.setSub('k', ['sub4'], undefined);
-                            expect(await db.get('k')).toStrictEqual({});
+                            assert.deepStrictEqual(await db.get('k'), {});
                             await db.setSub('k', [], undefined);
-                            expect((await db.get('k')) == null).toBeTruthy();
+                            assert.ok((await db.get('k')) == null);
                         });
 
-                        it('speed is acceptable', async function () {
+                        it('speed is acceptable', async () => {
                             type TimeSettings = {
                                 remove?: string | number;
                                 findKeys?: number;
@@ -340,10 +334,10 @@ export const test_db = (database: DatabaseType)=>{
                             ].map(filterColumn));
                             console.log(acceptableTable.toString());
                             if (readCache && writeBuffer) {
-                                expect(setMax >= timePerOp.set).toBeTruthy();
-                                expect(getMax >= timePerOp.get).toBeTruthy();
-                                expect(findKeysMax >= timePerOp.findKeys).toBeTruthy();
-                                expect(removeMax >= timePerOp.remove).toBeTruthy();
+                                assert.ok(setMax >= timePerOp.set);
+                                assert.ok(getMax >= timePerOp.get);
+                                assert.ok(findKeysMax >= timePerOp.findKeys);
+                                assert.ok(removeMax >= timePerOp.remove);
                             }
                         })
                     });
