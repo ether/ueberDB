@@ -1,4 +1,4 @@
-import type {Settings} from '../lib/AbstractDatabase';
+import type {Settings} from '../lib/AbstractDatabase.ts';
 
 import events from 'events';
 

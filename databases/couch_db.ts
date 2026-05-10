@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
+import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase.ts';
 import nano from 'nano';
-import type {BulkObject} from './cassandra_db';
+import type {BulkObject} from './cassandra_db.ts';
 
 export default class Couch_db extends AbstractDatabase {
   public db: nano.DocumentScope<string> | null;

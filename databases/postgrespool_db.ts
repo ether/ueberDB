@@ -1,6 +1,6 @@
-import type {Settings} from '../lib/AbstractDatabase';
+import type {Settings} from '../lib/AbstractDatabase.ts';
 
-import Postgres_db from './postgres_db'
+import Postgres_db from './postgres_db.ts'
 
 export default class PostgresDB extends Postgres_db {
   constructor(settings:Settings) {

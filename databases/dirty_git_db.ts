@@ -1,4 +1,4 @@
-import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
+import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase.ts';
 import {dirname} from 'node:path'
 import {simpleGit} from 'simple-git'
 /**

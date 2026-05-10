@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-import {Database as DatabaseCache, type Metrics} from './lib/CacheAndBufferLayer';
-import {normalizeLogger} from './lib/logging';
-import type {Settings} from './lib/AbstractDatabase';
+import {Database as DatabaseCache, type Metrics} from './lib/CacheAndBufferLayer.ts';
+import {normalizeLogger} from './lib/logging.ts';
+import type {Settings} from './lib/AbstractDatabase.ts';
 
-export type {Settings} from './lib/AbstractDatabase';
-export type {Metrics, CacheSettings} from './lib/CacheAndBufferLayer';
-export type {Logger} from './lib/logging';
+export type {Settings} from './lib/AbstractDatabase.ts';
+export type {Metrics, CacheSettings} from './lib/CacheAndBufferLayer.ts';
+export type {Logger} from './lib/logging.ts';
 
 // Database drivers are loaded lazily in initDB() so that only the selected
 // backend's dependencies need to be installed.
@@ -89,44 +89,44 @@ export class Database {
   private async initDB(): Promise<any> {
     switch (this.type) {
       case 'mysql':
-        return new (await import('./databases/mysql_db')).default(this.dbSettings as Settings);
+        return new (await import('./databases/mysql_db.ts')).default(this.dbSettings as Settings);
       case 'postgres':
-        return new (await import('./databases/postgres_db')).default(this.dbSettings as Settings);
+        return new (await import('./databases/postgres_db.ts')).default(this.dbSettings as Settings);
       case 'sqlite':
-        return new (await import('./databases/sqlite_db')).default(this.dbSettings as Settings);
+        return new (await import('./databases/sqlite_db.ts')).default(this.dbSettings as Settings);
       case 'rustydb':
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return new (await import('./databases/rusty_db')).default(this.dbSettings as any);
+        return new (await import('./databases/rusty_db.ts')).default(this.dbSettings as any);
       case 'mongodb':
-        return new (await import('./databases/mongodb_db')).default(this.dbSettings as Settings);
+        return new (await import('./databases/mongodb_db.ts')).default(this.dbSettings as Settings);
       case 'redis':
-        return new (await import('./databases/redis_db')).default(this.dbSettings as Settings);
+        return new (await import('./databases/redis_db.ts')).default(this.dbSettings as Settings);
       case 'cassandra':
-        return new (await import('./databases/cassandra_db')).default(this.dbSettings as Settings);
+        return new (await import('./databases/cassandra_db.ts')).default(this.dbSettings as Settings);
       case 'dirty':
-        return new (await import('./databases/dirty_db')).default(this.dbSettings as Settings);
+        return new (await import('./databases/dirty_db.ts')).default(this.dbSettings as Settings);
       case 'dirtygit':
-        return new (await import('./databases/dirty_git_db')).default(this.dbSettings as Settings);
+        return new (await import('./databases/dirty_git_db.ts')).default(this.dbSettings as Settings);
       case 'elasticsearch':
-        return new (await import('./databases/elasticsearch_db')).default(
+        return new (await import('./databases/elasticsearch_db.ts')).default(
           this.dbSettings as Settings,
         );
       case 'memory':
-        return new (await import('./databases/memory_db')).default(this.dbSettings as Settings);
+        return new (await import('./databases/memory_db.ts')).default(this.dbSettings as Settings);
       case 'mock':
-        return new (await import('./databases/mock_db')).default(this.dbSettings as Settings);
+        return new (await import('./databases/mock_db.ts')).default(this.dbSettings as Settings);
       case 'mssql':
-        return new (await import('./databases/mssql_db')).default(this.dbSettings as Settings);
+        return new (await import('./databases/mssql_db.ts')).default(this.dbSettings as Settings);
       case 'postgrespool':
-        return new (await import('./databases/postgrespool_db')).default(
+        return new (await import('./databases/postgrespool_db.ts')).default(
           this.dbSettings as Settings,
         );
       case 'rethink':
-        return new (await import('./databases/rethink_db')).default(this.dbSettings as Settings);
+        return new (await import('./databases/rethink_db.ts')).default(this.dbSettings as Settings);
       case 'couch':
-        return new (await import('./databases/couch_db')).default(this.dbSettings as Settings);
+        return new (await import('./databases/couch_db.ts')).default(this.dbSettings as Settings);
       case 'surrealdb':
-        return new (await import('./databases/surrealdb_db')).default(this.dbSettings as Settings);
+        return new (await import('./databases/surrealdb_db.ts')).default(this.dbSettings as Settings);
       default:
         throw new Error(`Invalid database type: ${this.type as string}`);
     }

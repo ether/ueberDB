@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
+import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase.ts';
 import async from 'async';
 import * as pg from 'pg';
-import type {BulkObject} from './cassandra_db';
+import type {BulkObject} from './cassandra_db.ts';
 
 export default class extends AbstractDatabase {
   public db: pg.Pool;

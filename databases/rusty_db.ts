@@ -1,4 +1,4 @@
-import AbstractDatabase from "../lib/AbstractDatabase";
+import AbstractDatabase from "../lib/AbstractDatabase.ts";
 import {KeyValueDB} from 'rusty-store-kv'
 
 export default class Rusty_db extends AbstractDatabase {

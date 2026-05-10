@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
-import type {BulkObject} from './cassandra_db';
+import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase.ts';
+import type {BulkObject} from './cassandra_db.ts';
 import {MongoClient} from 'mongodb';
 import type {Collection, Db} from 'mongodb';
 

@@ -15,7 +15,7 @@
  */
 
 import {promisify} from 'node:util';
-import type {Logger} from './logging';
+import type {Logger} from './logging.ts';
 
 type BulkOp = {
   type: 'set' | 'remove';

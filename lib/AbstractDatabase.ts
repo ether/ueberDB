@@ -1,4 +1,4 @@
-import {normalizeLogger, type Logger} from './logging';
+import {normalizeLogger, type Logger} from './logging.ts';
 
 const nullLogger = normalizeLogger(null);
 

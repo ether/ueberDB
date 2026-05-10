@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
+import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase.ts';
 import {Client, types} from 'cassandra-driver';
 import type {ArrayOrObject, ValueCallback} from 'cassandra-driver';
 type ResultSet = types.ResultSet;

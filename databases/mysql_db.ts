@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
+import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase.ts';
 import util from 'util';
-import type {BulkObject} from './cassandra_db';
+import type {BulkObject} from './cassandra_db.ts';
 import {createPool} from 'mysql2';
 import type {ConnectionConfig, Pool, QueryError} from 'mysql2';
 

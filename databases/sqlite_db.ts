@@ -1,5 +1,5 @@
-import type {BulkObject} from './cassandra_db';
-import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
+import type {BulkObject} from './cassandra_db.ts';
+import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase.ts';
 import {SQLite} from "rusty-store-kv";
 
 /**

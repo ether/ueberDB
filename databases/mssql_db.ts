@@ -20,11 +20,11 @@
  *
  */
 
-import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
+import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase.ts';
 import async from 'async';
 import mssql from 'mssql';
 import type {ConnectionPool} from 'mssql';
-import type {BulkObject} from './cassandra_db';
+import type {BulkObject} from './cassandra_db.ts';
 
 type RowResult = {
     key: string;

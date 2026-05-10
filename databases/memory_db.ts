@@ -1,4 +1,4 @@
-import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
+import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase.ts';
 
 
 export default class MemoryDB extends AbstractDatabase {

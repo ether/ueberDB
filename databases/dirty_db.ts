@@ -21,7 +21,7 @@
 *
 */
 
-import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
+import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase.ts';
 import Dirty from 'dirty-ts';
 
 type DirtyDBCallback = (p?:any, keys?: string[])=>{};
