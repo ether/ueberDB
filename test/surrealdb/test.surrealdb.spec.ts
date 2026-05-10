@@ -1,7 +1,7 @@
 import {after, before, describe} from "node:test";
-import {test_db} from "../lib/test_lib";
+import {test_db} from "../lib/test_lib.ts";
 import {GenericContainer, type PortWithOptionalBinding, type StartedTestContainer, Wait} from "testcontainers";
-import {databases} from "../lib/databases";
+import {databases} from "../lib/databases.ts";
 
 describe('surrealdb test', () => {
     const portMappings: PortWithOptionalBinding[] = [

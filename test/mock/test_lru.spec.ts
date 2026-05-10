@@ -1,4 +1,4 @@
-import {exportedForTesting} from '../../lib/CacheAndBufferLayer';
+import {exportedForTesting} from '../../lib/CacheAndBufferLayer.ts';
 import assert$0 from 'assert';
 import {fileURLToPath} from 'node:url';
 import {describe, it, afterEach, beforeEach} from 'node:test'

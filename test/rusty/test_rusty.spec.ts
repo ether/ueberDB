@@ -1,7 +1,7 @@
 import {before, it} from "node:test";
 import assert from "node:assert/strict";
 import os from "os";
-import Database from "../../index";
+import Database from "../../index.ts";
 
 
 const TEST = `${os.tmpdir()}/ueberdb-test-${new Date().getTime()}.db`

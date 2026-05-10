@@ -1,8 +1,8 @@
 import {after, before, describe, it} from "node:test";
-import {db, test_db} from "../lib/test_lib";
+import {db, test_db} from "../lib/test_lib.ts";
 import {GenericContainer, type PortWithOptionalBinding, type StartedTestContainer} from "testcontainers";
-import {databases} from "../lib/databases";
-import * as ueberdb from "../../index";
+import {databases} from "../lib/databases.ts";
+import * as ueberdb from "../../index.ts";
 import {equal} from "assert";
 
 describe('postgres test', {timeout: 1200000}, async () => {

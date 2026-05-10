@@ -1,6 +1,6 @@
 import assert$0 from 'assert';
-import {ConsoleLogger} from '../../lib/logging';
-import * as ueberdb from '../../index';
+import {ConsoleLogger} from '../../lib/logging.ts';
+import * as ueberdb from '../../index.ts';
 import {fileURLToPath} from 'node:url';
 const assert = assert$0.strict;
 const logger = new ConsoleLogger();

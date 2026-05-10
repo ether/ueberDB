@@ -1,10 +1,10 @@
 import {after, afterEach, before, beforeEach, describe, it} from "node:test";
-import {test_db} from "../lib/test_lib";
+import {test_db} from "../lib/test_lib.ts";
 import {GenericContainer, type PortWithOptionalBinding, type StartedTestContainer, Wait} from "testcontainers";
-import * as ueberdb from "../../index";
+import * as ueberdb from "../../index.ts";
 import {deepEqual, rejects} from "assert";
-import {databases} from "../lib/databases";
-import {ConsoleLogger} from "../../lib/logging";
+import {databases} from "../lib/databases.ts";
+import {ConsoleLogger} from "../../lib/logging.ts";
 import {Client} from "@elastic/elasticsearch";
 import {fileURLToPath} from "node:url";
 const {databases: {elasticsearch: cfg}} = {databases};

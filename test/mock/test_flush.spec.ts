@@ -1,5 +1,5 @@
-import {ConsoleLogger} from '../../lib/logging';
-import * as ueberdb from '../../index';
+import {ConsoleLogger} from '../../lib/logging.ts';
+import * as ueberdb from '../../index.ts';
 import {fileURLToPath} from 'node:url';
 import {describe, it, afterEach} from 'node:test'
 const logger = new ConsoleLogger();

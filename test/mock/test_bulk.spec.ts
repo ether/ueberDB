@@ -1,5 +1,5 @@
 import {strict} from 'assert';
-import {Database} from '../../index';
+import {Database} from '../../index.ts';
 import util from 'util';
 import {fileURLToPath} from 'node:url';
 const assert = strict

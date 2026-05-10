@@ -1,6 +1,6 @@
 import {after, before, describe} from "node:test";
 import {GenericContainer, type PortWithOptionalBinding, type StartedTestContainer} from "testcontainers";
-import {test_db} from "../lib/test_lib";
+import {test_db} from "../lib/test_lib.ts";
 
 describe('rethinkdb test', ()=>{
     const portMappings: PortWithOptionalBinding[] = [

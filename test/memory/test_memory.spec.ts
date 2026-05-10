@@ -1,5 +1,5 @@
 import assert$0 from 'assert';
-import MemoryDB from '../../databases/memory_db';
+import MemoryDB from '../../databases/memory_db.ts';
 import {fileURLToPath} from 'node:url';
 import {describe, it} from 'node:test'
 const assert = assert$0.strict;

@@ -1,5 +1,5 @@
 import assert$0 from 'assert';
-import * as ueberdb from '../../index';
+import * as ueberdb from '../../index.ts';
 import {fileURLToPath} from 'node:url';
 import {describe, it, afterEach, beforeEach} from 'node:test'
 const assert = assert$0.strict;

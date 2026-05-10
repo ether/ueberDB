@@ -1,6 +1,6 @@
 import assert$0 from 'assert';
-import {databases} from '../lib/databases';
-import Mysql_db from '../../databases/mysql_db';
+import {databases} from '../lib/databases.ts';
+import Mysql_db from '../../databases/mysql_db.ts';
 import {fileURLToPath} from 'node:url';
 import {describe, it, beforeEach, before, after} from 'node:test'
 import {GenericContainer, type PortWithOptionalBinding, type StartedTestContainer} from "testcontainers";

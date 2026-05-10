@@ -1,6 +1,6 @@
 import wtfnode from 'wtfnode';
 import {after, describe} from 'node:test'
-import {test_db} from "../lib/test_lib";
+import {test_db} from "../lib/test_lib.ts";
 
 
 // eslint-disable-next-line mocha/no-top-level-hooks

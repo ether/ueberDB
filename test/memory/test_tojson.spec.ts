@@ -1,5 +1,5 @@
 import assert$0 from 'assert';
-import * as ueberdb from '../../index';
+import * as ueberdb from '../../index.ts';
 import {fileURLToPath} from 'node:url';
 import {after, describe, it, before} from 'node:test'
 

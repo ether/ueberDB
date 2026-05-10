@@ -1,12 +1,12 @@
 import {after, afterEach, before, beforeEach, describe, it} from "node:test";
 import assert from "node:assert/strict";
-import * as ueberdb from "../../index";
-import {ConsoleLogger} from "../../lib/logging";
+import * as ueberdb from "../../index.ts";
+import {ConsoleLogger} from "../../lib/logging.ts";
 import Randexp from "randexp-ts";
 import Clitable from "cli-table3";
-import {databases} from "./databases";
+import {databases} from "./databases.ts";
 import {promises} from "fs";
-import type {DatabaseType} from "../../index";
+import type {DatabaseType} from "../../index.ts";
 import {existsSync} from "node:fs";
 
 
