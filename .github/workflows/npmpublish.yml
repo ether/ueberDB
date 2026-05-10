@@ -20,13 +20,15 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.22.0
+
       - name: Install pnpm
         uses: pnpm/action-setup@v5
         with:
           version: 11
           run_install: false
-
-      - uses: actions/setup-node@v6
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -59,13 +61,15 @@ jobs:
         with:
           fetch-depth: 0
 
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.22.0
+
       - name: Install pnpm
         uses: pnpm/action-setup@v5
         with:
           version: 10
           run_install: false
-
-      - uses: actions/setup-node@v6
 
       - name: Get pnpm store directory
         id: pnpm-cache
