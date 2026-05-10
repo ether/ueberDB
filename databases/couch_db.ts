@@ -15,23 +15,13 @@
  */
 
 import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
-import http from 'http';
-import type {Agent} from 'http';
 import nano from 'nano';
 import type {BulkObject} from './cassandra_db';
 
-type CouchDBSettings = {
-    url: string,
-    requestDefaults: {
-      agent: Agent
-    }
-};
 export default class Couch_db extends AbstractDatabase {
-  public agent: Agent | null;
   public db: nano.DocumentScope<string> | null;
   constructor(settings: Settings) {
     super(settings);
-    this.agent = null;
     this.db = null;
     this.settings = settings;
 
@@ -45,11 +35,6 @@ export default class Couch_db extends AbstractDatabase {
   get isAsync() { return true; }
 
   async init() {
-    this.agent = new http.Agent({
-      keepAlive: true,
-      maxSockets: this.settings.maxListeners || 1,
-    });
-
     // nano 11 dropped support for requestDefaults.auth = {username, password}.
     // We start from a URL WITHOUT credentials and then explicitly post to
     // /_session to establish a CouchDB session cookie. This is more reliable
@@ -58,14 +43,7 @@ export default class Couch_db extends AbstractDatabase {
     // connection — even when the credentials are correct.
     const url = `http://${this.settings.host}:${this.settings.port}`;
 
-    const coudhDBSettings: CouchDBSettings = {
-      url,
-      requestDefaults: {
-        agent: this.agent,
-      },
-    };
-
-    const client = nano(coudhDBSettings);
+    const client = nano(url);
 
     // Establish a real CouchDB session before doing anything else. nano's
     // auth() POSTs /_session and stores the resulting AuthSession cookie
@@ -183,7 +161,5 @@ export default class Couch_db extends AbstractDatabase {
 
   async close() {
     this.db = null;
-    if (this.agent) this.agent.destroy();
-    this.agent = null;
   }
 };
