@@ -2,8 +2,8 @@
   "name": "ueberdb2",
   "description": "Transform every database into a object key value store",
   "url": "https://github.com/ether/ueberDB",
-  "type": "commonjs",
-  "types": "./dist/index.d.ts",
+  "type": "module",
+  "version": "6.0.0",
   "keywords": [
     "database",
     "keyvalue"
@@ -22,21 +22,51 @@
       "name": "Peter Martischka"
     }
   ],
-  "dependencies": {
-    "@elastic/elasticsearch": "^9.4.0",
-    "async": "^3.2.6",
-    "cassandra-driver": "^4.9.0",
-    "dirty-ts": "^1.1.8",
-    "mongodb": "^7.2.0",
-    "mssql": "^12.5.2",
-    "mysql2": "^3.22.3",
-    "nano": "^11.0.5",
-    "pg": "^8.20.0",
-    "redis": "^5.12.1",
-    "rethinkdb": "^2.4.2",
-    "rusty-store-kv": "^1.3.1",
-    "simple-git": "^3.36.0",
-    "surrealdb": "^2.0.3"
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/*.js",
+    "dist/*.d.ts",
+    "dist/databases",
+    "dist/lib"
+  ],
+  "peerDependencies": {
+    "@elastic/elasticsearch": "^9.0.0",
+    "async": "^3.0.0",
+    "cassandra-driver": "^4.0.0",
+    "dirty-ts": "^1.0.0",
+    "mongodb": "^7.0.0",
+    "mssql": "^12.0.0",
+    "mysql2": "^3.0.0",
+    "nano": "^11.0.0",
+    "pg": "^8.0.0",
+    "redis": "^5.0.0",
+    "rethinkdb": "^2.0.0",
+    "rusty-store-kv": "^1.0.0",
+    "simple-git": "^3.0.0",
+    "surrealdb": "^2.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@elastic/elasticsearch": {"optional": true},
+    "async": {"optional": true},
+    "cassandra-driver": {"optional": true},
+    "dirty-ts": {"optional": true},
+    "mongodb": {"optional": true},
+    "mssql": {"optional": true},
+    "mysql2": {"optional": true},
+    "nano": {"optional": true},
+    "pg": {"optional": true},
+    "redis": {"optional": true},
+    "rethinkdb": {"optional": true},
+    "rusty-store-kv": {"optional": true},
+    "simple-git": {"optional": true},
+    "surrealdb": {"optional": true}
   },
   "devDependencies": {
     "@elastic/elasticsearch": "^9.4.0",
@@ -49,11 +79,11 @@
     "cassandra-driver": "^4.9.0",
     "cli-table3": "^0.6.5",
     "mongodb": "^7.2.0",
-    "oxfmt": "^0.48.0",
-    "oxlint": "^1.63.0",
     "mssql": "^12.5.2",
     "mysql2": "^3.22.3",
     "nano": "^11.0.5",
+    "oxfmt": "^0.48.0",
+    "oxlint": "^1.63.0",
     "pg": "^8.20.0",
     "randexp-ts": "^1.0.5",
     "redis": "^5.12.1",
@@ -70,17 +100,9 @@
     "type": "git",
     "url": "https://github.com/ether/ueberDB.git"
   },
-  "main": "./dist/index.js",
-  "version": "5.0.48",
   "bugs": {
     "url": "https://github.com/ether/ueberDB/issues"
   },
-  "files": [
-    "dist/*.js",
-    "dist/*.d.ts",
-    "dist/databases",
-    "dist/lib"
-  ],
   "homepage": "https://github.com/ether/ueberDB",
   "scripts": {
     "lint": "oxlint",

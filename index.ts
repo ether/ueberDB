@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * 2011 Peter 'Pita' Martischka
  * 2020 John McLear
@@ -17,275 +15,159 @@
  * limitations under the License.
  */
 
-import {Database as DatabaseCache} from './lib/CacheAndBufferLayer';
+import {Database as DatabaseCache, type Metrics} from './lib/CacheAndBufferLayer';
 import {normalizeLogger} from './lib/logging';
-import {callbackify} from 'util';
-import {Settings} from './lib/AbstractDatabase';
+import type {Settings} from './lib/AbstractDatabase';
+
+export type {Settings} from './lib/AbstractDatabase';
+export type {Metrics, CacheSettings} from './lib/CacheAndBufferLayer';
+export type {Logger} from './lib/logging';
+
 // Database drivers are loaded lazily in initDB() so that only the selected
-// backend's dependencies need to be installed. This avoids crashes when
-// optional drivers (cassandra, mongodb, mssql, etc.) are not present.
-
-type CBDBType = {
-  [key: string]:Function
-}
-
+// backend's dependencies need to be installed.
 
 export type DatabaseType =
-    | 'mysql'
-    | 'postgres'
-    | 'sqlite'
-    | 'rustydb'
-    | 'mongodb'
-    | 'redis'
-    | 'cassandra'
-    | 'dirty'
-    | 'dirtygit'
-    | 'elasticsearch'
-    | 'memory'
-    | 'mock'
-    | 'mssql'
-    | 'postgrespool'
-    | 'rethink'
-    | 'couch'
-    | 'surrealdb';
-
-const cbDb: CBDBType= {
-  init: () => {},
-  flush: () => {},
-  set: () => {},
-  get: () => {},
-  remove: () => {},
-  findKeys: () => {},
-  close: () => {},
-  getSub: () => {},
-  setSub: () => {},
-};
-const fns = ['close', 'findKeys', 'flush', 'get', 'getSub', 'init', 'remove', 'set', 'setSub'];
-for (const fn of fns) {
-  if (fn in cbDb){
-    // @ts-ignore
-    cbDb[fn] =  callbackify(DatabaseCache.prototype[fn]);
-  }
-}
-const makeDoneCallback = (callback: (err?:any)=>{}, deprecated:(err:any)=>{}) => (err: null) => {
-  if (callback) callback(err);
-  if (deprecated) deprecated(err);
-  if (err != null && callback == null && deprecated == null) throw err;
-};
+  | 'cassandra'
+  | 'couch'
+  | 'dirty'
+  | 'dirtygit'
+  | 'elasticsearch'
+  | 'memory'
+  | 'mock'
+  | 'mongodb'
+  | 'mssql'
+  | 'mysql'
+  | 'postgres'
+  | 'postgrespool'
+  | 'redis'
+  | 'rethink'
+  | 'rustydb'
+  | 'sqlite'
+  | 'surrealdb';
 
 export class Database {
   public readonly type: DatabaseType;
-  public readonly dbSettings: any;
-  public readonly wrapperSettings: any | {};
-  public readonly logger: Function | null;
-  public db: any;
-  public metrics: any;
+  public readonly dbSettings: Settings | null | string;
+  public readonly wrapperSettings: Record<string, unknown> | null;
+  private readonly _logger: ReturnType<typeof normalizeLogger>;
+  public db!: DatabaseCache;
+  public metrics!: Metrics;
+
   /**
    * @param type The type of the database
    * @param dbSettings The settings for that specific database type
-   * @param wrapperSettings
-   * @param logger Optional logger object. If no logger object is provided no logging will occur.
-   *     The logger object is expected to be a log4js logger object or `console`. A logger object
-   *     from another logging library should also work, but performance may be reduced if the logger
-   *     object does not have is${Level}Enabled() methods (isDebugEnabled(), etc.).
+   * @param wrapperSettings Cache/buffer layer settings (cache size, write interval, etc.)
+   * @param logger Optional logger (log4js, console, or any object with debug/info/warn/error methods)
    */
-  constructor(type: undefined | DatabaseType, dbSettings: Settings | null | string, wrapperSettings?: null | {}, logger: any = null) {
+  constructor(
+    type: DatabaseType | undefined,
+    dbSettings: Settings | null | string,
+    wrapperSettings?: Record<string, unknown> | null,
+    logger: Partial<ReturnType<typeof normalizeLogger>> | null = null,
+  ) {
     if (!type) {
       type = 'sqlite';
       dbSettings = null;
       wrapperSettings = null;
     }
-
-    // saves all settings and require the db module
     this.type = type;
     this.dbSettings = dbSettings;
-    this.wrapperSettings = wrapperSettings;
-    this.logger = normalizeLogger(logger);
-
+    this.wrapperSettings = wrapperSettings ?? null;
+    this._logger = normalizeLogger(logger);
   }
 
-  /**
-   * @param callback - Deprecated. Node-style callback. If null, a Promise is returned.
-   */
-  init(callback = null) {
-    const p = this.initDB().then((db: any) => {
-      db.logger = this.logger;
-      this.db = new DatabaseCache(db, this.wrapperSettings, this.logger);
-      this.metrics = this.db.metrics;
-      return this.db.init();
-    });
-    if (callback != null) {
-      return cbDb.init.call({init: () => p});
-    }
-    return p;
+  async init(): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const db: any = await this.initDB();
+    db.logger = this._logger;
+    this.db = new DatabaseCache(db, this.wrapperSettings, this._logger);
+    this.metrics = this.db.metrics;
+    await this.db.init();
   }
 
-  async initDB(){
-    switch (this.type){
-        case 'mysql':
-            return new (await import('./databases/mysql_db')).default(this.dbSettings);
-        case 'postgres':
-            return new (await import('./databases/postgres_db')).default(this.dbSettings);
-        case 'sqlite':
-            return new (await import('./databases/sqlite_db')).default(this.dbSettings);
-        case 'rustydb':
-            return new (await import('./databases/rusty_db')).default(this.dbSettings);
-        case 'mongodb':
-            return new (await import('./databases/mongodb_db')).default(this.dbSettings);
-        case 'redis':
-            return new (await import('./databases/redis_db')).default(this.dbSettings);
-        case 'cassandra':
-            return new (await import('./databases/cassandra_db')).default(this.dbSettings);
-        case 'dirty':
-            return new (await import('./databases/dirty_db')).default(this.dbSettings);
-        case 'dirtygit':
-            return new (await import('./databases/dirty_git_db')).default(this.dbSettings);
-        case 'elasticsearch':
-            return new (await import('./databases/elasticsearch_db')).default(this.dbSettings);
-        case 'memory':
-            return new (await import('./databases/memory_db')).default(this.dbSettings);
-        case 'mock':
-            return new (await import('./databases/mock_db')).default(this.dbSettings);
-        case 'mssql':
-            return new (await import('./databases/mssql_db')).default(this.dbSettings);
-        case 'postgrespool':
-            return new (await import('./databases/postgrespool_db')).default(this.dbSettings);
-        case 'rethink':
-            return new (await import('./databases/rethink_db')).default(this.dbSettings);
-        case 'couch':
-            return new (await import('./databases/couch_db')).default(this.dbSettings);
-        case 'surrealdb':
-            return new (await import('./databases/surrealdb_db')).default(this.dbSettings);
-        default:
-            throw new Error('Invalid database type');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private async initDB(): Promise<any> {
+    switch (this.type) {
+      case 'mysql':
+        return new (await import('./databases/mysql_db')).default(this.dbSettings as Settings);
+      case 'postgres':
+        return new (await import('./databases/postgres_db')).default(this.dbSettings as Settings);
+      case 'sqlite':
+        return new (await import('./databases/sqlite_db')).default(this.dbSettings as Settings);
+      case 'rustydb':
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return new (await import('./databases/rusty_db')).default(this.dbSettings as any);
+      case 'mongodb':
+        return new (await import('./databases/mongodb_db')).default(this.dbSettings as Settings);
+      case 'redis':
+        return new (await import('./databases/redis_db')).default(this.dbSettings as Settings);
+      case 'cassandra':
+        return new (await import('./databases/cassandra_db')).default(this.dbSettings as Settings);
+      case 'dirty':
+        return new (await import('./databases/dirty_db')).default(this.dbSettings as Settings);
+      case 'dirtygit':
+        return new (await import('./databases/dirty_git_db')).default(this.dbSettings as Settings);
+      case 'elasticsearch':
+        return new (await import('./databases/elasticsearch_db')).default(
+          this.dbSettings as Settings,
+        );
+      case 'memory':
+        return new (await import('./databases/memory_db')).default(this.dbSettings as Settings);
+      case 'mock':
+        return new (await import('./databases/mock_db')).default(this.dbSettings as Settings);
+      case 'mssql':
+        return new (await import('./databases/mssql_db')).default(this.dbSettings as Settings);
+      case 'postgrespool':
+        return new (await import('./databases/postgrespool_db')).default(
+          this.dbSettings as Settings,
+        );
+      case 'rethink':
+        return new (await import('./databases/rethink_db')).default(this.dbSettings as Settings);
+      case 'couch':
+        return new (await import('./databases/couch_db')).default(this.dbSettings as Settings);
+      case 'surrealdb':
+        return new (await import('./databases/surrealdb_db')).default(this.dbSettings as Settings);
+      default:
+        throw new Error(`Invalid database type: ${this.type as string}`);
     }
   }
 
-  /**
-   * Wrapper functions
-   */
-
-  /**
-   * Deprecated synonym of flush().
-   *
-   * @param callback - Deprecated. Node-style callback. If null, a Promise is returned.
-   */
-  doShutdown(callback = null) {
-    return this.flush(callback);
-  }
-
-  /**
-   * Writes any unsaved changes to the underlying database.
-   *
-   * @param callback - Deprecated. Node-style callback. If null, a Promise is returned.
-   */
-  flush(callback = null) {
-    if (!cbDb || !cbDb.flush === undefined) return null;
-    if (callback != null) { // @ts-ignore
-      return cbDb.flush.call(this.db, callback);
-    }
+  async flush(): Promise<void> {
     return this.db.flush();
   }
 
-  /**
-   * @param key
-   * @param callback - Deprecated. Node-style callback. If null, a Promise is returned.
-   */
-  get(key:string, callback = null) {
-    if (callback != null) { // @ts-ignore
-      return cbDb.get.call(this.db, key, callback);
-    }
+  /** @deprecated Use flush() */
+  doShutdown(): Promise<void> {
+    return this.flush();
+  }
+
+  async get(key: string): Promise<unknown> {
     return this.db.get(key);
   }
 
-  /**
-   * @param key
-   * @param notKey
-   * @param callback - Deprecated. Node-style callback. If null, a Promise is returned.
-   */
-  findKeys(key:string, notKey?:string, callback = null) {
-    if (callback != null) { // @ts-ignore
-      return cbDb.findKeys.call(this.db, key, notKey, callback);
-    }
+  async findKeys(key: string, notKey?: string): Promise<string[]> {
     return this.db.findKeys(key, notKey);
   }
 
-  /**
-   * Removes an entry from the database if present.
-   *
-   * @param key
-   * @param cb Deprecated. Node-style callback. Called when the write has been committed to the
-   *     underlying database driver. If null, a Promise is returned.
-   * @param deprecated Deprecated callback that is called just after cb. Ignored if cb is null.
-   */
-  remove(key:string, cb = null, deprecated = null) {
-    if (cb != null) { // @ts-ignore
-      return cbDb.remove.call(this.db, key, makeDoneCallback(cb, deprecated));
-    }
+  async remove(key: string): Promise<void> {
     return this.db.remove(key);
   }
 
-  /**
-   * Adds or changes the value of an entry.
-   *
-   * @param key
-   * @param value
-   * @param cb Deprecated. Node-style callback. Called when the write has been committed to the
-   *     underlying database driver. If null, a Promise is returned.
-   * @param deprecated Deprecated callback that is called just after cb. Ignored if cb is null.
-   */
-  set(key:string, value:any, cb = null, deprecated = null) {
-    if (cb != null) { // @ts-ignore
-      return cbDb.set.call(this.db, key, value, makeDoneCallback(cb, deprecated));
-    }
+  async set(key: string, value: unknown): Promise<void> {
     return this.db.set(key, value);
   }
 
-  /**
-   * @param key
-   * @param sub
-   * @param callback - Deprecated. Node-style callback. If null, a Promise is returned.
-   */
-  getSub(key:string, sub: string[], callback: Function|null = null) {
-    if (callback != null) {
-      return cbDb.getSub.call(this.db, key, sub, callback);
-    }
+  async getSub(key: string, sub: string[]): Promise<unknown> {
     return this.db.getSub(key, sub);
   }
 
-  /**
-   * Adds or changes a subvalue of an entry.
-   *
-   * @param key
-   * @param sub
-   * @param value
-   * @param cb Deprecated. Node-style callback. Called when the write has been committed to the
-   *     underlying database driver. If null, a Promise is returned.
-   * @param deprecated Deprecated callback that is called just after cb. Ignored if cb is null.
-   */
-  setSub(key:string, sub:string, value:string, cb:Function|null = null, deprecated: Function|null = null) {
-    if (cb != null) {
-      // @ts-ignore
-      return cbDb.setSub.call(this.db, key, sub, value, makeDoneCallback(cb, deprecated));
-    }
+  async setSub(key: string, sub: string[], value: unknown): Promise<void> {
     return this.db.setSub(key, sub, value);
   }
 
-  /**
-   * Flushes unwritten changes then closes the connection to the underlying database. After this
-   * returns, any future call to a method on this object may result in an error.
-   *
-   * @param callback - Deprecated. Node-style callback. If null, a Promise is returned.
-   */
-  close(callback:Function|null = null) {
-    if (callback != null) { // @ts-ignore
-      return cbDb.close.call(this.db, callback);
-    }
+  async close(): Promise<void> {
     return this.db.close();
   }
-};
+}
 
-/**
- * Deprecated synonym of Database.
- */
 export default Database;

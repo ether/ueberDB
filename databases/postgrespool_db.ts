@@ -1,4 +1,4 @@
-import {Settings} from '../lib/AbstractDatabase';
+import type {Settings} from '../lib/AbstractDatabase';
 
 import Postgres_db from './postgres_db'
 

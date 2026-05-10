@@ -1,6 +1,5 @@
-'use strict';
-import {BulkObject} from "./cassandra_db";
-import AbstractDatabase, {Settings} from "../lib/AbstractDatabase";
+import type {BulkObject} from './cassandra_db';
+import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
 import {SQLite} from "rusty-store-kv";
 
 /**

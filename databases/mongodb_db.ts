@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
-
-import {BulkObject} from './cassandra_db';
-import {Collection, Db, MongoClient} from 'mongodb';
+import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
+import type {BulkObject} from './cassandra_db';
+import {MongoClient} from 'mongodb';
+import type {Collection, Db} from 'mongodb';
 
 export default class extends AbstractDatabase {
   public interval: NodeJS.Timer | undefined;

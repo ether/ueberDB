@@ -12,9 +12,10 @@
  * limitations under the License.
  */
 
-import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
-import {ArrayOrObject, Client, types, ValueCallback} from 'cassandra-driver';
-import ResultSet = types.ResultSet;
+import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
+import {Client, types} from 'cassandra-driver';
+import type {ArrayOrObject, ValueCallback} from 'cassandra-driver';
+type ResultSet = types.ResultSet;
 
 
 type Result = {
@@ -64,17 +65,20 @@ export default class Cassandra_db extends AbstractDatabase {
    */
   init(callback: (arg: any)=>{}) {
     // Create a client
-    this.client = new Client(this.settings.clientOptions);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.client = new Client(this.settings.clientOptions as any);
 
     // Pass on log messages if a logger has been configured
     if (this.settings.logger) {
-      this.client.on('log', this.settings.logger);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      this.client.on('log', (...args: any[]) => (this.settings.logger as any)(...args));
     }
 
     // Check whether our column family already exists and create it if necessary
     this.client.execute(
         'SELECT columnfamily_name FROM system.schema_columnfamilies WHERE keyspace_name = ?',
-        [this.settings.clientOptions.keyspace],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        [(this.settings.clientOptions as any).keyspace],
         (err, result) => {
           if (err) {
             return callback(err);

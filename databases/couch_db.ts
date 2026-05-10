@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
-import http, {Agent} from 'http';
+import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
+import http from 'http';
+import type {Agent} from 'http';
 import nano from 'nano';
-import {BulkObject} from './cassandra_db';
+import type {BulkObject} from './cassandra_db';
 
 type CouchDBSettings = {
     url: string,
