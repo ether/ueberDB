@@ -535,10 +535,12 @@ export class Database {
 
     if (ops.length === 1) {
       await writeOneOp(ops[0], entries[0]);
+    } else if (typeof this.wrappedDB!.doBulk !== 'function') {
+      await Promise.all(ops.map(async (op, i) => writeOneOp(op, entries[i])));
     } else {
       let success = false;
       try {
-        await this.wrappedDB!.doBulk?.(ops);
+        await this.wrappedDB!.doBulk(ops);
         success = true;
       } catch (err) {
         this.logger.error(
