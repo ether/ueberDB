@@ -3,7 +3,7 @@
   "description": "Transform every database into a object key value store",
   "url": "https://github.com/ether/ueberDB",
   "type": "module",
-  "version": "6.0.0",
+  "version": "6.0.1",
   "keywords": [
     "database",
     "keyvalue"
@@ -53,20 +53,48 @@
     "surrealdb": "^2.0.0"
   },
   "peerDependenciesMeta": {
-    "@elastic/elasticsearch": {"optional": true},
-    "async": {"optional": true},
-    "cassandra-driver": {"optional": true},
-    "dirty-ts": {"optional": true},
-    "mongodb": {"optional": true},
-    "mssql": {"optional": true},
-    "mysql2": {"optional": true},
-    "nano": {"optional": true},
-    "pg": {"optional": true},
-    "redis": {"optional": true},
-    "rethinkdb": {"optional": true},
-    "rusty-store-kv": {"optional": true},
-    "simple-git": {"optional": true},
-    "surrealdb": {"optional": true}
+    "@elastic/elasticsearch": {
+      "optional": true
+    },
+    "async": {
+      "optional": true
+    },
+    "cassandra-driver": {
+      "optional": true
+    },
+    "dirty-ts": {
+      "optional": true
+    },
+    "mongodb": {
+      "optional": true
+    },
+    "mssql": {
+      "optional": true
+    },
+    "mysql2": {
+      "optional": true
+    },
+    "nano": {
+      "optional": true
+    },
+    "pg": {
+      "optional": true
+    },
+    "redis": {
+      "optional": true
+    },
+    "rethinkdb": {
+      "optional": true
+    },
+    "rusty-store-kv": {
+      "optional": true
+    },
+    "simple-git": {
+      "optional": true
+    },
+    "surrealdb": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@elastic/elasticsearch": "^9.4.0",
