@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
-import {createClient,  RedisClientOptions} from 'redis';
-import {BulkObject} from './cassandra_db';
+import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
+import {createClient} from 'redis';
+import type {RedisClientOptions} from 'redis';
+import type {BulkObject} from './cassandra_db';
 
 export default class RedisDB extends AbstractDatabase {
   public _client: any
@@ -90,8 +91,8 @@ export default class RedisDB extends AbstractDatabase {
     ]);
   }
 
-  async doBulk(bulk: BulkObject[]) {
-    if (this._client == null) return null;
+  async doBulk(bulk: BulkObject[]): Promise<void> {
+    if (this._client == null) return;
     const multi = this._client.multi();
 
     for (const {key, type, value} of bulk) {

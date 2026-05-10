@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
+import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
 import {Surreal} from 'surrealdb';
-import {BulkObject} from "./cassandra_db";
+import type {BulkObject} from './cassandra_db';
 
 const DATABASE = 'ueberdb';
 const WILDCARD = '*';
@@ -65,8 +65,10 @@ export default class SurrealDB extends AbstractDatabase {
             await this._client.connect(this.settings.url);
         } else if (this.settings.host) {
             const port = this.settings.port || 8000;
-            const protocol = this.settings.clientOptions?.protocol || 'http://';
-            const path = this.settings.clientOptions?.path || '/rpc';
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const opts = (this.settings.clientOptions ?? {}) as Record<string, unknown>;
+            const protocol = (opts.protocol as string | undefined) || 'http://';
+            const path = (opts.path as string | undefined) || '/rpc';
             const host = this.settings.host;
             this._client = new Surreal();
             await this._client.connect(`${protocol}${host}:${port}${path}`);
@@ -176,8 +178,8 @@ export default class SurrealDB extends AbstractDatabase {
         );
     }
 
-    async doBulk(bulk: BulkObject[]) {
-        if (this._client == null) return null;
+    async doBulk(bulk: BulkObject[]): Promise<void> {
+        if (this._client == null) return;
         for (const b of bulk) {
             if (b.type === 'set') {
                 await this.set(b.key, b.value!);

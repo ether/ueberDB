@@ -1,22 +1,20 @@
-import {normalizeLogger} from './logging';
+import {normalizeLogger, type Logger} from './logging';
 
 const nullLogger = normalizeLogger(null);
 
-// Format: All characters match themselves except * matches any zero or more characters. No
-// backslash escaping is supported, so it is impossible to create a pattern that matches only the
-// '*' character.
-const simpleGlobToRegExp = (s:string) => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*');
+const simpleGlobToRegExp = (s: string) =>
+  s.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*');
 
 export type Settings = {
-  data?: any;
+  data?: unknown;
   table?: string;
   db?: string;
-  idleTimeoutMillis?: any;
-  min?: any;
-  max?: any;
+  idleTimeoutMillis?: number;
+  min?: number;
+  max?: number;
   engine?: string;
   charset?: string;
-  server?: string | undefined;
+  server?: string;
   requestTimeout?: number;
   bulkLimit?: number;
   queryTimeout?: number;
@@ -25,55 +23,54 @@ export type Settings = {
   dbName?: string;
   collection?: string;
   url?: string;
-  mock?: any;
+  mock?: unknown;
   base_index?: string;
   migrate_to_newer_schema?: boolean;
-  api?: string
+  api?: string;
   filename?: string;
   database?: string;
   password?: string;
   user?: string;
   port?: number | string;
   host?: string;
-  maxListeners?: number | undefined;
+  maxListeners?: number;
   json?: boolean;
   cache?: number;
   writeInterval?: number;
-  logger?: any;
-  columnFamily?: any;
-  clientOptions?: any;
+  logger?: Logger;
+  columnFamily?: unknown;
+  clientOptions?: unknown;
 };
 
-
 class AbstractDatabase {
-  public logger: any;
-    public settings: Settings;
+  public logger: Logger;
+  public settings: Settings;
+
   constructor(settings: Settings) {
-    if (new.target === module.exports) {
+    if (new.target === AbstractDatabase) {
       throw new TypeError('cannot instantiate Abstract Database directly');
     }
     for (const fn of ['init', 'close', 'get', 'findKeys', 'remove', 'set']) {
-      // @ts-ignore
-      if (typeof this[fn] !== 'function') throw new TypeError(`method ${fn} not defined`);
+      if (typeof (this as Record<string, unknown>)[fn] !== 'function') {
+        throw new TypeError(`method ${fn} not defined`);
+      }
     }
     this.logger = nullLogger;
-    this.settings = settings
+    this.settings = settings;
   }
 
-  /**
-   * For findKey regex. Used by document dbs like mongodb or dirty.
-   */
-  createFindRegex(key:string, notKey?:string) {
+  createFindRegex(key: string, notKey?: string): RegExp {
     let regex = `^(?=${simpleGlobToRegExp(key)}$)`;
     if (notKey != null) regex += `(?!${simpleGlobToRegExp(notKey)}$)`;
     return new RegExp(regex);
   }
 
-  doBulk(operations:any, cb: ()=>{}) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  doBulk(..._args: any[]): void | Promise<void> {
     throw new Error('the doBulk method must be implemented if write caching is enabled');
   }
 
-  get isAsync() { return false; }
+  get isAsync(): boolean { return false; }
 }
 
 export default AbstractDatabase;

@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
+import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
 import r from 'rethinkdb';
 import async from 'async';
-import {BulkObject} from './cassandra_db';
+import type {BulkObject} from './cassandra_db';
 
 export default class Rethink_db extends AbstractDatabase {
   public host: string;

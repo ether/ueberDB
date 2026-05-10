@@ -13,11 +13,5 @@ export default defineConfig({
         // fail the whole job. The underlying bug still surfaces if the
         // test fails consistently.
         retry: 5,
-        poolOptions: {
-            vmForks: {
-                // VM forks related options here
-            },
-
-        }
     }
 })

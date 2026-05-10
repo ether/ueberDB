@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
-import assert, {equal} from 'assert';
-
+import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
+import assert from 'assert';
+import {equal} from 'assert';
 import {Buffer} from 'buffer';
 import {createHash} from 'crypto';
 import {Client} from '@elastic/elasticsearch';
 import type {estypes} from '@elastic/elasticsearch';
-import {BulkObject} from './cassandra_db';
+import type {BulkObject} from './cassandra_db';
 
 const schema = '2';
 

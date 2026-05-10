@@ -1,4 +1,4 @@
-import {Settings} from '../lib/AbstractDatabase';
+import type {Settings} from '../lib/AbstractDatabase';
 
 import events from 'events';
 

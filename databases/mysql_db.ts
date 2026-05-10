@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-import AbstractDatabase, {Settings} from '../lib/AbstractDatabase';
+import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
 import util from 'util';
-import {BulkObject} from './cassandra_db';
-import {ConnectionConfig, createPool, Pool, QueryError} from "mysql2";
+import type {BulkObject} from './cassandra_db';
+import {createPool} from 'mysql2';
+import type {ConnectionConfig, Pool, QueryError} from 'mysql2';
 
 export default class extends AbstractDatabase {
   public readonly _mysqlSettings: Settings;
   public _pool: Pool|null;
   constructor(settings:Settings) {
     super(settings);
-    this.logger = console;
+    // logger is set by the framework after construction
     this._mysqlSettings = {
       charset: 'utf8mb4', // temp hack needs a proper fix..
       ...settings,
