@@ -16,7 +16,7 @@ jobs:
       # PR ends up red even when only a single integration container is flaky.
       fail-fast: false
       matrix:
-        db: [couch, elasticsearch, mongo, mysql, redis, mock, sqlite, memory, rusty, surrealdb]
+        db: [couch, dirty, elasticsearch, mongo, mysql, redis, mock, sqlite, memory, rusty, surrealdb]
     steps:
       - uses: actions/checkout@v6
 
