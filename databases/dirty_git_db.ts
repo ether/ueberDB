@@ -18,7 +18,13 @@ import {simpleGit} from 'simple-git'
  */
 
 
-import Dirty from 'dirty-ts';
+import DirtyImport from 'dirty-ts';
+
+// dirty-ts is a CJS package that exposes the constructor as `module.exports.default`
+// with the `__esModule` marker. Under Node's ESM-to-CJS interop, the default
+// import resolves to the whole `module.exports` object (not the constructor),
+// so unwrap `.default` if it's present.
+const Dirty: any = (DirtyImport as any).default ?? DirtyImport;
 
 export default class extends AbstractDatabase {
   public db: any;
