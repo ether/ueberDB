@@ -3,7 +3,7 @@
   "description": "Transform every database into a object key value store",
   "url": "https://github.com/ether/ueberDB",
   "type": "module",
-  "version": "6.0.3",
+  "version": "6.0.4",
   "keywords": [
     "database",
     "keyvalue"
