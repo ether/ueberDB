@@ -25,8 +25,8 @@ importers:
         version: 3.36.0
     devDependencies:
       '@elastic/elasticsearch':
-        specifier: ^9.4.0
-        version: 9.4.0
+        specifier: ^9.4.1
+        version: 9.4.1
       '@types/async':
         specifier: ^3.2.25
         version: 3.2.25
@@ -191,8 +191,8 @@ packages:
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
     engines: {node: '>=0.1.90'}
 
-  '@elastic/elasticsearch@9.4.0':
-    resolution: {integrity: sha512-UbvHAtGAqiQdAsAmb3vfCMwOTIf6BoSf6MDpz7mw5UzpU3pRSl4KeFzaXRfrk4+PrgiudYx14socGCI6frgguQ==}
+  '@elastic/elasticsearch@9.4.1':
+    resolution: {integrity: sha512-3tFtSzvHfl/mUT/A6+TY1uiikK80iPfIySjpTwuxgwu2db57KUM/9a14vx5pnIf2etzJTrD8QOxlnVxBM+AHLg==}
     engines: {node: '>=20'}
     peerDependencies:
       apache-arrow: 18.x - 21.x
@@ -200,8 +200,8 @@ packages:
       apache-arrow:
         optional: true
 
-  '@elastic/transport@9.3.5':
-    resolution: {integrity: sha512-hIMJbt1guqr3/N2zCN45k9hw9o78qcdsO0xietLe+Bfa+JL0YafHTgkWkM1oT3Ht5sGMJaDcJZiYomSMU6CtTA==}
+  '@elastic/transport@9.3.6':
+    resolution: {integrity: sha512-1r0kXXOkKPhmHycpdZTzRlr2d6l0m16b+ug1iJDMS84Ml0t6w7m26BKjFYbZ2Ng7kX50wyqgUTFqxln1ygvMUw==}
     engines: {node: '>=20'}
 
   '@emnapi/core@1.10.0':
@@ -265,8 +265,8 @@ packages:
     peerDependencies:
       '@opentelemetry/api': '>=1.0.0 <1.10.0'
 
-  '@opentelemetry/semantic-conventions@1.40.0':
-    resolution: {integrity: sha512-cifvXDhcqMwwTlTK04GBNeIe7yyo28Mfby85QXFe1Yk8nmi36Ab/5UQwptOx84SsoGNRg+EVSjwzfSZMy6pmlw==}
+  '@opentelemetry/semantic-conventions@1.41.1':
+    resolution: {integrity: sha512-/UhIkaZgPutTFmQ7RnIJGgDXZmtEJ7Dvi86xNTFWcnRxVRNk/aotsqDJYeEvDP+FSMB2SdW+pQzNMcWP0rwuNA==}
     engines: {node: '>=14'}
 
   '@oxc-project/types@0.128.0':
@@ -2251,14 +2251,14 @@ snapshots:
   '@colors/colors@1.5.0':
     optional: true
 
-  '@elastic/elasticsearch@9.4.0':
+  '@elastic/elasticsearch@9.4.1':
     dependencies:
-      '@elastic/transport': 9.3.5
+      '@elastic/transport': 9.3.6
       tslib: 2.8.1
     transitivePeerDependencies:
       - supports-color
 
-  '@elastic/transport@9.3.5':
+  '@elastic/transport@9.3.6':
     dependencies:
       '@opentelemetry/api': 1.9.1
       '@opentelemetry/core': 2.7.1(@opentelemetry/api@1.9.1)
@@ -2345,9 +2345,9 @@ snapshots:
   '@opentelemetry/core@2.7.1(@opentelemetry/api@1.9.1)':
     dependencies:
       '@opentelemetry/api': 1.9.1
-      '@opentelemetry/semantic-conventions': 1.40.0
+      '@opentelemetry/semantic-conventions': 1.41.1
 
-  '@opentelemetry/semantic-conventions@1.40.0': {}
+  '@opentelemetry/semantic-conventions@1.41.1': {}
 
   '@oxc-project/types@0.128.0': {}
 
