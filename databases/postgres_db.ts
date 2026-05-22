@@ -151,6 +151,37 @@ export default class extends AbstractDatabase {
     });
   }
 
+  findKeysPaged(
+    key: string,
+    notKey: string | null | undefined,
+    options: {limit: number; after?: string},
+    callback: (err: Error | null, value: string[]) => void,
+  ) {
+    if (!options || !Number.isInteger(options.limit) || options.limit <= 0) {
+      return callback(new Error('findKeysPaged requires a positive integer limit'), []);
+    }
+    let query = 'SELECT key FROM store WHERE key LIKE $1';
+    const params: (string | number)[] = [key.replace(/\*/g, '%')];
+    let n = 2;
+    if (notKey != null) {
+      query += ` AND key NOT LIKE $${n++}`;
+      params.push(notKey.replace(/\*/g, '%'));
+    }
+    if (options.after != null) {
+      query += ` AND key > $${n++}`;
+      params.push(options.after);
+    }
+    query += ` ORDER BY key ASC LIMIT $${n}`;
+    params.push(options.limit);
+    this.db.query(query, params, (err, results) => {
+      const value: string[] = [];
+      if (!err && results.rows.length > 0) {
+        for (const row of results.rows) value.push(row.key);
+      }
+      callback(err, value);
+    });
+  }
+
   set(key:string, value:string, callback:(err: Error, result: pg.QueryResult) => void) {
     if (key.length > 100) {
       const val = '' as any;

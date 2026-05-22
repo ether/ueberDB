@@ -149,6 +149,20 @@ export class Database {
     return this.db.findKeys(key, notKey);
   }
 
+  /**
+   * Returns up to `options.limit` keys matching `key` (excluding `notKey`),
+   * sorted ascending. Page by passing the last returned key as `options.after`
+   * on the next call; the final page returns fewer than `options.limit` keys.
+   * Designed for memory-bounded iteration over large keyspaces.
+   */
+  async findKeysPaged(
+    key: string,
+    notKey: string | null | undefined,
+    options: {limit: number; after?: string},
+  ): Promise<string[]> {
+    return this.db.findKeysPaged(key, notKey, options);
+  }
+
   async remove(key: string): Promise<void> {
     return this.db.remove(key);
   }

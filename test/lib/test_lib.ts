@@ -173,6 +173,74 @@ export const test_db = (database: DatabaseType)=>{
                             expect(keys).toStrictEqual([key]);
                         });
 
+                        describe('findKeysPaged', () => {
+                            // Per-test prefix keeps these isolated from other findKeys tests above.
+                            const prefix = () => `pg_${new Randexp(/[a-z]{6}/).gen()}`;
+
+                            it.skipIf(database === 'mongodb')('returns empty page when no keys match', async () => {
+                                const p = prefix();
+                                const keys = await db.findKeysPaged(`${p}_nomatch:*`, null, {limit: 10});
+                                expect(keys).toStrictEqual([]);
+                            });
+
+                            it.skipIf(database === 'mongodb')('returns all keys in a single page when limit > count', async () => {
+                                const p = prefix();
+                                await db.set(`${p}:a`, 1);
+                                await db.set(`${p}:b`, 2);
+                                await db.set(`${p}:c`, 3);
+                                const keys = await db.findKeysPaged(`${p}:*`, null, {limit: 10});
+                                expect(keys.sort()).toStrictEqual([`${p}:a`, `${p}:b`, `${p}:c`]);
+                            });
+
+                            it.skipIf(database === 'mongodb')('honours the limit', async () => {
+                                const p = prefix();
+                                await db.set(`${p}:a`, 1);
+                                await db.set(`${p}:b`, 2);
+                                await db.set(`${p}:c`, 3);
+                                const keys = await db.findKeysPaged(`${p}:*`, null, {limit: 2});
+                                expect(keys.length).toBe(2);
+                            });
+
+                            it.skipIf(database === 'mongodb')('pages cleanly across the keyspace using after-cursor', async () => {
+                                const p = prefix();
+                                const expected = ['a', 'b', 'c', 'd', 'e', 'f', 'g'].map((s) => `${p}:${s}`);
+                                for (const k of expected) await db.set(k, 1);
+                                const collected: string[] = [];
+                                let after: string | undefined;
+                                // 7 keys / page size 3 -> 3 pages (3 + 3 + 1)
+                                for (let safety = 0; safety < 10; safety++) {
+                                    const page: string[] = await db.findKeysPaged(`${p}:*`, null, {
+                                        limit: 3,
+                                        ...(after != null ? {after} : {}),
+                                    });
+                                    collected.push(...page);
+                                    if (page.length < 3) break;
+                                    after = page[page.length - 1];
+                                }
+                                expect(collected.sort()).toStrictEqual([...expected].sort());
+                            });
+
+                            it.skipIf(database === 'mongodb')('respects notKey exclusion across pages', async () => {
+                                const p = prefix();
+                                await db.set(`${p}:keep1`, 1);
+                                await db.set(`${p}:keep2`, 1);
+                                await db.set(`${p}:skip:1`, 0);
+                                await db.set(`${p}:skip:2`, 0);
+                                const collected: string[] = [];
+                                let after: string | undefined;
+                                for (let safety = 0; safety < 10; safety++) {
+                                    const page: string[] = await db.findKeysPaged(`${p}:*`, `${p}:skip:*`, {
+                                        limit: 10,
+                                        ...(after != null ? {after} : {}),
+                                    });
+                                    collected.push(...page);
+                                    if (page.length < 10) break;
+                                    after = page[page.length - 1];
+                                }
+                                expect(collected.sort()).toStrictEqual([`${p}:keep1`, `${p}:keep2`]);
+                            });
+                        });
+
 
 
                         it('remove works', async () => {

@@ -46,6 +46,11 @@ type InternalDB = {
   set(key: string, value: string): Promise<void>;
   remove(key: string): Promise<void>;
   findKeys(key: string, notKey?: string): Promise<string[]>;
+  findKeysPaged(
+    key: string,
+    notKey: string | null | undefined,
+    options: {limit: number; after?: string},
+  ): Promise<string[]>;
   doBulk?(ops: BulkOp[]): Promise<void>;
 };
 
@@ -167,7 +172,9 @@ export class Database {
       this.wrappedDB = wrappedDB as unknown as InternalDB;
     } else {
       const promisified: Partial<InternalDB> = {};
-      for (const fn of ['close', 'doBulk', 'findKeys', 'get', 'init', 'remove', 'set'] as const) {
+      for (const fn of [
+        'close', 'doBulk', 'findKeys', 'findKeysPaged', 'get', 'init', 'remove', 'set',
+      ] as const) {
         const f = wrappedDB[fn];
         if (typeof f !== 'function') continue;
         (promisified as Record<string, unknown>)[fn] = promisify(
@@ -329,6 +336,41 @@ export class Database {
       );
     }
     return clone(keyValues) as string[];
+  }
+
+  async findKeysPaged(
+    key: string,
+    notKey: string | null | undefined,
+    options: {limit: number; after?: string},
+  ): Promise<string[]> {
+    await this.flush();
+    // Some legacy callback-only backends (e.g. mock_db) don't implement the
+    // paged variant. Fall back to findKeys + JS-side slicing so the API is
+    // available everywhere, even though the OOM-mitigation benefit is lost.
+    if (typeof this.wrappedDB!.findKeysPaged !== 'function') {
+      const all = (await this.wrappedDB!.findKeys(key, notKey ?? undefined)) || [];
+      all.sort();
+      const start = options.after == null
+        ? 0
+        : (() => {
+            let lo = 0, hi = all.length;
+            while (lo < hi) {
+              const mid = (lo + hi) >>> 1;
+              if (all[mid] <= options.after!) lo = mid + 1;
+              else hi = mid;
+            }
+            return lo;
+          })();
+      return clone(all.slice(start, start + options.limit)) as string[];
+    }
+    const keys = await this.wrappedDB!.findKeysPaged(key, notKey, options);
+    if (this.logger.isDebugEnabled()) {
+      this.logger.debug(
+        `GET    - ${key}-${notKey} (paged limit=${options.limit} after=${options.after ?? ''}) ` +
+          `- ${JSON.stringify(keys)} - from database `,
+      );
+    }
+    return clone(keys) as string[];
   }
 
   async remove(key: string): Promise<void> {
