@@ -343,6 +343,13 @@ export class Database {
     notKey: string | null | undefined,
     options: {limit: number; after?: string},
   ): Promise<string[]> {
+    // Reject invalid limits at the wrapper boundary so behaviour matches the
+    // native sql backends (which throw) — without this, an invalid limit hits
+    // .slice() in the fallback path and silently returns an empty page, which
+    // can hang a `while (page.length === limit)` paging loop.
+    if (!options || !Number.isInteger(options.limit) || options.limit <= 0) {
+      throw new Error('findKeysPaged requires a positive integer limit');
+    }
     await this.flush();
     // Some legacy callback-only backends (e.g. mock_db) don't implement the
     // paged variant. Fall back to findKeys + JS-side slicing so the API is
