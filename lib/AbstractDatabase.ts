@@ -65,6 +65,12 @@ class AbstractDatabase {
     return new RegExp(regex);
   }
 
+  // Backends that may hold large keyspaces (sql, redis, mongo, ...) should
+  // override CacheAndBufferLayer's findKeysPaged fallback by implementing
+  // `findKeysPaged(key, notKey, {limit, after}, [callback])` themselves. The
+  // fallback in CacheAndBufferLayer slices in-memory via findKeys and is
+  // correct but defeats the OOM-mitigation purpose.
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   doBulk(..._args: any[]): void | Promise<void> {
     throw new Error('the doBulk method must be implemented if write caching is enabled');

@@ -155,6 +155,32 @@ export default class extends AbstractDatabase {
     return results.map((val:{key:string}) => val.key);
   }
 
+  async findKeysPaged(
+    key: string,
+    notKey: string | null | undefined,
+    options: {limit: number; after?: string},
+  ) {
+    if (!options || !Number.isInteger(options.limit) || options.limit <= 0) {
+      throw new Error('findKeysPaged requires a positive integer limit');
+    }
+    let query = 'SELECT `key` FROM `store` WHERE `key` LIKE ?';
+    const params: (string | number)[] = [key.replace(/\*/g, '%')];
+    if (notKey != null) {
+      query += ' AND `key` NOT LIKE ?';
+      params.push(notKey.replace(/\*/g, '%'));
+    }
+    if (options.after != null) {
+      // BINARY forces a byte-wise comparison so paging is deterministic even
+      // when the column collation is case-insensitive (e.g. utf8mb4_general_ci).
+      query += ' AND BINARY `key` > ?';
+      params.push(options.after);
+    }
+    query += ' ORDER BY BINARY `key` ASC LIMIT ?';
+    params.push(options.limit);
+    const [results] = await this._query({sql: query, values: params});
+    return results.map((val: {key: string}) => val.key);
+  }
+
   async set(key:string, value:string) {
     if (key.length > 100) throw new Error('Your Key can only be 100 chars');
     await this._query({sql: 'REPLACE INTO `store` VALUES (?,?)', values: [key, value]});
