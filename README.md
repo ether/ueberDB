@@ -261,26 +261,21 @@ const ueberdb = require('ueberdb2');
 
 ## Feature support
 
-|               | Get | Set | findKeys | findKeysPaged† | Remove | getSub | setSub | doBulk | CI Coverage |
-|---------------|-----|-----|----------|----------------|--------|--------|--------|--------|-------------|
-| cassandra     | ✓   | ✓   | *        | fallback       | ✓      | ✓      | ✓      | ✓      | ✓           |
-| couchdb       | ✓   | ✓   | ✓        | fallback       | ✓      | ✓      | ✓      | ✓      | ✓           |
-| dirty         | ✓   | ✓   | ✓        | fallback       | ✓      | ✓      | ✓      |        | ✓           |
-| dirty_git     | ✓   | ✓   | ✓        | fallback       | ✓      | ✓      | ✓      |        | ✓           |
-| elasticsearch | ✓   | ✓   | *        | fallback       | ✓      | ✓      | ✓      | ✓      | ✓           |
-| maria         | ✓   | ✓   | ✓        | **native**     | ✓      | ✓      | ✓      | ✓      | ✓           |
-| mysql         | ✓   | ✓   | ✓        | **native**     | ✓      | ✓      | ✓      | ✓      | ✓           |
-| postgres      | ✓   | ✓   | ✓        | **native**     | ✓      | ✓      | ✓      | ✓      | ✓           |
-| redis         | ✓   | ✓   | *        | fallback       | ✓      | ✓      | ✓      | ✓      | ✓           |
-| rethinkdb     | ✓   | ✓   | *        | fallback       | ✓      | ✓      | ✓      | ✓      | 
-| rustydb       | ✓   | ✓   | ✓        | fallback       | ✓      | ✓      | ✓      | ✓      | ✓           |
-| sqlite        | ✓   | ✓   | ✓        | fallback       | ✓      | ✓      | ✓      | ✓      | ✓           |
-| surrealdb     | ✓   | ✓   | ✓        | fallback       | ✓      | ✓      | ✓      | ✓      | ✓           |
-
-† **native** = DB-side ranged query (memory-bounded). **fallback** = correct
-results via in-JS slicing of `findKeys()`, but no OOM-mitigation benefit —
-the underlying `findKeys()` still loads every matching key. See
-`findKeysPaged` above.
+|               | Get | Set | findKeys | findKeysPaged | Remove | getSub | setSub | doBulk | CI Coverage |
+|---------------|-----|-----|----------|---------------|--------|--------|--------|--------|-------------|
+| cassandra     | ✓   | ✓   | *        | ✓             | ✓      | ✓      | ✓      | ✓      | ✓           |
+| couchdb       | ✓   | ✓   | ✓        | ✓             | ✓      | ✓      | ✓      | ✓      | ✓           |
+| dirty         | ✓   | ✓   | ✓        | ✓             | ✓      | ✓      | ✓      |        | ✓           |
+| dirty_git     | ✓   | ✓   | ✓        | ✓             | ✓      | ✓      | ✓      |        | ✓           |
+| elasticsearch | ✓   | ✓   | *        | ✓             | ✓      | ✓      | ✓      | ✓      | ✓           |
+| maria         | ✓   | ✓   | ✓        | ✓             | ✓      | ✓      | ✓      | ✓      | ✓           |
+| mysql         | ✓   | ✓   | ✓        | ✓             | ✓      | ✓      | ✓      | ✓      | ✓           |
+| postgres      | ✓   | ✓   | ✓        | ✓             | ✓      | ✓      | ✓      | ✓      | ✓           |
+| redis         | ✓   | ✓   | *        | ✓             | ✓      | ✓      | ✓      | ✓      | ✓           |
+| rethinkdb     | ✓   | ✓   | *        | ✓             | ✓      | ✓      | ✓      | ✓      | 
+| rustydb       | ✓   | ✓   | ✓        | ✓             | ✓      | ✓      | ✓      | ✓      | ✓           |
+| sqlite        | ✓   | ✓   | ✓        | ✓             | ✓      | ✓      | ✓      | ✓      | ✓           |
+| surrealdb     | ✓   | ✓   | ✓        | ✓             | ✓      | ✓      | ✓      | ✓      | ✓           |
 
 ## Limitations
 
@@ -300,6 +295,19 @@ The following have limitations on findKeys
 
 For details on how it works please refer to the wiki:
 https://github.com/ether/UeberDB/wiki/findKeys-functionality
+
+### findKeysPaged database support
+
+`findKeysPaged` is supported on every backend, but only the SQL backends
+(mysql, mariadb, postgres) iterate the keyspace with a server-side ranged
+query — that's the variant that actually bounds memory for the OOM case it
+was added for ([ether/etherpad#7830][7830]). Other backends share the same
+API surface via a wrapper that falls back to `findKeys()` plus in-JS
+slicing; correct, but the underlying `findKeys()` still materialises every
+matching key, so the OOM-mitigation benefit only applies to the SQL
+backends. PRs adding native paged paths for the rest are welcome.
+
+[7830]: https://github.com/ether/etherpad/issues/7830
 
 ### Scaling, High availability and disaster recovery.
 
