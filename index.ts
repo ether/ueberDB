@@ -28,6 +28,7 @@ export type {Logger} from './lib/logging';
 
 export type DatabaseType =
   | 'cassandra'
+  | 'cloudflare_d1'
   | 'couch'
   | 'dirty'
   | 'dirtygit'
@@ -103,6 +104,10 @@ export class Database {
         return new (await import('./databases/redis_db')).default(this.dbSettings as Settings);
       case 'cassandra':
         return new (await import('./databases/cassandra_db')).default(this.dbSettings as Settings);
+      case 'cloudflare_d1': {
+        const {default: CloudflareD1DB} = await import('./databases/cloudflare_d1_db');
+        return new CloudflareD1DB(this.dbSettings as import('./databases/cloudflare_d1_db').D1Settings);
+      }
       case 'dirty':
         return new (await import('./databases/dirty_db')).default(this.dbSettings as Settings);
       case 'dirtygit':

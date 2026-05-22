@@ -9,6 +9,8 @@ export type Settings = {
   data?: unknown;
   table?: string;
   db?: string;
+  /** Cloudflare D1Database binding (used by the cloudflare_d1 driver). */
+  d1Database?: unknown;
   idleTimeoutMillis?: number;
   min?: number;
   max?: number;
