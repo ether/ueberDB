@@ -117,7 +117,7 @@
     "redis": "^5.12.1",
     "rethinkdb": "^2.4.2",
     "rolldown": "^1.0.2",
-    "semver": "^7.8.0",
+    "semver": "^7.8.1",
     "surrealdb": "^2.0.3",
     "testcontainers": "^11.14.0",
     "typescript": "^6.0.3",
