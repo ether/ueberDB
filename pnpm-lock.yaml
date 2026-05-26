@@ -59,8 +59,8 @@ importers:
         specifier: ^12.5.4
         version: 12.5.4(@azure/core-client@1.10.1)
       mysql2:
-        specifier: ^3.22.3
-        version: 3.22.3(@types/node@25.9.1)
+        specifier: ^3.22.4
+        version: 3.22.4(@types/node@25.9.1)
       nano:
         specifier: ^11.0.5
         version: 11.0.5
@@ -1467,8 +1467,8 @@ packages:
     engines: {node: '>=18.19.0'}
     hasBin: true
 
-  mysql2@3.22.3:
-    resolution: {integrity: sha512-uWWxvZSRvRhtBdh2CdcuK83YcOfPdmEeEYB069bAmPnV93QApDGVPuvCQOLjlh7tYHEWdgQPrn6kosDxHBVLkA==}
+  mysql2@3.22.4:
+    resolution: {integrity: sha512-CtXYlmL7ZamiYKbmqkamQHWJROUHSfm+f3kByzGfknw7kW51mcB2ouMUqYq1XfYxbXmnWo6RhPydx6OCqdgcmQ==}
     engines: {node: '>= 8.0'}
     peerDependencies:
       '@types/node': '>= 8'
@@ -3281,7 +3281,7 @@ snapshots:
       - '@azure/core-client'
       - supports-color
 
-  mysql2@3.22.3(@types/node@25.9.1):
+  mysql2@3.22.4(@types/node@25.9.1):
     dependencies:
       '@types/node': 25.9.1
       aws-ssl-profiles: 1.1.2
