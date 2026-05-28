@@ -52,7 +52,6 @@ describe("postgres test individual", async () => {
   it("connection string instead of settings object", async () => {
     const { user, password, host, database } = databases.postgres;
 
-    console.log(`postgres://${user}:${password}@${host}:5444/${database}`);
     const db = new ueberdb.Database(
       "postgres",
       `postgres://${user}:${password}@${host}:5444/${database}`,
