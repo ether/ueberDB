@@ -1,11 +1,11 @@
-import type {Settings} from '../lib/AbstractDatabase';
+import type { Settings } from "../lib/AbstractDatabase";
 
-import events from 'events';
+import events from "events";
 
 export default class extends events.EventEmitter {
   public settings: Settings;
   public mock: any;
-  constructor(settings:Settings) {
+  constructor(settings: Settings) {
     super();
     this.settings = {
       writeInterval: 1,
@@ -15,31 +15,31 @@ export default class extends events.EventEmitter {
     this.settings = settings;
   }
 
-  close(cb: ()=>{}) {
-    this.emit('close', cb);
+  close(cb: () => {}) {
+    this.emit("close", cb);
   }
 
-  doBulk(ops:string, cb: ()=>{}) {
-    this.emit('doBulk', ops, cb);
+  doBulk(ops: string, cb: () => {}) {
+    this.emit("doBulk", ops, cb);
   }
 
-  findKeys(key:string, notKey:string, cb:()=>{}) {
-    this.emit('findKeys', key, notKey, cb);
+  findKeys(key: string, notKey: string, cb: () => {}) {
+    this.emit("findKeys", key, notKey, cb);
   }
 
-  get(key:string, cb:()=>{}) {
-    this.emit('get', key, cb);
+  get(key: string, cb: () => {}) {
+    this.emit("get", key, cb);
   }
 
- async init(cb:()=>{}) {
-   this.emit('init', cb());
+  async init(cb: () => {}) {
+    this.emit("init", cb());
   }
 
-  remove(key:string, cb:()=>{}) {
-    this.emit('remove', key, cb);
+  remove(key: string, cb: () => {}) {
+    this.emit("remove", key, cb);
   }
 
-  set(key:string, value:string, cb:()=>{}) {
-    this.emit('set', key, value, cb);
+  set(key: string, value: string, cb: () => {}) {
+    this.emit("set", key, value, cb);
   }
-};
+}

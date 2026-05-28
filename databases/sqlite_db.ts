@@ -1,6 +1,6 @@
-import type {BulkObject} from './cassandra_db';
-import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
-import {SQLite} from "rusty-store-kv";
+import type { BulkObject } from "./cassandra_db";
+import AbstractDatabase, { type Settings } from "../lib/AbstractDatabase";
+import { SQLite } from "rusty-store-kv";
 
 /**
  * 2011 Peter 'Pita' Martischka
@@ -19,19 +19,19 @@ import {SQLite} from "rusty-store-kv";
  */
 
 export default class SQLiteDB extends AbstractDatabase {
-  public db: any|null;
-  constructor(settings:Settings) {
+  public db: any | null;
+  constructor(settings: Settings) {
     super(settings);
     this.db = null;
 
     if (!settings || !settings.filename) {
-      settings = {filename: ':memory:'};
+      settings = { filename: ":memory:" };
     }
 
     this.settings = settings;
 
     // set settings for the dbWrapper
-    if (settings.filename === ':memory:') {
+    if (settings.filename === ":memory:") {
       this.settings.cache = 0;
       this.settings.writeInterval = 0;
       this.settings.json = true;
@@ -43,51 +43,49 @@ export default class SQLiteDB extends AbstractDatabase {
   }
 
   init(callback: Function) {
-    this.db = new SQLite(this.settings.filename as string)
+    this.db = new SQLite(this.settings.filename as string);
     callback();
   }
 
-
-  get(key:string, callback:Function) {
-    const res = this.db!.get(key)
-    callback(null, res ? res : null)
+  get(key: string, callback: Function) {
+    const res = this.db!.get(key);
+    callback(null, res ? res : null);
   }
 
-  findKeys(key:string, notKey:string, callback:Function) {
-    const res = this.db?.findKeys(key, notKey)
+  findKeys(key: string, notKey: string, callback: Function) {
+    const res = this.db?.findKeys(key, notKey);
 
     callback(null, res);
   }
 
-  set(key:string, value:string, callback:Function) {
-    const res = this.db!.set(key, value)
-    res ? callback(null, null) : callback(null, res)
+  set(key: string, value: string, callback: Function) {
+    const res = this.db!.set(key, value);
+    res ? callback(null, null) : callback(null, res);
   }
 
-  remove(key:string, callback:Function) {
-    this.db!.remove(key)
-    callback(null, null)
+  remove(key: string, callback: Function) {
+    this.db!.remove(key);
+    callback(null, null);
   }
 
-
-  doBulk(bulk:BulkObject[], callback:Function) {
-    const convertedBulk = bulk.map(b=>{
+  doBulk(bulk: BulkObject[], callback: Function) {
+    const convertedBulk = bulk.map((b) => {
       if (b.value === null) {
         return {
           key: b.key,
-          type: b.type
-        } satisfies BulkObject
+          type: b.type,
+        } satisfies BulkObject;
       } else {
-        return b
+        return b;
       }
-    })
+    });
 
-    this.db!.doBulk(convertedBulk)
+    this.db!.doBulk(convertedBulk);
     callback();
   }
 
   close(callback: Function) {
-    callback()
+    callback();
     this.db!.close();
   }
-};
+}

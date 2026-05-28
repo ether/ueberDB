@@ -1,6 +1,6 @@
-import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
-import {dirname} from 'node:path'
-import {simpleGit} from 'simple-git'
+import AbstractDatabase, { type Settings } from "../lib/AbstractDatabase";
+import { dirname } from "node:path";
+import { simpleGit } from "simple-git";
 /**
  * 2011 Peter 'Pita' Martischka
  *
@@ -17,8 +17,7 @@ import {simpleGit} from 'simple-git'
  * limitations under the License.
  */
 
-
-import DirtyImport from 'dirty-ts';
+import DirtyImport from "dirty-ts";
 
 // dirty-ts is a CJS package that exposes the constructor as `module.exports.default`
 // with the `__esModule` marker. Under Node's ESM-to-CJS interop, the default
@@ -45,21 +44,21 @@ export default class extends AbstractDatabase {
     this.settings.json = false;
   }
 
-  init(callback: ()=>void) {
+  init(callback: () => void) {
     this.db = new Dirty(this.settings.filename);
-    this.db.on('load', (err: Error) => {
+    this.db.on("load", (err: Error) => {
       callback();
     });
   }
 
-  get(key:string, callback: (err: string | any, value: string)=>void) {
+  get(key: string, callback: (err: string | any, value: string) => void) {
     callback(null, this.db.get(key));
   }
 
-  findKeys(key:string, notKey:string, callback:(v:any, keys:string[])=>{}) {
-    const keys:string[] = [];
+  findKeys(key: string, notKey: string, callback: (v: any, keys: string[]) => {}) {
+    const keys: string[] = [];
     const regex = this.createFindRegex(key, notKey);
-    this.db.forEach((key:string, val:string) => {
+    this.db.forEach((key: string, val: string) => {
       if (key.search(regex) !== -1) {
         keys.push(key);
       }
@@ -67,22 +66,22 @@ export default class extends AbstractDatabase {
     callback(null, keys);
   }
 
-  set(key:string, value: string, callback: ()=>{}) {
+  set(key: string, value: string, callback: () => {}) {
     this.db.set(key, value, callback);
     const databasePath = dirname(this.settings.filename!);
     simpleGit(databasePath)
-        .silent(true)
-        .add('./*.db')
-        .commit('Automated commit...')
-        .push(['-u', 'origin', 'master'], () => console.debug('Stored git commit'));
+      .silent(true)
+      .add("./*.db")
+      .commit("Automated commit...")
+      .push(["-u", "origin", "master"], () => console.debug("Stored git commit"));
   }
 
-  remove(key:string, callback:()=> {}) {
+  remove(key: string, callback: () => {}) {
     this.db.rm(key, callback);
   }
 
-  close(callback: ()=>void) {
+  close(callback: () => void) {
     this.db.close();
     if (callback) callback();
   }
-};
+}

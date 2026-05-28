@@ -1,9 +1,8 @@
-import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
-
+import AbstractDatabase, { type Settings } from "../lib/AbstractDatabase";
 
 export default class MemoryDB extends AbstractDatabase {
   public _data: any;
-  constructor(settings:Settings) {
+  constructor(settings: Settings) {
     super(settings);
     this.settings = settings;
     settings.json = false;
@@ -12,18 +11,20 @@ export default class MemoryDB extends AbstractDatabase {
     this._data = null;
   }
 
-  get isAsync() { return true; }
+  get isAsync() {
+    return true;
+  }
 
   close() {
     this._data = null;
   }
 
-  findKeys(key:string, notKey:string) {
+  findKeys(key: string, notKey: string) {
     const regex = this.createFindRegex(key, notKey);
     return [...this._data.keys()].filter((k) => regex.test(k));
   }
 
-  get(key:string) {
+  get(key: string) {
     return this._data.get(key);
   }
 
@@ -31,11 +32,11 @@ export default class MemoryDB extends AbstractDatabase {
     this._data = this.settings.data || new Map();
   }
 
-  remove(key:string) {
+  remove(key: string) {
     this._data.delete(key);
   }
 
-  set(key:string, value:string) {
+  set(key: string, value: string) {
     this._data.set(key, value);
   }
-};
+}

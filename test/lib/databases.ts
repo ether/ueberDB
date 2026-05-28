@@ -1,10 +1,10 @@
-import os from 'os';
+import os from "os";
 
-type DatabaseType ={
-  [key:string]:any
-}
+type DatabaseType = {
+  [key: string]: any;
+};
 
-export const databases:DatabaseType = {
+export const databases: DatabaseType = {
   memory: {},
   dirty: {
     filename: `${os.tmpdir()}/ueberdb-test.db`,
@@ -33,32 +33,32 @@ export const databases:DatabaseType = {
     },
   },
   mysql: {
-    user: 'ueberdb',
-    host: '127.0.0.1',
-    password: 'ueberdb',
-    database: 'ueberdb',
-    charset: 'utf8mb4',
+    user: "ueberdb",
+    host: "127.0.0.1",
+    password: "ueberdb",
+    database: "ueberdb",
+    charset: "utf8mb4",
     speeds: {
       findKeysMax: 6,
       getMax: 1,
     },
   },
   postgres: {
-    user: 'ueberdb',
-    host: 'localhost',
-    password: 'ueberdb',
-    database: 'ueberdb',
-    charset: 'utf8mb4',
+    user: "ueberdb",
+    host: "localhost",
+    password: "ueberdb",
+    database: "ueberdb",
+    charset: "utf8mb4",
     speeds: {
       setMax: 6,
     },
   },
   redis: {
-    url: 'redis://localhost/'
+    url: "redis://localhost/",
   },
   mongodb: {
-    url: 'mongodb://127.0.0.1:27017',
-    database: 'mydb_test',
+    url: "mongodb://127.0.0.1:27017",
+    database: "mydb_test",
     speeds: {
       count: 2000,
       findKeysMax: 5,
@@ -68,44 +68,44 @@ export const databases:DatabaseType = {
     },
   },
   couch: {
-    host: 'localhost',
+    host: "localhost",
     port: 5984,
-    database: 'ueberdb',
-    user: 'ueberdb',
-    password: 'ueberdb',
+    database: "ueberdb",
+    user: "ueberdb",
+    password: "ueberdb",
     speeds: {
       findKeysMax: 30,
     },
   },
   elasticsearch: {
-    base_index: 'ueberdb_test',
+    base_index: "ueberdb_test",
     speeds: {
       findKeysMax: 30,
-    }, host: '127.0.0.1',
-    port: '9200',
-
+    },
+    host: "127.0.0.1",
+    port: "9200",
   },
   surrealdb: {
-    url: 'http://127.0.0.1:8000/rpc',
+    url: "http://127.0.0.1:8000/rpc",
     port: 0,
-    user: 'root',
-    password: 'root',
+    user: "root",
+    password: "root",
     speeds: {
-        // SurrealDB over HTTP/RPC is markedly slower than in-process
-        // or binary-protocol drivers; relax all per-op thresholds so
-        // the shared "speed is acceptable" benchmark passes on CI.
-        setMax: 30,
-        getMax: 30,
-        findKeysMax: 60,
-        removeMax: 30,
+      // SurrealDB over HTTP/RPC is markedly slower than in-process
+      // or binary-protocol drivers; relax all per-op thresholds so
+      // the shared "speed is acceptable" benchmark passes on CI.
+      setMax: 30,
+      getMax: 30,
+      findKeysMax: 60,
+      removeMax: 30,
     },
   },
   cassandra: {
-    columnFamily: 'test',
+    columnFamily: "test",
     clientOptions: {
-      contactPoints: ['h1', 'h2'],
-      localDataCenter: 'datacenter1',
-      keyspace: 'ks1'
-    }
-  }
+      contactPoints: ["h1", "h2"],
+      localDataCenter: "datacenter1",
+      keyspace: "ks1",
+    },
+  },
 };

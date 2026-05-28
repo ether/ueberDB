@@ -20,20 +20,19 @@
  *
  */
 
-import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
-import async from 'async';
-import mssql from 'mssql';
-import type {ConnectionPool} from 'mssql';
-import type {BulkObject} from './cassandra_db';
+import AbstractDatabase, { type Settings } from "../lib/AbstractDatabase";
+import async from "async";
+import mssql from "mssql";
+import type { ConnectionPool } from "mssql";
+import type { BulkObject } from "./cassandra_db";
 
 type RowResult = {
-    key: string;
+  key: string;
 };
-
 
 export default class MSSQL extends AbstractDatabase {
   public db: ConnectionPool | undefined;
-  constructor(settings:Settings) {
+  constructor(settings: Settings) {
     super(settings);
     settings = settings || {};
 
@@ -56,15 +55,15 @@ export default class MSSQL extends AbstractDatabase {
     this.settings.writeInterval = 0;
   }
 
-  init(callback:(err: any)=>{}) {
+  init(callback: (err: any) => {}) {
     const sqlCreate =
-        "IF OBJECT_ID(N'dbo.store', N'U') IS NULL" +
-        '  BEGIN' +
-        '    CREATE TABLE [store] (' +
-        '      [key] NVARCHAR(100) PRIMARY KEY,' +
-        '      [value] NTEXT NOT NULL' +
-        '    );' +
-        '  END';
+      "IF OBJECT_ID(N'dbo.store', N'U') IS NULL" +
+      "  BEGIN" +
+      "    CREATE TABLE [store] (" +
+      "      [key] NVARCHAR(100) PRIMARY KEY," +
+      "      [value] NTEXT NOT NULL" +
+      "    );" +
+      "  END";
 
     // @ts-ignore
     new mssql.ConnectionPool(this.settings).connect().then((pool) => {
@@ -76,18 +75,18 @@ export default class MSSQL extends AbstractDatabase {
         callback(err);
       });
 
-      this.db.on('error', (err) => {
+      this.db.on("error", (err) => {
         console.log(err);
       });
     });
   }
 
-  get(key:string, callback:(err?:Error, value?:string)=>{}) {
+  get(key: string, callback: (err?: Error, value?: string) => {}) {
     const request = new mssql.Request(this.db);
 
-    request.input('key', mssql.NVarChar(100), key);
+    request.input("key", mssql.NVarChar(100), key);
 
-    request.query('SELECT [value] FROM [store] WHERE [key] = @key', (err, results) => {
+    request.query("SELECT [value] FROM [store] WHERE [key] = @key", (err, results) => {
       let value = null;
 
       if (!err && results && results.rowsAffected[0] === 1) {
@@ -99,24 +98,24 @@ export default class MSSQL extends AbstractDatabase {
     });
   }
 
-  findKeys(key:string, notKey:string, callback:(err: Error | undefined, value:string[])=>{}) {
+  findKeys(key: string, notKey: string, callback: (err: Error | undefined, value: string[]) => {}) {
     const request = new mssql.Request(this.db);
-    let query = 'SELECT [key] FROM [store] WHERE [key] LIKE @key';
+    let query = "SELECT [key] FROM [store] WHERE [key] LIKE @key";
 
     // desired keys are key, e.g. pad:%
-    key = key.replace(/\*/g, '%');
+    key = key.replace(/\*/g, "%");
 
-    request.input('key', mssql.NVarChar(100), key);
+    request.input("key", mssql.NVarChar(100), key);
 
     if (notKey != null) {
       // not desired keys are notKey, e.g. %:%:%
-      notKey = notKey.replace(/\*/g, '%');
-      request.input('notkey', mssql.NVarChar(100), notKey);
-      query += ' AND [key] NOT LIKE @notkey';
+      notKey = notKey.replace(/\*/g, "%");
+      request.input("notkey", mssql.NVarChar(100), notKey);
+      query += " AND [key] NOT LIKE @notkey";
     }
 
     request.query(query, (err, results) => {
-      const value:string[] = [];
+      const value: string[] = [];
 
       if (!err && results && results.rowsAffected[0] > 0) {
         for (let i = 0; i < results.recordset.length; i++) {
@@ -128,58 +127,59 @@ export default class MSSQL extends AbstractDatabase {
     });
   }
 
-  set(key:string, value:string, callback: (val:string)=>{}) {
+  set(key: string, value: string, callback: (val: string) => {}) {
     const request = new mssql.Request(this.db);
 
     if (key.length > 100) {
-      callback('Your Key can only be 100 chars');
+      callback("Your Key can only be 100 chars");
     } else {
       const query =
-          'MERGE [store] t USING (SELECT @key [key], @value [value]) s' +
-          ' ON t.[key] = s.[key]' +
-          ' WHEN MATCHED AND s.[value] IS NOT NULL THEN UPDATE SET t.[value] = s.[value]' +
-          ' WHEN NOT MATCHED THEN INSERT ([key], [value]) VALUES (s.[key], s.[value]);';
+        "MERGE [store] t USING (SELECT @key [key], @value [value]) s" +
+        " ON t.[key] = s.[key]" +
+        " WHEN MATCHED AND s.[value] IS NOT NULL THEN UPDATE SET t.[value] = s.[value]" +
+        " WHEN NOT MATCHED THEN INSERT ([key], [value]) VALUES (s.[key], s.[value]);";
 
-      request.input('key', mssql.NVarChar(100), key);
-      request.input('value', mssql.NText, value);
+      request.input("key", mssql.NVarChar(100), key);
+      request.input("value", mssql.NText, value);
 
       request.query(query, (err, info) => {
-        callback(err ? err.toString() : '');
+        callback(err ? err.toString() : "");
       });
     }
   }
 
-  remove(key:string, callback:()=>{}) {
+  remove(key: string, callback: () => {}) {
     const request = new mssql.Request(this.db);
-    request.input('key', mssql.NVarChar(100), key);
-    request.query('DELETE FROM [store] WHERE [key] = @key', callback);
+    request.input("key", mssql.NVarChar(100), key);
+    request.query("DELETE FROM [store] WHERE [key] = @key", callback);
   }
 
-  doBulk(bulk: BulkObject[], callback:(err:any, results?: any)=>{}) {
+  doBulk(bulk: BulkObject[], callback: (err: any, results?: any) => {}) {
     const maxInserts = 100;
     const request = new mssql.Request(this.db);
     let firstReplace = true;
     let firstRemove = true;
     const replacements: string[] = [];
-    let removeSQL = 'DELETE FROM [store] WHERE [key] IN (';
+    let removeSQL = "DELETE FROM [store] WHERE [key] IN (";
 
     for (const i in bulk) {
-      if (bulk[i].type === 'set') {
+      if (bulk[i].type === "set") {
         if (firstReplace) {
-          replacements.push('BEGIN TRANSACTION;');
+          replacements.push("BEGIN TRANSACTION;");
           firstReplace = false;
         } else if (Number(i) % maxInserts === 0) {
-          replacements.push('\nCOMMIT TRANSACTION;\nBEGIN TRANSACTION;\n');
+          replacements.push("\nCOMMIT TRANSACTION;\nBEGIN TRANSACTION;\n");
         }
 
         replacements.push(
-            `MERGE [store] t USING (SELECT '${bulk[i].key}' [key], '${bulk[i].value}' [value]) s`,
-            'ON t.[key] = s.[key]',
-            'WHEN MATCHED AND s.[value] IS NOT NULL THEN UPDATE SET t.[value] = s.[value]',
-            'WHEN NOT MATCHED THEN INSERT ([key], [value]) VALUES (s.[key], s.[value]);');
-      } else if (bulk[i].type === 'remove') {
+          `MERGE [store] t USING (SELECT '${bulk[i].key}' [key], '${bulk[i].value}' [value]) s`,
+          "ON t.[key] = s.[key]",
+          "WHEN MATCHED AND s.[value] IS NOT NULL THEN UPDATE SET t.[value] = s.[value]",
+          "WHEN NOT MATCHED THEN INSERT ([key], [value]) VALUES (s.[key], s.[value]);",
+        );
+      } else if (bulk[i].type === "remove") {
         if (!firstRemove) {
-          removeSQL += ',';
+          removeSQL += ",";
         }
 
         firstRemove = false;
@@ -187,41 +187,41 @@ export default class MSSQL extends AbstractDatabase {
       }
     }
 
-    removeSQL += ');';
-    replacements.push('COMMIT TRANSACTION;');
+    removeSQL += ");";
+    replacements.push("COMMIT TRANSACTION;");
 
     async.parallel(
-        [
-          (callback) => {
-            if (!firstReplace) {
-              request.batch(replacements.join('\n'), (err, results) => {
-                if (err) {
-                  callback(err);
-                }
-                callback(err, results);
-              });
-            } else {
-              callback();
-            }
-          },
-          (callback) => {
-            if (!firstRemove) {
-              request.query(removeSQL, callback);
-            } else {
-              callback();
-            }
-          },
-        ],
-        (err, results) => {
-          if (err) {
-            callback(err);
+      [
+        (callback) => {
+          if (!firstReplace) {
+            request.batch(replacements.join("\n"), (err, results) => {
+              if (err) {
+                callback(err);
+              }
+              callback(err, results);
+            });
+          } else {
+            callback();
           }
-          callback(err, results);
         },
+        (callback) => {
+          if (!firstRemove) {
+            request.query(removeSQL, callback);
+          } else {
+            callback();
+          }
+        },
+      ],
+      (err, results) => {
+        if (err) {
+          callback(err);
+        }
+        callback(err, results);
+      },
     );
   }
 
-  close(callback: (err?:Error)=>{}) {
+  close(callback: (err?: Error) => {}) {
     this.db && this.db.close(callback);
   }
-};
+}
