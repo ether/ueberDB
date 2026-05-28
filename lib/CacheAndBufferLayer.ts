@@ -159,6 +159,7 @@ export class Database {
   private _flushPaused: SelfContainedPromise | null = null;
   private _flushPausedCount = 0;
   private readonly _locks: Map<string, SelfContainedPromise> = new Map();
+  private readonly _dirtyKeys: Set<string> = new Set();
   private _flushDone: Promise<void> | null = null;
   public metrics: Metrics;
   private readonly flushInterval: ReturnType<typeof setInterval> | null;
@@ -418,6 +419,7 @@ export class Database {
       entry.value = value;
       if (!entry.dirty) entry.dirty = new SelfContainedPromise();
       this.buffer.set(key, entry);
+      this._dirtyKeys.add(key);
       const buffered = this.settings.writeInterval > 0;
       if (this.logger.isDebugEnabled()) {
         this.logger.debug(
@@ -520,11 +522,11 @@ export class Database {
         while (true) {
           while (this._flushPaused != null) await this._flushPaused;
           const dirtyEntries: [string, CacheEntry][] = [];
-          for (const entry of this.buffer) {
-            if (entry[1].dirty && !entry[1].writingInProgress) {
-              dirtyEntries.push(entry);
-              if (this.settings.bulkLimit && dirtyEntries.length >= this.settings.bulkLimit) break;
-            }
+          for (const key of this._dirtyKeys) {
+            const entry = this.buffer.get(key, false);
+            if (!entry || !entry.dirty || entry.writingInProgress) continue;
+            dirtyEntries.push([key, entry]);
+            if (this.settings.bulkLimit && dirtyEntries.length >= this.settings.bulkLimit) break;
           }
           if (dirtyEntries.length === 0) return;
           await this._write(dirtyEntries);
@@ -536,12 +538,17 @@ export class Database {
   }
 
   private async _write(dirtyEntries: [string, CacheEntry][]): Promise<void> {
-    const markDone = (entry: CacheEntry, err?: Error | null): void => {
+    const markDone = (key: string, entry: CacheEntry, err?: Error | null): void => {
       if (entry.writingInProgress) {
         entry.writingInProgress = false;
         if (err != null) ++this.metrics.writesToDbFailed;
         ++this.metrics.writesToDbFinished;
       }
+      // Reference-equality: only clear the dirty marker for THIS key if the entry currently
+      // in the buffer is the same one we just wrote. If a re-set during the write replaced it
+      // with a fresh dirty entry, the new entry must stay marked dirty.
+      const current = this.buffer.get(key, false);
+      if (current === entry) this._dirtyKeys.delete(key);
       entry.dirty!.done(err);
       entry.dirty = null;
     };
@@ -557,7 +564,7 @@ export class Database {
           serialized = cloneOut(entry.value) as string | null;
         }
       } catch (err) {
-        markDone(entry, err as Error);
+        markDone(key, entry, err as Error);
         continue;
       }
       entry.writingInProgress = true;
@@ -579,7 +586,7 @@ export class Database {
       } catch (err) {
         writeErr = err instanceof Error ? err : new Error(String(err));
       }
-      markDone(entry, writeErr);
+      markDone(op.key, entry, writeErr);
     };
 
     if (ops.length === 1) {
@@ -598,7 +605,9 @@ export class Database {
         this.metrics.writesToDbRetried += ops.length;
         await Promise.all(ops.map(async (op, i) => writeOneOp(op, entries[i])));
       }
-      if (success) entries.forEach((entry) => markDone(entry, null));
+      if (success) {
+        for (let i = 0; i < entries.length; i++) markDone(ops[i].key, entries[i], null);
+      }
     }
     // Evict here to enforce cache = 0 semantics (reads must not hit cache after write completes).
     this.buffer.evictOld();
