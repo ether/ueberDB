@@ -32,4 +32,15 @@ describe(__filename, () => {
     // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
     assert.deepEqual(await db.get("key"), ["toJSON 0"]);
   });
+  it("object property containing a function survives the round-trip via the cache", async () => {
+    // cloneIn preserves functions inside objects (they hit the `typeof !== 'object'` branch and
+    // pass through unchanged). cloneOut therefore needs to tolerate function-containing values
+    // when reading from the cache; structuredClone would throw DataCloneError without the
+    // cloneIn fallback in cloneOut.
+    const fn = () => "hello";
+    await db.set("key", { fn });
+    const out: any = await db.get("key");
+    assert.equal(typeof out.fn, "function");
+    assert.equal(out.fn(), "hello");
+  });
 });

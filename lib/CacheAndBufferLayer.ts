@@ -687,10 +687,18 @@ const cloneIn = (obj: unknown, key = ""): unknown => {
   throw new Error("Unable to copy obj! Its type isn't supported.");
 };
 
-// Read-direction clone. The buffered value has already been processed by cloneIn (which strips
-// toJSON methods) or by JSON.parse (which produces only plain JSON-safe values), so structuredClone
-// will never see a function or other non-cloneable type here.
-const cloneOut = (v: unknown): unknown =>
-  v == null || typeof v !== "object" ? v : structuredClone(v);
+// Read-direction clone. The buffered value has typically been processed by cloneIn (which strips
+// toJSON methods at the root and resolves them recursively) or by JSON.parse (always JSON-safe).
+// Functions inside cloneIn-output objects ARE preserved as-is, so structuredClone may still throw
+// DataCloneError. Fall back to cloneIn (which preserves non-cloneable values by passing them
+// through unchanged) to keep parity with the pre-refactor clone() semantics.
+const cloneOut = (v: unknown): unknown => {
+  if (v == null || typeof v !== "object") return v;
+  try {
+    return structuredClone(v);
+  } catch {
+    return cloneIn(v);
+  }
+};
 
 export const exportedForTesting = { LRU };
