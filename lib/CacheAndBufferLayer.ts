@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import {promisify} from 'node:util';
-import type {Logger} from './logging';
+import { promisify } from "node:util";
+import type { Logger } from "./logging";
 
 type BulkOp = {
-  type: 'set' | 'remove';
+  type: "set" | "remove";
   key: string;
   value: string | null;
 };
@@ -49,7 +49,7 @@ type InternalDB = {
   findKeysPaged(
     key: string,
     notKey: string | null | undefined,
-    options: {limit: number; after?: string},
+    options: { limit: number; after?: string },
   ): Promise<string[]>;
   doBulk?(ops: BulkOp[]): Promise<void>;
 };
@@ -87,7 +87,7 @@ const defaultSettings: CacheSettings = {
   cache: 10000,
   writeInterval: 100,
   json: true,
-  charset: 'utf8mb4',
+  charset: "utf8mb4",
 };
 
 export class LRU {
@@ -174,10 +174,17 @@ export class Database {
     } else {
       const promisified: Partial<InternalDB> = {};
       for (const fn of [
-        'close', 'doBulk', 'findKeys', 'findKeysPaged', 'get', 'init', 'remove', 'set',
+        "close",
+        "doBulk",
+        "findKeys",
+        "findKeysPaged",
+        "get",
+        "init",
+        "remove",
+        "set",
       ] as const) {
         const f = wrappedDB[fn];
-        if (typeof f !== 'function') continue;
+        if (typeof f !== "function") continue;
         (promisified as Record<string, unknown>)[fn] = promisify(
           (f as (...args: unknown[]) => unknown).bind(wrappedDB),
         );
@@ -279,6 +286,25 @@ export class Database {
   }
 
   async get(key: string): Promise<unknown> {
+    // Fast path: cache hit + no writer currently holding the per-key lock.
+    // The check and the buffer read execute synchronously (no `await` until after the return),
+    // so no concurrent set/setSub can interleave. cloneOut produces a consistent snapshot.
+    if (!this._locks.has(key)) {
+      const entry = this.buffer.get(key);
+      if (entry != null) {
+        ++this.metrics.reads;
+        ++this.metrics.readsFromCache;
+        ++this.metrics.readsFinished;
+        if (this.logger.isDebugEnabled()) {
+          this.logger.debug(
+            `GET    - ${key} - ${JSON.stringify(entry.value)} - ` +
+              `from ${entry.dirty ? "dirty buffer" : "cache"}`,
+          );
+        }
+        return cloneOut(entry.value);
+      }
+    }
+    // Slow path: cache miss or a writer holds the lock.
     let v: unknown;
     await this._lock(key);
     try {
@@ -298,7 +324,7 @@ export class Database {
         if (this.logger.isDebugEnabled()) {
           this.logger.debug(
             `GET    - ${key} - ${JSON.stringify(entry.value)} - ` +
-              `from ${entry.dirty ? 'dirty buffer' : 'cache'}`,
+              `from ${entry.dirty ? "dirty buffer" : "cache"}`,
           );
         }
         return entry.value;
@@ -325,7 +351,7 @@ export class Database {
       }
 
       if (this.settings.cache > 0) {
-        this.buffer.set(key, {value, dirty: null, writingInProgress: false});
+        this.buffer.set(key, { value, dirty: null, writingInProgress: false });
       }
 
       if (this.logger.isDebugEnabled()) {
@@ -355,39 +381,41 @@ export class Database {
   async findKeysPaged(
     key: string,
     notKey: string | null | undefined,
-    options: {limit: number; after?: string},
+    options: { limit: number; after?: string },
   ): Promise<string[]> {
     // Reject invalid limits at the wrapper boundary so behaviour matches the
     // native sql backends (which throw) — without this, an invalid limit hits
     // .slice() in the fallback path and silently returns an empty page, which
     // can hang a `while (page.length === limit)` paging loop.
     if (!options || !Number.isInteger(options.limit) || options.limit <= 0) {
-      throw new Error('findKeysPaged requires a positive integer limit');
+      throw new Error("findKeysPaged requires a positive integer limit");
     }
     await this.flush();
     // Some legacy callback-only backends (e.g. mock_db) don't implement the
     // paged variant. Fall back to findKeys + JS-side slicing so the API is
     // available everywhere, even though the OOM-mitigation benefit is lost.
-    if (typeof this.wrappedDB!.findKeysPaged !== 'function') {
+    if (typeof this.wrappedDB!.findKeysPaged !== "function") {
       const all = (await this.wrappedDB!.findKeys(key, notKey ?? undefined)) || [];
       all.sort();
-      const start = options.after == null
-        ? 0
-        : (() => {
-            let lo = 0, hi = all.length;
-            while (lo < hi) {
-              const mid = (lo + hi) >>> 1;
-              if (all[mid] <= options.after!) lo = mid + 1;
-              else hi = mid;
-            }
-            return lo;
-          })();
+      const start =
+        options.after == null
+          ? 0
+          : (() => {
+              let lo = 0,
+                hi = all.length;
+              while (lo < hi) {
+                const mid = (lo + hi) >>> 1;
+                if (all[mid] <= options.after!) lo = mid + 1;
+                else hi = mid;
+              }
+              return lo;
+            })();
       return cloneOut(all.slice(start, start + options.limit)) as string[];
     }
     const keys = await this.wrappedDB!.findKeysPaged(key, notKey, options);
     if (this.logger.isDebugEnabled()) {
       this.logger.debug(
-        `GET    - ${key}-${notKey} (paged limit=${options.limit} after=${options.after ?? ''}) ` +
+        `GET    - ${key}-${notKey} (paged limit=${options.limit} after=${options.after ?? ""}) ` +
           `- ${JSON.stringify(keys)} - from database `,
       );
     }
@@ -425,7 +453,7 @@ export class Database {
       // If a write is already in progress for this key, create a new entry rather than updating
       // the existing one — otherwise entry.dirty would resolve prematurely.
       if (!entry || entry.writingInProgress) {
-        entry = {value: undefined, dirty: null, writingInProgress: false};
+        entry = { value: undefined, dirty: null, writingInProgress: false };
       } else if (entry.dirty) {
         ++this.metrics.writesObsoleted;
       }
@@ -437,7 +465,7 @@ export class Database {
       const buffered = this.settings.writeInterval > 0;
       if (this.logger.isDebugEnabled()) {
         this.logger.debug(
-          `SET    - ${key} - ${JSON.stringify(value)} - to ${buffered ? 'buffer' : 'database'}`,
+          `SET    - ${key} - ${JSON.stringify(value)} - to ${buffered ? "buffer" : "database"}`,
         );
       }
       if (!buffered) void this._write([[key, entry]]);
@@ -460,21 +488,21 @@ export class Database {
     try {
       await this._lock(key);
       try {
-        let base: {fullValue: unknown};
+        let base: { fullValue: unknown };
         try {
           const fullValue = await this._getLocked(key);
-          base = {fullValue};
-          const ptr: {obj: Record<string, unknown>; prop: string} = {
+          base = { fullValue };
+          const ptr: { obj: Record<string, unknown>; prop: string } = {
             obj: base as Record<string, unknown>,
-            prop: 'fullValue',
+            prop: "fullValue",
           };
           for (let i = 0; i < sub.length; i++) {
-            if (sub[i] === '__proto__') {
-              throw new Error('Modifying object prototype is not supported for security reasons');
+            if (sub[i] === "__proto__") {
+              throw new Error("Modifying object prototype is not supported for security reasons");
             }
             let o = ptr.obj[ptr.prop];
             if (o == null) ptr.obj[ptr.prop] = o = {};
-            if (typeof o !== 'object') {
+            if (typeof o !== "object") {
               throw new TypeError(
                 `Cannot set property ${JSON.stringify(sub[i])} on non-object ` +
                   `${JSON.stringify(o)} (key: ${JSON.stringify(key)} ` +
@@ -512,9 +540,9 @@ export class Database {
       let v = await this._getLocked(key);
       for (const k of sub) {
         if (
-          typeof v !== 'object' ||
+          typeof v !== "object" ||
           (v != null && !Object.prototype.hasOwnProperty.call(v, k)) ||
-          k === '__proto__'
+          k === "__proto__"
         ) {
           v = null;
         }
@@ -585,7 +613,7 @@ export class Database {
         continue;
       }
       entry.writingInProgress = true;
-      ops.push({type: serialized == null ? 'remove' : 'set', key, value: serialized});
+      ops.push({ type: serialized == null ? "remove" : "set", key, value: serialized });
       entries.push(entry);
     }
     if (ops.length === 0) return;
@@ -595,7 +623,7 @@ export class Database {
     const writeOneOp = async (op: BulkOp, entry: CacheEntry): Promise<void> => {
       let writeErr: Error | null = null;
       try {
-        if (op.type === 'remove') {
+        if (op.type === "remove") {
           await this.wrappedDB!.remove(op.key);
         } else {
           await this.wrappedDB!.set(op.key, op.value!);
@@ -608,7 +636,7 @@ export class Database {
 
     if (ops.length === 1) {
       await writeOneOp(ops[0], entries[0]);
-    } else if (typeof this.wrappedDB!.doBulk !== 'function') {
+    } else if (typeof this.wrappedDB!.doBulk !== "function") {
       await Promise.all(ops.map(async (op, i) => writeOneOp(op, entries[i])));
     } else {
       let success = false;
@@ -631,11 +659,11 @@ export class Database {
   }
 }
 
-const cloneIn = (obj: unknown, key = ''): unknown => {
-  if (obj == null || typeof obj !== 'object') return obj;
+const cloneIn = (obj: unknown, key = ""): unknown => {
+  if (obj == null || typeof obj !== "object") return obj;
 
-  if (typeof (obj as Record<string, unknown>).toJSON === 'function') {
-    return cloneIn((obj as {toJSON(k: string): unknown}).toJSON(key));
+  if (typeof (obj as Record<string, unknown>).toJSON === "function") {
+    return cloneIn((obj as { toJSON(k: string): unknown }).toJSON(key));
   }
 
   if (obj instanceof Date) {
@@ -663,6 +691,6 @@ const cloneIn = (obj: unknown, key = ''): unknown => {
 // toJSON methods) or by JSON.parse (which produces only plain JSON-safe values), so structuredClone
 // will never see a function or other non-cloneable type here.
 const cloneOut = (v: unknown): unknown =>
-  v == null || typeof v !== 'object' ? v : structuredClone(v);
+  v == null || typeof v !== "object" ? v : structuredClone(v);
 
-export const exportedForTesting = {LRU};
+export const exportedForTesting = { LRU };
