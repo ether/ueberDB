@@ -162,7 +162,7 @@ export class Database {
   private readonly _dirtyKeys: Set<string> = new Set();
   private _flushDone: Promise<void> | null = null;
   public metrics: Metrics;
-  private readonly flushInterval: ReturnType<typeof setInterval> | null;
+  private _flushTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     wrappedDB: LegacyWrappedDB,
@@ -214,11 +214,6 @@ export class Database {
       writesToDbFinished: 0,
       writesToDbRetried: 0,
     };
-
-    this.flushInterval =
-      this.settings.writeInterval > 0
-        ? setInterval(() => { void this.flush(); }, this.settings.writeInterval)
-        : null;
   }
 
   private async _lock(key: string): Promise<void> {
@@ -236,6 +231,24 @@ export class Database {
     ++this.metrics.lockReleases;
     this._locks.get(key)!.done();
     this._locks.delete(key);
+  }
+
+  private _scheduleFlush(): void {
+    if (this._flushTimer != null) return;
+    if (this.settings.writeInterval <= 0) return;
+    if (this._dirtyKeys.size === 0) return;
+    this._flushTimer = setTimeout(() => {
+      this._flushTimer = null;
+      void this.flush();
+    }, this.settings.writeInterval);
+    this._flushTimer.unref?.();
+  }
+
+  private _cancelFlushTimer(): void {
+    if (this._flushTimer != null) {
+      clearTimeout(this._flushTimer);
+      this._flushTimer = null;
+    }
   }
 
   // Block flush() until _resumeFlush() is called. This ensures a flush() called after a write in
@@ -259,7 +272,7 @@ export class Database {
   }
 
   async close(): Promise<void> {
-    clearInterval(this.flushInterval ?? undefined);
+    this._cancelFlushTimer();
     await this.flush();
     await this.wrappedDB!.close();
     this.wrappedDB = null;
@@ -420,6 +433,7 @@ export class Database {
       if (!entry.dirty) entry.dirty = new SelfContainedPromise();
       this.buffer.set(key, entry);
       this._dirtyKeys.add(key);
+      this._scheduleFlush();
       const buffered = this.settings.writeInterval > 0;
       if (this.logger.isDebugEnabled()) {
         this.logger.debug(
@@ -517,6 +531,8 @@ export class Database {
   }
 
   async flush(): Promise<void> {
+    // Cancel any pending lazy-flush timer — we are doing the work right now.
+    this._cancelFlushTimer();
     if (this._flushDone == null) {
       this._flushDone = (async () => {
         while (true) {
@@ -535,6 +551,7 @@ export class Database {
     }
     await this._flushDone;
     this._flushDone = null;
+    if (this._dirtyKeys.size > 0) this._scheduleFlush();
   }
 
   private async _write(dirtyEntries: [string, CacheEntry][]): Promise<void> {
