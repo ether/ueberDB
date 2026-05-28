@@ -272,7 +272,7 @@ export class Database {
     } finally {
       this._unlock(key);
     }
-    return clone(v);
+    return cloneOut(v);
   }
 
   private async _getLocked(key: string): Promise<unknown> {
@@ -335,7 +335,7 @@ export class Database {
         `GET    - ${key}-${notKey} - ${JSON.stringify(keyValues)} - from database `,
       );
     }
-    return clone(keyValues) as string[];
+    return cloneOut(keyValues) as string[];
   }
 
   async findKeysPaged(
@@ -368,7 +368,7 @@ export class Database {
             }
             return lo;
           })();
-      return clone(all.slice(start, start + options.limit)) as string[];
+      return cloneOut(all.slice(start, start + options.limit)) as string[];
     }
     const keys = await this.wrappedDB!.findKeysPaged(key, notKey, options);
     if (this.logger.isDebugEnabled()) {
@@ -377,7 +377,7 @@ export class Database {
           `- ${JSON.stringify(keys)} - from database `,
       );
     }
-    return clone(keys) as string[];
+    return cloneOut(keys) as string[];
   }
 
   async remove(key: string): Promise<void> {
@@ -386,7 +386,7 @@ export class Database {
   }
 
   async set(key: string, value: unknown): Promise<void> {
-    value = clone(value);
+    value = cloneIn(value);
     let p!: Promise<void>;
     this._pauseFlush();
     try {
@@ -435,7 +435,7 @@ export class Database {
   }
 
   async setSub(key: string, sub: string[], value: unknown): Promise<void> {
-    value = clone(value);
+    value = cloneIn(value);
     if (this.logger.isDebugEnabled()) {
       this.logger.debug(`SETSUB - ${key}${JSON.stringify(sub)} - ${JSON.stringify(value)}`);
     }
@@ -508,7 +508,7 @@ export class Database {
       if (this.logger.isDebugEnabled()) {
         this.logger.debug(`GETSUB - ${key}${JSON.stringify(sub)} - ${JSON.stringify(v)}`);
       }
-      return clone(v);
+      return cloneOut(v);
     } finally {
       this._unlock(key);
     }
@@ -554,7 +554,7 @@ export class Database {
         if (this.settings.json && entry.value != null) {
           serialized = JSON.stringify(entry.value);
         } else {
-          serialized = clone(entry.value) as string | null;
+          serialized = cloneOut(entry.value) as string | null;
         }
       } catch (err) {
         markDone(entry, err as Error);
@@ -605,11 +605,11 @@ export class Database {
   }
 }
 
-const clone = (obj: unknown, key = ''): unknown => {
+const cloneIn = (obj: unknown, key = ''): unknown => {
   if (obj == null || typeof obj !== 'object') return obj;
 
   if (typeof (obj as Record<string, unknown>).toJSON === 'function') {
-    return clone((obj as {toJSON(k: string): unknown}).toJSON(key));
+    return cloneIn((obj as {toJSON(k: string): unknown}).toJSON(key));
   }
 
   if (obj instanceof Date) {
@@ -619,18 +619,24 @@ const clone = (obj: unknown, key = ''): unknown => {
   }
 
   if (Array.isArray(obj)) {
-    return obj.map((item, i) => clone(item, String(i)));
+    return obj.map((item, i) => cloneIn(item, String(i)));
   }
 
   if (obj instanceof Object) {
     const copy: Record<string, unknown> = {};
     for (const attr of Object.keys(obj)) {
-      copy[attr] = clone((obj as Record<string, unknown>)[attr], attr);
+      copy[attr] = cloneIn((obj as Record<string, unknown>)[attr], attr);
     }
     return copy;
   }
 
   throw new Error("Unable to copy obj! Its type isn't supported.");
 };
+
+// Read-direction clone. The buffered value has already been processed by cloneIn (which strips
+// toJSON methods) or by JSON.parse (which produces only plain JSON-safe values), so structuredClone
+// will never see a function or other non-cloneable type here.
+const cloneOut = (v: unknown): unknown =>
+  v == null || typeof v !== 'object' ? v : structuredClone(v);
 
 export const exportedForTesting = {LRU};
