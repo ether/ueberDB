@@ -219,7 +219,10 @@ export default class extends AbstractDatabase {
     }
 
     const isNativeUpsert = this.upsertStatement.startsWith('INSERT INTO store(key, value) VALUES');
-    const tasks: Array<(cb: any) => void> = [];
+    // async.parallel expects (err?: Error | null) on its callbacks; pg.query callbacks supply
+    // (err: Error). Wrap each query so the error type assigns cleanly without an `any` cast.
+    type AsyncTaskCb = (err?: Error | null) => void;
+    const tasks: Array<(cb: AsyncTaskCb) => void> = [];
 
     if (setOps.length > 0) {
       if (isNativeUpsert && setOps.length > 1) {
@@ -234,11 +237,13 @@ export default class extends AbstractDatabase {
         const sql =
           `INSERT INTO store(key, value) VALUES ${valuesSql.join(',')} ` +
           `ON CONFLICT (key) DO UPDATE SET value = excluded.value`;
-        tasks.push((cb) => this.db.query(sql, params, cb));
+        tasks.push((cb) => { this.db.query(sql, params, (err) => cb(err)); });
       } else {
         // Fallback: per-row via the existing upsertStatement (function-based, or single-row native).
         for (const [k, v] of setOps) {
-          tasks.push((cb) => this.db.query(this.upsertStatement as string, [k, v], cb));
+          tasks.push((cb) => {
+            this.db.query(this.upsertStatement as string, [k, v], (err) => cb(err));
+          });
         }
       }
     }
@@ -246,10 +251,10 @@ export default class extends AbstractDatabase {
     if (removeKeys.length > 0) {
       const placeholders = removeKeys.map((_, idx) => `$${idx + 1}`).join(',');
       const sql = `DELETE FROM store WHERE key IN (${placeholders})`;
-      tasks.push((cb) => this.db.query(sql, removeKeys, cb));
+      tasks.push((cb) => { this.db.query(sql, removeKeys, (err) => cb(err)); });
     }
 
-    async.parallel(tasks as any, callback);
+    async.parallel(tasks, callback);
   }
 
   close(callback: () => {}) {

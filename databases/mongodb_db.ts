@@ -17,7 +17,11 @@
 import AbstractDatabase, { type Settings } from "../lib/AbstractDatabase";
 import type { BulkObject } from "./cassandra_db";
 import { MongoClient } from "mongodb";
-import type { Collection, Db } from "mongodb";
+import type { Collection, Db, Filter } from "mongodb";
+
+// Document shape stored in the ueberdb collection. _id is the user-provided string key,
+// not the default ObjectId, so mongodb's generic types need this narrowing.
+type UeberDoc = { _id: string; value: string };
 
 export default class extends AbstractDatabase {
   public database: Db | undefined;
@@ -61,16 +65,17 @@ export default class extends AbstractDatabase {
 
   findKeys(key: string, notKey: string, callback: Function) {
     const escape = (s: string) => s.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*");
-    const selector: any = {
+    const selector: Filter<UeberDoc> = {
       $and: [{ _id: { $regex: `^${escape(key)}$` } }],
     };
 
     if (notKey) {
-      selector.$and.push({ _id: { $not: { $regex: `^${escape(notKey)}$` } } });
+      selector.$and!.push({ _id: { $not: { $regex: `^${escape(notKey)}$` } } });
     }
 
-    this.collection!.find(selector)
-      .map((i: any) => i._id)
+    (this.collection as Collection<UeberDoc> | undefined)!
+      .find(selector)
+      .map((i) => i._id)
       .toArray()
       .then((r) => callback(null, r))
       .catch((v) => callback(v));
