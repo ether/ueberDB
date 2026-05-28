@@ -1,4 +1,5 @@
 import os from 'os';
+import {MockD1Database} from './mock_d1';
 
 type DatabaseType ={
   [key:string]:any
@@ -6,6 +7,13 @@ type DatabaseType ={
 
 export const databases:DatabaseType = {
   memory: {},
+  cloudflare_d1: {
+    // A fresh MockD1Database is constructed for each property access so that
+    // every test gets its own isolated in-memory SQLite instance.
+    get d1Database() {
+      return new MockD1Database();
+    },
+  },
   dirty: {
     filename: `${os.tmpdir()}/ueberdb-test.db`,
     speeds: {
