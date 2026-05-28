@@ -12,20 +12,19 @@
  * limitations under the License.
  */
 
-import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
-import {Client, types} from 'cassandra-driver';
-import type {ArrayOrObject, ValueCallback} from 'cassandra-driver';
+import AbstractDatabase, { type Settings } from "../lib/AbstractDatabase";
+import { Client, types } from "cassandra-driver";
+import type { ArrayOrObject, ValueCallback } from "cassandra-driver";
 type ResultSet = types.ResultSet;
-
 
 type Result = {
   rows: any[];
 };
 
 export type BulkObject = {
-  type: string
-  key:string
-  value?: string
+  type: string;
+  key: string;
+  value?: string;
 };
 
 export default class Cassandra_db extends AbstractDatabase {
@@ -42,15 +41,15 @@ export default class Cassandra_db extends AbstractDatabase {
    *     the Cassandra driver. See https://github.com/datastax/nodejs-driver#logging for more
    *     information
    */
-  constructor(settings:Settings) {
+  constructor(settings: Settings) {
     super(settings);
     if (!settings.clientOptions) {
-      throw new Error('The Cassandra client options should be defined');
+      throw new Error("The Cassandra client options should be defined");
     }
     if (!settings.columnFamily) {
-      throw new Error('The Cassandra column family should be defined');
+      throw new Error("The Cassandra column family should be defined");
     }
-    this.settings = {database: settings.database};
+    this.settings = { database: settings.database };
     this.settings.clientOptions = settings.clientOptions;
     this.settings.columnFamily = settings.columnFamily;
     this.settings.logger = settings.logger;
@@ -63,7 +62,7 @@ export default class Cassandra_db extends AbstractDatabase {
    * @param  {Function}   callback        Standard callback method.
    * @param  {Error}      callback.err    An error object (if any.)
    */
-  init(callback: (arg: any)=>{}) {
+  init(callback: (arg: any) => {}) {
     // Create a client
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.client = new Client(this.settings.clientOptions as any);
@@ -71,37 +70,38 @@ export default class Cassandra_db extends AbstractDatabase {
     // Pass on log messages if a logger has been configured
     if (this.settings.logger) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      this.client.on('log', (...args: any[]) => (this.settings.logger as any)(...args));
+      this.client.on("log", (...args: any[]) => (this.settings.logger as any)(...args));
     }
 
     // Check whether our column family already exists and create it if necessary
     this.client.execute(
-        'SELECT columnfamily_name FROM system.schema_columnfamilies WHERE keyspace_name = ?',
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        [(this.settings.clientOptions as any).keyspace],
-        (err, result) => {
-          if (err) {
-            return callback(err);
-          }
+      "SELECT columnfamily_name FROM system.schema_columnfamilies WHERE keyspace_name = ?",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      [(this.settings.clientOptions as any).keyspace],
+      (err, result) => {
+        if (err) {
+          return callback(err);
+        }
 
-          let isDefined = false;
-          const length = result.rows.length;
-          for (let i = 0; i < length; i++) {
-            if (result.rows[i].columnfamily_name === this.settings.columnFamily) {
-              isDefined = true;
-              break;
-            }
+        let isDefined = false;
+        const length = result.rows.length;
+        for (let i = 0; i < length; i++) {
+          if (result.rows[i].columnfamily_name === this.settings.columnFamily) {
+            isDefined = true;
+            break;
           }
+        }
 
-          if (isDefined) {
-            return callback(null);
-          } else {
-            const cql =
-                `CREATE COLUMNFAMILY "${this.settings.columnFamily}" ` +
-                '(key text PRIMARY KEY, data text)';
-            this.client && this.client.execute(cql, callback);
-          }
-        });
+        if (isDefined) {
+          return callback(null);
+        } else {
+          const cql =
+            `CREATE COLUMNFAMILY "${this.settings.columnFamily}" ` +
+            "(key text PRIMARY KEY, data text)";
+          this.client && this.client.execute(cql, callback);
+        }
+      },
+    );
   }
 
   /**
@@ -112,19 +112,20 @@ export default class Cassandra_db extends AbstractDatabase {
    * @param  {Error}      callback.err      An error object, if any
    * @param  {String}     callback.value    The value for the given key (if any)
    */
-  get(key:string, callback: (err:Error | null, data?:any)=>{}) {
+  get(key: string, callback: (err: Error | null, data?: any) => {}) {
     const cql = `SELECT data FROM "${this.settings.columnFamily}" WHERE key = ?`;
-    this.client && this.client.execute(cql, [key], (err, result) => {
-      if (err) {
-        return callback(err);
-      }
+    this.client &&
+      this.client.execute(cql, [key], (err, result) => {
+        if (err) {
+          return callback(err);
+        }
 
-      if (!result.rows || result.rows.length === 0) {
-        return callback(null, null);
-      }
+        if (!result.rows || result.rows.length === 0) {
+          return callback(null, null);
+        }
 
-      return callback(null, result.rows[0].data);
-    });
+        return callback(null, result.rows[0].data);
+      });
   }
 
   /**
@@ -138,29 +139,30 @@ export default class Cassandra_db extends AbstractDatabase {
    * @param  {Error}      callback.err      An error object, if any
    * @param  {String[]}   callback.keys     An array of keys that match the specified filters
    */
-  findKeys(key:string, notKey:string, callback: Function) {
+  findKeys(key: string, notKey: string, callback: Function) {
     let cql = null;
     if (!notKey) {
       // Get all the keys
       cql = `SELECT key FROM "${this.settings.columnFamily}"`;
-      this.client && this.client.execute(cql, (err: Error, result:Result) => {
-        if (err) {
-          return callback(err);
-        }
-
-        // Construct a regular expression based on the given key
-        const regex = new RegExp(`^${key.replace(/\*/g, '.*')}$`);
-
-        const keys:string[] = [];
-        result.rows.forEach((row) => {
-          if (regex.test(row.key)) {
-            keys.push(row.key);
+      this.client &&
+        this.client.execute(cql, (err: Error, result: Result) => {
+          if (err) {
+            return callback(err);
           }
-        });
 
-        return callback(null, keys);
-      });
-    } else if (notKey === '*:*:*') {
+          // Construct a regular expression based on the given key
+          const regex = new RegExp(`^${key.replace(/\*/g, ".*")}$`);
+
+          const keys: string[] = [];
+          result.rows.forEach((row) => {
+            if (regex.test(row.key)) {
+              keys.push(row.key);
+            }
+          });
+
+          return callback(null, keys);
+        });
+    } else if (notKey === "*:*:*") {
       // restrict key to format 'text:*'
       const matches = /^([^:]+):\*$/.exec(key);
       if (matches) {
@@ -168,26 +170,25 @@ export default class Cassandra_db extends AbstractDatabase {
         // We can retrieve them from this column as we're duplicating them on .set/.remove
         cql = `SELECT * from "${this.settings.columnFamily}" WHERE key = ?`;
         this.client &&
-        this.client
-            .execute(cql, [`ueberdb:keys:${matches[1]}`], (err, result) => {
-              if (err) {
-                return callback(err);
-              }
+          this.client.execute(cql, [`ueberdb:keys:${matches[1]}`], (err, result) => {
+            if (err) {
+              return callback(err);
+            }
 
-              if (!result.rows || result.rows.length === 0) {
-                return callback(null, []);
-              }
+            if (!result.rows || result.rows.length === 0) {
+              return callback(null, []);
+            }
 
-              const keys = result.rows.map((row) => row.data);
-              return callback(null, keys);
-            });
+            const keys = result.rows.map((row) => row.data);
+            return callback(null, keys);
+          });
       } else {
         const msg =
-            'Cassandra db only supports key patterns like pad:* when notKey is set to *:*:*';
+          "Cassandra db only supports key patterns like pad:* when notKey is set to *:*:*";
         return callback(new Error(msg), null);
       }
     } else {
-      return callback(new Error('Cassandra db currently only supports *:*:* as notKey'), null);
+      return callback(new Error("Cassandra db currently only supports *:*:* as notKey"), null);
     }
   }
 
@@ -199,8 +200,8 @@ export default class Cassandra_db extends AbstractDatabase {
    * @param  {Function}   callback        Standard callback method
    * @param  {Error}      callback.err    An error object, if any
    */
-  set(key: string, value:string, callback:()=>{}) {
-    this.doBulk([{type: 'set', key, value}], callback);
+  set(key: string, value: string, callback: () => {}) {
+    this.doBulk([{ type: "set", key, value }], callback);
   }
 
   /**
@@ -210,10 +211,9 @@ export default class Cassandra_db extends AbstractDatabase {
    * @param  {Function}   callback        Standard callback method
    * @param  {Error}      callback.err    An error object, if any
    */
-  remove(key:string, callback: ValueCallback<ResultSet>) {
-    this.doBulk([{type: 'remove', key}], callback);
+  remove(key: string, callback: ValueCallback<ResultSet>) {
+    this.doBulk([{ type: "remove", key }], callback);
   }
-
 
   /**
    * Performs multiple operations in one action
@@ -222,13 +222,13 @@ export default class Cassandra_db extends AbstractDatabase {
    * @param  {Function}   callback        Standard callback method
    * @param  {Error}      callback.err    An error object, if any
    */
-  doBulk(bulk:BulkObject[], callback:ValueCallback<ResultSet>) {
-    const queries:Array<string | {query: string, params?: ArrayOrObject}> = [];
+  doBulk(bulk: BulkObject[], callback: ValueCallback<ResultSet>) {
+    const queries: Array<string | { query: string; params?: ArrayOrObject }> = [];
     bulk.forEach((operation) => {
       // We support finding keys of the form `test:*`. If anything matches, we will try and save
       // this
       const matches = /^([^:]+):([^:]+)$/.exec(operation.key);
-      if (operation.type === 'set') {
+      if (operation.type === "set") {
         queries.push({
           query: `UPDATE "${this.settings.columnFamily}" SET data = ? WHERE key = ?`,
           params: [operation.value, operation.key],
@@ -237,10 +237,10 @@ export default class Cassandra_db extends AbstractDatabase {
         if (matches) {
           queries.push({
             query: `UPDATE "${this.settings.columnFamily}" SET data = ? WHERE key = ?`,
-            params: ['1', `ueberdb:keys:${matches[1]}`],
+            params: ["1", `ueberdb:keys:${matches[1]}`],
           });
         }
-      } else if (operation.type === 'remove') {
+      } else if (operation.type === "remove") {
         queries.push({
           query: `DELETE FROM "${this.settings.columnFamily}" WHERE key=?`,
           params: [operation.key],
@@ -254,7 +254,7 @@ export default class Cassandra_db extends AbstractDatabase {
         }
       }
     });
-    this.client && this.client.batch(queries, {prepare: true}, callback);
+    this.client && this.client.batch(queries, { prepare: true }, callback);
   }
 
   /**
@@ -263,7 +263,7 @@ export default class Cassandra_db extends AbstractDatabase {
    * @param  {Function}   callback        Standard callback method
    * @param  {Error}      callback.err    Error object in case something goes wrong
    */
-  close(callback: ()=>{}) {
+  close(callback: () => {}) {
     this.pool.shutdown(callback);
   }
-};
+}

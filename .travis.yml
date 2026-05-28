@@ -21,12 +21,12 @@ before_install:
   - mysql -e "ALTER DATABASE ueberdb CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;"
   - mysql -e "grant CREATE,ALTER,SELECT,INSERT,UPDATE,DELETE on ueberdb.* to 'ueberdb'@'localhost';"
   - mysql -e "CREATE TABLE \`store\` (\`key\` varchar(100) COLLATE utf8mb4_bin NOT NULL DEFAULT '',\`value\` longtext COLLATE utf8mb4_bin NOT NULL,PRIMARY KEY (\`key\`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;" ueberdb
-#  - cp /etc/rethinkdb/default.conf.sample /etc/rethinkdb/instances.d/instance1.conf
+  #  - cp /etc/rethinkdb/default.conf.sample /etc/rethinkdb/instances.d/instance1.conf
 
-#addons:
-#  rethinkdb: '2.3.4'
+  #addons:
+  #  rethinkdb: '2.3.4'
 
-# Brings in procedure required for creating large data set
+  # Brings in procedure required for creating large data set
   - mysql ueberdb < test/lib/mysql.sql
   - mysql ueberdb -e 'CALL generate_data();';
   - psql -c 'create database ueberdb;' -U postgres

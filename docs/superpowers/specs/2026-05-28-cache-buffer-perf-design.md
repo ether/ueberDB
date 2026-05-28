@@ -19,7 +19,7 @@ Each fix is internal and reviewable in isolation; together they cut sustained pe
 
 - Driver-specific optimizations (mysql/postgres/mongodb hotspots) — out of scope for this spec.
 - Worker-thread serialization for large JSON values.
-- A byte-bounded cache (additional setting). 
+- A byte-bounded cache (additional setting).
 - Pipelined or adaptive flush scheduling.
 - Changing default `cache`, `writeInterval`, or `bulkLimit`.
 
@@ -34,22 +34,22 @@ All work happens in `lib/CacheAndBufferLayer.ts`. The four wins are listed below
 **Fix.** The write direction must keep `toJSON`-aware cloning. The read direction can safely use `structuredClone` because the cached value has already been through `cloneIn` (or `JSON.parse`, which is also JSON-safe).
 
 ```ts
-const cloneIn = clone;  // existing function, renamed; toJSON semantics preserved
+const cloneIn = clone; // existing function, renamed; toJSON semantics preserved
 
 const cloneOut = (v: unknown): unknown =>
-  v == null || typeof v !== 'object' ? v : structuredClone(v);
+  v == null || typeof v !== "object" ? v : structuredClone(v);
 ```
 
 Call-site mapping:
 
-| Site | Direction | Function |
-|---|---|---|
-| `set(key, value)` line 389 | Write (caller → cache) | `cloneIn` |
-| `setSub(...)` line 438 | Write | `cloneIn` |
-| `get(key)` line 275 | Read (cache → caller) | `cloneOut` |
-| `getSub(...)` line 511 | Read | `cloneOut` |
-| `findKeys` line 338 | Read | `cloneOut` |
-| `findKeysPaged` line 371, 380 | Read | `cloneOut` |
+| Site                                | Direction                 | Function   |
+| ----------------------------------- | ------------------------- | ---------- |
+| `set(key, value)` line 389          | Write (caller → cache)    | `cloneIn`  |
+| `setSub(...)` line 438              | Write                     | `cloneIn`  |
+| `get(key)` line 275                 | Read (cache → caller)     | `cloneOut` |
+| `getSub(...)` line 511              | Read                      | `cloneOut` |
+| `findKeys` line 338                 | Read                      | `cloneOut` |
+| `findKeysPaged` line 371, 380       | Read                      | `cloneOut` |
 | `_write` non-JSON fallback line 557 | Internal (cache → driver) | `cloneOut` |
 
 The `_write` non-JSON fallback uses `cloneOut` because the entry value originated from a `cloneIn` call and is therefore JSON-safe.
@@ -70,13 +70,15 @@ private readonly _dirtyKeys: Set<string> = new Set();
 
 - In `_setLocked`, immediately after `this.buffer.set(key, entry)` (line 420): `this._dirtyKeys.add(key);`
 - In `markDone(key, entry, err)` — signature gains `key` parameter — _before_ calling `entry.dirty!.done(err)`:
+
   ```ts
-  const current = this.buffer.get(key, false);  // use isUse=false to avoid LRU reorder
+  const current = this.buffer.get(key, false); // use isUse=false to avoid LRU reorder
   if (current === entry) this._dirtyKeys.delete(key);
   // else: entry was replaced by a fresh dirty entry; key remains in _dirtyKeys
   entry.dirty!.done(err);
   entry.dirty = null;
   ```
+
   Order matters: deleting from `_dirtyKeys` _before_ `done(err)` prevents a subtle race where the resolved caller schedules a new write that re-adds the key, only for our late `delete` to wipe it out.
 
 - `LRU.get(k, isUse = true)`: already exists (line 113). We use `isUse=false` from `flush()` and `markDone` so we read the entry without reordering the LRU.
@@ -167,29 +169,29 @@ The `setSub` mutation walk (lines 449-476) happens entirely under the lock; it i
 
 ### Cache-hit read, no contention
 
-| Step | Today | After |
-|---|---|---|
-| 1 | `await _lock(key)` (Map.set + Promise alloc) | `_locks.has(key)` check |
-| 2 | `_getLocked`: `buffer.get(key)` (Map.delete+set) | `buffer.get(key)` (Map.delete+set) |
-| 3 | Read `entry.value` | Read `entry.value` |
-| 4 | `_unlock(key)` (Map.delete + Promise.done) | _(skipped)_ |
-| 5 | `clone(v)` — recursive walker | `cloneOut(v)` — `structuredClone` |
+| Step | Today                                            | After                              |
+| ---- | ------------------------------------------------ | ---------------------------------- |
+| 1    | `await _lock(key)` (Map.set + Promise alloc)     | `_locks.has(key)` check            |
+| 2    | `_getLocked`: `buffer.get(key)` (Map.delete+set) | `buffer.get(key)` (Map.delete+set) |
+| 3    | Read `entry.value`                               | Read `entry.value`                 |
+| 4    | `_unlock(key)` (Map.delete + Promise.done)       | _(skipped)_                        |
+| 5    | `clone(v)` — recursive walker                    | `cloneOut(v)` — `structuredClone`  |
 
 ### Idle DB, default settings
 
-| Per second | Today | After |
-|---|---|---|
-| `setInterval` ticks | 10 | 0 |
-| Buffer iterations | 10 × cache size | 0 |
-| Dirty entries inspected | usually 0 | 0 |
+| Per second              | Today           | After |
+| ----------------------- | --------------- | ----- |
+| `setInterval` ticks     | 10              | 0     |
+| Buffer iterations       | 10 × cache size | 0     |
+| Dirty entries inspected | usually 0       | 0     |
 
 ### Write under buffering
 
-| Step | Today | After |
-|---|---|---|
-| `set(k, v)` | clone → lock → entry update → unlock | clone → lock → entry update + dirty-set add + schedule timer → unlock |
-| Flush trigger | setInterval tick | one-shot setTimeout |
-| Flush scan | iterate entire LRU | iterate `_dirtyKeys` only |
+| Step          | Today                                | After                                                                 |
+| ------------- | ------------------------------------ | --------------------------------------------------------------------- |
+| `set(k, v)`   | clone → lock → entry update → unlock | clone → lock → entry update + dirty-set add + schedule timer → unlock |
+| Flush trigger | setInterval tick                     | one-shot setTimeout                                                   |
+| Flush scan    | iterate entire LRU                   | iterate `_dirtyKeys` only                                             |
 
 ## Edge Cases
 
@@ -223,16 +225,19 @@ The `setSub` mutation walk (lines 449-476) happens entirely under the lock; it i
 ### New tests (all under `test/mock/`)
 
 **`test_dirty_set.spec.ts`:**
+
 - After `await db.set('k', v)` with `writeInterval > 0`, the internal `_dirtyKeys.size` is 0 immediately after `await` resolves (the await waits for the write to finish, so dirty is cleared). After `db.set` _before_ awaiting, `_dirtyKeys.size === 1` (use a paused mock driver).
 - Re-set during in-flight write: pause the mock driver so the first set's `_write` hangs; call set again on the same key; verify `_dirtyKeys.size === 1` (idempotent add); release the first write; verify the old entry's `markDone` does _not_ clear the key (because buffer now holds the fresh entry); verify `metrics.writesObsoleted` increments.
 - Failed write: mock driver throws; `_dirtyKeys` still cleared for that key; caller promise rejects.
 
 **`test_lazy_flush.spec.ts`:**
+
 - With `writeInterval: 100`, no `db.set` calls: wait 500 ms; verify `metrics.writesToDb === 0` and (via a test-only getter or `process._getActiveHandles().length` snapshot) no pending flush timer.
 - With `writeInterval: 100`, one `db.set` to a paused mock: timer is armed; release; after 200 ms, write happened; timer is null again.
 - `db.close()` clears the pending timer (no UnhandledHandle on exit).
 
 **`test_lock_fast_path.spec.ts`:**
+
 - Cache-hit `get`: prime the cache with `set`+await, then read `lockAcquires` metric, then call `get`. Acquires count does not increment.
 - Concurrent set/get: hold a paused mock; issue `set('k', 'v2')` (does not await); issue `get('k')`; the get takes the slow path (because `_locks.has('k')` is true while set holds it); after releasing the mock, the get resolves with `'v2'`.
 

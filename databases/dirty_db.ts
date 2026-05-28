@@ -15,14 +15,14 @@
  */
 
 /*
-*
-* Fair warning that length may not provide the correct value upon load.
-* See https://github.com/ether/etherpad-lite/pull/3984
-*
-*/
+ *
+ * Fair warning that length may not provide the correct value upon load.
+ * See https://github.com/ether/etherpad-lite/pull/3984
+ *
+ */
 
-import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
-import DirtyImport from 'dirty-ts';
+import AbstractDatabase, { type Settings } from "../lib/AbstractDatabase";
+import DirtyImport from "dirty-ts";
 
 // dirty-ts is a CJS package that exposes the constructor as `module.exports.default`
 // with the `__esModule` marker. Under Node's ESM-to-CJS interop, the default
@@ -30,18 +30,17 @@ import DirtyImport from 'dirty-ts';
 // so unwrap `.default` if it's present.
 const Dirty: any = (DirtyImport as any).default ?? DirtyImport;
 
-type DirtyDBCallback = (p?:any, keys?: string[])=>{};
-
+type DirtyDBCallback = (p?: any, keys?: string[]) => {};
 
 export default class extends AbstractDatabase {
   public db: any;
-  constructor(settings:Settings) {
+  constructor(settings: Settings) {
     super(settings);
     this.db = null;
 
     if (!settings || !settings.filename) {
       // @ts-ignore
-      settings = {filename: null};
+      settings = { filename: null };
     }
 
     this.settings = settings;
@@ -52,21 +51,21 @@ export default class extends AbstractDatabase {
     this.settings.json = false;
   }
 
-  init(callback: ()=>{}) {
+  init(callback: () => {}) {
     this.db = new Dirty(this.settings.filename);
-    this.db.on('load', () => {
+    this.db.on("load", () => {
       callback();
     });
   }
 
-  get(key:string, callback:DirtyDBCallback) {
+  get(key: string, callback: DirtyDBCallback) {
     callback(null, this.db.get(key));
   }
 
-  findKeys(key:string, notKey:string, callback:DirtyDBCallback) {
-    const keys:string[] = [];
+  findKeys(key: string, notKey: string, callback: DirtyDBCallback) {
+    const keys: string[] = [];
     const regex = this.createFindRegex(key, notKey);
-    this.db.forEach((key:string) => {
+    this.db.forEach((key: string) => {
       if (key.search(regex) !== -1) {
         keys.push(key);
       }
@@ -74,17 +73,17 @@ export default class extends AbstractDatabase {
     callback(null, keys);
   }
 
-  set(key:string, value:string, callback:DirtyDBCallback) {
+  set(key: string, value: string, callback: DirtyDBCallback) {
     this.db.set(key, value, callback);
   }
 
-  remove(key:string, callback:DirtyDBCallback) {
+  remove(key: string, callback: DirtyDBCallback) {
     this.db.rm(key, callback);
   }
 
-  close(callback:DirtyDBCallback) {
+  close(callback: DirtyDBCallback) {
     this.db.close();
     this.db = null;
     if (callback) callback();
   }
-};
+}

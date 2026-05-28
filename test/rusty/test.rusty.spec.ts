@@ -1,6 +1,6 @@
-import {describe, it} from "vitest";
-import {test_db} from "../lib/test_lib";
+import { describe, it } from "vitest";
+import { test_db } from "../lib/test_lib";
 
-describe('rusty test', ()=>{
-    test_db('rustydb')
-})
+describe("rusty test", () => {
+  test_db("rustydb");
+});

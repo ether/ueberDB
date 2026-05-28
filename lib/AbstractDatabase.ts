@@ -1,9 +1,9 @@
-import {normalizeLogger, type Logger} from './logging';
+import { normalizeLogger, type Logger } from "./logging";
 
 const nullLogger = normalizeLogger(null);
 
 const simpleGlobToRegExp = (s: string) =>
-  s.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*');
+  s.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*");
 
 export type Settings = {
   data?: unknown;
@@ -48,10 +48,10 @@ class AbstractDatabase {
 
   constructor(settings: Settings) {
     if (new.target === AbstractDatabase) {
-      throw new TypeError('cannot instantiate Abstract Database directly');
+      throw new TypeError("cannot instantiate Abstract Database directly");
     }
-    for (const fn of ['init', 'close', 'get', 'findKeys', 'remove', 'set']) {
-      if (typeof (this as Record<string, unknown>)[fn] !== 'function') {
+    for (const fn of ["init", "close", "get", "findKeys", "remove", "set"]) {
+      if (typeof (this as Record<string, unknown>)[fn] !== "function") {
         throw new TypeError(`method ${fn} not defined`);
       }
     }
@@ -73,10 +73,12 @@ class AbstractDatabase {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   doBulk(..._args: any[]): void | Promise<void> {
-    throw new Error('the doBulk method must be implemented if write caching is enabled');
+    throw new Error("the doBulk method must be implemented if write caching is enabled");
   }
 
-  get isAsync(): boolean { return false; }
+  get isAsync(): boolean {
+    return false;
+  }
 }
 
 export default AbstractDatabase;

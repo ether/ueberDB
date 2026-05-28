@@ -14,21 +14,22 @@ writes are done in a bulk. This can be turned off.
 
 ## Database Support
 
-* Couch
-* Dirty
-* Elasticsearch
-* Maria
-* `memory`: An in-memory ephemeral database.
-* Mongo
-* MsSQL
-* MySQL
-* Postgres (single connection and with connection pool)
-* Redis
-* Rethink
-* `rustydb`
-* SQLite
-* Surrealdb
-* 
+- Couch
+- Dirty
+- Elasticsearch
+- Maria
+- `memory`: An in-memory ephemeral database.
+- Mongo
+- MsSQL
+- MySQL
+- Postgres (single connection and with connection pool)
+- Redis
+- Rethink
+- `rustydb`
+- SQLite
+- Surrealdb
+-
+
 ## Install
 
 ```
@@ -40,24 +41,24 @@ npm install ueberdb2
 ### Basic
 
 ```javascript
-const ueberdb = require('ueberdb2');
+const ueberdb = require("ueberdb2");
 
 (async () => {
   // mysql
-  const db = new ueberdb.Database('mysql', {
-    user: 'root',
-    host: 'localhost',
-    password: '',
-    database: 'store',
-    engine: 'InnoDB',
+  const db = new ueberdb.Database("mysql", {
+    user: "root",
+    host: "localhost",
+    password: "",
+    database: "store",
+    engine: "InnoDB",
   });
   // dirty to file system
   //const db = new ueberdb.Database('dirty', {filename: 'var/dirty.db'});
 
   await db.init();
   try {
-    await db.set('valueA', {a: 1, b: 2});
-    console.log('valueA is', await db.get('valueA'));
+    await db.set("valueA", { a: 1, b: 2 });
+    console.log("valueA is", await db.get("valueA"));
   } finally {
     await db.close();
   }
@@ -67,19 +68,19 @@ const ueberdb = require('ueberdb2');
 ### findKeys
 
 ```javascript
-const ueberdb = require('ueberdb2');
+const ueberdb = require("ueberdb2");
 
 (async () => {
-  const db = new ueberdb.Database('dirty', {filename: 'var/dirty.db'});
+  const db = new ueberdb.Database("dirty", { filename: "var/dirty.db" });
   await db.init();
   try {
     await Promise.all([
-      db.set('valueA', {a: 1, b: 2}),
-      db.set('valueA:h1', {a: 1, b: 2}),
-      db.set('valueA:h2', {a: 3, b: 4}),
+      db.set("valueA", { a: 1, b: 2 }),
+      db.set("valueA:h1", { a: 1, b: 2 }),
+      db.set("valueA:h2", { a: 3, b: 4 }),
     ]);
     // prints [ 'valueA:h1', 'valueA:h2' ]
-    console.log(await db.findKeys('valueA:*', null));
+    console.log(await db.findKeys("valueA:*", null));
   } finally {
     await db.close();
   }
@@ -95,18 +96,18 @@ sweep OOMed the host. `findKeysPaged()` walks the same keyspace in
 fixed-size pages using an exclusive `after` cursor:
 
 ```javascript
-const ueberdb = require('ueberdb2');
+const ueberdb = require("ueberdb2");
 
 (async () => {
-  const db = new ueberdb.Database('mysql', settings);
+  const db = new ueberdb.Database("mysql", settings);
   await db.init();
   try {
     let after;
     let total = 0;
     while (true) {
-      const page = await db.findKeysPaged('sessionstorage:*', null, {
+      const page = await db.findKeysPaged("sessionstorage:*", null, {
         limit: 500,
-        ...(after != null ? {after} : {}),
+        ...(after != null ? { after } : {}),
       });
       if (page.length === 0) break;
       total += page.length;
@@ -130,8 +131,8 @@ Semantics:
 - `limit` must be a positive integer; non-positive or non-integer values
   throw.
 - Native implementations: **mysql** (ranged `BINARY \`key\` > ?`),
-  **postgres** (`key > $n`). All other backends fall back to
-  `findKeys() + JS-side slicing` via the cache layer — correct, but
+**postgres** (`key > $n`). All other backends fall back to
+`findKeys() + JS-side slicing` via the cache layer — correct, but
   defeats the OOM-mitigation purpose. PRs for native paged paths on
   other backends welcome.
 
@@ -159,24 +160,24 @@ exist or if the given property path does not exist.
 Examples:
 
 ```javascript
-(async () => {
-  await db.set(key, {prop1: {prop2: ['value']}});
+async () => {
+  await db.set(key, { prop1: { prop2: ["value"] } });
 
-  const val1 = await db.getSub(key, ['prop1', 'prop2', '0']);
-  console.log('1.', val1); // prints "1. value"
+  const val1 = await db.getSub(key, ["prop1", "prop2", "0"]);
+  console.log("1.", val1); // prints "1. value"
 
-  const val2 = await db.getSub(key, ['prop1', 'prop2']);
-  console.log('2.', val2); // prints "2. [ 'value' ]"
+  const val2 = await db.getSub(key, ["prop1", "prop2"]);
+  console.log("2.", val2); // prints "2. [ 'value' ]"
 
-  const val3 = await db.getSub(key, ['prop1']);
-  console.log('3.', val3); // prints "3. { prop2: [ 'value' ] }"
+  const val3 = await db.getSub(key, ["prop1"]);
+  console.log("3.", val3); // prints "3. { prop2: [ 'value' ] }"
 
   const val4 = await db.getSub(key, []);
-  console.log('4.', val4); // prints "4. { prop1: { prop2: [ 'value' ] } }"
+  console.log("4.", val4); // prints "4. { prop1: { prop2: [ 'value' ] } }"
 
-  const val5 = await db.getSub(key, ['does', 'not', 'exist']);
-  console.log('5.', val5); // prints "5. null" or "5. undefined"
-});
+  const val5 = await db.getSub(key, ["does", "not", "exist"]);
+  console.log("5.", val5); // prints "5. null" or "5. undefined"
+};
 ```
 
 #### `setSub`
@@ -221,15 +222,14 @@ to the database driver (except for reads of written values that have not yet
 been committed to the database):
 
 ```javascript
-const ueberdb = require('ueberdb2');
+const ueberdb = require("ueberdb2");
 
 (async () => {
-  const db = new ueberdb.Database(
-      'dirty', {filename: 'var/dirty.db'}, {cache: 0});
+  const db = new ueberdb.Database("dirty", { filename: "var/dirty.db" }, { cache: 0 });
   await db.init();
   try {
-    await db.set('valueA', {a: 1, b: 2});
-    const value = await db.get('valueA');
+    await db.set("valueA", { a: 1, b: 2 });
+    const value = await db.get("valueA");
     console.log(JSON.stringify(value));
   } finally {
     await db.close();
@@ -243,15 +243,14 @@ Set the `writeInterval` wrapper option to 0 to force writes to go directly to
 the database driver:
 
 ```javascript
-const ueberdb = require('ueberdb2');
+const ueberdb = require("ueberdb2");
 
 (async () => {
-  const db = new ueberdb.Database(
-      'dirty', {filename: 'var/dirty.db'}, {writeInterval: 0});
+  const db = new ueberdb.Database("dirty", { filename: "var/dirty.db" }, { writeInterval: 0 });
   await db.init();
   try {
-    await db.set('valueA', {a: 1, b: 2});
-    const value = await db.get('valueA');
+    await db.set("valueA", { a: 1, b: 2 });
+    const value = await db.get("valueA");
     console.log(JSON.stringify(value));
   } finally {
     await db.close();
@@ -262,17 +261,17 @@ const ueberdb = require('ueberdb2');
 ## Feature support
 
 |               | Get | Set | findKeys | findKeysPaged | Remove | getSub | setSub | doBulk | CI Coverage |
-|---------------|-----|-----|----------|---------------|--------|--------|--------|--------|-------------|
-| cassandra     | ✓   | ✓   | *        | ✓             | ✓      | ✓      | ✓      | ✓      | ✓           |
+| ------------- | --- | --- | -------- | ------------- | ------ | ------ | ------ | ------ | ----------- |
+| cassandra     | ✓   | ✓   | \*       | ✓             | ✓      | ✓      | ✓      | ✓      | ✓           |
 | couchdb       | ✓   | ✓   | ✓        | ✓             | ✓      | ✓      | ✓      | ✓      | ✓           |
 | dirty         | ✓   | ✓   | ✓        | ✓             | ✓      | ✓      | ✓      |        | ✓           |
 | dirty_git     | ✓   | ✓   | ✓        | ✓             | ✓      | ✓      | ✓      |        | ✓           |
-| elasticsearch | ✓   | ✓   | *        | ✓             | ✓      | ✓      | ✓      | ✓      | ✓           |
+| elasticsearch | ✓   | ✓   | \*       | ✓             | ✓      | ✓      | ✓      | ✓      | ✓           |
 | maria         | ✓   | ✓   | ✓        | ✓             | ✓      | ✓      | ✓      | ✓      | ✓           |
 | mysql         | ✓   | ✓   | ✓        | ✓             | ✓      | ✓      | ✓      | ✓      | ✓           |
 | postgres      | ✓   | ✓   | ✓        | ✓             | ✓      | ✓      | ✓      | ✓      | ✓           |
-| redis         | ✓   | ✓   | *        | ✓             | ✓      | ✓      | ✓      | ✓      | ✓           |
-| rethinkdb     | ✓   | ✓   | *        | ✓             | ✓      | ✓      | ✓      | ✓      | 
+| redis         | ✓   | ✓   | \*       | ✓             | ✓      | ✓      | ✓      | ✓      | ✓           |
+| rethinkdb     | ✓   | ✓   | \*       | ✓             | ✓      | ✓      | ✓      | ✓      |
 | rustydb       | ✓   | ✓   | ✓        | ✓             | ✓      | ✓      | ✓      | ✓      | ✓           |
 | sqlite        | ✓   | ✓   | ✓        | ✓             | ✓      | ✓      | ✓      | ✓      | ✓           |
 | surrealdb     | ✓   | ✓   | ✓        | ✓             | ✓      | ✓      | ✓      | ✓      | ✓           |
@@ -284,14 +283,14 @@ const ueberdb = require('ueberdb2');
 The following characters should be avoided in keys `\^$.|?*+()[{` as they will
 cause findKeys to fail.
 
-### findKeys database support*
+### findKeys database support\*
 
 The following have limitations on findKeys
 
-* redis (Only keys of the format \*:\*:\*)
-* cassandra (Only keys of the format \*:\*:\*)
-* elasticsearch (Only keys of the format \*:\*:\*)
-* rethink (Currently doesn't work)
+- redis (Only keys of the format \*:\*:\*)
+- cassandra (Only keys of the format \*:\*:\*)
+- elasticsearch (Only keys of the format \*:\*:\*)
+- rethink (Currently doesn't work)
 
 For details on how it works please refer to the wiki:
 https://github.com/ether/UeberDB/wiki/findKeys-functionality
@@ -341,7 +340,7 @@ If you enabled TLS on your Redis database (available since Redis 6.0) you will
 need to change your connections parameters, here is an example:
 
 ```javascript
-const db = new ueberdb.Database('redis', {url: 'rediss://localhost'});
+const db = new ueberdb.Database("redis", { url: "rediss://localhost" });
 ```
 
 Do not provide a `host` value.
@@ -371,21 +370,21 @@ environment variable `NODE_TLS_REJECT_UNAUTHORIZED = 0` and add the flag
 
 ## What's changed from UeberDB?
 
-* Dropped broken databases: CrateDB, LevelDB, LMDB (probably a
+- Dropped broken databases: CrateDB, LevelDB, LMDB (probably a
   breaking change for some people)
-* Introduced CI.
-* Introduced better testing.
-* Fixed broken database clients IE Redis.
-* Updated Depdendencies where possible.
-* Tidied file structure.
-* Improved documentation.
-* Sensible name for software makes it clear that it's maintained by The Etherpad
+- Introduced CI.
+- Introduced better testing.
+- Fixed broken database clients IE Redis.
+- Updated Depdendencies where possible.
+- Tidied file structure.
+- Improved documentation.
+- Sensible name for software makes it clear that it's maintained by The Etherpad
   Foundation.
-* Make db.init await / async
+- Make db.init await / async
 
 ### Dirty_Git Easter Egg.
 
-* I suck at hiding Easter eggs..
+- I suck at hiding Easter eggs..
 
 Dirty_git will `commit` and `push` to Git on every `set`. To use `git init` or
 `git clone` within your dirty database location and then set your upstream IE

@@ -14,38 +14,40 @@
  * limitations under the License.
  */
 
-import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
-import {createClient} from 'redis';
-import type {RedisClientOptions} from 'redis';
-import type {BulkObject} from './cassandra_db';
+import AbstractDatabase, { type Settings } from "../lib/AbstractDatabase";
+import { createClient } from "redis";
+import type { RedisClientOptions } from "redis";
+import type { BulkObject } from "./cassandra_db";
 
 export default class RedisDB extends AbstractDatabase {
-  public _client: any
-  constructor(settings:Settings) {
+  public _client: any;
+  constructor(settings: Settings) {
     super(settings);
     this._client = null;
     this.settings = settings || {};
   }
 
-  get isAsync() { return true; }
+  get isAsync() {
+    return true;
+  }
 
   async init() {
     if (this.settings.url) {
-      this._client = createClient({url: this.settings.url});
+      this._client = createClient({ url: this.settings.url });
     } else if (this.settings.host) {
-      const options:RedisClientOptions = {
-        socket:{
+      const options: RedisClientOptions = {
+        socket: {
           host: this.settings.host,
           port: Number(this.settings.port),
-        }
-      }
-      if (this.settings.password){
+        },
+      };
+      if (this.settings.password) {
         options.password = this.settings.password;
       }
-      if (this.settings.user){
+      if (this.settings.user) {
         options.username = this.settings.user;
       }
-      this._client = createClient(options)
+      this._client = createClient(options);
     }
     if (this._client) {
       await this._client.connect();
@@ -53,27 +55,27 @@ export default class RedisDB extends AbstractDatabase {
     }
   }
 
-  async get(key:string) {
+  async get(key: string) {
     if (this._client == null) return null;
     return await this._client.get(key);
   }
 
-  async findKeys(key:string, notKey:string) {
+  async findKeys(key: string, notKey: string) {
     if (this._client == null) return null;
     const [_, type] = /^([^:*]+):\*$/.exec(key) || [];
-    if (type != null && ['*:*:*', `${key}:*`].includes(notKey)) {
+    if (type != null && ["*:*:*", `${key}:*`].includes(notKey)) {
       // Performance optimization for a common Etherpad case.
       return await this._client.sMembers(`ueberDB:keys:${type}`);
     }
-    let keys = await this._client.keys(key.replace(/[?[\]\\]/g, '\\$&'));
+    let keys = await this._client.keys(key.replace(/[?[\]\\]/g, "\\$&"));
     if (notKey != null) {
       const regex = this.createFindRegex(key, notKey);
-      keys = keys.filter((k:string) => regex.test(k));
+      keys = keys.filter((k: string) => regex.test(k));
     }
     return keys;
   }
 
-  async set(key:string, value:string) {
+  async set(key: string, value: string) {
     if (this._client == null) return null;
     const matches = /^([^:]+):([^:]+)$/.exec(key);
     await Promise.all([
@@ -82,7 +84,7 @@ export default class RedisDB extends AbstractDatabase {
     ]);
   }
 
-  async remove(key:string) {
+  async remove(key: string) {
     if (this._client == null) return null;
     const matches = /^([^:]+):([^:]+)$/.exec(key);
     await Promise.all([
@@ -95,14 +97,14 @@ export default class RedisDB extends AbstractDatabase {
     if (this._client == null) return;
     const multi = this._client.multi();
 
-    for (const {key, type, value} of bulk) {
+    for (const { key, type, value } of bulk) {
       const matches = /^([^:]+):([^:]+)$/.exec(key);
-      if (type === 'set') {
+      if (type === "set") {
         if (matches) {
           multi.sAdd(`ueberDB:keys:${matches[1]}`, matches[0]);
         }
         multi.set(key, value as string);
-      } else if (type === 'remove') {
+      } else if (type === "remove") {
         if (matches) {
           multi.sRem(`ueberDB:keys:${matches[1]}`, matches[0]);
         }
@@ -118,4 +120,4 @@ export default class RedisDB extends AbstractDatabase {
     await this._client.quit();
     this._client = null;
   }
-};
+}

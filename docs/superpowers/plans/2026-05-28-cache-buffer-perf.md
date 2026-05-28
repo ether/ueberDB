@@ -13,10 +13,12 @@
 ## File Structure
 
 **Modified:**
+
 - `lib/CacheAndBufferLayer.ts` — all four wins. Existing structure (`LRU` class, `SelfContainedPromise`, `Database` class, `clone` function) is preserved; we rename `clone` to `cloneIn`, add `cloneOut`, add `_dirtyKeys` and `_flushTimer` fields, change `flush()`'s scan loop, replace the constructor's `setInterval`, and reshape `get()`.
 - `test/mock/test_metrics.spec.ts` — three locations adjust expected metrics where `get()` (but not `getSub()`) on a cache hit no longer increments lock counters.
 
 **Created:**
+
 - `test/mock/test_dirty_set.spec.ts` — verifies the `_dirtyKeys` invariant under set/flush, re-set during in-flight write, and failed-write paths.
 - `test/mock/test_lazy_flush.spec.ts` — verifies that an idle database has no scheduled timer, that `set()` arms the timer, and that `close()` clears it.
 - `test/mock/test_lock_fast_path.spec.ts` — verifies that cache-hit `get()` does not acquire the per-key lock and that concurrent set+get serializes correctly while the lock is held.
@@ -58,6 +60,7 @@ Expected: the file exists. If missing, stop — the plan is meaningless without 
 ## Task 1: Win 1 — Split `clone()` into `cloneIn` / `cloneOut`
 
 **Files:**
+
 - Modify: `lib/CacheAndBufferLayer.ts` (rename `clone` → `cloneIn`, add `cloneOut`, rewire call sites)
 
 The existing test `test/memory/test_tojson.spec.ts` is the safety net for the write path (`cloneIn`). No new test file is needed in this task — every call site we touch is already covered by an existing test (`test_lib.ts` for get/set/setSub/getSub/findKeys; `test_tojson.spec.ts` for toJSON semantics).
@@ -87,7 +90,7 @@ Add directly after `cloneIn`'s closing brace:
 // toJSON methods) or by JSON.parse (which produces only plain JSON-safe values), so structuredClone
 // will never see a function or other non-cloneable type here.
 const cloneOut = (v: unknown): unknown =>
-  v == null || typeof v !== 'object' ? v : structuredClone(v);
+  v == null || typeof v !== "object" ? v : structuredClone(v);
 ```
 
 - [ ] **Step 3: Rewire call sites — replace `clone(...)` with `cloneIn(...)` or `cloneOut(...)` per direction**
@@ -95,66 +98,88 @@ const cloneOut = (v: unknown): unknown =>
 There are six call sites in the file. Replace each. Read direction → `cloneOut`. Write direction → `cloneIn`.
 
 In `get` (around line 275):
+
 ```ts
 return clone(v);
 ```
+
 becomes:
+
 ```ts
 return cloneOut(v);
 ```
 
 In `findKeys` (around line 338):
+
 ```ts
 return clone(keyValues) as string[];
 ```
+
 becomes:
+
 ```ts
 return cloneOut(keyValues) as string[];
 ```
 
 In `findKeysPaged` — there are TWO `clone(...)` calls (around lines 371 and 380). Both become `cloneOut(...)`:
+
 ```ts
 return clone(all.slice(start, start + options.limit)) as string[];
 ```
+
 → `return cloneOut(all.slice(start, start + options.limit)) as string[];`
 and
+
 ```ts
 return clone(keys) as string[];
 ```
+
 → `return cloneOut(keys) as string[];`
 
 In `set` (line 389):
+
 ```ts
 value = clone(value);
 ```
+
 becomes:
+
 ```ts
 value = cloneIn(value);
 ```
 
 In `setSub` (line 438):
+
 ```ts
 value = clone(value);
 ```
+
 becomes:
+
 ```ts
 value = cloneIn(value);
 ```
 
 In `getSub` (line 511):
+
 ```ts
 return clone(v);
 ```
+
 becomes:
+
 ```ts
 return cloneOut(v);
 ```
 
 In `_write` (line 557 — the non-JSON fallback):
+
 ```ts
 serialized = clone(entry.value) as string | null;
 ```
+
 becomes:
+
 ```ts
 serialized = cloneOut(entry.value) as string | null;
 ```
@@ -208,6 +233,7 @@ fast cloner does not need toJSON support."
 ## Task 2: Win 2 — Dirty-Key Set
 
 **Files:**
+
 - Create: `test/mock/test_dirty_set.spec.ts`
 - Modify: `lib/CacheAndBufferLayer.ts` (add `_dirtyKeys` field, mutations in `_setLocked` and `markDone`, change `flush()` scan loop)
 
@@ -216,11 +242,11 @@ fast cloner does not need toJSON support."
 Create `test/mock/test_dirty_set.spec.ts`:
 
 ```ts
-import * as ueberdb from '../../index';
-import {ConsoleLogger} from '../../lib/logging';
-import {afterEach, beforeEach, describe, expect, it} from 'vitest';
+import * as ueberdb from "../../index";
+import { ConsoleLogger } from "../../lib/logging";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-type MockSettings = {mock?: any};
+type MockSettings = { mock?: any };
 
 const logger = new ConsoleLogger();
 
@@ -232,16 +258,16 @@ describe(__filename, () => {
 
   const createDb = async (wrapperSettings: Record<string, unknown> = {}) => {
     const settings: MockSettings = {};
-    db = new ueberdb.Database('mock', settings, {json: false, ...wrapperSettings}, logger);
+    db = new ueberdb.Database("mock", settings, { json: false, ...wrapperSettings }, logger);
     await db.init();
     mock = settings.mock;
-    mock.once('init', (cb: any) => cb());
+    mock.once("init", (cb: any) => cb());
   };
 
   afterEach(async () => {
     if (mock != null) {
       mock.removeAllListeners();
-      mock.once('close', (cb: any) => cb());
+      mock.once("close", (cb: any) => cb());
       mock = null;
     }
     if (db != null) {
@@ -250,36 +276,36 @@ describe(__filename, () => {
     }
   });
 
-  it('set() adds the key to _dirtyKeys; flush() drains it', async () => {
+  it("set() adds the key to _dirtyKeys; flush() drains it", async () => {
     // writeInterval=1e9 means the lazy flush timer effectively never fires; we drive flush manually.
-    await createDb({writeInterval: 1e9});
-    mock.on('set', (k: any, v: any, cb: any) => cb());
-    const writeP = db.set('k', 'v');
+    await createDb({ writeInterval: 1e9 });
+    mock.on("set", (k: any, v: any, cb: any) => cb());
+    const writeP = db.set("k", "v");
     // The buffered entry is dirty as soon as set() returns into the event loop.
-    expect(dirtyKeys(db).has('k')).toBe(true);
+    expect(dirtyKeys(db).has("k")).toBe(true);
     expect(dirtyKeys(db).size).toBe(1);
     await Promise.all([writeP, db.flush()]);
     expect(dirtyKeys(db).size).toBe(0);
   });
 
-  it('re-set during an in-flight write keeps the key in _dirtyKeys', async () => {
-    await createDb({writeInterval: 1e9});
+  it("re-set during an in-flight write keeps the key in _dirtyKeys", async () => {
+    await createDb({ writeInterval: 1e9 });
     let releaseFirstWrite: (() => void) | null = null;
     const firstWriteSeen = new Promise<void>((resolve) => {
-      mock.once('set', (k: any, v: any, cb: any) => {
+      mock.once("set", (k: any, v: any, cb: any) => {
         resolve();
         releaseFirstWrite = () => cb();
       });
     });
-    const firstWriteP = db.set('k', 'v1');
+    const firstWriteP = db.set("k", "v1");
     const flushedP = db.flush();
     await firstWriteSeen;
     // While the first write is in flight, queue a second write to the same key.
-    mock.once('set', (k: any, v: any, cb: any) => cb());
-    const secondWriteP = db.set('k', 'v2');
+    mock.once("set", (k: any, v: any, cb: any) => cb());
+    const secondWriteP = db.set("k", "v2");
     // The key must remain in _dirtyKeys: the old in-flight entry is being written,
     // and a new dirty entry has taken its place in the buffer.
-    expect(dirtyKeys(db).has('k')).toBe(true);
+    expect(dirtyKeys(db).has("k")).toBe(true);
     // Release the first write; both promises must eventually resolve and _dirtyKeys must drain.
     releaseFirstWrite!();
     await Promise.all([firstWriteP, secondWriteP, flushedP]);
@@ -289,12 +315,12 @@ describe(__filename, () => {
     expect(dirtyKeys(db).size).toBe(0);
   });
 
-  it('failed write removes the key from _dirtyKeys and rejects the caller', async () => {
-    await createDb({writeInterval: 1e9});
-    mock.on('set', (k: any, v: any, cb: any) => cb(new Error('boom')));
-    const writeP = db.set('k', 'v');
+  it("failed write removes the key from _dirtyKeys and rejects the caller", async () => {
+    await createDb({ writeInterval: 1e9 });
+    mock.on("set", (k: any, v: any, cb: any) => cb(new Error("boom")));
+    const writeP = db.set("k", "v");
     const flushedP = db.flush();
-    await expect(writeP).rejects.toThrow('boom');
+    await expect(writeP).rejects.toThrow("boom");
     await flushedP;
     expect(dirtyKeys(db).size).toBe(0);
   });
@@ -324,7 +350,7 @@ Place it immediately after the `_locks` field for locality.
 In `_setLocked` (around line 407), after the line `this.buffer.set(key, entry);` (around line 420), add:
 
 ```ts
-      this._dirtyKeys.add(key);
+this._dirtyKeys.add(key);
 ```
 
 Indented to match the surrounding block. This runs every time we mark an entry dirty.
@@ -334,34 +360,34 @@ Indented to match the surrounding block. This runs every time we mark an entry d
 In `_write` (around line 539), the existing `markDone` closure is:
 
 ```ts
-    const markDone = (entry: CacheEntry, err?: Error | null): void => {
-      if (entry.writingInProgress) {
-        entry.writingInProgress = false;
-        if (err != null) ++this.metrics.writesToDbFailed;
-        ++this.metrics.writesToDbFinished;
-      }
-      entry.dirty!.done(err);
-      entry.dirty = null;
-    };
+const markDone = (entry: CacheEntry, err?: Error | null): void => {
+  if (entry.writingInProgress) {
+    entry.writingInProgress = false;
+    if (err != null) ++this.metrics.writesToDbFailed;
+    ++this.metrics.writesToDbFinished;
+  }
+  entry.dirty!.done(err);
+  entry.dirty = null;
+};
 ```
 
 Replace it with:
 
 ```ts
-    const markDone = (key: string, entry: CacheEntry, err?: Error | null): void => {
-      if (entry.writingInProgress) {
-        entry.writingInProgress = false;
-        if (err != null) ++this.metrics.writesToDbFailed;
-        ++this.metrics.writesToDbFinished;
-      }
-      // Reference-equality: only clear the dirty marker for THIS key if the entry currently
-      // in the buffer is the same one we just wrote. If a re-set during the write replaced it
-      // with a fresh dirty entry, the new entry must stay marked dirty.
-      const current = this.buffer.get(key, false);
-      if (current === entry) this._dirtyKeys.delete(key);
-      entry.dirty!.done(err);
-      entry.dirty = null;
-    };
+const markDone = (key: string, entry: CacheEntry, err?: Error | null): void => {
+  if (entry.writingInProgress) {
+    entry.writingInProgress = false;
+    if (err != null) ++this.metrics.writesToDbFailed;
+    ++this.metrics.writesToDbFinished;
+  }
+  // Reference-equality: only clear the dirty marker for THIS key if the entry currently
+  // in the buffer is the same one we just wrote. If a re-set during the write replaced it
+  // with a fresh dirty entry, the new entry must stay marked dirty.
+  const current = this.buffer.get(key, false);
+  if (current === entry) this._dirtyKeys.delete(key);
+  entry.dirty!.done(err);
+  entry.dirty = null;
+};
 ```
 
 - [ ] **Step 6: Update every `markDone` call site in `_write` to pass `key`**
@@ -369,32 +395,41 @@ Replace it with:
 There are four call sites in `_write`. Update each:
 
 Around line 560 (inside the serialization try/catch in the `for (const [key, entry] of dirtyEntries)` loop):
+
 ```ts
-        markDone(entry, err as Error);
+markDone(entry, err as Error);
 ```
+
 becomes:
+
 ```ts
-        markDone(key, entry, err as Error);
+markDone(key, entry, err as Error);
 ```
 
 Around line 582 (inside `writeOneOp(op, entry)`):
+
 ```ts
-      markDone(entry, writeErr);
+markDone(entry, writeErr);
 ```
+
 becomes:
+
 ```ts
-      markDone(op.key, entry, writeErr);
+markDone(op.key, entry, writeErr);
 ```
 
 Around line 601 (the bulk-success branch):
+
 ```ts
-      if (success) entries.forEach((entry) => markDone(entry, null));
+if (success) entries.forEach((entry) => markDone(entry, null));
 ```
+
 becomes:
+
 ```ts
-      if (success) {
-        for (let i = 0; i < entries.length; i++) markDone(ops[i].key, entries[i], null);
-      }
+if (success) {
+  for (let i = 0; i < entries.length; i++) markDone(ops[i].key, entries[i], null);
+}
 ```
 
 (The `forEach`→`for` change is required because we now need the parallel `ops[i].key`.)
@@ -408,25 +443,25 @@ Verify that `LRU.get` already accepts an `isUse` parameter (it does; see line 11
 In `flush()` (around line 517), the inner block:
 
 ```ts
-          const dirtyEntries: [string, CacheEntry][] = [];
-          for (const entry of this.buffer) {
-            if (entry[1].dirty && !entry[1].writingInProgress) {
-              dirtyEntries.push(entry);
-              if (this.settings.bulkLimit && dirtyEntries.length >= this.settings.bulkLimit) break;
-            }
-          }
+const dirtyEntries: [string, CacheEntry][] = [];
+for (const entry of this.buffer) {
+  if (entry[1].dirty && !entry[1].writingInProgress) {
+    dirtyEntries.push(entry);
+    if (this.settings.bulkLimit && dirtyEntries.length >= this.settings.bulkLimit) break;
+  }
+}
 ```
 
 becomes:
 
 ```ts
-          const dirtyEntries: [string, CacheEntry][] = [];
-          for (const key of this._dirtyKeys) {
-            const entry = this.buffer.get(key, false);
-            if (!entry || !entry.dirty || entry.writingInProgress) continue;
-            dirtyEntries.push([key, entry]);
-            if (this.settings.bulkLimit && dirtyEntries.length >= this.settings.bulkLimit) break;
-          }
+const dirtyEntries: [string, CacheEntry][] = [];
+for (const key of this._dirtyKeys) {
+  const entry = this.buffer.get(key, false);
+  if (!entry || !entry.dirty || entry.writingInProgress) continue;
+  dirtyEntries.push([key, entry]);
+  if (this.settings.bulkLimit && dirtyEntries.length >= this.settings.bulkLimit) break;
+}
 ```
 
 - [ ] **Step 9: Run the type checker**
@@ -479,6 +514,7 @@ is handled correctly."
 ## Task 3: Win 3 — Lazy Flush Scheduling
 
 **Files:**
+
 - Create: `test/mock/test_lazy_flush.spec.ts`
 - Modify: `lib/CacheAndBufferLayer.ts` (remove `setInterval`, add `_flushTimer` + `_scheduleFlush`, update `close()` and `flush()` re-arm)
 
@@ -487,11 +523,11 @@ is handled correctly."
 Create `test/mock/test_lazy_flush.spec.ts`:
 
 ```ts
-import * as ueberdb from '../../index';
-import {ConsoleLogger} from '../../lib/logging';
-import {afterEach, describe, expect, it} from 'vitest';
+import * as ueberdb from "../../index";
+import { ConsoleLogger } from "../../lib/logging";
+import { afterEach, describe, expect, it } from "vitest";
 
-type MockSettings = {mock?: any};
+type MockSettings = { mock?: any };
 
 const logger = new ConsoleLogger();
 
@@ -503,16 +539,16 @@ describe(__filename, () => {
 
   const createDb = async (wrapperSettings: Record<string, unknown> = {}) => {
     const settings: MockSettings = {};
-    db = new ueberdb.Database('mock', settings, {json: false, ...wrapperSettings}, logger);
+    db = new ueberdb.Database("mock", settings, { json: false, ...wrapperSettings }, logger);
     await db.init();
     mock = settings.mock;
-    mock.once('init', (cb: any) => cb());
+    mock.once("init", (cb: any) => cb());
   };
 
   afterEach(async () => {
     if (mock != null) {
       mock.removeAllListeners();
-      mock.once('close', (cb: any) => cb());
+      mock.once("close", (cb: any) => cb());
       mock = null;
     }
     if (db != null) {
@@ -521,18 +557,18 @@ describe(__filename, () => {
     }
   });
 
-  it('idle database does not arm the flush timer', async () => {
-    await createDb({writeInterval: 50});
+  it("idle database does not arm the flush timer", async () => {
+    await createDb({ writeInterval: 50 });
     expect(flushTimer(db)).toBe(null);
     // Give the event loop a tick or two to confirm nothing schedules itself.
     await new Promise((r) => setTimeout(r, 30));
     expect(flushTimer(db)).toBe(null);
   });
 
-  it('set() arms the timer; flush() leaves it null after draining', async () => {
-    await createDb({writeInterval: 1e9});  // huge interval so the timer cannot fire during the test
-    mock.on('set', (k: any, v: any, cb: any) => cb());
-    const writeP = db.set('k', 'v');
+  it("set() arms the timer; flush() leaves it null after draining", async () => {
+    await createDb({ writeInterval: 1e9 }); // huge interval so the timer cannot fire during the test
+    mock.on("set", (k: any, v: any, cb: any) => cb());
+    const writeP = db.set("k", "v");
     // Synchronously after the set() call entered, the timer must be armed.
     expect(flushTimer(db)).not.toBe(null);
     await Promise.all([writeP, db.flush()]);
@@ -540,22 +576,22 @@ describe(__filename, () => {
     expect(flushTimer(db)).toBe(null);
   });
 
-  it('close() clears a pending flush timer', async () => {
-    await createDb({writeInterval: 1e9});
-    mock.on('set', (k: any, v: any, cb: any) => cb());
-    const writeP = db.set('k', 'v');
+  it("close() clears a pending flush timer", async () => {
+    await createDb({ writeInterval: 1e9 });
+    mock.on("set", (k: any, v: any, cb: any) => cb());
+    const writeP = db.set("k", "v");
     expect(flushTimer(db)).not.toBe(null);
     await Promise.all([writeP, db.flush()]);
     // No timer pending now; close() must succeed without leaking handles.
-    mock.once('close', (cb: any) => cb());
+    mock.once("close", (cb: any) => cb());
     await db.close();
-    db = null;  // prevent the afterEach close from double-closing
+    db = null; // prevent the afterEach close from double-closing
   });
 
-  it('writeInterval=0 mode never arms the timer', async () => {
-    await createDb({writeInterval: 0});
-    mock.on('set', (k: any, v: any, cb: any) => cb());
-    await db.set('k', 'v');
+  it("writeInterval=0 mode never arms the timer", async () => {
+    await createDb({ writeInterval: 0 });
+    mock.on("set", (k: any, v: any, cb: any) => cb());
+    await db.set("k", "v");
     expect(flushTimer(db)).toBe(null);
   });
 });
@@ -590,10 +626,12 @@ Replace with:
 Find (around line 217):
 
 ```ts
-    this.flushInterval =
-      this.settings.writeInterval > 0
-        ? setInterval(() => { void this.flush(); }, this.settings.writeInterval)
-        : null;
+this.flushInterval =
+  this.settings.writeInterval > 0
+    ? setInterval(() => {
+        void this.flush();
+      }, this.settings.writeInterval)
+    : null;
 ```
 
 Delete the entire assignment. The constructor no longer sets up the timer.
@@ -620,7 +658,7 @@ Add as a method inside the `Database` class, near the `_lock`/`_unlock` methods 
 In `_setLocked`, immediately after the `this._dirtyKeys.add(key);` line added in Task 2 step 4, add:
 
 ```ts
-      this._scheduleFlush();
+this._scheduleFlush();
 ```
 
 (Same indentation. The schedule call is a no-op if a timer is already armed or `writeInterval <= 0`.)
@@ -749,6 +787,7 @@ databases consume zero timer ticks."
 ## Task 4: Win 4 — Lock Fast-Path in `get()`
 
 **Files:**
+
 - Create: `test/mock/test_lock_fast_path.spec.ts`
 - Modify: `lib/CacheAndBufferLayer.ts` (reshape `get()`)
 - Modify: `test/mock/test_metrics.spec.ts` (drop `lockAcquires`/`lockReleases` from expected deltas where they no longer apply — done AFTER the implementation so the test gets red exactly when the behavior changes)
@@ -762,11 +801,11 @@ This task changes externally observable metrics for `get()` cache hits: `lockAcq
 Create `test/mock/test_lock_fast_path.spec.ts`:
 
 ```ts
-import * as ueberdb from '../../index';
-import {ConsoleLogger} from '../../lib/logging';
-import {afterEach, describe, expect, it} from 'vitest';
+import * as ueberdb from "../../index";
+import { ConsoleLogger } from "../../lib/logging";
+import { afterEach, describe, expect, it } from "vitest";
 
-type MockSettings = {mock?: any};
+type MockSettings = { mock?: any };
 
 const logger = new ConsoleLogger();
 
@@ -776,16 +815,16 @@ describe(__filename, () => {
 
   const createDb = async (wrapperSettings: Record<string, unknown> = {}) => {
     const settings: MockSettings = {};
-    db = new ueberdb.Database('mock', settings, {json: false, ...wrapperSettings}, logger);
+    db = new ueberdb.Database("mock", settings, { json: false, ...wrapperSettings }, logger);
     await db.init();
     mock = settings.mock;
-    mock.once('init', (cb: any) => cb());
+    mock.once("init", (cb: any) => cb());
   };
 
   afterEach(async () => {
     if (mock != null) {
       mock.removeAllListeners();
-      mock.once('close', (cb: any) => cb());
+      mock.once("close", (cb: any) => cb());
       mock = null;
     }
     if (db != null) {
@@ -794,66 +833,66 @@ describe(__filename, () => {
     }
   });
 
-  it('cache-hit get() does not acquire the per-key lock', async () => {
-    await createDb({writeInterval: 1e9});
+  it("cache-hit get() does not acquire the per-key lock", async () => {
+    await createDb({ writeInterval: 1e9 });
     // Prime the cache: a single set+flush is enough to populate the buffer with the value.
-    mock.once('set', (k: any, v: any, cb: any) => cb());
-    await Promise.all([db.set('k', 'v'), db.flush()]);
+    mock.once("set", (k: any, v: any, cb: any) => cb());
+    await Promise.all([db.set("k", "v"), db.flush()]);
     // After the write is finished, the buffer holds the value; the lock map is empty.
-    const before = {...db.metrics};
-    const val = await db.get('k');
-    expect(val).toBe('v');
+    const before = { ...db.metrics };
+    const val = await db.get("k");
+    expect(val).toBe("v");
     const after = db.metrics;
     expect(after.lockAcquires - before.lockAcquires).toBe(0);
     expect(after.lockReleases - before.lockReleases).toBe(0);
     expect(after.readsFromCache - before.readsFromCache).toBe(1);
   });
 
-  it('cache-miss get() still acquires the lock', async () => {
-    await createDb({writeInterval: 1e9});
-    mock.once('get', (k: any, cb: any) => cb(null, 'v'));
-    const before = {...db.metrics};
-    const val = await db.get('k');
-    expect(val).toBe('v');
+  it("cache-miss get() still acquires the lock", async () => {
+    await createDb({ writeInterval: 1e9 });
+    mock.once("get", (k: any, cb: any) => cb(null, "v"));
+    const before = { ...db.metrics };
+    const val = await db.get("k");
+    expect(val).toBe("v");
     const after = db.metrics;
     expect(after.lockAcquires - before.lockAcquires).toBe(1);
     expect(after.lockReleases - before.lockReleases).toBe(1);
   });
 
-  it('get() during a write-in-progress with the lock released returns the buffered value via fast path', async () => {
-    await createDb({writeInterval: 1e9});
+  it("get() during a write-in-progress with the lock released returns the buffered value via fast path", async () => {
+    await createDb({ writeInterval: 1e9 });
     let releaseWrite: (() => void) | null = null;
     const writeStarted = new Promise<void>((resolve) => {
-      mock.once('set', (k: any, v: any, cb: any) => {
+      mock.once("set", (k: any, v: any, cb: any) => {
         resolve();
         releaseWrite = () => cb();
       });
     });
-    const writeP = db.set('k', 'v2');
+    const writeP = db.set("k", "v2");
     const flushedP = db.flush();
     await writeStarted;
     // At this moment: _write is awaiting the mock's callback. The per-key lock has been released
     // (set() releases the lock before awaiting entry.dirty). The buffer holds value 'v2'.
     // The fast path must apply.
-    const before = {...db.metrics};
-    const val = await db.get('k');
-    expect(val).toBe('v2');
+    const before = { ...db.metrics };
+    const val = await db.get("k");
+    expect(val).toBe("v2");
     expect(db.metrics.lockAcquires - before.lockAcquires).toBe(0);
     expect(db.metrics.readsFromCache - before.readsFromCache).toBe(1);
     releaseWrite!();
     await Promise.all([writeP, flushedP]);
   });
 
-  it('get() while a setter holds the lock takes the slow path', async () => {
-    await createDb({writeInterval: 1e9});
+  it("get() while a setter holds the lock takes the slow path", async () => {
+    await createDb({ writeInterval: 1e9 });
     // Drive set() into the locked region by making _lock contend. We do this by setting
     // the same key twice in quick succession: the second set must await the first set's lock.
-    mock.on('set', (k: any, v: any, cb: any) => cb());
-    const set1 = db.set('k', 'v1');
-    const set2 = db.set('k', 'v2');
+    mock.on("set", (k: any, v: any, cb: any) => cb());
+    const set1 = db.set("k", "v1");
+    const set2 = db.set("k", "v2");
     // While set2 is awaiting the lock, issue a get. It must take the slow path (lockAwaits increases).
-    const before = {...db.metrics};
-    const getP = db.get('k');
+    const before = { ...db.metrics };
+    const getP = db.get("k");
     await Promise.all([set1, set2, db.flush(), getP]);
     expect(db.metrics.lockAwaits - before.lockAwaits).toBeGreaterThanOrEqual(1);
   });
@@ -952,20 +991,20 @@ There are two locations to adjust. They are inside `describe('reads', ...)` (lin
 **Location 1 — the inner subtc loop (around line 124):** Find the existing `it(subtc.name, ...)` block whose trailing line is:
 
 ```ts
-            assertMetricsDelta(before, db.metrics, subtc.wantMetrics);
+assertMetricsDelta(before, db.metrics, subtc.wantMetrics);
 ```
 
 Change that trailing line to:
 
 ```ts
-            // After perf refactor: get() cache hits no longer acquire the per-key lock.
-            // getSub() still locks because the slow path is the only path it uses.
-            const expected = {...subtc.wantMetrics};
-            if (tc.name === 'get' && subtc.cacheHit) {
-              delete (expected as any).lockAcquires;
-              delete (expected as any).lockReleases;
-            }
-            assertMetricsDelta(before, db.metrics, expected);
+// After perf refactor: get() cache hits no longer acquire the per-key lock.
+// getSub() still locks because the slow path is the only path it uses.
+const expected = { ...subtc.wantMetrics };
+if (tc.name === "get" && subtc.cacheHit) {
+  delete (expected as any).lockAcquires;
+  delete (expected as any).lockReleases;
+}
+assertMetricsDelta(before, db.metrics, expected);
 ```
 
 **Location 2 — the "read of in-progress write" test (around line 157):** Find:
@@ -989,16 +1028,16 @@ Change that trailing line to:
 Change the `assertMetricsDelta` block to:
 
 ```ts
-          const expected: Record<string, number> = {
-            reads: 1,
-            readsFinished: 1,
-            readsFromCache: 1,
-          };
-          if (tc.name === 'getSub') {
-            expected.lockAcquires = 1;
-            expected.lockReleases = 1;
-          }
-          assertMetricsDelta(before, db.metrics, expected);
+const expected: Record<string, number> = {
+  reads: 1,
+  readsFinished: 1,
+  readsFromCache: 1,
+};
+if (tc.name === "getSub") {
+  expected.lockAcquires = 1;
+  expected.lockReleases = 1;
+}
+assertMetricsDelta(before, db.metrics, expected);
 ```
 
 The lock-contention test for `get` (around line 663-700) needs NO change: contention forces the slow path (because `_locks.has(key)` is true), so `lockAwaits: 1` still increments. Verify by reading the test that no other lock-related assertion fires.
