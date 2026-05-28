@@ -70,7 +70,7 @@ export default class Rethink_db extends AbstractDatabase {
     // @ts-ignore
     r.table(this.table)
       .get(key)
-      .run(this.connection, (err, item) => {
+      .run(this.connection!, (err, item) => {
         // @ts-ignore
         callback(err, item ? item.content : item);
       });
