@@ -122,4 +122,12 @@ pnpm run test <name>     # single backend, e.g. `pnpm run test sqlite`
 - Commit messages: `area: short description`, with a longer body when useful and `Fixes #NN` for bug fixes.
 - Keep the public API and on-disk format stable; deprecate before removing.
 
+### Keep PRs small and single-purpose
+
+Many small, focused PRs are strongly preferred over one large sweeping change. This is the project's expected workflow — do not bundle unrelated work.
+
+- **One concern per PR.** A bug fix, a performance improvement, and a refactor are three PRs, not one — even if you noticed them in the same sitting.
+- **One backend per PR.** Each `databases/<name>_db.ts` is independent and has its own container-matrix test job. A change that touches multiple drivers should be split into one PR per driver. Reviewers can then reason about a single backend in isolation, and a fix for one DB isn't held up by review or flaky CI on another.
+- Small, independent PRs review faster, merge sooner, and bisect cleanly. Prefer five focused PRs over one big one.
+
 > The repository's `CONTRIBUTING.md` is largely inherited from Etherpad and mentions a `develop`/`master` git-flow and front-end tests that don't exist here. For ueberDB2, treat `main` as the integration branch and this guide as authoritative for build/test commands.
