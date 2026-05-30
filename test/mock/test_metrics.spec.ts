@@ -1,6 +1,6 @@
-import assert$0 from 'assert';
-import * as ueberdb from '../../index';
-import {afterAll, describe, it, afterEach, beforeEach, beforeAll, expect} from 'vitest'
+import assert$0 from "assert";
+import * as ueberdb from "../../index";
+import { afterAll, describe, it, afterEach, beforeEach, beforeAll, expect } from "vitest";
 const assert = assert$0.strict;
 // Gate is a normal Promise that resolves when its open() method is called.
 // @ts-expect-error TS(2508): No base constructor has the specified number of ty... Remove this comment to see the full error message
@@ -10,9 +10,10 @@ class Gate extends Promise {
     let open;
     super((resolve: any, reject: any) => {
       open = resolve;
-      if (executor != null)
-      // @ts-expect-error TS(2349): This expression is not callable.
-      { executor(resolve, reject); }
+      if (executor != null) // @ts-expect-error TS(2349): This expression is not callable.
+      {
+        executor(resolve, reject);
+      }
     });
     this.open = open;
   }
@@ -28,14 +29,18 @@ const diffMetrics = (before: any, after: any) => {
     // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
     assert(av != null);
     // @ts-expect-error TS(2571): Object is of type 'unknown'.
-    if (av - bv > 0)
-    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    { diff[k] = av - bv; }
+    if (
+      av - bv >
+      0
+    ) // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+    {
+      diff[k] = av - bv;
+    }
   }
   return diff;
 };
 const assertMetricsDelta = (before: any, after: any, wantDelta: any) => {
-  wantDelta = {...wantDelta};
+  wantDelta = { ...wantDelta };
   for (const [k, v] of Object.entries(wantDelta)) {
     if (v === 0) delete wantDelta[k];
   }
@@ -44,40 +49,40 @@ const assertMetricsDelta = (before: any, after: any, wantDelta: any) => {
 };
 
 type MockSettings = {
-    mock?: any;
-}
+  mock?: any;
+};
 
 describe(__filename, () => {
   let db: any;
   let key: any;
   let mock: any;
   beforeEach(async () => {
-    const settings:MockSettings = {};
-    db = new ueberdb.Database('mock', settings);
+    const settings: MockSettings = {};
+    db = new ueberdb.Database("mock", settings);
     await db.init();
-    mock = settings.mock
-    mock.once('init', (cb: any) => cb());
+    mock = settings.mock;
+    mock.once("init", (cb: any) => cb());
   });
   afterAll(async () => {
-    mock.once('close', (cb: any) => cb());
+    mock.once("close", (cb: any) => cb());
     await db.close();
   });
   beforeEach(async function (context) {
-    key = expect.getState().currentTestName
+    key = expect.getState().currentTestName;
   });
   afterEach(async () => {
     mock.removeAllListeners();
   });
-  describe('reads', () => {
+  describe("reads", () => {
     const tcs = [
-      {name: 'get', f: (key: any) => db.get(key)},
-      {name: 'getSub', f: (key: any) => db.getSub(key, ['s'])},
+      { name: "get", f: (key: any) => db.get(key) },
+      { name: "getSub", f: (key: any) => db.getSub(key, ["s"]) },
     ];
     for (const tc of tcs) {
       describe(tc.name, () => {
         const subtcs = [
           {
-            name: 'cache miss',
+            name: "cache miss",
             val: '{"s": "v"}',
             wantMetrics: {
               lockReleases: 1,
@@ -86,7 +91,7 @@ describe(__filename, () => {
             },
           },
           {
-            name: 'cache hit',
+            name: "cache hit",
             cacheHit: true,
             val: '{"s": "v"}',
             wantMetrics: {
@@ -98,8 +103,8 @@ describe(__filename, () => {
             },
           },
           {
-            name: 'read error',
-            err: new Error('test'),
+            name: "read error",
+            err: new Error("test"),
             wantMetrics: {
               lockReleases: 1,
               readsFailed: 1,
@@ -109,8 +114,8 @@ describe(__filename, () => {
             },
           },
           {
-            name: 'json error',
-            val: 'ignore me -- this is intentionally invalid json',
+            name: "json error",
+            val: "ignore me -- this is intentionally invalid json",
             wantJsonErr: true,
             wantMetrics: {
               lockReleases: 1,
@@ -123,19 +128,22 @@ describe(__filename, () => {
         for (const subtc of subtcs) {
           it(subtc.name, async () => {
             if (subtc.cacheHit) {
-              mock.once('get', (key: any, cb: any) => { cb(null, subtc.val); });
+              mock.once("get", (key: any, cb: any) => {
+                cb(null, subtc.val);
+              });
               await tc.f(key);
             }
             let finishDbRead;
             const dbReadStarted = new Promise<void>((resolve) => {
-              mock.once('get', (key: any, cb: any) => {
-                expect(!subtc.cacheHit).toBeTruthy //('value should have been cached');
+              mock.once("get", (key: any, cb: any) => {
+                expect(!subtc.cacheHit).toBeTruthy; //('value should have been cached');
                 resolve();
-                new Promise((resolve) => { finishDbRead = resolve; })
-                    .then(() => cb(subtc.err, subtc.val));
+                new Promise((resolve) => {
+                  finishDbRead = resolve;
+                }).then(() => cb(subtc.err, subtc.val));
               });
             });
-            let before = {...db.metrics};
+            let before = { ...db.metrics };
             let readFinished = tc.f(key);
             if (!subtc.cacheHit) {
               await dbReadStarted;
@@ -144,30 +152,34 @@ describe(__filename, () => {
                 reads: 1,
                 readsFromDb: 1,
               });
-              before = {...db.metrics};
+              before = { ...db.metrics };
               // @ts-expect-error TS(2722): Cannot invoke an object which is possibly 'undefin... Remove this comment to see the full error message
               finishDbRead();
             }
             if (subtc.err) readFinished = assert.rejects(readFinished, subtc.err);
-            if (subtc.wantJsonErr) readFinished = assert.rejects(readFinished, {message: /JSON/});
+            if (subtc.wantJsonErr) readFinished = assert.rejects(readFinished, { message: /JSON/ });
             await readFinished;
             assertMetricsDelta(before, db.metrics, subtc.wantMetrics);
           });
         }
-        it('read of in-progress write', async () => {
+        it("read of in-progress write", async () => {
           let finishWrite;
           const writeStarted = new Promise((resolve) => {
-            mock.once('set', (key: any, val: any, cb: any) => {
+            mock.once("set", (key: any, val: any, cb: any) => {
               // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
               resolve();
-              new Promise((resolve) => { finishWrite = resolve; }).then(() => cb());
+              new Promise((resolve) => {
+                finishWrite = resolve;
+              }).then(() => cb());
             });
           });
-          const writeFinished = db.set(key, {s: 'v'});
+          const writeFinished = db.set(key, { s: "v" });
           const flushed = db.flush(); // Speed up the tests.
           await writeStarted;
-          mock.once('get', (key: any, cb: any) => { assert.fail('value should be cached'); });
-          const before = {...db.metrics};
+          mock.once("get", (key: any, cb: any) => {
+            assert.fail("value should be cached");
+          });
+          const before = { ...db.metrics };
           await tc.f(key);
           assertMetricsDelta(before, db.metrics, {
             lockAcquires: 1,
@@ -184,14 +196,14 @@ describe(__filename, () => {
       });
     }
   });
-  describe('writes', () => {
+  describe("writes", () => {
     const tcs = [
       {
-        name: 'remove ok',
+        name: "remove ok",
         action: async () => await db.remove(key),
         wantOps: [
           {
-            wantFns: ['remove'],
+            wantFns: ["remove"],
             wantMetricsDelta: {
               lockAcquires: 1,
               lockReleases: 1,
@@ -208,21 +220,21 @@ describe(__filename, () => {
         },
       },
       {
-        name: 'remove error',
+        name: "remove error",
         action: async () => await db.remove(key),
         wantOps: [
           {
-            wantFns: ['remove'],
+            wantFns: ["remove"],
             wantMetricsDelta: {
               lockAcquires: 1,
               lockReleases: 1,
               writes: 1,
               writesToDb: 1,
             },
-            cbArgs: [[new Error('test')]],
+            cbArgs: [[new Error("test")]],
           },
         ],
-        wantErr: {message: 'test'},
+        wantErr: { message: "test" },
         wantMetricsDelta: {
           writesFailed: 1,
           writesFinished: 1,
@@ -231,11 +243,11 @@ describe(__filename, () => {
         },
       },
       {
-        name: 'set ok',
-        action: async () => await db.set(key, 'v'),
+        name: "set ok",
+        action: async () => await db.set(key, "v"),
         wantOps: [
           {
-            wantFns: ['set'],
+            wantFns: ["set"],
             wantMetricsDelta: {
               lockAcquires: 1,
               lockReleases: 1,
@@ -252,21 +264,21 @@ describe(__filename, () => {
         },
       },
       {
-        name: 'set db error',
-        action: async () => await db.set(key, 'v'),
+        name: "set db error",
+        action: async () => await db.set(key, "v"),
         wantOps: [
           {
-            wantFns: ['set'],
+            wantFns: ["set"],
             wantMetricsDelta: {
               lockAcquires: 1,
               lockReleases: 1,
               writes: 1,
               writesToDb: 1,
             },
-            cbArgs: [[new Error('test')]],
+            cbArgs: [[new Error("test")]],
           },
         ],
-        wantErr: {message: 'test'},
+        wantErr: { message: "test" },
         wantMetricsDelta: {
           writesFailed: 1,
           writesFinished: 1,
@@ -275,10 +287,10 @@ describe(__filename, () => {
         },
       },
       {
-        name: 'set json error',
+        name: "set json error",
         action: async () => await db.set(key, BigInt(1)),
         wantOps: [],
-        wantErr: {name: 'TypeError'},
+        wantErr: { name: "TypeError" },
         wantMetricsDelta: {
           lockAcquires: 1,
           lockReleases: 1,
@@ -288,11 +300,11 @@ describe(__filename, () => {
         },
       },
       {
-        name: 'setSub ok',
-        action: async () => await db.setSub(key, ['s'], 'v2'),
+        name: "setSub ok",
+        action: async () => await db.setSub(key, ["s"], "v2"),
         wantOps: [
           {
-            wantFns: ['get'],
+            wantFns: ["get"],
             wantMetricsDelta: {
               lockAcquires: 1,
               reads: 1,
@@ -301,7 +313,7 @@ describe(__filename, () => {
             cbArgs: [[null, '{"s": "v1"}']],
           },
           {
-            wantFns: ['set'],
+            wantFns: ["set"],
             wantMetricsDelta: {
               lockReleases: 1,
               readsFinished: 1,
@@ -319,11 +331,11 @@ describe(__filename, () => {
         },
       },
       {
-        name: 'setSub db write error',
-        action: async () => await db.setSub(key, ['s'], 'v2'),
+        name: "setSub db write error",
+        action: async () => await db.setSub(key, ["s"], "v2"),
         wantOps: [
           {
-            wantFns: ['get'],
+            wantFns: ["get"],
             wantMetricsDelta: {
               lockAcquires: 1,
               reads: 1,
@@ -332,7 +344,7 @@ describe(__filename, () => {
             cbArgs: [[null, '{"s": "v1"}']],
           },
           {
-            wantFns: ['set'],
+            wantFns: ["set"],
             wantMetricsDelta: {
               lockReleases: 1,
               readsFinished: 1,
@@ -340,10 +352,10 @@ describe(__filename, () => {
               writes: 1,
               writesToDb: 1,
             },
-            cbArgs: [[new Error('test')]],
+            cbArgs: [[new Error("test")]],
           },
         ],
-        wantErr: {message: 'test'},
+        wantErr: { message: "test" },
         wantMetricsDelta: {
           writesFailed: 1,
           writesFinished: 1,
@@ -352,20 +364,20 @@ describe(__filename, () => {
         },
       },
       {
-        name: 'setSub db read error',
-        action: async () => await db.setSub(key, ['s'], 'v2'),
+        name: "setSub db read error",
+        action: async () => await db.setSub(key, ["s"], "v2"),
         wantOps: [
           {
-            wantFns: ['get'],
+            wantFns: ["get"],
             wantMetricsDelta: {
               lockAcquires: 1,
               reads: 1,
               readsFromDb: 1,
             },
-            cbArgs: [[new Error('test')]],
+            cbArgs: [[new Error("test")]],
           },
         ],
-        wantErr: {message: 'test'},
+        wantErr: { message: "test" },
         wantMetricsDelta: {
           lockReleases: 1,
           readsFailed: 1,
@@ -378,20 +390,20 @@ describe(__filename, () => {
         },
       },
       {
-        name: 'setSub json read error',
-        action: async () => await db.setSub(key, ['s'], 'v2'),
+        name: "setSub json read error",
+        action: async () => await db.setSub(key, ["s"], "v2"),
         wantOps: [
           {
-            wantFns: ['get'],
+            wantFns: ["get"],
             wantMetricsDelta: {
               lockAcquires: 1,
               reads: 1,
               readsFromDb: 1,
             },
-            cbArgs: [[null, 'ignore me -- this is intentionally invalid json']],
+            cbArgs: [[null, "ignore me -- this is intentionally invalid json"]],
           },
         ],
-        wantErr: {name: 'SyntaxError'},
+        wantErr: { name: "SyntaxError" },
         wantMetricsDelta: {
           lockReleases: 1,
           readsFailed: 1,
@@ -403,11 +415,11 @@ describe(__filename, () => {
         },
       },
       {
-        name: 'setSub update non-object error',
-        action: async () => await db.setSub(key, ['s'], 'v2'),
+        name: "setSub update non-object error",
+        action: async () => await db.setSub(key, ["s"], "v2"),
         wantOps: [
           {
-            wantFns: ['get'],
+            wantFns: ["get"],
             wantMetricsDelta: {
               lockAcquires: 1,
               reads: 1,
@@ -416,7 +428,7 @@ describe(__filename, () => {
             cbArgs: [[null, '"foo"']],
           },
         ],
-        wantErr: {message: /non-object/},
+        wantErr: { message: /non-object/ },
         wantMetricsDelta: {
           lockReleases: 1,
           readsFinished: 1,
@@ -427,11 +439,11 @@ describe(__filename, () => {
         },
       },
       {
-        name: 'setSub json write error',
-        action: async () => await db.setSub(key, ['s'], BigInt(1)),
+        name: "setSub json write error",
+        action: async () => await db.setSub(key, ["s"], BigInt(1)),
         wantOps: [
           {
-            wantFns: ['get'],
+            wantFns: ["get"],
             wantMetricsDelta: {
               lockAcquires: 1,
               reads: 1,
@@ -440,7 +452,7 @@ describe(__filename, () => {
             cbArgs: [[null, '{"s": "v1"}']],
           },
         ],
-        wantErr: {name: 'TypeError'},
+        wantErr: { name: "TypeError" },
         wantMetricsDelta: {
           lockReleases: 1,
           readsFinished: 1,
@@ -451,11 +463,11 @@ describe(__filename, () => {
         },
       },
       {
-        name: 'doBulk ok',
-        action: async () => await Promise.all([db.set(key, 'v'), db.set(`${key} second op`, 'v')]),
+        name: "doBulk ok",
+        action: async () => await Promise.all([db.set(key, "v"), db.set(`${key} second op`, "v")]),
         wantOps: [
           {
-            wantFns: ['doBulk'],
+            wantFns: ["doBulk"],
             wantMetricsDelta: {
               lockAcquires: 2,
               lockReleases: 2,
@@ -472,21 +484,21 @@ describe(__filename, () => {
         },
       },
       {
-        name: 'doBulk error, all retries ok',
-        action: async () => await Promise.all([db.set(key, 'v'), db.set(`${key} second op`, 'v')]),
+        name: "doBulk error, all retries ok",
+        action: async () => await Promise.all([db.set(key, "v"), db.set(`${key} second op`, "v")]),
         wantOps: [
           {
-            wantFns: ['doBulk'],
+            wantFns: ["doBulk"],
             wantMetricsDelta: {
               lockAcquires: 2,
               lockReleases: 2,
               writes: 2,
               writesToDb: 2,
             },
-            cbArgs: [[new Error('injected doBulk error')]],
+            cbArgs: [[new Error("injected doBulk error")]],
           },
           {
-            wantFns: ['set', 'set'],
+            wantFns: ["set", "set"],
             wantMetricsDelta: {
               writesToDbRetried: 2,
             },
@@ -500,28 +512,28 @@ describe(__filename, () => {
         },
       },
       {
-        name: 'doBulk error, one of the retries fails',
-        action: async () => await Promise.all([db.set(key, 'v'), db.set(`${key} second op`, 'v')]),
+        name: "doBulk error, one of the retries fails",
+        action: async () => await Promise.all([db.set(key, "v"), db.set(`${key} second op`, "v")]),
         wantOps: [
           {
-            wantFns: ['doBulk'],
+            wantFns: ["doBulk"],
             wantMetricsDelta: {
               lockAcquires: 2,
               lockReleases: 2,
               writes: 2,
               writesToDb: 2,
             },
-            cbArgs: [[new Error('injected doBulk error')]],
+            cbArgs: [[new Error("injected doBulk error")]],
           },
           {
-            wantFns: ['set', 'set'],
+            wantFns: ["set", "set"],
             wantMetricsDelta: {
               writesToDbRetried: 2,
             },
-            cbArgs: [[new Error('test')], [null]],
+            cbArgs: [[new Error("test")], [null]],
           },
         ],
-        wantErr: {message: 'test'},
+        wantErr: { message: "test" },
         wantMetricsDelta: {
           writesFailed: 1,
           writesFinished: 2,
@@ -530,28 +542,28 @@ describe(__filename, () => {
         },
       },
       {
-        name: 'doBulk error, all retries fail',
-        action: async () => await Promise.all([db.set(key, 'v'), db.set(`${key} second op`, 'v')]),
+        name: "doBulk error, all retries fail",
+        action: async () => await Promise.all([db.set(key, "v"), db.set(`${key} second op`, "v")]),
         wantOps: [
           {
-            wantFns: ['doBulk'],
+            wantFns: ["doBulk"],
             wantMetricsDelta: {
               lockAcquires: 2,
               lockReleases: 2,
               writes: 2,
               writesToDb: 2,
             },
-            cbArgs: [[new Error('injected doBulk error')]],
+            cbArgs: [[new Error("injected doBulk error")]],
           },
           {
-            wantFns: ['set', 'set'],
+            wantFns: ["set", "set"],
             wantMetricsDelta: {
               writesToDbRetried: 2,
             },
-            cbArgs: [[new Error('test1')], [new Error('test2')]],
+            cbArgs: [[new Error("test1")], [new Error("test2")]],
           },
         ],
-        wantErr: (err: any) => ['test1', 'test2'].includes(err.message),
+        wantErr: (err: any) => ["test1", "test2"].includes(err.message),
         wantMetricsDelta: {
           writesFailed: 2,
           writesFinished: 2,
@@ -560,11 +572,11 @@ describe(__filename, () => {
         },
       },
       {
-        name: 'obsoleted ok',
-        action: async () => await Promise.all([db.set(key, 'v'), db.set(key, 'v2')]),
+        name: "obsoleted ok",
+        action: async () => await Promise.all([db.set(key, "v"), db.set(key, "v2")]),
         wantOps: [
           {
-            wantFns: ['set'],
+            wantFns: ["set"],
             wantMetricsDelta: {
               lockAcquires: 2,
               lockAwaits: 1,
@@ -583,11 +595,11 @@ describe(__filename, () => {
         },
       },
       {
-        name: 'obsoleted error',
-        action: async () => await Promise.all([db.set(key, 'v'), db.set(key, 'v2')]),
+        name: "obsoleted error",
+        action: async () => await Promise.all([db.set(key, "v"), db.set(key, "v2")]),
         wantOps: [
           {
-            wantFns: ['set'],
+            wantFns: ["set"],
             wantMetricsDelta: {
               lockAcquires: 2,
               lockAwaits: 1,
@@ -596,10 +608,10 @@ describe(__filename, () => {
               writesObsoleted: 1,
               writesToDb: 1,
             },
-            cbArgs: [[new Error('test')]],
+            cbArgs: [[new Error("test")]],
           },
         ],
-        wantErr: {message: 'test'},
+        wantErr: { message: "test" },
         wantMetricsDelta: {
           writesFailed: 2,
           writesFinished: 2,
@@ -611,19 +623,21 @@ describe(__filename, () => {
     for (const tc of tcs) {
       it(tc.name, async () => {
         const opStarts: any = [];
-        for (const fn of ['doBulk', 'get', 'remove', 'set']) {
+        for (const fn of ["doBulk", "get", "remove", "set"]) {
           mock.on(fn, (...args: any[]) => {
             const opStart = opStarts.shift();
             const cb = args.pop();
             opStart.open([fn, cb]);
           });
         }
-        let before = {...db.metrics};
+        let before = { ...db.metrics };
         let actionDone;
         // advance() triggers the next database operation(s), either by starting tc.action (if
         // tc.action has not yet been started) or completing the previous operation(s) (if tc.action
         // has been started).
-        let advance = () => { actionDone = tc.action(); };
+        let advance = () => {
+          actionDone = tc.action();
+        };
         for (const ops of tc.wantOps) {
           // Provide a way for the mock database to tell us that a mocked database method has been
           // called. The number of expected parallel operations for this iteration is
@@ -638,7 +652,7 @@ describe(__filename, () => {
           // Wait until the expected number of parallel database method calls have started.
           const gotOps = await Promise.all(opStarts);
           assertMetricsDelta(before, db.metrics, ops.wantMetricsDelta);
-          before = {...db.metrics};
+          before = { ...db.metrics };
           const advanceFns: any = [];
           for (const [gotFn, cb] of gotOps) {
             const i = ops.wantFns.indexOf(gotFn);
@@ -649,7 +663,7 @@ describe(__filename, () => {
             advanceFns.push(() => cb(...cbArgs));
           }
           // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-          assert.equal(ops.wantFns.length, 0, `missing call(s): ${ops.wantFns.join(', ')}`);
+          assert.equal(ops.wantFns.length, 0, `missing call(s): ${ops.wantFns.join(", ")}`);
           // @ts-expect-error TS(7006): Parameter 'f' implicitly has an 'any' type.
           advance = () => advanceFns.forEach((f) => f());
         }
@@ -660,56 +674,58 @@ describe(__filename, () => {
       });
     }
   });
-  describe('lock contention', () => {
+  describe("lock contention", () => {
     const tcs = [
       {
-        name: 'get',
+        name: "get",
         f: (key: any) => db.get(key),
-        wantMetrics: {lockAwaits: 1},
+        wantMetrics: { lockAwaits: 1 },
       },
       {
-        name: 'getSub',
-        fn: 'get',
-        f: (key: any) => db.getSub(key, ['s']),
-        wantMetrics: {lockAwaits: 1},
+        name: "getSub",
+        fn: "get",
+        f: (key: any) => db.getSub(key, ["s"]),
+        wantMetrics: { lockAwaits: 1 },
       },
       {
-        name: 'remove',
+        name: "remove",
         f: (key: any) => db.remove(key),
-        wantMetrics: {lockAwaits: 1},
+        wantMetrics: { lockAwaits: 1 },
       },
       {
-        name: 'set',
-        f: (key: any) => db.set(key, 'v'),
-        wantMetrics: {lockAwaits: 1},
+        name: "set",
+        f: (key: any) => db.set(key, "v"),
+        wantMetrics: { lockAwaits: 1 },
       },
       {
-        name: 'setSub',
-        fn: 'set',
-        f: (key: any) => db.setSub(key, ['s'], 'v'),
-        wantMetrics: {lockAwaits: 1},
+        name: "setSub",
+        fn: "set",
+        f: (key: any) => db.setSub(key, ["s"], "v"),
+        wantMetrics: { lockAwaits: 1 },
       },
       {
-        name: 'doBulk',
-        f: (key: any) => Promise.all([
-          db.set(key, 'v'),
-          db.set(`${key} second op`, 'v'),
-        ]),
-        wantMetrics: {lockAcquires: 1, lockAwaits: 1},
+        name: "doBulk",
+        f: (key: any) => Promise.all([db.set(key, "v"), db.set(`${key} second op`, "v")]),
+        wantMetrics: { lockAcquires: 1, lockAwaits: 1 },
       },
     ];
     for (const tc of tcs) {
-      if (tc.fn == null)
-      // @ts-expect-error TS(2322): Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
-      { tc.fn = tc.name; }
+      if (
+        tc.fn == null
+      ) // @ts-expect-error TS(2322): Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
+      {
+        tc.fn = tc.name;
+      }
       it(tc.name, async () => {
         let finishRead;
         const readStarted = new Promise((resolve) => {
-          mock.once('get', (key: any, cb: any) => {
+          mock.once("get", (key: any, cb: any) => {
             // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
             resolve();
             const val = '{"s": "v"}';
-            new Promise((resolve) => { finishRead = resolve; }).then(() => cb(null, val));
+            new Promise((resolve) => {
+              finishRead = resolve;
+            }).then(() => cb(null, val));
           });
         });
         // Note: All contention tests should be with get() to ensure that all functions lock using
@@ -718,10 +734,10 @@ describe(__filename, () => {
         await readStarted;
         mock.once(tc.fn, (...args: any[]) => {
           // @ts-expect-error TS(2775): Assertions require every name in the call target t... Remove this comment to see the full error message
-          assert(tc.fn !== 'get', 'value should have been cached');
+          assert(tc.fn !== "get", "value should have been cached");
           args.pop()();
         });
-        const before = {...db.metrics};
+        const before = { ...db.metrics };
         const opFinished = tc.f(key);
         const flushed = db.flush(); // Speed up tests.
         assertMetricsDelta(before, db.metrics, tc.wantMetrics);

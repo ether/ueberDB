@@ -1,6 +1,10 @@
 import { afterAll, beforeAll, describe, it } from "vitest";
 import { db, test_db } from "../lib/test_lib";
-import { GenericContainer, type PortWithOptionalBinding, type StartedTestContainer } from "testcontainers";
+import {
+  GenericContainer,
+  type PortWithOptionalBinding,
+  type StartedTestContainer,
+} from "testcontainers";
 import { databases } from "../lib/databases";
 import * as ueberdb from "../../index";
 import { equal } from "assert";
