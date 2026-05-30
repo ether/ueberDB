@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
-import r from 'rethinkdb';
-import async from 'async';
-import type {BulkObject} from './cassandra_db';
+import AbstractDatabase, { type Settings } from "../lib/AbstractDatabase";
+import r from "rethinkdb";
+import async from "async";
+import type { BulkObject } from "./cassandra_db";
 
 export default class Rethink_db extends AbstractDatabase {
   public host: string;
@@ -25,13 +25,21 @@ export default class Rethink_db extends AbstractDatabase {
   public port: number | string;
   public table: string;
   public connection: r.Connection | null;
-  constructor(settings:Settings) {
+  constructor(settings: Settings) {
     super(settings);
     if (!settings) settings = {};
-    if (!settings.host) { settings.host = 'localhost'; }
-    if (!settings.port) { settings.port = 28015; }
-    if (!settings.db) { settings.db = 'test'; }
-    if (!settings.table) { settings.table = 'test'; }
+    if (!settings.host) {
+      settings.host = "localhost";
+    }
+    if (!settings.port) {
+      settings.port = 28015;
+    }
+    if (!settings.db) {
+      settings.db = "test";
+    }
+    if (!settings.table) {
+      settings.table = "test";
+    }
 
     this.host = settings.host;
     this.db = settings.db;
@@ -40,7 +48,7 @@ export default class Rethink_db extends AbstractDatabase {
     this.connection = null;
   }
 
-  init(callback: (p: any, cursor: any)=>{}) {
+  init(callback: (p: any, cursor: any) => {}) {
     // @ts-ignore
     r.connect(this, (err, conn) => {
       if (err) throw err;
@@ -51,20 +59,24 @@ export default class Rethink_db extends AbstractDatabase {
           // assuming table does not exists
           // @ts-ignore
           r.tableCreate(this.table).run(this.connection, callback);
-        } else if (callback) { callback(null, cursor); }
+        } else if (callback) {
+          callback(null, cursor);
+        }
       });
     });
   }
 
-  get(key:string, callback: (err: Error, p: any)=>{}) {
+  get(key: string, callback: (err: Error, p: any) => {}) {
     // @ts-ignore
-    r.table(this.table).get(key).run(this.connection, (err, item) => {
-      // @ts-ignore
-      callback(err, (item ? item.content : item));
-    });
+    r.table(this.table)
+      .get(key)
+      .run(this.connection!, (err, item) => {
+        // @ts-ignore
+        callback(err, item ? item.content : item);
+      });
   }
 
-  findKeys(key:string, notKey:string, callback:()=>{}) {
+  findKeys(key: string, notKey: string, callback: () => {}) {
     const keys = [];
     const regex = this.createFindRegex(key, notKey);
     // @ts-ignore
@@ -75,40 +87,47 @@ export default class Rethink_db extends AbstractDatabase {
     }).run(this.connection, callback);
   }
 
-  set(key:string, value:string, callback:()=>{}) {
+  set(key: string, value: string, callback: () => {}) {
     r.table(this.table)
-        .insert({id: key, content: value}, {conflict: 'replace'})
-        .run(this.connection as r.Connection, callback);
+      .insert({ id: key, content: value }, { conflict: "replace" })
+      .run(this.connection as r.Connection, callback);
   }
 
-  doBulk(bulk: BulkObject[], callback: ()=>{}) {
+  doBulk(bulk: BulkObject[], callback: () => {}) {
     const _in: any[] = [];
     const _out: string | string[] | r.Expression<any> = [];
 
     for (const i in bulk) {
-      if (bulk[i].type === 'set') {
-        _in.push({id: bulk[i].key, content: bulk[i].value});
-      } else if (bulk[i].type === 'remove') {
+      if (bulk[i].type === "set") {
+        _in.push({ id: bulk[i].key, content: bulk[i].value });
+      } else if (bulk[i].type === "remove") {
         _out.push(bulk[i].key);
       }
     }
 
-    async.parallel([
-      (cb) => { // @ts-ignore
-        r.table(this.table).insert(_in, {conflict: 'replace'}).run(this.connection, cb);
-      },
-      (cb) => { // @ts-ignore
-        r.table(this.table).getAll(_out).delete().run(this.connection, cb);
-      },
-    ], callback);
+    async.parallel(
+      [
+        (cb) => {
+          // @ts-ignore
+          r.table(this.table).insert(_in, { conflict: "replace" }).run(this.connection, cb);
+        },
+        (cb) => {
+          // @ts-ignore
+          r.table(this.table).getAll(_out).delete().run(this.connection, cb);
+        },
+      ],
+      callback,
+    );
   }
 
-  remove(key:string, callback:()=>{}) {
+  remove(key: string, callback: () => {}) {
     // @ts-ignore
     r.table(this.table).get(key).delete().run(this.connection, callback);
   }
 
-  close(callback:()=>{}) {
-    if (this.connection) { this.connection.close(callback); }
+  close(callback: () => {}) {
+    if (this.connection) {
+      this.connection.close(callback);
+    }
   }
-};
+}

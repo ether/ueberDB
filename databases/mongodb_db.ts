@@ -14,25 +14,25 @@
  * limitations under the License.
  */
 
-import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
-import type {BulkObject} from './cassandra_db';
-import {MongoClient} from 'mongodb';
-import type {Collection, Db} from 'mongodb';
+import AbstractDatabase, { type Settings } from "../lib/AbstractDatabase";
+import type { BulkObject } from "./cassandra_db";
+import { MongoClient } from "mongodb";
+import type { Collection, Db } from "mongodb";
 
 export default class extends AbstractDatabase {
   public interval: NodeJS.Timer | undefined;
-  public database:  Db|undefined;
-  public client: MongoClient|undefined;
-  public collection:  Collection|undefined;
-  constructor(settings:Settings) {
+  public database: Db | undefined;
+  public client: MongoClient | undefined;
+  public collection: Collection | undefined;
+  constructor(settings: Settings) {
     super(settings);
     this.settings = settings;
 
-    if (!this.settings.url) throw new Error('You must specify a mongodb url');
+    if (!this.settings.url) throw new Error("You must specify a mongodb url");
     // For backwards compatibility:
     if (this.settings.database == null) this.settings.database = this.settings.dbName;
 
-    if (!this.settings.collection) this.settings.collection = 'ueberdb';
+    if (!this.settings.collection) this.settings.collection = "ueberdb";
   }
 
   clearPing() {
@@ -50,103 +50,106 @@ export default class extends AbstractDatabase {
     }, 10000);
   }
 
-  init(callback:Function) {
-
-    MongoClient.connect(this.settings.url!).then((v)=>{
+  init(callback: Function) {
+    MongoClient.connect(this.settings.url!)
+      .then((v) => {
         this.client = v;
         this.database = v.db(this.settings.database);
-       this.schedulePing();
+        this.schedulePing();
         this.collection = this.database.collection(this.settings.collection!);
         callback(null);
-    })
-        .catch((v:Error)=>{
-            callback(v);
-        })
-
-
+      })
+      .catch((v: Error) => {
+        callback(v);
+      });
   }
 
-  get(key:string, callback:Function) {
+  get(key: string, callback: Function) {
     // @ts-ignore
-    this.collection!.findOne({_id: key})
-        .then((v)=>{
-          callback(null, v&&v.value);
-    }).catch(v=> {
-      console.log(v)
-      callback(v);
-    })
+    this.collection!.findOne({ _id: key })
+      .then((v) => {
+        callback(null, v && v.value);
+      })
+      .catch((v) => {
+        console.log(v);
+        callback(v);
+      });
 
     this.schedulePing();
   }
 
-  findKeys(key:string, notKey:string, callback:Function) {
+  findKeys(key: string, notKey: string, callback: Function) {
     const selector = {
-      $and: [
-        {_id: {$regex: `${key.replace(/\*/g, '')}`}},
-      ],
+      $and: [{ _id: { $regex: `${key.replace(/\*/g, "")}` } }],
     };
 
     if (notKey) {
       // @ts-ignore
-      selector.$and.push({_id: {$not: {$regex: `${notKey.replace(/\*/g, '')}`}}});
+      selector.$and.push({ _id: { $not: { $regex: `${notKey.replace(/\*/g, "")}` } } });
     }
 
     // @ts-ignore
-    this.collection!.find(selector).map((i: any) => i._id)
-        .toArray()
-        .then(r =>{
+    this.collection!.find(selector)
+      .map((i: any) => i._id)
+      .toArray()
+      .then((r) => {
         callback(null, r);
-    })
-        .catch(v=>callback(v));
-
+      })
+      .catch((v) => callback(v));
 
     this.schedulePing();
   }
 
-  set(key:string, value:string, callback:Function) {
+  set(key: string, value: string, callback: Function) {
     if (key.length > 100) {
-      callback('Your Key can only be 100 chars');
+      callback("Your Key can only be 100 chars");
     } else {
       // @ts-ignore
-      this.collection!.updateMany({_id: key}, {$set: {value}}, {upsert: true})
-          .then(()=>callback(null))
-          .catch(v=>callback(v));
+      this.collection!.updateMany({ _id: key }, { $set: { value } }, { upsert: true })
+        .then(() => callback(null))
+        .catch((v) => callback(v));
     }
 
     this.schedulePing();
   }
 
-  remove(key:string, callback:Function) {
+  remove(key: string, callback: Function) {
     // @ts-ignore
-    this.collection!.deleteOne({_id: key}, )
-        .then(r =>callback(null,r) )
-        .catch(v=>callback(v));
+    this.collection!.deleteOne({ _id: key })
+      .then((r) => callback(null, r))
+      .catch((v) => callback(v));
 
     this.schedulePing();
   }
 
-  doBulk(bulk:BulkObject[], callback:Function) {
+  doBulk(bulk: BulkObject[], callback: Function) {
     const bulkMongo = this.collection!.initializeOrderedBulkOp();
 
     for (const i in bulk) {
-      if (bulk[i].type === 'set') {
-        bulkMongo.find({_id: bulk[i].key}).upsert().updateOne({$set: {value: bulk[i].value}});
-      } else if (bulk[i].type === 'remove') {
-        bulkMongo.find({_id: bulk[i].key}).deleteOne();
+      if (bulk[i].type === "set") {
+        bulkMongo
+          .find({ _id: bulk[i].key })
+          .upsert()
+          .updateOne({ $set: { value: bulk[i].value } });
+      } else if (bulk[i].type === "remove") {
+        bulkMongo.find({ _id: bulk[i].key }).deleteOne();
       }
     }
 
-    bulkMongo.execute().then((res:any) => {
-      callback(null, res);
-    }).catch((error:any) => {
-      callback(error);
-    });
+    bulkMongo
+      .execute()
+      .then((res: any) => {
+        callback(null, res);
+      })
+      .catch((error: any) => {
+        callback(error);
+      });
 
     this.schedulePing();
   }
 
-  close(callback:any) {
+  close(callback: any) {
     this.clearPing();
-    this.client!.close().then(r =>callback(r));
+    this.client!.close().then((r) => callback(r));
   }
 }

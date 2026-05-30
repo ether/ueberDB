@@ -14,24 +14,24 @@
  * limitations under the License.
  */
 
-import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
-import util from 'util';
-import type {BulkObject} from './cassandra_db';
-import {createPool} from 'mysql2';
-import type {ConnectionConfig, Pool, QueryError} from 'mysql2';
+import AbstractDatabase, { type Settings } from "../lib/AbstractDatabase";
+import util from "util";
+import type { BulkObject } from "./cassandra_db";
+import { createPool } from "mysql2";
+import type { ConnectionConfig, Pool, QueryError } from "mysql2";
 
 export default class extends AbstractDatabase {
   public readonly _mysqlSettings: Settings;
-  public _pool: Pool|null;
-  constructor(settings:Settings) {
+  public _pool: Pool | null;
+  constructor(settings: Settings) {
     super(settings);
     // logger is set by the framework after construction
     this._mysqlSettings = {
-      charset: 'utf8mb4', // temp hack needs a proper fix..
+      charset: "utf8mb4", // temp hack needs a proper fix..
       ...settings,
     };
     this.settings = {
-      engine: 'InnoDB',
+      engine: "InnoDB",
       // Limit the query size to avoid timeouts or other failures.
       bulkLimit: 100,
       json: true,
@@ -40,182 +40,204 @@ export default class extends AbstractDatabase {
     this._pool = null; // Initialized in init();
   }
 
-  get isAsync() { return true; }
+  get isAsync() {
+    return true;
+  }
 
-  async _query(options: any):Promise<any> {
+  async _query(options: any): Promise<any> {
     try {
       return await new Promise((resolve, reject) => {
-        options = {timeout: this.settings.queryTimeout, ...options};
+        options = { timeout: this.settings.queryTimeout, ...options };
         // mysql2 3.20+ tightened the query() overloads so the
         // (options, callback) signature is no longer matched directly;
         // pool.query(options, cb) still works at runtime but the types
         // expect (sql, values, cb) or (sql, cb). Cast to any to call
         // the runtime-correct (options, cb) form.
-        this._pool && (this._pool as any).query(options, (err:QueryError|null, ...args:string[]) => err != null ? reject(err) : resolve(args)
-        );
+        this._pool &&
+          (this._pool as any).query(options, (err: QueryError | null, ...args: string[]) =>
+            err != null ? reject(err) : resolve(args),
+          );
       });
-    } catch (err:any) {
-      this.logger.error(`${err.fatal ? 'Fatal ' : ''}MySQL error: ${err.stack || err}`);
+    } catch (err: any) {
+      this.logger.error(`${err.fatal ? "Fatal " : ""}MySQL error: ${err.stack || err}`);
       throw err;
     }
   }
 
   async init() {
-    if("speeds" in this._mysqlSettings) {
-      delete this._mysqlSettings.speeds
+    if ("speeds" in this._mysqlSettings) {
+      delete this._mysqlSettings.speeds;
     }
 
     if ("filename" in this._mysqlSettings) {
-      delete this._mysqlSettings.filename
+      delete this._mysqlSettings.filename;
     }
 
     this._pool = createPool(this._mysqlSettings as ConnectionConfig);
-    const {database, charset} = this._mysqlSettings;
+    const { database, charset } = this._mysqlSettings;
 
-    const sqlCreate = `${'CREATE TABLE IF NOT EXISTS `store` ( ' +
-                  '`key` VARCHAR( 100 ) NOT NULL COLLATE utf8mb4_bin, ' +
-                  '`value` LONGTEXT COLLATE utf8mb4_bin NOT NULL , ' +
-                  'PRIMARY KEY ( `key` ) ' +
-                  ') ENGINE='}${this.settings.engine} CHARSET=utf8mb4 COLLATE=utf8mb4_bin;`;
+    const sqlCreate = `${
+      "CREATE TABLE IF NOT EXISTS `store` ( " +
+      "`key` VARCHAR( 100 ) NOT NULL COLLATE utf8mb4_bin, " +
+      "`value` LONGTEXT COLLATE utf8mb4_bin NOT NULL , " +
+      "PRIMARY KEY ( `key` ) " +
+      ") ENGINE="
+    }${this.settings.engine} CHARSET=utf8mb4 COLLATE=utf8mb4_bin;`;
 
-    const sqlAlter = 'ALTER TABLE store MODIFY `key` VARCHAR(100) COLLATE utf8mb4_bin;';
+    const sqlAlter = "ALTER TABLE store MODIFY `key` VARCHAR(100) COLLATE utf8mb4_bin;";
 
-    await this._query({sql: sqlCreate});
+    await this._query({ sql: sqlCreate });
 
     // Checks for Database charset et al
     const dbCharSet =
-        'SELECT DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME ' +
-        `FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '${database}'`;
-    let [result] = await this._query({sql: dbCharSet});
+      "SELECT DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME " +
+      `FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '${database}'`;
+    let [result] = await this._query({ sql: dbCharSet });
 
     result = JSON.parse(JSON.stringify(result));
     if (result[0].DEFAULT_CHARACTER_SET_NAME !== charset) {
-      this.logger.error(`Database is not configured with charset ${charset} -- ` +
-                        'This may lead to crashes when certain characters are pasted in pads');
+      this.logger.error(
+        `Database is not configured with charset ${charset} -- ` +
+          "This may lead to crashes when certain characters are pasted in pads",
+      );
       this.logger.warn(result[0], charset);
     }
 
     if (result[0].DEFAULT_COLLATION_NAME.indexOf(charset) === -1) {
       this.logger.error(
-          `Database is not configured with collation name that includes ${charset} -- ` +
-            'This may lead to crashes when certain characters are pasted in pads');
+        `Database is not configured with collation name that includes ${charset} -- ` +
+          "This may lead to crashes when certain characters are pasted in pads",
+      );
       this.logger.warn(result[0], charset, result[0].DEFAULT_COLLATION_NAME);
     }
 
     const tableCharSet =
-        'SELECT CCSA.character_set_name AS character_set_name ' +
-        'FROM information_schema.`TABLES` ' +
-        'T,information_schema.`COLLATION_CHARACTER_SET_APPLICABILITY` CCSA ' +
-        'WHERE CCSA.collation_name = T.table_collation ' +
-        `AND T.table_schema = '${database}' ` +
-        "AND T.table_name = 'store'";
-    [result] = await this._query({sql: tableCharSet});
+      "SELECT CCSA.character_set_name AS character_set_name " +
+      "FROM information_schema.`TABLES` " +
+      "T,information_schema.`COLLATION_CHARACTER_SET_APPLICABILITY` CCSA " +
+      "WHERE CCSA.collation_name = T.table_collation " +
+      `AND T.table_schema = '${database}' ` +
+      "AND T.table_name = 'store'";
+    [result] = await this._query({ sql: tableCharSet });
     if (!result[0]) {
-      this.logger.warn('Data has no character_set_name value -- ' +
-                       'This may lead to crashes when certain characters are pasted in pads');
+      this.logger.warn(
+        "Data has no character_set_name value -- " +
+          "This may lead to crashes when certain characters are pasted in pads",
+      );
     }
-    if (result[0] && (result[0].character_set_name !== charset)) {
-      this.logger.error(`table is not configured with charset ${charset} -- ` +
-                        'This may lead to crashes when certain characters are pasted in pads');
+    if (result[0] && result[0].character_set_name !== charset) {
+      this.logger.error(
+        `table is not configured with charset ${charset} -- ` +
+          "This may lead to crashes when certain characters are pasted in pads",
+      );
       this.logger.warn(result[0], charset);
     }
 
     // check migration level, alter if not migrated
-    const level = await this.get('MYSQL_MIGRATION_LEVEL');
+    const level = await this.get("MYSQL_MIGRATION_LEVEL");
 
-    if (level !== '1') {
-      await this._query({sql: sqlAlter});
-      await this.set('MYSQL_MIGRATION_LEVEL', '1');
+    if (level !== "1") {
+      await this._query({ sql: sqlAlter });
+      await this.set("MYSQL_MIGRATION_LEVEL", "1");
     }
   }
 
-  async get(key:string) {
+  async get(key: string) {
     const [results] = await this._query({
-      sql: 'SELECT `value` FROM `store` WHERE `key` = ? AND BINARY `key` = ?',
+      sql: "SELECT `value` FROM `store` WHERE `key` = ? AND BINARY `key` = ?",
       values: [key, key],
     });
     return results.length === 1 ? results[0].value : null;
   }
 
-  async findKeys(key:string, notKey:string) {
-    let query = 'SELECT `key` FROM `store` WHERE `key` LIKE ?';
+  async findKeys(key: string, notKey: string) {
+    let query = "SELECT `key` FROM `store` WHERE `key` LIKE ?";
     const params = [];
 
     // desired keys are key, e.g. pad:%
-    key = key.replace(/\*/g, '%');
+    key = key.replace(/\*/g, "%");
     params.push(key);
 
     if (notKey != null) {
       // not desired keys are notKey, e.g. %:%:%
-      notKey = notKey.replace(/\*/g, '%');
-      query += ' AND `key` NOT LIKE ?';
+      notKey = notKey.replace(/\*/g, "%");
+      query += " AND `key` NOT LIKE ?";
       params.push(notKey);
     }
-    const [results] = await this._query({sql: query, values: params});
-    return results.map((val:{key:string}) => val.key);
+    const [results] = await this._query({ sql: query, values: params });
+    return results.map((val: { key: string }) => val.key);
   }
 
   async findKeysPaged(
     key: string,
     notKey: string | null | undefined,
-    options: {limit: number; after?: string},
+    options: { limit: number; after?: string },
   ) {
     if (!options || !Number.isInteger(options.limit) || options.limit <= 0) {
-      throw new Error('findKeysPaged requires a positive integer limit');
+      throw new Error("findKeysPaged requires a positive integer limit");
     }
-    let query = 'SELECT `key` FROM `store` WHERE `key` LIKE ?';
-    const params: (string | number)[] = [key.replace(/\*/g, '%')];
+    let query = "SELECT `key` FROM `store` WHERE `key` LIKE ?";
+    const params: (string | number)[] = [key.replace(/\*/g, "%")];
     if (notKey != null) {
-      query += ' AND `key` NOT LIKE ?';
-      params.push(notKey.replace(/\*/g, '%'));
+      query += " AND `key` NOT LIKE ?";
+      params.push(notKey.replace(/\*/g, "%"));
     }
     if (options.after != null) {
       // BINARY forces a byte-wise comparison so paging is deterministic even
       // when the column collation is case-insensitive (e.g. utf8mb4_general_ci).
-      query += ' AND BINARY `key` > ?';
+      query += " AND BINARY `key` > ?";
       params.push(options.after);
     }
-    query += ' ORDER BY BINARY `key` ASC LIMIT ?';
+    query += " ORDER BY BINARY `key` ASC LIMIT ?";
     params.push(options.limit);
-    const [results] = await this._query({sql: query, values: params});
-    return results.map((val: {key: string}) => val.key);
+    const [results] = await this._query({ sql: query, values: params });
+    return results.map((val: { key: string }) => val.key);
   }
 
-  async set(key:string, value:string) {
-    if (key.length > 100) throw new Error('Your Key can only be 100 chars');
-    await this._query({sql: 'REPLACE INTO `store` VALUES (?,?)', values: [key, value]});
+  async set(key: string, value: string) {
+    if (key.length > 100) throw new Error("Your Key can only be 100 chars");
+    await this._query({ sql: "REPLACE INTO `store` VALUES (?,?)", values: [key, value] });
   }
 
-  async remove(key:string) {
+  async remove(key: string) {
     await this._query({
-      sql: 'DELETE FROM `store` WHERE `key` = ? AND BINARY `key` = ?',
+      sql: "DELETE FROM `store` WHERE `key` = ? AND BINARY `key` = ?",
       values: [key, key],
     });
   }
 
-  async doBulk(bulk:BulkObject[]) {
+  async doBulk(bulk: BulkObject[]) {
     const replaces = [];
     const deletes = [];
     for (const op of bulk) {
       switch (op.type) {
-        case 'set': replaces.push([op.key, op.value]); break;
-        case 'remove': deletes.push(op.key); break;
-        default: throw new Error(`unknown op type: ${op.type}`);
+        case "set":
+          replaces.push([op.key, op.value]);
+          break;
+        case "remove":
+          deletes.push(op.key);
+          break;
+        default:
+          throw new Error(`unknown op type: ${op.type}`);
       }
     }
     await Promise.all([
-      replaces.length ? this._query({
-        sql: 'REPLACE INTO `store` VALUES ?;',
-        values: [replaces],
-      }) : null,
-      deletes.length ? this._query({
-        sql: 'DELETE FROM `store` WHERE `key` IN (?) AND BINARY `key` IN (?);',
-        values: [deletes, deletes],
-      }) : null,
+      replaces.length
+        ? this._query({
+            sql: "REPLACE INTO `store` VALUES ?;",
+            values: [replaces],
+          })
+        : null,
+      deletes.length
+        ? this._query({
+            sql: "DELETE FROM `store` WHERE `key` IN (?) AND BINARY `key` IN (?);",
+            values: [deletes, deletes],
+          })
+        : null,
     ]);
   }
 
   async close() {
     await util.promisify(this._pool!.end.bind(this._pool))();
   }
-};
+}

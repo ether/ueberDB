@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
-import async from 'async';
-import * as pg from 'pg';
-import type {BulkObject} from './cassandra_db';
+import AbstractDatabase, { type Settings } from "../lib/AbstractDatabase";
+import async from "async";
+import * as pg from "pg";
+import type { BulkObject } from "./cassandra_db";
 
 export default class extends AbstractDatabase {
   public db: pg.Pool;
   public upsertStatement: string | null | undefined;
-  constructor(settings:Settings | string) {
+  constructor(settings: Settings | string) {
     super(settings as Settings);
-    if (typeof settings === 'string') settings = {connectionString: settings};
+    if (typeof settings === "string") settings = { connectionString: settings };
     this.settings = settings;
 
     this.settings.cache = settings.cache || 1000;
@@ -38,13 +38,14 @@ export default class extends AbstractDatabase {
     this.db = new pg.Pool(this.settings as pg.PoolConfig);
   }
 
-  init(callback: (err: Error)=>{}) {
+  init(callback: (err: Error) => {}) {
     const testTableExists = "SELECT 1 as exists FROM pg_tables WHERE tablename = 'store'";
 
-    const createTable = 'CREATE TABLE IF NOT EXISTS store (' +
-                        '"key" character varying(100) NOT NULL, ' +
-                        '"value" text NOT NULL, ' +
-                        'CONSTRAINT store_pkey PRIMARY KEY (key))';
+    const createTable =
+      "CREATE TABLE IF NOT EXISTS store (" +
+      '"key" character varying(100) NOT NULL, ' +
+      '"value" text NOT NULL, ' +
+      "CONSTRAINT store_pkey PRIMARY KEY (key))";
 
     // this variable will be given a value depending on the result of the
     // feature detection
@@ -60,26 +61,26 @@ export default class extends AbstractDatabase {
      * - calls the callback
      */
     const detectUpsertMethod = (callback: (err?: Error) => {}) => {
-      const upsertViaFunction = 'SELECT ueberdb_insert_or_update($1,$2)';
+      const upsertViaFunction = "SELECT ueberdb_insert_or_update($1,$2)";
       const upsertNatively =
-          'INSERT INTO store(key, value) VALUES ($1, $2) ' +
-          'ON CONFLICT (key) DO UPDATE SET value = excluded.value';
+        "INSERT INTO store(key, value) VALUES ($1, $2) " +
+        "ON CONFLICT (key) DO UPDATE SET value = excluded.value";
       const createFunc =
-          'CREATE OR REPLACE FUNCTION ueberdb_insert_or_update(character varying, text) ' +
-          'RETURNS void AS $$ ' +
-          'BEGIN ' +
-          '  IF EXISTS( SELECT * FROM store WHERE key = $1 ) THEN ' +
-          '    UPDATE store SET value = $2 WHERE key = $1; ' +
-          '  ELSE ' +
-          '    INSERT INTO store(key,value) VALUES( $1, $2 ); ' +
-          '  END IF; ' +
-          '  RETURN; ' +
-          'END; ' +
-          '$$ LANGUAGE plpgsql;';
+        "CREATE OR REPLACE FUNCTION ueberdb_insert_or_update(character varying, text) " +
+        "RETURNS void AS $$ " +
+        "BEGIN " +
+        "  IF EXISTS( SELECT * FROM store WHERE key = $1 ) THEN " +
+        "    UPDATE store SET value = $2 WHERE key = $1; " +
+        "  ELSE " +
+        "    INSERT INTO store(key,value) VALUES( $1, $2 ); " +
+        "  END IF; " +
+        "  RETURN; " +
+        "END; " +
+        "$$ LANGUAGE plpgsql;";
 
       const testNativeUpsert = `EXPLAIN ${upsertNatively}`;
 
-      this.db.query(testNativeUpsert, ['test-key', 'test-value'], (err) => {
+      this.db.query(testNativeUpsert, ["test-key", "test-value"], (err) => {
         if (err) {
           // the UPSERT statement failed: we will have to emulate it via
           // an sql function
@@ -113,8 +114,8 @@ export default class extends AbstractDatabase {
     });
   }
 
-  get(key:string, callback: (err: Error | null, value: any)=>{}) {
-    this.db.query('SELECT value FROM store WHERE key=$1', [key], (err, results) => {
+  get(key: string, callback: (err: Error | null, value: any) => {}) {
+    this.db.query("SELECT value FROM store WHERE key=$1", [key], (err, results) => {
       let value = null;
 
       if (!err && results.rows.length === 1) {
@@ -125,21 +126,21 @@ export default class extends AbstractDatabase {
     });
   }
 
-  findKeys(key:string, notKey:string, callback: (err: Error | null, value: any)=>{}) {
-    let query = 'SELECT key FROM store WHERE key LIKE $1';
+  findKeys(key: string, notKey: string, callback: (err: Error | null, value: any) => {}) {
+    let query = "SELECT key FROM store WHERE key LIKE $1";
     const params = [];
     // desired keys are %key:%, e.g. pad:%
-    key = key.replace(/\*/g, '%');
+    key = key.replace(/\*/g, "%");
     params.push(key);
 
     if (notKey != null) {
       // not desired keys are notKey:%, e.g. %:%:%
-      notKey = notKey.replace(/\*/g, '%');
-      query += ' AND key NOT LIKE $2';
+      notKey = notKey.replace(/\*/g, "%");
+      query += " AND key NOT LIKE $2";
       params.push(notKey);
     }
     this.db.query(query, params, (err, results) => {
-      const value:string[] = [];
+      const value: string[] = [];
 
       if (!err && results.rows.length > 0) {
         results.rows.forEach((val) => {
@@ -154,18 +155,18 @@ export default class extends AbstractDatabase {
   findKeysPaged(
     key: string,
     notKey: string | null | undefined,
-    options: {limit: number; after?: string},
+    options: { limit: number; after?: string },
     callback: (err: Error | null, value: string[]) => void,
   ) {
     if (!options || !Number.isInteger(options.limit) || options.limit <= 0) {
-      return callback(new Error('findKeysPaged requires a positive integer limit'), []);
+      return callback(new Error("findKeysPaged requires a positive integer limit"), []);
     }
-    let query = 'SELECT key FROM store WHERE key LIKE $1';
-    const params: (string | number)[] = [key.replace(/\*/g, '%')];
+    let query = "SELECT key FROM store WHERE key LIKE $1";
+    const params: (string | number)[] = [key.replace(/\*/g, "%")];
     let n = 2;
     if (notKey != null) {
       query += ` AND key NOT LIKE $${n++}`;
-      params.push(notKey.replace(/\*/g, '%'));
+      params.push(notKey.replace(/\*/g, "%"));
     }
     if (options.after != null) {
       query += ` AND key > $${n++}`;
@@ -182,31 +183,31 @@ export default class extends AbstractDatabase {
     });
   }
 
-  set(key:string, value:string, callback:(err: Error, result: pg.QueryResult) => void) {
+  set(key: string, value: string, callback: (err: Error, result: pg.QueryResult) => void) {
     if (key.length > 100) {
-      const val = '' as any;
-      callback(Error('Your Key can only be 100 chars'), val);
+      const val = "" as any;
+      callback(Error("Your Key can only be 100 chars"), val);
     } else if (this.upsertStatement != null) {
       this.db.query(this.upsertStatement, [key, value], callback);
     }
   }
 
-  remove(key:string, callback:()=>{}) {
-    this.db.query('DELETE FROM store WHERE key=$1', [key], callback);
+  remove(key: string, callback: () => {}) {
+    this.db.query("DELETE FROM store WHERE key=$1", [key], callback);
   }
 
-  doBulk(bulk:BulkObject[], callback:()=>{}) {
+  doBulk(bulk: BulkObject[], callback: () => {}) {
     const replaceVALs = [];
-    let removeSQL = 'DELETE FROM store WHERE key IN (';
+    let removeSQL = "DELETE FROM store WHERE key IN (";
     const removeVALs: string[] = [];
 
     let removeCount = 0;
 
     for (const i in bulk) {
-      if (bulk[i].type === 'set') {
+      if (bulk[i].type === "set") {
         replaceVALs.push([bulk[i].key, bulk[i].value]);
-      } else if (bulk[i].type === 'remove') {
-        if (removeCount !== 0) removeSQL += ',';
+      } else if (bulk[i].type === "remove") {
+        if (removeCount !== 0) removeSQL += ",";
         removeCount += 1;
 
         removeSQL += `$${removeCount}`;
@@ -214,26 +215,29 @@ export default class extends AbstractDatabase {
       }
     }
 
-    removeSQL += ');';
+    removeSQL += ");";
 
     if (!this.upsertStatement) {
       return;
     }
 
+    const functions: any = replaceVALs.map(
+      (v) => (cb: () => {}) => this.db.query(this.upsertStatement as string, v as string[], cb),
+    );
 
-    const functions:any = replaceVALs.map((v) => (cb:()=>{}) => this.db.query(this.upsertStatement as string, v as string[], cb));
-
-    const removeFunction = (callback: ()=>{}) => {
+    const removeFunction = (callback: () => {}) => {
       if (!(removeVALs.length < 1)) {
         this.db.query(removeSQL, removeVALs, callback);
-      } else { callback(); }
+      } else {
+        callback();
+      }
     };
     functions.push(removeFunction);
 
     async.parallel(functions, callback);
   }
 
-  close(callback:()=>{}) {
+  close(callback: () => {}) {
     this.db.end(callback);
   }
-};
+}

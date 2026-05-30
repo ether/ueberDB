@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import AbstractDatabase, {type Settings} from '../lib/AbstractDatabase';
-import nano from 'nano';
-import type {BulkObject} from './cassandra_db';
+import AbstractDatabase, { type Settings } from "../lib/AbstractDatabase";
+import nano from "nano";
+import type { BulkObject } from "./cassandra_db";
 
 export default class Couch_db extends AbstractDatabase {
   public db: nano.DocumentScope<string> | null;
@@ -32,7 +32,9 @@ export default class Couch_db extends AbstractDatabase {
     this.settings.json = false;
   }
 
-  get isAsync() { return true; }
+  get isAsync() {
+    return true;
+  }
 
   async init() {
     // nano 11 dropped support for requestDefaults.auth = {username, password}.
@@ -62,43 +64,46 @@ export default class Couch_db extends AbstractDatabase {
     this.db = client.use(this.settings.database!);
   }
 
-  async get(key:string): Promise<null | string> {
+  async get(key: string): Promise<null | string> {
     let doc;
     try {
       if (this.db) {
         doc = await this.db.get(key);
       }
-    } catch (err:any) {
+    } catch (err: any) {
       if (err.statusCode === 404) return null;
       throw err;
     }
-    if (doc && 'value' in doc) {
+    if (doc && "value" in doc) {
       return doc.value as string;
     }
-    return '';
+    return "";
   }
 
-  async findKeys(key:string, notKey:string) {
-    const pfxLen = key.indexOf('*');
+  async findKeys(key: string, notKey: string) {
+    const pfxLen = key.indexOf("*");
     if (!this.db) {
       return;
     }
     const pfx = pfxLen < 0 ? key : key.slice(0, pfxLen);
     const results = await this.db.find({
       selector: {
-        _id: pfxLen < 0 ? pfx : {
-          $gte: pfx,
-          // https://docs.couchdb.org/en/3.2.2/ddocs/views/collation.html#string-ranges
-          $lte: `${pfx}\ufff0`,
-          $regex: this.createFindRegex(key, notKey).source,
-        },
+        _id:
+          pfxLen < 0
+            ? pfx
+            : {
+                $gte: pfx,
+                // https://docs.couchdb.org/en/3.2.2/ddocs/views/collation.html#string-ranges
+                $lte: `${pfx}\ufff0`,
+                $regex: this.createFindRegex(key, notKey).source,
+              },
       },
-      fields: ['_id'],
+      fields: ["_id"],
     });
     return results.docs.map((doc) => doc._id);
   }
 
-  async set(key:string, value:string) {
+  async set(key: string, value: string) {
     let doc;
 
     if (!this.db) {
@@ -107,27 +112,29 @@ export default class Couch_db extends AbstractDatabase {
 
     try {
       doc = await this.db.get(key);
-    } catch (err:any) {
+    } catch (err: any) {
       if (err.statusCode !== 404) throw err;
     }
     await this.db.insert({
       _id: key,
       // @ts-ignore
       value,
-      ...doc == null ? {} : {
-        _rev: doc._rev,
-      },
+      ...(doc == null
+        ? {}
+        : {
+            _rev: doc._rev,
+          }),
     });
   }
 
-  async remove(key:string) {
+  async remove(key: string) {
     let header;
     if (!this.db) {
       return;
     }
     try {
       header = await this.db.head(key);
-    } catch (err:any) {
+    } catch (err: any) {
       if (err.statusCode === 404) return;
       throw err;
     }
@@ -136,30 +143,29 @@ export default class Couch_db extends AbstractDatabase {
     await this.db.destroy(key, etag);
   }
 
-  async doBulk(bulk:BulkObject[]) {
+  async doBulk(bulk: BulkObject[]) {
     if (!this.db) {
       return;
     }
     const keys = bulk.map((op) => op.key);
-    const revs:{[key:string]:any} = {};
+    const revs: { [key: string]: any } = {};
     // @ts-ignore
-    for (const {key, value} of (await this.db.fetchRevs({keys})).rows) {
+    for (const { key, value } of (await this.db.fetchRevs({ keys })).rows) {
       // couchDB will return error instead of value if key does not exist
       if (value != null) revs[key] = value.rev;
     }
     const setters = [];
     for (const item of bulk) {
-      const set = {_id: item.key, _rev: undefined,
-        _deleted: false, value: ''};
+      const set = { _id: item.key, _rev: undefined, _deleted: false, value: "" };
       if (revs[item.key] != null) set._rev = revs[item.key];
-      if (item.type === 'set') set.value = item.value as string;
-      if (item.type === 'remove') set._deleted = true;
+      if (item.type === "set") set.value = item.value as string;
+      if (item.type === "remove") set._deleted = true;
       setters.push(set);
     }
-   await this.db.bulk({docs: setters});
+    await this.db.bulk({ docs: setters });
   }
 
   async close() {
     this.db = null;
   }
-};
+}
