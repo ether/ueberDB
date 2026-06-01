@@ -35,14 +35,15 @@ export default class extends AbstractDatabase {
     this.settings.max = this.settings.max || 20;
     this.settings.min = this.settings.min || 4;
     this.settings.idleTimeoutMillis = this.settings.idleTimeoutMillis || 1000;
-    // Enable TCP keep-alive so idle pooled connections are not silently
-    // dropped by a proxy, load balancer, firewall or NAT gateway sitting
-    // between us and PostgreSQL (e.g. HAProxy `timeout server`/`timeout
-    // client`, pgbouncer, cloud LBs). With `min` connections kept warm and
-    // no keep-alive these sockets carry no traffic, so such middleboxes
-    // close them; the next use then surfaces "Connection terminated
-    // unexpectedly". The initial delay is kept well below common proxy
-    // idle timeouts. Both are overridable via settings.
+    // Enable TCP keep-alive so the `min` warm-but-idle connections are not
+    // dropped by kernel/NAT/firewall/conntrack idle-state expiry (which keys
+    // off raw packet inactivity). Note this does NOT defeat an application-
+    // layer proxy idle timeout such as HAProxy `timeout server`/`timeout
+    // client` or pgbouncer — those count *data* inactivity and ignore the
+    // empty kernel keep-alive segments, so they will still close the
+    // connection (raise the proxy timeout for that; the pool reconnects
+    // either way — see the error handler below). Both are overridable via
+    // settings.
     if (this.settings.keepAlive === undefined) this.settings.keepAlive = true;
     if (this.settings.keepAliveInitialDelayMillis === undefined) {
       this.settings.keepAliveInitialDelayMillis = 10000;

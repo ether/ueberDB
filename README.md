@@ -348,25 +348,34 @@ through the settings object. The defaults applied by ueberDB2 are:
 | `keepAlive`                   | `true`  | Enables TCP keep-alive on pooled sockets.                     |
 | `keepAliveInitialDelayMillis` | `10000` | Delay before the first keep-alive probe (ms).                 |
 
-### TCP keep-alive behind a proxy / load balancer / firewall
+### Idle connections behind a proxy / load balancer / firewall
 
 Because `min` connections are kept warm, those sockets can sit idle
-indefinitely. A proxy, load balancer, firewall or NAT gateway between your
-application and PostgreSQL (for example HAProxy `timeout server` / `timeout
-client`, pgbouncer, or a cloud load balancer) will silently close a TCP
-connection that carries no traffic for its idle timeout. The next use of that
-connection then fails with `Connection terminated unexpectedly`.
+indefinitely. Anything between your application and PostgreSQL that drops idle
+connections will eventually close them, and the next use then fails with
+`Connection terminated unexpectedly`. There are two distinct flavours of
+"idle drop", and they need different handling:
 
-ueberDB2 mitigates this in two ways:
+- **Kernel / NAT / firewall / conntrack state expiry** — these expire idle
+  TCP flows when _no packets at all_ are seen. `keepAlive` (enabled by default,
+  10s initial delay) fixes this: the OS emits periodic keep-alive probes so the
+  flow never looks dead. Lower `keepAliveInitialDelayMillis` if the idle window
+  is shorter than 10s.
 
-- **`keepAlive` is enabled by default** (with a 10s initial delay) so the OS
-  sends keep-alive probes that keep idle connections alive through such
-  middleboxes. If your proxy timeout is shorter than 10s, lower
-  `keepAliveInitialDelayMillis` accordingly.
-- **A pool `error` handler is always attached.** If a pooled connection is
-  dropped while idle, the error is logged and the connection discarded (the
-  pool transparently reconnects) instead of being re-thrown as an uncaught
-  exception that would crash the host process.
+- **Application-layer proxy idle timeouts** — e.g. HAProxy `timeout server` /
+  `timeout client`, pgbouncer, many cloud LBs. These count _data_ inactivity,
+  and TCP keep-alive probes are empty kernel-level segments that the proxy does
+  **not** see as activity. **`keepAlive` does not help here** — the proxy will
+  still close the connection on schedule. For these you must either raise the
+  proxy's idle timeout (for HAProxy in `mode tcp`, `timeout tunnel` is the knob
+  for long-lived connections), or rely on the pool recovering from the drop.
+
+That recovery is the important part, and is always on regardless of proxy
+config: **a pool `error` handler is attached**, so a dropped idle connection is
+logged and discarded (the pool transparently reconnects on next use) instead of
+being re-thrown as an uncaught EventEmitter `'error'` that crashes the host
+process. The drop itself is harmless; what used to be fatal was the missing
+handler.
 
 ```javascript
 const db = new ueberdb.Database("postgres", {
@@ -374,7 +383,9 @@ const db = new ueberdb.Database("postgres", {
   user: "ueberdb",
   password: "ueberdb",
   database: "ueberdb",
-  // Override the keep-alive defaults if your proxy idle timeout is very short:
+  // Helps against kernel/NAT/firewall idle expiry. Does NOT defeat an
+  // application-layer proxy idle timeout (e.g. HAProxy timeout server) —
+  // raise the proxy timeout for that; the pool reconnects either way.
   keepAlive: true,
   keepAliveInitialDelayMillis: 5000,
 });
