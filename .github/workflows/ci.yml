@@ -48,3 +48,11 @@ jobs:
 
       - name: Build
         run: pnpm run build
+
+      # Fast, container-free regression tests. These construct driver
+      # objects and assert configuration/wiring without connecting to a
+      # database, so they run in ~1s and don't need testcontainers. The
+      # container-backed integration suites live in the `test` matrix in
+      # npmpublish.yml.
+      - name: Unit tests (no database)
+        run: pnpm exec vitest run test/postgres/pool-config.spec.ts
