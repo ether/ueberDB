@@ -1,0 +1,66 @@
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { GenericContainer, type StartedTestContainer } from "testcontainers";
+import Rethink from "../../databases/rethink_db";
+
+// Behavioural regression test for the rethinkdb connection error handler.
+//
+// The rethinkdb Connection is an EventEmitter that re-emits raw socket errors
+// as 'error'. WITHOUT a listener Node treats that as uncaught and crashes the
+// process. This driver holds a single connection and does not auto-reconnect,
+// so we can't assert recovery — but we CAN assert the crash is prevented: the
+// error is caught by the handler and logged.
+//
+// Verified locally that this FAILS if the connection.on('error', …) handler
+// is removed from rethink_db.ts (the re-emitted socket error becomes uncaught
+// and kills the worker) and PASSES with it.
+describe("rethink connection-drop survival", () => {
+  let container: StartedTestContainer;
+  let host: string;
+  let port: number;
+  const loggedErrors: string[] = [];
+  const logger = {
+    debug: () => {},
+    info: () => {},
+    warn: () => {},
+    error: (msg: string) => loggedErrors.push(String(msg)),
+  };
+
+  beforeAll(async () => {
+    container = await new GenericContainer("rethinkdb:latest").withExposedPorts(28015).start();
+    host = container.getHost();
+    port = container.getMappedPort(28015);
+  }, 120000);
+
+  afterAll(async () => {
+    if (container) await container.stop();
+  });
+
+  it("does not crash the process when its connection is dropped", async () => {
+    const driver: any = new Rethink({ host, port, db: "test", table: "test" });
+    driver.logger = logger;
+
+    await new Promise<void>((resolve, reject) =>
+      driver.init((err: Error | null) => (err ? reject(err) : resolve())),
+    );
+
+    // Warm: write then read back.
+    await new Promise<void>((resolve, reject) =>
+      driver.set("dropkey", "before", (err: Error | null) => (err ? reject(err) : resolve())),
+    );
+    const before = await new Promise((resolve, reject) =>
+      driver.get("dropkey", (err: Error | null, v: unknown) => (err ? reject(err) : resolve(v))),
+    );
+    expect(before).toBe("before");
+
+    // Simulate a network drop: destroy the underlying socket with an error,
+    // exactly as a failover / proxy idle-timeout would surface to the client.
+    driver.connection.rawSocket.destroy(new Error("simulated network drop"));
+
+    // Give the re-emitted 'error' event time to propagate. If the handler is
+    // missing this is where the worker would die with an uncaught error.
+    await new Promise((r) => setTimeout(r, 1000));
+
+    // The process survived and the handler logged the dropped connection.
+    expect(loggedErrors.some((m) => /RethinkDB connection error/.test(m))).toBe(true);
+  }, 60000);
+});

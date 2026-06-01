@@ -54,6 +54,18 @@ export default class Rethink_db extends AbstractDatabase {
       if (err) throw err;
       this.connection = conn;
 
+      // The rethinkdb Connection is an EventEmitter that re-emits raw socket
+      // errors (idle drop, server restart, failover, a proxy closing the
+      // connection) as an 'error' event. With no listener Node treats it as
+      // uncaught and terminates the host process. Attach a listener so a
+      // dropped connection is logged instead of crashing the application.
+      // (This driver holds a single connection and does not auto-reconnect,
+      // so subsequent queries will fail until re-init — but the process
+      // survives, which is the point.)
+      this.connection.on("error", (connErr: Error) => {
+        this.logger.error(`RethinkDB connection error: ${connErr.stack || connErr}`);
+      });
+
       r.table(this.table).run(this.connection, (err, cursor) => {
         if (err) {
           // assuming table does not exists
