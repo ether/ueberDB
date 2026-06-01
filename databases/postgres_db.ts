@@ -35,7 +35,29 @@ export default class extends AbstractDatabase {
     this.settings.max = this.settings.max || 20;
     this.settings.min = this.settings.min || 4;
     this.settings.idleTimeoutMillis = this.settings.idleTimeoutMillis || 1000;
+    // Enable TCP keep-alive so idle pooled connections are not silently
+    // dropped by a proxy, load balancer, firewall or NAT gateway sitting
+    // between us and PostgreSQL (e.g. HAProxy `timeout server`/`timeout
+    // client`, pgbouncer, cloud LBs). With `min` connections kept warm and
+    // no keep-alive these sockets carry no traffic, so such middleboxes
+    // close them; the next use then surfaces "Connection terminated
+    // unexpectedly". The initial delay is kept well below common proxy
+    // idle timeouts. Both are overridable via settings.
+    if (this.settings.keepAlive === undefined) this.settings.keepAlive = true;
+    if (this.settings.keepAliveInitialDelayMillis === undefined) {
+      this.settings.keepAliveInitialDelayMillis = 10000;
+    }
     this.db = new pg.Pool(this.settings as pg.PoolConfig);
+    // A pooled client connected to a live backend can still emit an error
+    // long after checkout/release (network blip, failover, or a middlebox
+    // closing an idle connection). The pg Pool re-emits these on itself;
+    // with no listener Node treats the EventEmitter 'error' as uncaught and
+    // terminates the process. Handle it so a single dropped idle connection
+    // is logged and discarded (the pool transparently reconnects) instead
+    // of crashing the host application.
+    this.db.on("error", (err) => {
+      this.logger.error(`Postgres idle client error (connection discarded): ${err.stack || err}`);
+    });
   }
 
   init(callback: (err: Error) => {}) {

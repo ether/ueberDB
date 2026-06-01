@@ -334,6 +334,52 @@ write to the database.
 
 You should create your database as utf8mb4_bin.
 
+## PostgreSQL Advice
+
+The `postgres` driver uses a [`pg`](https://node-postgres.com/) connection
+pool. You can pass any [`pg` pool option](https://node-postgres.com/apis/pool)
+through the settings object. The defaults applied by ueberDB2 are:
+
+| Setting                       | Default | Notes                                                         |
+| ----------------------------- | ------- | ------------------------------------------------------------- |
+| `max`                         | `20`    | Maximum connections in the pool.                              |
+| `min`                         | `4`     | Minimum warm connections kept open (honored by `pg` >= 8.16). |
+| `idleTimeoutMillis`           | `1000`  | Idle reaping only applies to connections **above** `min`.     |
+| `keepAlive`                   | `true`  | Enables TCP keep-alive on pooled sockets.                     |
+| `keepAliveInitialDelayMillis` | `10000` | Delay before the first keep-alive probe (ms).                 |
+
+### TCP keep-alive behind a proxy / load balancer / firewall
+
+Because `min` connections are kept warm, those sockets can sit idle
+indefinitely. A proxy, load balancer, firewall or NAT gateway between your
+application and PostgreSQL (for example HAProxy `timeout server` / `timeout
+client`, pgbouncer, or a cloud load balancer) will silently close a TCP
+connection that carries no traffic for its idle timeout. The next use of that
+connection then fails with `Connection terminated unexpectedly`.
+
+ueberDB2 mitigates this in two ways:
+
+- **`keepAlive` is enabled by default** (with a 10s initial delay) so the OS
+  sends keep-alive probes that keep idle connections alive through such
+  middleboxes. If your proxy timeout is shorter than 10s, lower
+  `keepAliveInitialDelayMillis` accordingly.
+- **A pool `error` handler is always attached.** If a pooled connection is
+  dropped while idle, the error is logged and the connection discarded (the
+  pool transparently reconnects) instead of being re-thrown as an uncaught
+  exception that would crash the host process.
+
+```javascript
+const db = new ueberdb.Database("postgres", {
+  host: "127.0.0.1",
+  user: "ueberdb",
+  password: "ueberdb",
+  database: "ueberdb",
+  // Override the keep-alive defaults if your proxy idle timeout is very short:
+  keepAlive: true,
+  keepAliveInitialDelayMillis: 5000,
+});
+```
+
 ## Redis TLS communication
 
 If you enabled TLS on your Redis database (available since Redis 6.0) you will
