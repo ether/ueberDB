@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { GenericContainer, type StartedTestContainer } from "testcontainers";
 import * as ueberdb from "../../index";
 import { createClient } from "redis";
@@ -36,6 +36,12 @@ describe("redis connection-drop recovery", () => {
 
   afterAll(async () => {
     if (container) await container.stop();
+  });
+
+  // Clear per attempt: vitest is configured with retries, and a stale entry
+  // from a previous attempt must not satisfy this run's "handler fired" check.
+  beforeEach(() => {
+    loggedErrors.length = 0;
   });
 
   it("survives its connection being killed and recovers", async () => {
