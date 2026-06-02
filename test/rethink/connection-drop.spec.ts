@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { GenericContainer, type StartedTestContainer } from "testcontainers";
 import Rethink from "../../databases/rethink_db";
 
@@ -17,7 +17,7 @@ describe("rethink connection-drop survival", () => {
   let container: StartedTestContainer;
   let host: string;
   let port: number;
-  let driver: any;
+  let driver: InstanceType<typeof Rethink>;
   const loggedErrors: string[] = [];
   const logger = {
     debug: () => {},
@@ -52,6 +52,12 @@ describe("rethink connection-drop survival", () => {
     if (container) await container.stop();
   });
 
+  // Clear per attempt: vitest is configured with retries, and a stale entry
+  // from a previous attempt must not satisfy this run's "handler fired" check.
+  beforeEach(() => {
+    loggedErrors.length = 0;
+  });
+
   it("does not crash the process when its connection is dropped", async () => {
     driver = new Rethink({ host, port, db: "test", table: "test" });
     driver.logger = logger;
@@ -72,8 +78,10 @@ describe("rethink connection-drop survival", () => {
     // Simulate a network drop: destroy the underlying socket with an error,
     // exactly as a failover / proxy idle-timeout would surface to the client.
     // If the handler is missing, the re-emitted 'error' becomes uncaught here
-    // and kills the worker.
-    driver.connection.rawSocket.destroy(new Error("simulated network drop"));
+    // and kills the worker. `rawSocket` is a rethinkdb Connection internal not
+    // present in its public types, so this single access is cast.
+    const connection = driver.connection as unknown as { rawSocket: { destroy(e: Error): void } };
+    connection.rawSocket.destroy(new Error("simulated network drop"));
 
     // Wait — with a bounded poll rather than a fixed sleep — for the
     // re-emitted 'error' to reach the handler. The process surviving this far
