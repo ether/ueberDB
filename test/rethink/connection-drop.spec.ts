@@ -27,7 +27,7 @@ describe("rethink connection-drop survival", () => {
   };
 
   beforeAll(async () => {
-    container = await new GenericContainer("rethinkdb:latest").withExposedPorts(28015).start();
+    container = await new GenericContainer("rethinkdb:2.4.3").withExposedPorts(28015).start();
     host = container.getHost();
     port = container.getMappedPort(28015);
   }, 120000);
