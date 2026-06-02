@@ -55,20 +55,43 @@ describe("redis connection-drop recovery", () => {
       // (default yes) means the admin's own connection is spared.
       const admin = createClient({ socket: { host, port } });
       await admin.connect();
-      await admin.sendCommand(["CLIENT", "KILL", "TYPE", "normal"]);
-      await admin.quit();
+      try {
+        await admin.sendCommand(["CLIENT", "KILL", "TYPE", "normal"]);
+      } finally {
+        await admin.quit().catch(() => admin.destroy?.());
+      }
 
-      // Allow the 'error' event to fire and the client to reconnect.
-      await new Promise((r) => setTimeout(r, 1000));
+      // Wait — with a bounded poll rather than a fixed sleep — for the client
+      // to recover (node-redis reconnects after the dropped socket). The
+      // round-trip succeeds as soon as recovery happens; it only fails on a
+      // real timeout, so this is deterministic rather than race-prone.
+      await waitFor(async () => {
+        await db.set("dropkey", "after");
+        return (await db.get("dropkey")) === "after";
+      }, 30000);
 
       // 1) The handler caught the dropped-connection error (proves the fix ran).
       expect(loggedErrors.some((m) => /Redis client error/.test(m))).toBe(true);
-
-      // 2) The client recovered: a fresh round-trip works.
-      await db.set("dropkey", "after");
+      // 2) The client recovered (asserted again for an explicit signal).
       expect(await db.get("dropkey")).toBe("after");
     } finally {
       await db.close();
     }
   }, 60000);
 });
+
+// Poll an async predicate until it returns true or the deadline passes.
+// Errors from the predicate are treated as "not ready yet" and retried.
+async function waitFor(predicate: () => Promise<boolean>, timeoutMs: number) {
+  const deadline = Date.now() + timeoutMs;
+  let lastErr: unknown;
+  while (Date.now() < deadline) {
+    try {
+      if (await predicate()) return;
+    } catch (err) {
+      lastErr = err;
+    }
+    await new Promise((r) => setTimeout(r, 200));
+  }
+  throw new Error(`waitFor timed out after ${timeoutMs}ms${lastErr ? `: ${lastErr}` : ""}`);
+}
