@@ -59,7 +59,9 @@ export default class RedisDB extends AbstractDatabase {
       // reconnects. Attached before connect() so connect-time failures are
       // covered too.
       this._client.on("error", (err: Error) => {
-        this.logger.error(`Redis client error (will reconnect): ${err.stack || err}`);
+        // Don't claim reconnection is guaranteed — node-redis reconnects for
+        // transient socket errors but not for terminal/shutdown ones.
+        this.logger.error(`Redis client error: ${err?.stack || err}`);
       });
       await this._client.connect();
       await this._client.ping();

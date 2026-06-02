@@ -87,17 +87,21 @@ describe("redis connection-drop recovery", () => {
 });
 
 // Poll an async predicate until it returns true or the deadline passes.
-// Errors from the predicate are treated as "not ready yet" and retried.
+// Errors from the predicate are treated as "not ready yet" and retried; the
+// most recent one is surfaced (with its stack) if we time out.
 async function waitFor(predicate: () => Promise<boolean>, timeoutMs: number) {
   const deadline = Date.now() + timeoutMs;
   let lastErr: unknown;
   while (Date.now() < deadline) {
     try {
       if (await predicate()) return;
+      lastErr = undefined; // a clean (but not-yet-true) attempt clears stale errors
     } catch (err) {
       lastErr = err;
     }
     await new Promise((r) => setTimeout(r, 200));
   }
-  throw new Error(`waitFor timed out after ${timeoutMs}ms${lastErr ? `: ${lastErr}` : ""}`);
+  const detail =
+    lastErr instanceof Error ? (lastErr.stack ?? lastErr.message) : String(lastErr ?? "");
+  throw new Error(`waitFor timed out after ${timeoutMs}ms${detail ? `: ${detail}` : ""}`);
 }
