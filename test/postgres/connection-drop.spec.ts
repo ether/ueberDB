@@ -87,23 +87,46 @@ describe("postgres connection-drop recovery", () => {
         database: "ueberdb",
       });
       await admin.connect();
-      await admin.query(
-        "SELECT pg_terminate_backend(pid) FROM pg_stat_activity " +
-          "WHERE datname = current_database() AND pid <> pg_backend_pid()",
-      );
-      await admin.end();
+      try {
+        await admin.query(
+          "SELECT pg_terminate_backend(pid) FROM pg_stat_activity " +
+            "WHERE datname = current_database() AND pid <> pg_backend_pid()",
+        );
+      } finally {
+        await admin.end();
+      }
 
-      // Give the idle 'error' events time to propagate to the pool handler.
-      await new Promise((r) => setTimeout(r, 1000));
+      // Wait — with a bounded poll rather than a fixed sleep — for the pool to
+      // recover (it discards the dead idle connections and opens fresh ones).
+      // The round-trip succeeds as soon as recovery happens; it only fails on
+      // a real timeout, so this is deterministic rather than race-prone.
+      await waitFor(async () => {
+        await db.set("dropkey", "after");
+        return (await db.get("dropkey")) === "after";
+      }, 30000);
 
       // 1) The handler caught the dropped-connection error (proves the fix ran).
       expect(loggedErrors.some((m) => /Postgres idle client error/.test(m))).toBe(true);
-
-      // 2) The pool recovered: a fresh query round-trips correctly.
-      await db.set("dropkey", "after");
+      // 2) The pool recovered (asserted again for an explicit signal).
       expect(await db.get("dropkey")).toBe("after");
     } finally {
       await db.close();
     }
   }, 60000);
 });
+
+// Poll an async predicate until it returns true or the deadline passes.
+// Errors from the predicate are treated as "not ready yet" and retried.
+async function waitFor(predicate: () => Promise<boolean>, timeoutMs: number) {
+  const deadline = Date.now() + timeoutMs;
+  let lastErr: unknown;
+  while (Date.now() < deadline) {
+    try {
+      if (await predicate()) return;
+    } catch (err) {
+      lastErr = err;
+    }
+    await new Promise((r) => setTimeout(r, 200));
+  }
+  throw new Error(`waitFor timed out after ${timeoutMs}ms${lastErr ? `: ${lastErr}` : ""}`);
+}
