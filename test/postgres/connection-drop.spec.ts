@@ -102,17 +102,19 @@ describe("postgres connection-drop recovery", () => {
         await admin.end();
       }
 
-      // Wait — with a bounded poll rather than a fixed sleep — for the pool to
+      // Wait — with a bounded poll rather than a fixed sleep — for BOTH the
+      // asynchronous pool 'error' to be observed (handler ran) AND the pool to
       // recover (it discards the dead idle connections and opens fresh ones).
-      // The round-trip succeeds as soon as recovery happens; it only fails on
-      // a real timeout, so this is deterministic rather than race-prone.
+      // Requiring both in the predicate removes any timing window between the
+      // recovery round-trip and the 'error' event being logged.
+      const handlerFired = () => loggedErrors.some((m) => /Postgres idle client error/.test(m));
       await waitFor(async () => {
         await db.set("dropkey", "after");
-        return (await db.get("dropkey")) === "after";
+        return (await db.get("dropkey")) === "after" && handlerFired();
       }, 30000);
 
       // 1) The handler caught the dropped-connection error (proves the fix ran).
-      expect(loggedErrors.some((m) => /Postgres idle client error/.test(m))).toBe(true);
+      expect(handlerFired()).toBe(true);
       // 2) The pool recovered (asserted again for an explicit signal).
       expect(await db.get("dropkey")).toBe("after");
     } finally {

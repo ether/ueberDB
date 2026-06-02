@@ -47,10 +47,10 @@ export default class extends AbstractDatabase {
     // connection (raise the proxy timeout for that; the pool reconnects
     // either way — see the error handler below). Both are overridable via
     // settings.
-    if (this.settings.keepAlive === undefined) this.settings.keepAlive = true;
-    if (this.settings.keepAliveInitialDelayMillis === undefined) {
-      this.settings.keepAliveInitialDelayMillis = 10000;
-    }
+    // `??` so an explicit `false`/`0` is preserved but a null/undefined falls
+    // back to the default (a null would otherwise reach pg.PoolConfig).
+    this.settings.keepAlive = this.settings.keepAlive ?? true;
+    this.settings.keepAliveInitialDelayMillis = this.settings.keepAliveInitialDelayMillis ?? 10000;
     this.db = new pg.Pool(this.settings as pg.PoolConfig);
     // A pooled client connected to a live backend can still emit an error
     // long after checkout/release (network blip, failover, or a middlebox
