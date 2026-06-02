@@ -17,6 +17,7 @@ describe("rethink connection-drop survival", () => {
   let container: StartedTestContainer;
   let host: string;
   let port: number;
+  let driver: any;
   const loggedErrors: string[] = [];
   const logger = {
     debug: () => {},
@@ -32,11 +33,27 @@ describe("rethink connection-drop survival", () => {
   }, 120000);
 
   afterAll(async () => {
+    // Close the driver (best-effort: the socket may already be destroyed by
+    // the test) so no handles leak, then stop the container.
+    if (driver) {
+      await new Promise<void>((resolve) => {
+        const done = setTimeout(resolve, 2000);
+        try {
+          driver.close(() => {
+            clearTimeout(done);
+            resolve();
+          });
+        } catch {
+          clearTimeout(done);
+          resolve();
+        }
+      });
+    }
     if (container) await container.stop();
   });
 
   it("does not crash the process when its connection is dropped", async () => {
-    const driver: any = new Rethink({ host, port, db: "test", table: "test" });
+    driver = new Rethink({ host, port, db: "test", table: "test" });
     driver.logger = logger;
 
     await new Promise<void>((resolve, reject) =>
@@ -54,13 +71,24 @@ describe("rethink connection-drop survival", () => {
 
     // Simulate a network drop: destroy the underlying socket with an error,
     // exactly as a failover / proxy idle-timeout would surface to the client.
+    // If the handler is missing, the re-emitted 'error' becomes uncaught here
+    // and kills the worker.
     driver.connection.rawSocket.destroy(new Error("simulated network drop"));
 
-    // Give the re-emitted 'error' event time to propagate. If the handler is
-    // missing this is where the worker would die with an uncaught error.
-    await new Promise((r) => setTimeout(r, 1000));
-
-    // The process survived and the handler logged the dropped connection.
+    // Wait — with a bounded poll rather than a fixed sleep — for the
+    // re-emitted 'error' to reach the handler. The process surviving this far
+    // and the log appearing both prove the fix; without it the worker dies.
+    await waitFor(() => loggedErrors.some((m) => /RethinkDB connection error/.test(m)), 30000);
     expect(loggedErrors.some((m) => /RethinkDB connection error/.test(m))).toBe(true);
   }, 60000);
 });
+
+// Poll a predicate until it returns true or the deadline passes.
+async function waitFor(predicate: () => boolean, timeoutMs: number) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (predicate()) return;
+    await new Promise((r) => setTimeout(r, 100));
+  }
+  throw new Error(`waitFor timed out after ${timeoutMs}ms`);
+}
