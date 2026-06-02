@@ -97,7 +97,7 @@ jobs:
             ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Connection-drop recovery test
         run: pnpm exec vitest run test/postgres/connection-drop.spec.ts

@@ -31,10 +31,13 @@ export default class extends AbstractDatabase {
     this.settings.writeInterval = 100;
     this.settings.json = true;
 
-    // Pool specific defaults
-    this.settings.max = this.settings.max || 20;
-    this.settings.min = this.settings.min || 4;
-    this.settings.idleTimeoutMillis = this.settings.idleTimeoutMillis || 1000;
+    // Pool specific defaults. Use `??` (not `||`) so callers can pass an
+    // explicit 0 — notably `min: 0` to keep no warm idle connections at all,
+    // which is the simplest way to avoid a proxy/firewall reaping idle
+    // sockets (see the keep-alive note below and ether/etherpad#7878).
+    this.settings.max = this.settings.max ?? 20;
+    this.settings.min = this.settings.min ?? 4;
+    this.settings.idleTimeoutMillis = this.settings.idleTimeoutMillis ?? 1000;
     // Enable TCP keep-alive so the `min` warm-but-idle connections are not
     // dropped by kernel/NAT/firewall/conntrack idle-state expiry (which keys
     // off raw packet inactivity). Note this does NOT defeat an application-
