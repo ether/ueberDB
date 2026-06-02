@@ -337,8 +337,10 @@ You should create your database as utf8mb4_bin.
 ## PostgreSQL Advice
 
 The `postgres` driver uses a [`pg`](https://node-postgres.com/) connection
-pool. You can pass any [`pg` pool option](https://node-postgres.com/apis/pool)
-through the settings object. The defaults applied by ueberDB2 are:
+pool. The pool-related settings below are part of the `Settings` type; other
+[`pg` pool options](https://node-postgres.com/apis/pool) are forwarded to the
+pool at runtime as well, but aren't in the type yet (so TypeScript callers may
+need a cast for those). The defaults applied by ueberDB2 are:
 
 | Setting                       | Default | Notes                                                         |
 | ----------------------------- | ------- | ------------------------------------------------------------- |
