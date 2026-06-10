@@ -31,11 +31,37 @@ export default class extends AbstractDatabase {
     this.settings.writeInterval = 100;
     this.settings.json = true;
 
-    // Pool specific defaults
-    this.settings.max = this.settings.max || 20;
-    this.settings.min = this.settings.min || 4;
-    this.settings.idleTimeoutMillis = this.settings.idleTimeoutMillis || 1000;
+    // Pool specific defaults. Use `??` (not `||`) so callers can pass an
+    // explicit 0 — notably `min: 0` to keep no warm idle connections at all,
+    // which is the simplest way to avoid a proxy/firewall reaping idle
+    // sockets (see the keep-alive note below and ether/etherpad#7878).
+    this.settings.max = this.settings.max ?? 20;
+    this.settings.min = this.settings.min ?? 4;
+    this.settings.idleTimeoutMillis = this.settings.idleTimeoutMillis ?? 1000;
+    // Enable TCP keep-alive so the `min` warm-but-idle connections are not
+    // dropped by kernel/NAT/firewall/conntrack idle-state expiry (which keys
+    // off raw packet inactivity). Note this does NOT defeat an application-
+    // layer proxy idle timeout such as HAProxy `timeout server`/`timeout
+    // client` or pgbouncer — those count *data* inactivity and ignore the
+    // empty kernel keep-alive segments, so they will still close the
+    // connection (raise the proxy timeout for that; the pool reconnects
+    // either way — see the error handler below). Both are overridable via
+    // settings.
+    // `??` so an explicit `false`/`0` is preserved but a null/undefined falls
+    // back to the default (a null would otherwise reach pg.PoolConfig).
+    this.settings.keepAlive = this.settings.keepAlive ?? true;
+    this.settings.keepAliveInitialDelayMillis = this.settings.keepAliveInitialDelayMillis ?? 10000;
     this.db = new pg.Pool(this.settings as pg.PoolConfig);
+    // A pooled client connected to a live backend can still emit an error
+    // long after checkout/release (network blip, failover, or a middlebox
+    // closing an idle connection). The pg Pool re-emits these on itself;
+    // with no listener Node treats the EventEmitter 'error' as uncaught and
+    // terminates the process. Handle it so a single dropped idle connection
+    // is logged and discarded (the pool transparently reconnects) instead
+    // of crashing the host application.
+    this.db.on("error", (err) => {
+      this.logger.error(`Postgres idle client error (connection discarded): ${err.stack || err}`);
+    });
   }
 
   init(callback: (err: Error) => {}) {

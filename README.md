@@ -334,6 +334,65 @@ write to the database.
 
 You should create your database as utf8mb4_bin.
 
+## PostgreSQL Advice
+
+The `postgres` driver uses a [`pg`](https://node-postgres.com/) connection
+pool. The pool-related settings below are part of the `Settings` type; other
+[`pg` pool options](https://node-postgres.com/apis/pool) are forwarded to the
+pool at runtime as well, but aren't in the type yet (so TypeScript callers may
+need a cast for those). The defaults applied by ueberDB2 are:
+
+| Setting                       | Default | Notes                                                         |
+| ----------------------------- | ------- | ------------------------------------------------------------- |
+| `max`                         | `20`    | Maximum connections in the pool.                              |
+| `min`                         | `4`     | Minimum warm connections kept open (honored by `pg` >= 8.16). |
+| `idleTimeoutMillis`           | `1000`  | Idle reaping only applies to connections **above** `min`.     |
+| `keepAlive`                   | `true`  | Enables TCP keep-alive on pooled sockets.                     |
+| `keepAliveInitialDelayMillis` | `10000` | Delay before the first keep-alive probe (ms).                 |
+
+### Idle connections behind a proxy / load balancer / firewall
+
+Because `min` connections are kept warm, those sockets can sit idle
+indefinitely. Anything between your application and PostgreSQL that drops idle
+connections will eventually close them, and the next use then fails with
+`Connection terminated unexpectedly`. There are two distinct flavours of
+"idle drop", and they need different handling:
+
+- **Kernel / NAT / firewall / conntrack state expiry** — these expire idle
+  TCP flows when _no packets at all_ are seen. `keepAlive` (enabled by default,
+  10s initial delay) fixes this: the OS emits periodic keep-alive probes so the
+  flow never looks dead. Lower `keepAliveInitialDelayMillis` if the idle window
+  is shorter than 10s.
+
+- **Application-layer proxy idle timeouts** — e.g. HAProxy `timeout server` /
+  `timeout client`, pgbouncer, many cloud LBs. These count _data_ inactivity,
+  and TCP keep-alive probes are empty kernel-level segments that the proxy does
+  **not** see as activity. **`keepAlive` does not help here** — the proxy will
+  still close the connection on schedule. For these you must either raise the
+  proxy's idle timeout (for HAProxy in `mode tcp`, `timeout tunnel` is the knob
+  for long-lived connections), or rely on the pool recovering from the drop.
+
+That recovery is the important part, and is always on regardless of proxy
+config: **a pool `error` handler is attached**, so a dropped idle connection is
+logged and discarded (the pool transparently reconnects on next use) instead of
+being re-thrown as an uncaught EventEmitter `'error'` that crashes the host
+process. The drop itself is harmless; what used to be fatal was the missing
+handler.
+
+```javascript
+const db = new ueberdb.Database("postgres", {
+  host: "127.0.0.1",
+  user: "ueberdb",
+  password: "ueberdb",
+  database: "ueberdb",
+  // Helps against kernel/NAT/firewall idle expiry. Does NOT defeat an
+  // application-layer proxy idle timeout (e.g. HAProxy timeout server) —
+  // raise the proxy timeout for that; the pool reconnects either way.
+  keepAlive: true,
+  keepAliveInitialDelayMillis: 5000,
+});
+```
+
 ## Redis TLS communication
 
 If you enabled TLS on your Redis database (available since Redis 6.0) you will
