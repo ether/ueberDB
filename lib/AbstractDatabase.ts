@@ -10,6 +10,8 @@ export type Settings = {
   table?: string;
   db?: string;
   idleTimeoutMillis?: number;
+  keepAlive?: boolean;
+  keepAliveInitialDelayMillis?: number;
   min?: number;
   max?: number;
   engine?: string;
