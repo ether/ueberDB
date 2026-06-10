@@ -101,3 +101,43 @@ jobs:
 
       - name: Connection-drop recovery test
         run: pnpm exec vitest run test/postgres/connection-drop.spec.ts
+
+  # Behavioural regression test for the rethinkdb connection error handler.
+  # rethink is intentionally absent from the container `test` matrix in
+  # npmpublish.yml, so this dedicated job gives the fix coverage: it starts a
+  # rethinkdb container, warms the connection, drops the underlying socket
+  # (as a failover / proxy idle-timeout would), and asserts the process
+  # survives. The test FAILS if the connection error handler is removed.
+  rethink-resilience:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Get pnpm store path
+        id: pnpm-cache
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+
+      - name: Cache pnpm store
+        uses: actions/cache@v5
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Connection-drop survival test
+        run: pnpm exec vitest run test/rethink/connection-drop.spec.ts
