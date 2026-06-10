@@ -50,6 +50,19 @@ export default class RedisDB extends AbstractDatabase {
       this._client = createClient(options);
     }
     if (this._client) {
+      // node-redis re-emits connection/socket errors (idle drop, server
+      // restart, failover, a proxy closing the connection) on the client as
+      // an EventEmitter 'error'. With no listener Node treats it as uncaught
+      // and terminates the host process — and node-redis also won't begin
+      // reconnecting. The official client docs require attaching this
+      // listener; with it, the error is logged and the client transparently
+      // reconnects. Attached before connect() so connect-time failures are
+      // covered too.
+      this._client.on("error", (err: Error) => {
+        // Don't claim reconnection is guaranteed — node-redis reconnects for
+        // transient socket errors but not for terminal/shutdown ones.
+        this.logger.error(`Redis client error: ${err?.stack || err}`);
+      });
       await this._client.connect();
       await this._client.ping();
     }
