@@ -5,6 +5,11 @@ import MongoDb from "../databases/mongodb_db";
 
 const val = JSON.stringify({ a: "x".repeat(64), n: 1 });
 const SEED = 2000;
+// Bounded keyspaces so set/doBulk upsert over a fixed set of docs instead of
+// inserting ever-new ones — keeps the collection size (and so each iteration's
+// workload) constant for a stable regression signal.
+const KS = 5000; // set/remove keyspace
+const BR = 50; // doBulk round-buckets (BR * 100 = 5000 keys)
 
 let container: StartedTestContainer;
 let db: any;
@@ -44,7 +49,7 @@ afterAll(async () => {
 
 describe("mongodb", () => {
   bench("set", async () => {
-    await set("set:" + setI++, val);
+    await set("set:" + (setI++ % KS), val);
   });
 
   bench("get", async () => {
@@ -57,12 +62,12 @@ describe("mongodb", () => {
 
   bench("doBulk", async () => {
     const ops = [];
-    for (let j = 0; j < 100; j++) ops.push({ type: "set", key: `bulk:${bulkR}:${j}`, value: val });
-    bulkR++;
+    const r = bulkR++ % BR;
+    for (let j = 0; j < 100; j++) ops.push({ type: "set", key: `bulk:${r}:${j}`, value: val });
     await doBulk(ops);
   });
 
   bench("remove", async () => {
-    await remove("set:" + rmI++);
+    await remove("set:" + (rmI++ % KS));
   });
 });

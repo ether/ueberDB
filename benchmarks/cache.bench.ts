@@ -17,6 +17,10 @@ const payload = (i) => ({ a: "x".repeat(64), n: i, nested: { b: i % 7, list: [1,
 const nextTick = () => new Promise((r) => setImmediate(r));
 const NO_AUTO_FLUSH = 3_600_000;
 const POP = 20_000;
+// Bounded keyspace for set/remove so the cache (and backing Map) reach a steady
+// state instead of growing for the whole run — keeps the workload (and memory)
+// constant so the regression signal is stable across iterations.
+const KS = 50_000;
 
 let setDb;
 let hitDb;
@@ -35,7 +39,9 @@ let bigR = 0;
 // These must live at file scope so @vitest/runner executes them around the file suite.
 beforeAll(async () => {
   // set: unbuffered (writeInterval 0) so each awaited set completes at once.
-  setDb = new Database(createMemoryBackend(), { cache: 5_000_000, writeInterval: 0 }, noopLogger);
+  // Cache holds the whole bounded keyspace so sets reach steady state (overwrite
+  // existing keys) rather than inserting ever-new entries.
+  setDb = new Database(createMemoryBackend(), { cache: KS + 10, writeInterval: 0 }, noopLogger);
   await setDb.init();
 
   // getHit: prefill + a priming read pass so timed gets hit the cache fast path.
@@ -49,7 +55,7 @@ beforeAll(async () => {
   await missDb.init();
 
   // remove: remove(key) is set(key,null); idempotent, no prefill needed.
-  rmDb = new Database(createMemoryBackend(), { cache: 5_000_000, writeInterval: 0 }, noopLogger);
+  rmDb = new Database(createMemoryBackend(), { cache: KS + 10, writeInterval: 0 }, noopLogger);
   await rmDb.init();
 
   // flush: small cache, dirty a batch then flush.
@@ -81,7 +87,7 @@ afterAll(async () => {
 
 describe("cache", () => {
   bench("set", async () => {
-    await setDb.set("set:" + setI++, payload(setI));
+    await setDb.set("set:" + (setI++ % KS), payload(setI));
   });
 
   bench("getHit", async () => {
@@ -93,12 +99,14 @@ describe("cache", () => {
   });
 
   bench("remove", async () => {
-    await rmDb.remove("rm:" + rmI++);
+    await rmDb.remove("rm:" + (rmI++ % KS));
   });
 
   bench("flush", async () => {
     const ps = [];
-    for (let j = 0; j < 500; j++) ps.push(flushDb.set(`f:${flushR}:${j}`, payload(j)));
+    // Reuse a bounded set of round-buckets (8 * 500 = 4000 keys = cache size) so
+    // the backing Map stays at steady state; re-setting a bucket re-dirties it.
+    for (let j = 0; j < 500; j++) ps.push(flushDb.set(`f:${flushR % 8}:${j}`, payload(j)));
     flushR++;
     await nextTick();
     await flushDb.flush();
