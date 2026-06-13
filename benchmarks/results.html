@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>ueberDB perf: before vs after</title>
+<style>
+body{font:14px/1.5 system-ui,Segoe UI,Arial,sans-serif;margin:24px;color:#202124}
+h1{font-size:20px} h2{font-size:15px;margin:18px 0 6px}
+section{margin-bottom:28px;border-bottom:1px solid #eee;padding-bottom:12px}
+table{border-collapse:collapse;font-size:12px} td,th{border:1px solid #ddd;padding:4px 8px;text-align:right}
+th:first-child,td:first-child{text-align:left}
+.up{color:#137333;font-weight:bold} .down{color:#c5221f;font-weight:bold}
+.note{color:#5f6368;font-size:12px}
+</style></head><body>
+<h1>ueberDB performance — before vs after</h1>
+<p class="note">before: before @ 809bcc2 · after: after @ e7547ff</p>
+<p class="note">Gray = before, blue = after. Δ% on ops/sec (positive = faster). Driver libs differ by their per-commit lockfile (e.g. mongodb minor version); see README.</p>
+<section><svg viewBox="0 0 720 326" width="720" height="326" role="img" aria-label="cache ops/sec">
+<text x="120" y="18" font-size="13" font-weight="bold">cache — ops/sec (higher is better)</text>
+<text x="112" y="44" font-size="12" text-anchor="end">set</text>
+<rect x="120" y="30" width="143.6" height="14" fill="#9aa0a6"/>
+<text x="267.64985314836804" y="42" font-size="10" fill="#444">259,386</text>
+<rect x="120" y="50" width="138.4" height="14" fill="#1a73e8"/>
+<text x="262.4003518698305" y="62" font-size="10" fill="#1a73e8">249,908 (-3.7%)</text>
+<text x="112" y="90" font-size="12" text-anchor="end">getHit</text>
+<rect x="120" y="76" width="460.9" height="14" fill="#9aa0a6"/>
+<text x="584.8661322967042" y="88" font-size="10" fill="#444">832,179</text>
+<rect x="120" y="96" width="194.4" height="14" fill="#1a73e8"/>
+<text x="318.4128660690549" y="108" font-size="10" fill="#1a73e8">351,049 (-57.8%)</text>
+<text x="112" y="136" font-size="12" text-anchor="end">getMiss</text>
+<rect x="120" y="122" width="520.0" height="14" fill="#9aa0a6"/>
+<text x="644" y="134" font-size="10" fill="#444">938,957</text>
+<rect x="120" y="142" width="486.9" height="14" fill="#1a73e8"/>
+<text x="610.9272668285323" y="154" font-size="10" fill="#1a73e8">879,238 (-6.4%)</text>
+<text x="112" y="182" font-size="12" text-anchor="end">remove</text>
+<rect x="120" y="168" width="16.9" height="14" fill="#9aa0a6"/>
+<text x="140.89877163975325" y="180" font-size="10" fill="#444">30,514</text>
+<rect x="120" y="188" width="17.1" height="14" fill="#1a73e8"/>
+<text x="141.05969359188987" y="200" font-size="10" fill="#1a73e8">30,804 (+1.0%)</text>
+<text x="112" y="228" font-size="12" text-anchor="end">flush</text>
+<rect x="120" y="214" width="0.9" height="14" fill="#9aa0a6"/>
+<text x="124.93227488163642" y="226" font-size="10" fill="#444">1,683</text>
+<rect x="120" y="234" width="1.1" height="14" fill="#1a73e8"/>
+<text x="125.05472337629584" y="246" font-size="10" fill="#1a73e8">1,904 (+13.1%)</text>
+<text x="112" y="274" font-size="12" text-anchor="end">flushBigCache</text>
+<rect x="120" y="260" width="2.0" height="14" fill="#9aa0a6"/>
+<text x="125.95529231078898" y="272" font-size="10" fill="#444">3,531</text>
+<rect x="120" y="280" width="36.3" height="14" fill="#1a73e8"/>
+<text x="160.34733961208724" y="292" font-size="10" fill="#1a73e8">65,632 (+1758.9%)</text>
+</svg><h2>cache</h2><table><tr><th>op</th><th>before ops/s</th><th>after ops/s</th><th>Δ%</th><th>before median ms</th><th>after median ms</th></tr><tr><td>set</td><td>259,386</td><td>249,908</td><td class="down">-3.7%</td><td>0.0026</td><td>0.0028</td></tr>
+<tr><td>getHit</td><td>832,179</td><td>351,049</td><td class="down">-57.8%</td><td>0.0011</td><td>0.0027</td></tr>
+<tr><td>getMiss</td><td>938,957</td><td>879,238</td><td class="down">-6.4%</td><td>0.0010</td><td>0.0010</td></tr>
+<tr><td>remove</td><td>30,514</td><td>30,804</td><td class="up">+1.0%</td><td>0.0290</td><td>0.0277</td></tr>
+<tr><td>flush</td><td>1,683</td><td>1,904</td><td class="up">+13.1%</td><td>0.5225</td><td>0.4713</td></tr>
+<tr><td>flushBigCache</td><td>3,531</td><td>65,632</td><td class="up">+1758.9%</td><td>0.2962</td><td>0.0140</td></tr></table></section>
+<section><svg viewBox="0 0 720 280" width="720" height="280" role="img" aria-label="postgres ops/sec">
+<text x="120" y="18" font-size="13" font-weight="bold">postgres — ops/sec (higher is better)</text>
+<text x="112" y="44" font-size="12" text-anchor="end">set</text>
+<rect x="120" y="30" width="186.3" height="14" fill="#9aa0a6"/>
+<text x="310.288722860752" y="42" font-size="10" fill="#444">1,105</text>
+<rect x="120" y="50" width="193.9" height="14" fill="#1a73e8"/>
+<text x="317.94727507511914" y="62" font-size="10" fill="#1a73e8">1,150 (+4.1%)</text>
+<text x="112" y="90" font-size="12" text-anchor="end">get</text>
+<rect x="120" y="76" width="429.7" height="14" fill="#9aa0a6"/>
+<text x="553.7151966199363" y="88" font-size="10" fill="#444">2,548</text>
+<rect x="120" y="96" width="520.0" height="14" fill="#1a73e8"/>
+<text x="644" y="108" font-size="10" fill="#1a73e8">3,083 (+21.0%)</text>
+<text x="112" y="136" font-size="12" text-anchor="end">findKeys</text>
+<rect x="120" y="122" width="137.8" height="14" fill="#9aa0a6"/>
+<text x="261.8207056467203" y="134" font-size="10" fill="#444">817.2</text>
+<rect x="120" y="142" width="132.5" height="14" fill="#1a73e8"/>
+<text x="256.50422425285217" y="154" font-size="10" fill="#1a73e8">785.7 (-3.9%)</text>
+<text x="112" y="182" font-size="12" text-anchor="end">doBulk</text>
+<rect x="120" y="168" width="18.7" height="14" fill="#9aa0a6"/>
+<text x="142.6909194876094" y="180" font-size="10" fill="#444">110.8</text>
+<rect x="120" y="188" width="65.0" height="14" fill="#1a73e8"/>
+<text x="189.04319175636124" y="200" font-size="10" fill="#1a73e8">385.7 (+248.0%)</text>
+<text x="112" y="228" font-size="12" text-anchor="end">remove</text>
+<rect x="120" y="214" width="187.1" height="14" fill="#9aa0a6"/>
+<text x="311.1254141122673" y="226" font-size="10" fill="#444">1,110</text>
+<rect x="120" y="234" width="190.7" height="14" fill="#1a73e8"/>
+<text x="314.6510419070904" y="246" font-size="10" fill="#1a73e8">1,131 (+1.9%)</text>
+</svg><h2>postgres</h2><table><tr><th>op</th><th>before ops/s</th><th>after ops/s</th><th>Δ%</th><th>before median ms</th><th>after median ms</th></tr><tr><td>set</td><td>1,105</td><td>1,150</td><td class="up">+4.1%</td><td>0.8703</td><td>0.8268</td></tr>
+<tr><td>get</td><td>2,548</td><td>3,083</td><td class="up">+21.0%</td><td>0.3853</td><td>0.3118</td></tr>
+<tr><td>findKeys</td><td>817.2</td><td>785.7</td><td class="down">-3.9%</td><td>1.1446</td><td>1.1410</td></tr>
+<tr><td>doBulk</td><td>110.8</td><td>385.7</td><td class="up">+248.0%</td><td>9.0057</td><td>2.5105</td></tr>
+<tr><td>remove</td><td>1,110</td><td>1,131</td><td class="up">+1.9%</td><td>0.8639</td><td>0.8197</td></tr></table></section>
+<section><svg viewBox="0 0 720 280" width="720" height="280" role="img" aria-label="mongodb ops/sec">
+<text x="120" y="18" font-size="13" font-weight="bold">mongodb — ops/sec (higher is better)</text>
+<text x="112" y="44" font-size="12" text-anchor="end">set</text>
+<rect x="120" y="30" width="461.2" height="14" fill="#9aa0a6"/>
+<text x="585.1709505203141" y="42" font-size="10" fill="#444">2,227</text>
+<rect x="120" y="50" width="457.2" height="14" fill="#1a73e8"/>
+<text x="581.1889688336303" y="62" font-size="10" fill="#1a73e8">2,208 (-0.9%)</text>
+<text x="112" y="90" font-size="12" text-anchor="end">get</text>
+<rect x="120" y="76" width="487.6" height="14" fill="#9aa0a6"/>
+<text x="611.5944159777023" y="88" font-size="10" fill="#444">2,355</text>
+<rect x="120" y="96" width="480.3" height="14" fill="#1a73e8"/>
+<text x="604.3315490621014" y="108" font-size="10" fill="#1a73e8">2,320 (-1.5%)</text>
+<text x="112" y="136" font-size="12" text-anchor="end">findKeys</text>
+<rect x="120" y="122" width="25.0" height="14" fill="#9aa0a6"/>
+<text x="149.0077624707698" y="134" font-size="10" fill="#444">120.8</text>
+<rect x="120" y="142" width="25.6" height="14" fill="#1a73e8"/>
+<text x="149.59792202598885" y="154" font-size="10" fill="#1a73e8">123.6 (+2.4%)</text>
+<text x="112" y="182" font-size="12" text-anchor="end">doBulk</text>
+<rect x="120" y="168" width="61.1" height="14" fill="#9aa0a6"/>
+<text x="185.09782277004444" y="180" font-size="10" fill="#444">295.1</text>
+<rect x="120" y="188" width="60.7" height="14" fill="#1a73e8"/>
+<text x="184.7019321348874" y="200" font-size="10" fill="#1a73e8">293.2 (-0.6%)</text>
+<text x="112" y="228" font-size="12" text-anchor="end">remove</text>
+<rect x="120" y="214" width="520.0" height="14" fill="#9aa0a6"/>
+<text x="644" y="226" font-size="10" fill="#444">2,511</text>
+<rect x="120" y="234" width="502.7" height="14" fill="#1a73e8"/>
+<text x="626.7120405848872" y="246" font-size="10" fill="#1a73e8">2,428 (-3.3%)</text>
+</svg><h2>mongodb</h2><table><tr><th>op</th><th>before ops/s</th><th>after ops/s</th><th>Δ%</th><th>before median ms</th><th>after median ms</th></tr><tr><td>set</td><td>2,227</td><td>2,208</td><td class="down">-0.9%</td><td>0.4328</td><td>0.4338</td></tr>
+<tr><td>get</td><td>2,355</td><td>2,320</td><td class="down">-1.5%</td><td>0.4094</td><td>0.4154</td></tr>
+<tr><td>findKeys</td><td>120.8</td><td>123.6</td><td class="up">+2.4%</td><td>8.1646</td><td>7.9104</td></tr>
+<tr><td>doBulk</td><td>295.1</td><td>293.2</td><td class="down">-0.6%</td><td>3.3370</td><td>3.3631</td></tr>
+<tr><td>remove</td><td>2,511</td><td>2,428</td><td class="down">-3.3%</td><td>0.3842</td><td>0.3978</td></tr></table></section>
+</body></html>
