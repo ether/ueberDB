@@ -159,7 +159,14 @@ describe(__filename, () => {
             if (subtc.err) readFinished = assert.rejects(readFinished, subtc.err);
             if (subtc.wantJsonErr) readFinished = assert.rejects(readFinished, { message: /JSON/ });
             await readFinished;
-            assertMetricsDelta(before, db.metrics, subtc.wantMetrics);
+            // After perf refactor: get() cache hits no longer acquire the per-key lock.
+            // getSub() still locks because the slow path is the only path it uses.
+            const expected = { ...subtc.wantMetrics };
+            if (tc.name === "get" && subtc.cacheHit) {
+              delete (expected as any).lockAcquires;
+              delete (expected as any).lockReleases;
+            }
+            assertMetricsDelta(before, db.metrics, expected);
           });
         }
         it("read of in-progress write", async () => {
@@ -181,13 +188,16 @@ describe(__filename, () => {
           });
           const before = { ...db.metrics };
           await tc.f(key);
-          assertMetricsDelta(before, db.metrics, {
-            lockAcquires: 1,
-            lockReleases: 1,
+          const expected: Record<string, number> = {
             reads: 1,
             readsFinished: 1,
             readsFromCache: 1,
-          });
+          };
+          if (tc.name === "getSub") {
+            expected.lockAcquires = 1;
+            expected.lockReleases = 1;
+          }
+          assertMetricsDelta(before, db.metrics, expected);
           // @ts-ignore
           finishWrite();
           await writeFinished;
