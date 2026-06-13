@@ -1175,3 +1175,38 @@ git worktree remove ../ueberDB-bench-before --force
 **Type/name consistency:** `summarize` shape (`opsPerSec`, `medianMs`, `p95Ms`, `minMs`, `meanMs`, `n`) is produced in Task 1 and consumed unchanged in `render.mjs` (Task 7) and the bench modules. `runCacheBench(root, opts)`, `runPgBench(root, conn, opts)`, `runMongoBench(root, conn, opts)` signatures match their callers in `harness.mjs` (Task 8). Harness writes `targets.cache` / `targets.postgres` / `targets.mongodb`; `render.mjs` iterates `targets` generically, so the names line up. `UEBERDB_ROOT`/`BENCH_*` env names match between `harness.mjs` and `run.mjs`.
 
 **Known nuance to watch during execution:** if Node prints a `MODULE_TYPELESS_PACKAGE_JSON` warning when importing `.ts`, confirm the tree root has `"type": "module"` in its `package.json` (both the main tree and the worktree do, since they share the repo's `package.json`). The warning is harmless but indicates resolution context; it should not appear for in-repo imports.
+
+---
+
+## Post-implementation deltas (what changed during execution)
+
+Three issues surfaced while running and were fixed in-flight; the committed code
+reflects these, this section records them:
+
+1. **Cache benchmark deadlock (Task 4).** A buffered `set()` only resolves once
+   flushed, so awaiting each set under a long `writeInterval` hangs (and
+   `remove()` is `set(key, null)`). Fixed: set/get/remove run unbuffered
+   (`writeInterval: 0`); the flush benchmark fires sets without awaiting, lets
+   them buffer, then times `flush()`. (Plan Task 4 already updated above.)
+
+2. **Extensionless TS imports (Task 9/10).** Node strips types but does not
+   resolve extensionless relative imports, so the driver sources
+   (`../lib/AbstractDatabase`) failed to load. The cache target worked only
+   because its single relative import is type-only. Fixed by adding
+   `benchmarks/register-ts.mjs` (a `module.registerHooks` resolve hook that
+   appends `.ts`) and loading it into the harness via `node --import`.
+
+3. **Shared-container measurement bias + missing cache win (Task 10).** Both
+   sides share one container with `after` running first, so `before` saw
+   `after`'s leftover rows — inflating a spurious pg `findKeys` +118% and mongo
+   `doBulk` −30%. Fixed by resetting the table/collection at the start of each DB
+   side. Separately, the small `flush` case never exercised the dirty-key Set
+   optimization, so a `flushBigCache` scenario (large mostly-clean cache, few
+   dirty keys/flush) was added — it shows the real ~18× flush win.
+
+**Recorded headline results (809bcc2 → HEAD):** postgres `doBulk` +248%,
+postgres `get` +21%; cache `flushBigCache` +1759%. cache `getHit` −58% is the
+deliberate read-path `structuredClone` safety tradeoff (the lock-free get win
+needs concurrency, not captured by a sequential loop). Mongo deltas are within
+±3% — its changes (anchored `findKeys` regex, dropped per-op ping) are
+correctness/robustness wins that don't move local-container throughput.
