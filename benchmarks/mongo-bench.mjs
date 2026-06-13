@@ -35,16 +35,41 @@ export async function runMongoBench(root, conn, opts = {}) {
   const val = JSON.stringify({ a: "x".repeat(64), n: 1 });
   const results = {};
 
-  results.set = (await timeLoop({ warmup, iters, fn: async (i) => { await set("set:" + i, val); } })).stats;
-  results.get = (await timeLoop({ warmup, iters, fn: async (i) => { await get("set:" + (i % iters)); } })).stats;
-  results.findKeys = (await timeLoop({ warmup: 20, iters: 200, fn: async () => { await findKeys("set:*", null); } })).stats;
+  results.set = (
+    await timeLoop({
+      warmup,
+      iters,
+      fn: async (i) => {
+        await set("set:" + i, val);
+      },
+    })
+  ).stats;
+  results.get = (
+    await timeLoop({
+      warmup,
+      iters,
+      fn: async (i) => {
+        await get("set:" + (i % iters));
+      },
+    })
+  ).stats;
+  results.findKeys = (
+    await timeLoop({
+      warmup: 20,
+      iters: 200,
+      fn: async () => {
+        await findKeys("set:*", null);
+      },
+    })
+  ).stats;
 
   {
     const durs = [];
     const warmupRounds = 20;
     for (let r = 0; r < bulkRounds + warmupRounds; r++) {
       const ops = [];
-      for (let j = 0; j < bulkBatch; j++) ops.push({ type: "set", key: `bulk:${r}:${j}`, value: val });
+      for (let j = 0; j < bulkBatch; j++)
+        ops.push({ type: "set", key: `bulk:${r}:${j}`, value: val });
       const t0 = performance.now();
       await doBulk(ops);
       const dt = performance.now() - t0;
@@ -53,7 +78,15 @@ export async function runMongoBench(root, conn, opts = {}) {
     results.doBulk = summarize(durs);
   }
 
-  results.remove = (await timeLoop({ warmup: 0, iters, fn: async (i) => { await remove("set:" + i); } })).stats;
+  results.remove = (
+    await timeLoop({
+      warmup: 0,
+      iters,
+      fn: async (i) => {
+        await remove("set:" + i);
+      },
+    })
+  ).stats;
 
   await close();
   return results;

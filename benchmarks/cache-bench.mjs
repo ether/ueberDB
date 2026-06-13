@@ -6,9 +6,14 @@ import { timeLoop } from "./lib/timing.mjs";
 import { summarize } from "./lib/stats.mjs";
 
 const noopLogger = {
-  debug() {}, info() {}, warn() {}, error() {},
-  isDebugEnabled: () => false, isInfoEnabled: () => false,
-  isWarnEnabled: () => false, isErrorEnabled: () => false,
+  debug() {},
+  info() {},
+  warn() {},
+  error() {},
+  isDebugEnabled: () => false,
+  isInfoEnabled: () => false,
+  isWarnEnabled: () => false,
+  isErrorEnabled: () => false,
 };
 
 const payload = (i) => ({ a: "x".repeat(64), n: i, nested: { b: i % 7, list: [1, 2, 3] } });
@@ -42,21 +47,45 @@ export async function runCacheBench(root, opts = {}) {
 
   // set (unbuffered): exercises cloneIn + buffer insert + dirty tracking.
   {
-    const db = new Database(createMemoryBackend(), { cache: iters + warmup + 10, writeInterval: 0 }, noopLogger);
+    const db = new Database(
+      createMemoryBackend(),
+      { cache: iters + warmup + 10, writeInterval: 0 },
+      noopLogger,
+    );
     await db.init();
-    results.set = (await timeLoop({ warmup, iters, fn: async (i) => { await db.set("set:" + i, payload(i)); } })).stats;
+    results.set = (
+      await timeLoop({
+        warmup,
+        iters,
+        fn: async (i) => {
+          await db.set("set:" + i, payload(i));
+        },
+      })
+    ).stats;
     await db.close();
   }
 
   // get (cache hit): prefill (unbuffered) + a priming read pass to populate the
   // cache, then time get() served from the buffer (lock-free fast path + cloneOut).
   {
-    const db = new Database(createMemoryBackend(), { cache: iters + 10, writeInterval: 0 }, noopLogger);
+    const db = new Database(
+      createMemoryBackend(),
+      { cache: iters + 10, writeInterval: 0 },
+      noopLogger,
+    );
     await db.init();
     for (let i = 0; i < iters; i++) await db.set("hit:" + i, payload(i));
     for (let i = 0; i < iters; i++) await db.get("hit:" + i);
     const cacheReadsBefore = db.metrics.readsFromCache;
-    results.getHit = (await timeLoop({ warmup, iters, fn: async (i) => { await db.get("hit:" + (i % iters)); } })).stats;
+    results.getHit = (
+      await timeLoop({
+        warmup,
+        iters,
+        fn: async (i) => {
+          await db.get("hit:" + (i % iters));
+        },
+      })
+    ).stats;
     if (db.metrics.readsFromCache <= cacheReadsBefore) {
       throw new Error("cache-hit benchmark did not exercise the readsFromCache path");
     }
@@ -67,16 +96,36 @@ export async function runCacheBench(root, opts = {}) {
   {
     const db = new Database(createMemoryBackend(), { cache: 1000, writeInterval: 0 }, noopLogger);
     await db.init();
-    results.getMiss = (await timeLoop({ warmup, iters, fn: async (i) => { await db.get("miss:" + i); } })).stats;
+    results.getMiss = (
+      await timeLoop({
+        warmup,
+        iters,
+        fn: async (i) => {
+          await db.get("miss:" + i);
+        },
+      })
+    ).stats;
     await db.close();
   }
 
   // remove (unbuffered): prefill keys, then remove each once.
   {
-    const db = new Database(createMemoryBackend(), { cache: iters + 10, writeInterval: 0 }, noopLogger);
+    const db = new Database(
+      createMemoryBackend(),
+      { cache: iters + 10, writeInterval: 0 },
+      noopLogger,
+    );
     await db.init();
     for (let i = 0; i < iters; i++) await db.set("rm:" + i, payload(i));
-    results.remove = (await timeLoop({ warmup: 0, iters, fn: async (i) => { await db.remove("rm:" + i); } })).stats;
+    results.remove = (
+      await timeLoop({
+        warmup: 0,
+        iters,
+        fn: async (i) => {
+          await db.remove("rm:" + i);
+        },
+      })
+    ).stats;
     await db.close();
   }
 
@@ -84,7 +133,11 @@ export async function runCacheBench(root, opts = {}) {
   // them. Sets are fired WITHOUT awaiting (a buffered set settles only on flush);
   // nextTick() lets them all buffer; the set promises are settled after flush.
   {
-    const db = new Database(createMemoryBackend(), { cache: bulkBatch * 4, writeInterval: NO_AUTO_FLUSH }, noopLogger);
+    const db = new Database(
+      createMemoryBackend(),
+      { cache: bulkBatch * 4, writeInterval: NO_AUTO_FLUSH },
+      noopLogger,
+    );
     await db.init();
     const durs = [];
     const warmupRounds = 20;
@@ -110,7 +163,11 @@ export async function runCacheBench(root, opts = {}) {
   {
     const BIG = opts.bigCache ?? 20_000;
     const dirtyN = 10;
-    const db = new Database(createMemoryBackend(), { cache: BIG + 1000, writeInterval: NO_AUTO_FLUSH }, noopLogger);
+    const db = new Database(
+      createMemoryBackend(),
+      { cache: BIG + 1000, writeInterval: NO_AUTO_FLUSH },
+      noopLogger,
+    );
     await db.init();
     const prime = [];
     for (let i = 0; i < BIG; i++) prime.push(db.set("big:" + i, payload(i)));
@@ -121,7 +178,8 @@ export async function runCacheBench(root, opts = {}) {
     const warmupRounds = 20;
     for (let r = 0; r < bulkRounds + warmupRounds; r++) {
       const ps = [];
-      for (let j = 0; j < dirtyN; j++) ps.push(db.set("big:" + ((r * dirtyN + j) % BIG), payload(j)));
+      for (let j = 0; j < dirtyN; j++)
+        ps.push(db.set("big:" + ((r * dirtyN + j) % BIG), payload(j)));
       await nextTick();
       const t0 = performance.now();
       await db.flush();

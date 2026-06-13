@@ -50,6 +50,7 @@ I/O (benches, orchestrator) so it can be unit-tested without docker.
 ## Task 1: Scaffold + stats library (TDD)
 
 **Files:**
+
 - Create: `benchmarks/lib/stats.mjs`
 - Test: `benchmarks/lib/stats.test.mjs`
 - Create: `benchmarks/.gitignore`
@@ -191,6 +192,7 @@ git commit -m "feat(bench): pure stats helpers + benchmarks scaffold"
 ## Task 2: Measured timing loop (TDD)
 
 **Files:**
+
 - Create: `benchmarks/lib/timing.mjs`
 - Test: `benchmarks/lib/timing.test.mjs`
 
@@ -208,7 +210,9 @@ test("runs warmup + iters times and returns a stats summary", async () => {
   const { stats } = await timeLoop({
     warmup: 3,
     iters: 10,
-    fn: async () => { calls++; },
+    fn: async () => {
+      calls++;
+    },
   });
   assert.equal(calls, 13); // warmup + measured
   assert.equal(stats.n, 10); // only measured iters counted
@@ -218,7 +222,13 @@ test("runs warmup + iters times and returns a stats summary", async () => {
 
 test("passes the iteration index to fn", async () => {
   const seen = [];
-  await timeLoop({ warmup: 0, iters: 4, fn: async (i) => { seen.push(i); } });
+  await timeLoop({
+    warmup: 0,
+    iters: 4,
+    fn: async (i) => {
+      seen.push(i);
+    },
+  });
   assert.deepEqual(seen, [0, 1, 2, 3]);
 });
 ```
@@ -268,6 +278,7 @@ git commit -m "feat(bench): measured timing loop with warmup"
 ## Task 3: In-memory backend for the cache target
 
 **Files:**
+
 - Create: `benchmarks/lib/memory-backend.mjs`
 
 This backend stands in for a real DB under `CacheAndBufferLayer`. It is async
@@ -296,14 +307,24 @@ export function createMemoryBackend() {
   const data = new Map();
   return {
     _data: data,
-    get isAsync() { return true; },
+    get isAsync() {
+      return true;
+    },
     settings: {},
     logger: undefined,
     async init() {},
-    async close() { data.clear(); },
-    async get(key) { return data.get(key); },
-    async set(key, value) { data.set(key, value); },
-    async remove(key) { data.delete(key); },
+    async close() {
+      data.clear();
+    },
+    async get(key) {
+      return data.get(key);
+    },
+    async set(key, value) {
+      data.set(key, value);
+    },
+    async remove(key) {
+      data.delete(key);
+    },
     async findKeys(key, notKey) {
       const re = globToRegExp(key, notKey);
       const out = [];
@@ -330,9 +351,11 @@ export function createMemoryBackend() {
 - [ ] **Step 2: Smoke-check it loads and behaves**
 
 Run:
+
 ```bash
 node --input-type=module -e "import('./benchmarks/lib/memory-backend.mjs').then(async ({createMemoryBackend})=>{const b=createMemoryBackend();await b.init();await b.set('a:1','x');await b.doBulk([{type:'set',key:'a:2',value:'y'},{type:'remove',key:'a:1'}]);console.log(await b.get('a:2'), await b.findKeys('a:*'));})"
 ```
+
 Expected: prints `y [ 'a:2' ]`.
 
 - [ ] **Step 3: Commit**
@@ -347,6 +370,7 @@ git commit -m "feat(bench): async in-memory backend with doBulk for cache target
 ## Task 4: Cache-layer benchmark
 
 **Files:**
+
 - Create: `benchmarks/cache-bench.mjs`
 
 Deep-imports `CacheAndBufferLayer.ts` from the tree root under test (Node strips
@@ -367,9 +391,14 @@ import { timeLoop } from "./lib/timing.mjs";
 import { summarize } from "./lib/stats.mjs";
 
 const noopLogger = {
-  debug() {}, info() {}, warn() {}, error() {},
-  isDebugEnabled: () => false, isInfoEnabled: () => false,
-  isWarnEnabled: () => false, isErrorEnabled: () => false,
+  debug() {},
+  info() {},
+  warn() {},
+  error() {},
+  isDebugEnabled: () => false,
+  isInfoEnabled: () => false,
+  isWarnEnabled: () => false,
+  isErrorEnabled: () => false,
 };
 
 const payload = (i) => ({ a: "x".repeat(64), n: i, nested: { b: i % 7, list: [1, 2, 3] } });
@@ -403,21 +432,45 @@ export async function runCacheBench(root, opts = {}) {
 
   // set (unbuffered): exercises cloneIn + buffer insert + dirty tracking.
   {
-    const db = new Database(createMemoryBackend(), { cache: iters + warmup + 10, writeInterval: 0 }, noopLogger);
+    const db = new Database(
+      createMemoryBackend(),
+      { cache: iters + warmup + 10, writeInterval: 0 },
+      noopLogger,
+    );
     await db.init();
-    results.set = (await timeLoop({ warmup, iters, fn: async (i) => { await db.set("set:" + i, payload(i)); } })).stats;
+    results.set = (
+      await timeLoop({
+        warmup,
+        iters,
+        fn: async (i) => {
+          await db.set("set:" + i, payload(i));
+        },
+      })
+    ).stats;
     await db.close();
   }
 
   // get (cache hit): prefill (unbuffered) + a priming read pass to populate the
   // cache, then time get() served from the buffer (lock-free fast path + cloneOut).
   {
-    const db = new Database(createMemoryBackend(), { cache: iters + 10, writeInterval: 0 }, noopLogger);
+    const db = new Database(
+      createMemoryBackend(),
+      { cache: iters + 10, writeInterval: 0 },
+      noopLogger,
+    );
     await db.init();
     for (let i = 0; i < iters; i++) await db.set("hit:" + i, payload(i));
     for (let i = 0; i < iters; i++) await db.get("hit:" + i);
     const cacheReadsBefore = db.metrics.readsFromCache;
-    results.getHit = (await timeLoop({ warmup, iters, fn: async (i) => { await db.get("hit:" + (i % iters)); } })).stats;
+    results.getHit = (
+      await timeLoop({
+        warmup,
+        iters,
+        fn: async (i) => {
+          await db.get("hit:" + (i % iters));
+        },
+      })
+    ).stats;
     if (db.metrics.readsFromCache <= cacheReadsBefore) {
       throw new Error("cache-hit benchmark did not exercise the readsFromCache path");
     }
@@ -428,16 +481,36 @@ export async function runCacheBench(root, opts = {}) {
   {
     const db = new Database(createMemoryBackend(), { cache: 1000, writeInterval: 0 }, noopLogger);
     await db.init();
-    results.getMiss = (await timeLoop({ warmup, iters, fn: async (i) => { await db.get("miss:" + i); } })).stats;
+    results.getMiss = (
+      await timeLoop({
+        warmup,
+        iters,
+        fn: async (i) => {
+          await db.get("miss:" + i);
+        },
+      })
+    ).stats;
     await db.close();
   }
 
   // remove (unbuffered): prefill keys, then remove each once.
   {
-    const db = new Database(createMemoryBackend(), { cache: iters + 10, writeInterval: 0 }, noopLogger);
+    const db = new Database(
+      createMemoryBackend(),
+      { cache: iters + 10, writeInterval: 0 },
+      noopLogger,
+    );
     await db.init();
     for (let i = 0; i < iters; i++) await db.set("rm:" + i, payload(i));
-    results.remove = (await timeLoop({ warmup: 0, iters, fn: async (i) => { await db.remove("rm:" + i); } })).stats;
+    results.remove = (
+      await timeLoop({
+        warmup: 0,
+        iters,
+        fn: async (i) => {
+          await db.remove("rm:" + i);
+        },
+      })
+    ).stats;
     await db.close();
   }
 
@@ -445,7 +518,11 @@ export async function runCacheBench(root, opts = {}) {
   // them. Sets are fired WITHOUT awaiting (a buffered set settles only on flush);
   // nextTick() lets them all buffer; the set promises are settled after flush.
   {
-    const db = new Database(createMemoryBackend(), { cache: bulkBatch * 4, writeInterval: NO_AUTO_FLUSH }, noopLogger);
+    const db = new Database(
+      createMemoryBackend(),
+      { cache: bulkBatch * 4, writeInterval: NO_AUTO_FLUSH },
+      noopLogger,
+    );
     await db.init();
     const durs = [];
     const warmupRounds = 20;
@@ -474,9 +551,11 @@ above was verified against the live source before this plan revision.
 - [ ] **Step 2: Verify against the current (after) tree**
 
 Run (small iters so it's fast):
+
 ```bash
 node --input-type=module -e "import('./benchmarks/cache-bench.mjs').then(async ({runCacheBench})=>{const r=await runCacheBench(process.cwd(),{iters:2000,warmup:200,bulkRounds:20,bulkBatch:50});console.log(JSON.stringify(Object.fromEntries(Object.entries(r).map(([k,v])=>[k,Math.round(v.opsPerSec)])),null,2));})"
 ```
+
 Expected: prints an object with positive ops/sec for `set`, `getHit`, `getMiss`,
 `remove`, `flush`, and does NOT throw the "readsFromCache" error.
 
@@ -492,6 +571,7 @@ git commit -m "feat(bench): cache-layer benchmark via CacheAndBufferLayer source
 ## Task 5: Postgres driver benchmark
 
 **Files:**
+
 - Create: `benchmarks/pg-bench.mjs`
 
 Deep-imports `databases/postgres_db.ts` (default export) from the tree root,
@@ -525,8 +605,11 @@ export async function runPgBench(root, conn, opts = {}) {
   const bulkBatch = opts.bulkBatch ?? 100;
   const PgDb = await loadPgDriver(root);
   const db = new PgDb({
-    host: conn.host, port: conn.port, user: conn.user,
-    password: conn.password, database: conn.database,
+    host: conn.host,
+    port: conn.port,
+    user: conn.user,
+    password: conn.password,
+    database: conn.database,
   });
   const init = promisify(db.init.bind(db));
   const get = promisify(db.get.bind(db));
@@ -541,13 +624,37 @@ export async function runPgBench(root, conn, opts = {}) {
   const results = {};
 
   // set (prepared upsert, single-row path).
-  results.set = (await timeLoop({ warmup, iters, fn: async (i) => { await set("set:" + i, val); } })).stats;
+  results.set = (
+    await timeLoop({
+      warmup,
+      iters,
+      fn: async (i) => {
+        await set("set:" + i, val);
+      },
+    })
+  ).stats;
 
   // get (prepared select), keys exist from the set loop.
-  results.get = (await timeLoop({ warmup, iters, fn: async (i) => { await get("set:" + (i % iters)); } })).stats;
+  results.get = (
+    await timeLoop({
+      warmup,
+      iters,
+      fn: async (i) => {
+        await get("set:" + (i % iters));
+      },
+    })
+  ).stats;
 
   // findKeys (LIKE query). Fewer iters: each call scans many rows.
-  results.findKeys = (await timeLoop({ warmup: 20, iters: 200, fn: async () => { await findKeys("set:*", null); } })).stats;
+  results.findKeys = (
+    await timeLoop({
+      warmup: 20,
+      iters: 200,
+      fn: async () => {
+        await findKeys("set:*", null);
+      },
+    })
+  ).stats;
 
   // doBulk (batched multi-row upsert).
   {
@@ -555,7 +662,8 @@ export async function runPgBench(root, conn, opts = {}) {
     const warmupRounds = 20;
     for (let r = 0; r < bulkRounds + warmupRounds; r++) {
       const ops = [];
-      for (let j = 0; j < bulkBatch; j++) ops.push({ type: "set", key: `bulk:${r}:${j}`, value: val });
+      for (let j = 0; j < bulkBatch; j++)
+        ops.push({ type: "set", key: `bulk:${r}:${j}`, value: val });
       const t0 = performance.now();
       await doBulk(ops);
       const dt = performance.now() - t0;
@@ -565,7 +673,15 @@ export async function runPgBench(root, conn, opts = {}) {
   }
 
   // remove (prepared delete), removes the keys written by the set loop.
-  results.remove = (await timeLoop({ warmup: 0, iters, fn: async (i) => { await remove("set:" + i); } })).stats;
+  results.remove = (
+    await timeLoop({
+      warmup: 0,
+      iters,
+      fn: async (i) => {
+        await remove("set:" + i);
+      },
+    })
+  ).stats;
 
   await close();
   return results;
@@ -592,6 +708,7 @@ git commit -m "feat(bench): postgres driver benchmark (set/get/findKeys/doBulk/r
 ## Task 6: Mongo driver benchmark
 
 **Files:**
+
 - Create: `benchmarks/mongo-bench.mjs`
 
 - [ ] **Step 1: Write the benchmark module**
@@ -633,16 +750,41 @@ export async function runMongoBench(root, conn, opts = {}) {
   const val = JSON.stringify({ a: "x".repeat(64), n: 1 });
   const results = {};
 
-  results.set = (await timeLoop({ warmup, iters, fn: async (i) => { await set("set:" + i, val); } })).stats;
-  results.get = (await timeLoop({ warmup, iters, fn: async (i) => { await get("set:" + (i % iters)); } })).stats;
-  results.findKeys = (await timeLoop({ warmup: 20, iters: 200, fn: async () => { await findKeys("set:*", null); } })).stats;
+  results.set = (
+    await timeLoop({
+      warmup,
+      iters,
+      fn: async (i) => {
+        await set("set:" + i, val);
+      },
+    })
+  ).stats;
+  results.get = (
+    await timeLoop({
+      warmup,
+      iters,
+      fn: async (i) => {
+        await get("set:" + (i % iters));
+      },
+    })
+  ).stats;
+  results.findKeys = (
+    await timeLoop({
+      warmup: 20,
+      iters: 200,
+      fn: async () => {
+        await findKeys("set:*", null);
+      },
+    })
+  ).stats;
 
   {
     const durs = [];
     const warmupRounds = 20;
     for (let r = 0; r < bulkRounds + warmupRounds; r++) {
       const ops = [];
-      for (let j = 0; j < bulkBatch; j++) ops.push({ type: "set", key: `bulk:${r}:${j}`, value: val });
+      for (let j = 0; j < bulkBatch; j++)
+        ops.push({ type: "set", key: `bulk:${r}:${j}`, value: val });
       const t0 = performance.now();
       await doBulk(ops);
       const dt = performance.now() - t0;
@@ -651,7 +793,15 @@ export async function runMongoBench(root, conn, opts = {}) {
     results.doBulk = summarize(durs);
   }
 
-  results.remove = (await timeLoop({ warmup: 0, iters, fn: async (i) => { await remove("set:" + i); } })).stats;
+  results.remove = (
+    await timeLoop({
+      warmup: 0,
+      iters,
+      fn: async (i) => {
+        await remove("set:" + i);
+      },
+    })
+  ).stats;
 
   await close();
   return results;
@@ -675,6 +825,7 @@ git commit -m "feat(bench): mongo driver benchmark (set/get/findKeys/doBulk/remo
 ## Task 7: Render (TDD) — merge + self-contained HTML
 
 **Files:**
+
 - Create: `benchmarks/render.mjs`
 - Test: `benchmarks/render.test.mjs`
 
@@ -736,7 +887,11 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { percentDelta } from "./lib/stats.mjs";
 
-const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const esc = (s) =>
+  String(s).replace(
+    /[&<>"]/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c],
+  );
 const fmt = (n) => (n >= 1000 ? Math.round(n).toLocaleString("en-US") : n.toFixed(1));
 const sign = (n) => (n >= 0 ? "+" : "") + n.toFixed(1);
 
@@ -765,22 +920,42 @@ export function buildRows(target, before, after) {
 }
 
 function svgChart(target, rows) {
-  const W = 720, rowH = 46, padL = 120, padR = 80, padT = 30, barH = 14, gap = 6;
+  const W = 720,
+    rowH = 46,
+    padL = 120,
+    padR = 80,
+    padT = 30,
+    barH = 14,
+    gap = 6;
   const H = padT + rows.length * rowH + 20;
   const maxOps = Math.max(1, ...rows.flatMap((r) => [r.before, r.after]));
   const scale = (v) => (v / maxOps) * (W - padL - padR);
-  const parts = [`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(target)} ops/sec">`];
-  parts.push(`<text x="${padL}" y="18" font-size="13" font-weight="bold">${esc(target)} — ops/sec (higher is better)</text>`);
+  const parts = [
+    `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(target)} ops/sec">`,
+  ];
+  parts.push(
+    `<text x="${padL}" y="18" font-size="13" font-weight="bold">${esc(target)} — ops/sec (higher is better)</text>`,
+  );
   rows.forEach((r, i) => {
     const y = padT + i * rowH;
-    parts.push(`<text x="${padL - 8}" y="${y + 14}" font-size="12" text-anchor="end">${esc(r.op)}</text>`);
+    parts.push(
+      `<text x="${padL - 8}" y="${y + 14}" font-size="12" text-anchor="end">${esc(r.op)}</text>`,
+    );
     // before bar (gray)
-    parts.push(`<rect x="${padL}" y="${y}" width="${scale(r.before).toFixed(1)}" height="${barH}" fill="#9aa0a6"/>`);
-    parts.push(`<text x="${padL + scale(r.before) + 4}" y="${y + 12}" font-size="10" fill="#444">${esc(fmt(r.before))}</text>`);
+    parts.push(
+      `<rect x="${padL}" y="${y}" width="${scale(r.before).toFixed(1)}" height="${barH}" fill="#9aa0a6"/>`,
+    );
+    parts.push(
+      `<text x="${padL + scale(r.before) + 4}" y="${y + 12}" font-size="10" fill="#444">${esc(fmt(r.before))}</text>`,
+    );
     // after bar (blue)
     const y2 = y + barH + gap;
-    parts.push(`<rect x="${padL}" y="${y2}" width="${scale(r.after).toFixed(1)}" height="${barH}" fill="#1a73e8"/>`);
-    parts.push(`<text x="${padL + scale(r.after) + 4}" y="${y2 + 12}" font-size="10" fill="#1a73e8">${esc(fmt(r.after))} (${sign(r.deltaPct)}%)</text>`);
+    parts.push(
+      `<rect x="${padL}" y="${y2}" width="${scale(r.after).toFixed(1)}" height="${barH}" fill="#1a73e8"/>`,
+    );
+    parts.push(
+      `<text x="${padL + scale(r.after) + 4}" y="${y2 + 12}" font-size="10" fill="#1a73e8">${esc(fmt(r.after))} (${sign(r.deltaPct)}%)</text>`,
+    );
   });
   parts.push(`</svg>`);
   return parts.join("\n");
@@ -788,20 +963,27 @@ function svgChart(target, rows) {
 
 function table(target, rows) {
   const head = `<tr><th>op</th><th>before ops/s</th><th>after ops/s</th><th>Δ%</th><th>before median ms</th><th>after median ms</th></tr>`;
-  const body = rows.map((r) =>
-    `<tr><td>${esc(r.op)}</td><td>${esc(fmt(r.before))}</td><td>${esc(fmt(r.after))}</td>` +
-    `<td class="${r.deltaPct >= 0 ? "up" : "down"}">${sign(r.deltaPct)}%</td>` +
-    `<td>${r.beforeMedianMs.toFixed(4)}</td><td>${r.afterMedianMs.toFixed(4)}</td></tr>`
-  ).join("\n");
+  const body = rows
+    .map(
+      (r) =>
+        `<tr><td>${esc(r.op)}</td><td>${esc(fmt(r.before))}</td><td>${esc(fmt(r.after))}</td>` +
+        `<td class="${r.deltaPct >= 0 ? "up" : "down"}">${sign(r.deltaPct)}%</td>` +
+        `<td>${r.beforeMedianMs.toFixed(4)}</td><td>${r.afterMedianMs.toFixed(4)}</td></tr>`,
+    )
+    .join("\n");
   return `<h2>${esc(target)}</h2><table>${head}${body}</table>`;
 }
 
 export function renderHtml(before, after) {
-  const targets = [...new Set([...Object.keys(before.targets ?? {}), ...Object.keys(after.targets ?? {})])];
-  const sections = targets.map((t) => {
-    const rows = buildRows(t, before, after);
-    return `<section>${svgChart(t, rows)}${table(t, rows)}</section>`;
-  }).join("\n");
+  const targets = [
+    ...new Set([...Object.keys(before.targets ?? {}), ...Object.keys(after.targets ?? {})]),
+  ];
+  const sections = targets
+    .map((t) => {
+      const rows = buildRows(t, before, after);
+      return `<section>${svgChart(t, rows)}${table(t, rows)}</section>`;
+    })
+    .join("\n");
   const meta = `before: ${esc(before.label)} @ ${esc(before.commit ?? "?")} · after: ${esc(after.label)} @ ${esc(after.commit ?? "?")}`;
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><title>ueberDB perf: before vs after</title>
@@ -855,6 +1037,7 @@ git commit -m "feat(bench): self-contained inline-SVG HTML report renderer"
 ## Task 8: Per-side harness entry
 
 **Files:**
+
 - Create: `benchmarks/harness.mjs`
 
 Runs one side. Reads env: `UEBERDB_ROOT` (tree root to import sources from),
@@ -878,7 +1061,10 @@ const env = process.env;
 const root = env.UEBERDB_ROOT || process.cwd();
 const label = env.BENCH_LABEL || "after";
 const commit = env.BENCH_COMMIT || "";
-const targets = (env.BENCH_TARGETS || "cache").split(",").map((s) => s.trim()).filter(Boolean);
+const targets = (env.BENCH_TARGETS || "cache")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
 
 // Size overrides (small values used for smoke runs).
 const sizes = {
@@ -898,16 +1084,28 @@ async function main() {
   }
   if (targets.includes("pg")) {
     console.error(`[${label}] postgres ...`);
-    out.targets.postgres = await runPgBench(root, {
-      host: env.PG_HOST, port: Number(env.PG_PORT),
-      user: env.PG_USER, password: env.PG_PASSWORD, database: env.PG_DATABASE,
-    }, opts);
+    out.targets.postgres = await runPgBench(
+      root,
+      {
+        host: env.PG_HOST,
+        port: Number(env.PG_PORT),
+        user: env.PG_USER,
+        password: env.PG_PASSWORD,
+        database: env.PG_DATABASE,
+      },
+      opts,
+    );
   }
   if (targets.includes("mongo")) {
     console.error(`[${label}] mongo ...`);
-    out.targets.mongodb = await runMongoBench(root, {
-      url: env.MONGO_URL, database: env.MONGO_DATABASE,
-    }, opts);
+    out.targets.mongodb = await runMongoBench(
+      root,
+      {
+        url: env.MONGO_URL,
+        database: env.MONGO_DATABASE,
+      },
+      opts,
+    );
   }
 
   const dir = path.dirname(fileURLToPath(import.meta.url));
@@ -918,15 +1116,22 @@ async function main() {
   console.error(`[${label}] wrote ${file}`);
 }
 
-main().then(() => process.exit(0)).catch((e) => { console.error(e); process.exit(1); });
+main()
+  .then(() => process.exit(0))
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });
 ```
 
 - [ ] **Step 2: Smoke-run the cache-only path against the current tree**
 
 Run:
+
 ```bash
 BENCH_LABEL=after BENCH_TARGETS=cache BENCH_ITERS=2000 BENCH_WARMUP=200 BENCH_BULK_ROUNDS=20 BENCH_BULK_BATCH=50 node benchmarks/harness.mjs
 ```
+
 Expected: stderr shows `[after] cache ...` then `wrote .../out/after.json`;
 `benchmarks/out/after.json` exists with `targets.cache` populated.
 
@@ -942,6 +1147,7 @@ git commit -m "feat(bench): per-side harness entry point"
 ## Task 9: Orchestrator — worktree, containers, run x2, render
 
 **Files:**
+
 - Create: `benchmarks/run.mjs`
 
 - [ ] **Step 1: Write the orchestrator**
@@ -964,8 +1170,10 @@ const repoRoot = path.resolve(benchDir, "..");
 const harness = path.join(benchDir, "harness.mjs");
 const beforeRoot = path.resolve(repoRoot, "..", "ueberDB-bench-before");
 
-const sh = (cmd, args, cwd) => execFileSync(cmd, args, { cwd, stdio: "inherit", shell: process.platform === "win32" });
-const gitRev = (ref) => execFileSync("git", ["rev-parse", "--short", ref], { cwd: repoRoot }).toString().trim();
+const sh = (cmd, args, cwd) =>
+  execFileSync(cmd, args, { cwd, stdio: "inherit", shell: process.platform === "win32" });
+const gitRev = (ref) =>
+  execFileSync("git", ["rev-parse", "--short", ref], { cwd: repoRoot }).toString().trim();
 
 function setupBeforeWorktree() {
   if (!existsSync(beforeRoot)) {
@@ -983,7 +1191,14 @@ function runHarness(label, root, commit, extraEnv) {
   const res = spawnSync("node", [harness], {
     cwd: repoRoot,
     stdio: "inherit",
-    env: { ...process.env, UEBERDB_ROOT: root, BENCH_LABEL: label, BENCH_COMMIT: commit, BENCH_TARGETS: TARGETS, ...extraEnv },
+    env: {
+      ...process.env,
+      UEBERDB_ROOT: root,
+      BENCH_LABEL: label,
+      BENCH_COMMIT: commit,
+      BENCH_TARGETS: TARGETS,
+      ...extraEnv,
+    },
   });
   if (res.status !== 0) throw new Error(`harness ${label} failed with code ${res.status}`);
 }
@@ -991,18 +1206,32 @@ function runHarness(label, root, commit, extraEnv) {
 async function main() {
   const wantPg = TARGETS.includes("pg");
   const wantMongo = TARGETS.includes("mongo");
-  let pg, mongo, connEnv = {};
+  let pg,
+    mongo,
+    connEnv = {};
 
   setupBeforeWorktree();
 
   if (wantPg) {
     console.error(`> starting postgres:14-alpine ...`);
     pg = await new GenericContainer("postgres:14-alpine")
-      .withEnvironment({ POSTGRES_USER: "ueberdb", POSTGRES_PASSWORD: "ueberdb", POSTGRES_DB: "ueberdb", POSTGRES_HOST_AUTH_METHOD: "trust" })
+      .withEnvironment({
+        POSTGRES_USER: "ueberdb",
+        POSTGRES_PASSWORD: "ueberdb",
+        POSTGRES_DB: "ueberdb",
+        POSTGRES_HOST_AUTH_METHOD: "trust",
+      })
       .withExposedPorts(5432)
       .withWaitStrategy(Wait.forLogMessage(/database system is ready to accept connections/, 2))
       .start();
-    connEnv = { ...connEnv, PG_HOST: pg.getHost(), PG_PORT: String(pg.getMappedPort(5432)), PG_USER: "ueberdb", PG_PASSWORD: "ueberdb", PG_DATABASE: "ueberdb" };
+    connEnv = {
+      ...connEnv,
+      PG_HOST: pg.getHost(),
+      PG_PORT: String(pg.getMappedPort(5432)),
+      PG_USER: "ueberdb",
+      PG_PASSWORD: "ueberdb",
+      PG_DATABASE: "ueberdb",
+    };
   }
   if (wantMongo) {
     console.error(`> starting mongo ...`);
@@ -1010,7 +1239,11 @@ async function main() {
       .withExposedPorts(27017)
       .withWaitStrategy(Wait.forLogMessage(/Waiting for connections/))
       .start();
-    connEnv = { ...connEnv, MONGO_URL: `mongodb://${mongo.getHost()}:${mongo.getMappedPort(27017)}/?directConnection=true`, MONGO_DATABASE: "ueberdb_bench" };
+    connEnv = {
+      ...connEnv,
+      MONGO_URL: `mongodb://${mongo.getHost()}:${mongo.getMappedPort(27017)}/?directConnection=true`,
+      MONGO_DATABASE: "ueberdb_bench",
+    };
   }
 
   try {
@@ -1026,7 +1259,10 @@ async function main() {
   }
 }
 
-main().catch((e) => { console.error(e); process.exit(1); });
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});
 ```
 
 - [ ] **Step 2: Syntax check**
@@ -1037,9 +1273,11 @@ Expected: prints `syntax ok`.
 - [ ] **Step 3: Cache-only end-to-end (no docker) to validate orchestration + render**
 
 Run:
+
 ```bash
 BENCH_TARGETS=cache BENCH_ITERS=3000 BENCH_WARMUP=300 BENCH_BULK_ROUNDS=30 BENCH_BULK_BATCH=50 node benchmarks/run.mjs
 ```
+
 Expected: creates the `before` worktree, runs `pnpm install` there, runs the
 harness for both sides (cache only — no containers started), renders, and
 prints `Open benchmarks/results.html`. Verify `benchmarks/results.html` exists
@@ -1057,6 +1295,7 @@ git commit -m "feat(bench): orchestrator (worktree + testcontainers + render)"
 ## Task 10: Full run, README, and commit recorded results
 
 **Files:**
+
 - Create: `benchmarks/README.md`
 - Commit: `benchmarks/results.html`, `benchmarks/results.json`
 
@@ -1123,9 +1362,11 @@ Expected: all tests pass.
 - [ ] **Step 3: Full benchmark run (Docker required)**
 
 Run:
+
 ```bash
 node benchmarks/run.mjs
 ```
+
 Expected: starts Postgres + Mongo, runs both sides for all three targets,
 renders. Verify `benchmarks/results.html` shows three charts (cache, postgres,
 mongodb), each with before vs after bars and a delta table. Sanity-check the
@@ -1158,6 +1399,7 @@ git worktree remove ../ueberDB-bench-before --force
 ## Self-Review
 
 **Spec coverage:**
+
 - Two baseline points (`809bcc2` vs `HEAD`) → Task 9 (`run.mjs`). ✓
 - Isolation via worktree, no build, import `.ts` source → Tasks 4/5/6 (deep-import) + Task 9 (worktree + `pnpm install`, no build). ✓
 - Cache via `CacheAndBufferLayer` + in-memory `doBulk` backend, `readsFromCache` assertion → Tasks 3 + 4. ✓

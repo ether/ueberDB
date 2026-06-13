@@ -54,6 +54,27 @@ node --test benchmarks/lib/stats.test.mjs benchmarks/lib/timing.test.mjs benchma
   cache layer) so the prepared statements, batched `doBulk`, and `findKeys`
   query paths are actually exercised.
 
+## Reading the results (important)
+
+The three perf commits are **not** a uniform speedup — read the chart with that
+in mind:
+
+- **Big wins:** postgres `doBulk` (+248%, batched multi-row upsert) and cache
+  `flushBigCache` (~+1759%, the dirty-key Set lets `flush()` skip scanning the
+  whole LRU). Postgres `get`/`remove` gain modestly from prepared statements.
+- **A real regression:** cache `getHit` is **~58% slower**. Commit #993 made the
+  read path return a `structuredClone()` of the cached value instead of the
+  previous hand-rolled clone — safer (callers can't mutate the cache) but slower
+  per read. This is a deliberate correctness/speed tradeoff, not a harness
+  artifact. The bundled "lock-free get fast path" only pays off under
+  _concurrent_ readers, which this sequential micro-benchmark does not exercise.
+- **Mongo:** all ops within ±3% — its changes (anchored `findKeys` regex, dropped
+  per-op ping) are correctness/robustness wins that don't move local-container
+  throughput.
+
+Both sides run the identical workload, in the identical op order, each in its own
+fresh `node` process, so the Δ% is apples-to-apples per operation.
+
 ## Caveat
 
 The `before` worktree installs the lockfile as it was at the baseline commit

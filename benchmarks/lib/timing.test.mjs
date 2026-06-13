@@ -7,7 +7,9 @@ test("runs warmup + iters times and returns a stats summary", async () => {
   const { stats } = await timeLoop({
     warmup: 3,
     iters: 10,
-    fn: async () => { calls++; },
+    fn: async () => {
+      calls++;
+    },
   });
   assert.equal(calls, 13); // warmup + measured
   assert.equal(stats.n, 10); // only measured iters counted
@@ -17,6 +19,12 @@ test("runs warmup + iters times and returns a stats summary", async () => {
 
 test("passes the iteration index to fn", async () => {
   const seen = [];
-  await timeLoop({ warmup: 0, iters: 4, fn: async (i) => { seen.push(i); } });
+  await timeLoop({
+    warmup: 0,
+    iters: 4,
+    fn: async (i) => {
+      seen.push(i);
+    },
+  });
   assert.deepEqual(seen, [0, 1, 2, 3]);
 });

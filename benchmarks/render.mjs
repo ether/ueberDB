@@ -3,7 +3,11 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { percentDelta } from "./lib/stats.mjs";
 
-const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const esc = (s) =>
+  String(s).replace(
+    /[&<>"]/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c],
+  );
 const fmt = (n) => (n >= 1000 ? Math.round(n).toLocaleString("en-US") : n.toFixed(1));
 const sign = (n) => (n >= 0 ? "+" : "") + n.toFixed(1);
 
@@ -32,22 +36,42 @@ export function buildRows(target, before, after) {
 }
 
 function svgChart(target, rows) {
-  const W = 720, rowH = 46, padL = 120, padR = 80, padT = 30, barH = 14, gap = 6;
+  const W = 720,
+    rowH = 46,
+    padL = 120,
+    padR = 80,
+    padT = 30,
+    barH = 14,
+    gap = 6;
   const H = padT + rows.length * rowH + 20;
   const maxOps = Math.max(1, ...rows.flatMap((r) => [r.before, r.after]));
   const scale = (v) => (v / maxOps) * (W - padL - padR);
-  const parts = [`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(target)} ops/sec">`];
-  parts.push(`<text x="${padL}" y="18" font-size="13" font-weight="bold">${esc(target)} — ops/sec (higher is better)</text>`);
+  const parts = [
+    `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(target)} ops/sec">`,
+  ];
+  parts.push(
+    `<text x="${padL}" y="18" font-size="13" font-weight="bold">${esc(target)} — ops/sec (higher is better)</text>`,
+  );
   rows.forEach((r, i) => {
     const y = padT + i * rowH;
-    parts.push(`<text x="${padL - 8}" y="${y + 14}" font-size="12" text-anchor="end">${esc(r.op)}</text>`);
+    parts.push(
+      `<text x="${padL - 8}" y="${y + 14}" font-size="12" text-anchor="end">${esc(r.op)}</text>`,
+    );
     // before bar (gray)
-    parts.push(`<rect x="${padL}" y="${y}" width="${scale(r.before).toFixed(1)}" height="${barH}" fill="#9aa0a6"/>`);
-    parts.push(`<text x="${padL + scale(r.before) + 4}" y="${y + 12}" font-size="10" fill="#444">${esc(fmt(r.before))}</text>`);
+    parts.push(
+      `<rect x="${padL}" y="${y}" width="${scale(r.before).toFixed(1)}" height="${barH}" fill="#9aa0a6"/>`,
+    );
+    parts.push(
+      `<text x="${padL + scale(r.before) + 4}" y="${y + 12}" font-size="10" fill="#444">${esc(fmt(r.before))}</text>`,
+    );
     // after bar (blue)
     const y2 = y + barH + gap;
-    parts.push(`<rect x="${padL}" y="${y2}" width="${scale(r.after).toFixed(1)}" height="${barH}" fill="#1a73e8"/>`);
-    parts.push(`<text x="${padL + scale(r.after) + 4}" y="${y2 + 12}" font-size="10" fill="#1a73e8">${esc(fmt(r.after))} (${sign(r.deltaPct)}%)</text>`);
+    parts.push(
+      `<rect x="${padL}" y="${y2}" width="${scale(r.after).toFixed(1)}" height="${barH}" fill="#1a73e8"/>`,
+    );
+    parts.push(
+      `<text x="${padL + scale(r.after) + 4}" y="${y2 + 12}" font-size="10" fill="#1a73e8">${esc(fmt(r.after))} (${sign(r.deltaPct)}%)</text>`,
+    );
   });
   parts.push(`</svg>`);
   return parts.join("\n");
@@ -55,20 +79,27 @@ function svgChart(target, rows) {
 
 function table(target, rows) {
   const head = `<tr><th>op</th><th>before ops/s</th><th>after ops/s</th><th>Δ%</th><th>before median ms</th><th>after median ms</th></tr>`;
-  const body = rows.map((r) =>
-    `<tr><td>${esc(r.op)}</td><td>${esc(fmt(r.before))}</td><td>${esc(fmt(r.after))}</td>` +
-    `<td class="${r.deltaPct >= 0 ? "up" : "down"}">${sign(r.deltaPct)}%</td>` +
-    `<td>${r.beforeMedianMs.toFixed(4)}</td><td>${r.afterMedianMs.toFixed(4)}</td></tr>`
-  ).join("\n");
+  const body = rows
+    .map(
+      (r) =>
+        `<tr><td>${esc(r.op)}</td><td>${esc(fmt(r.before))}</td><td>${esc(fmt(r.after))}</td>` +
+        `<td class="${r.deltaPct >= 0 ? "up" : "down"}">${sign(r.deltaPct)}%</td>` +
+        `<td>${r.beforeMedianMs.toFixed(4)}</td><td>${r.afterMedianMs.toFixed(4)}</td></tr>`,
+    )
+    .join("\n");
   return `<h2>${esc(target)}</h2><table>${head}${body}</table>`;
 }
 
 export function renderHtml(before, after) {
-  const targets = [...new Set([...Object.keys(before.targets ?? {}), ...Object.keys(after.targets ?? {})])];
-  const sections = targets.map((t) => {
-    const rows = buildRows(t, before, after);
-    return `<section>${svgChart(t, rows)}${table(t, rows)}</section>`;
-  }).join("\n");
+  const targets = [
+    ...new Set([...Object.keys(before.targets ?? {}), ...Object.keys(after.targets ?? {})]),
+  ];
+  const sections = targets
+    .map((t) => {
+      const rows = buildRows(t, before, after);
+      return `<section>${svgChart(t, rows)}${table(t, rows)}</section>`;
+    })
+    .join("\n");
   const meta = `before: ${esc(before.label)} @ ${esc(before.commit ?? "?")} · after: ${esc(after.label)} @ ${esc(after.commit ?? "?")}`;
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><title>ueberDB perf: before vs after</title>

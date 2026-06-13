@@ -9,7 +9,10 @@ const env = process.env;
 const root = env.UEBERDB_ROOT || process.cwd();
 const label = env.BENCH_LABEL || "after";
 const commit = env.BENCH_COMMIT || "";
-const targets = (env.BENCH_TARGETS || "cache").split(",").map((s) => s.trim()).filter(Boolean);
+const targets = (env.BENCH_TARGETS || "cache")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
 
 // Size overrides (small values used for smoke runs).
 const sizes = {
@@ -29,16 +32,28 @@ async function main() {
   }
   if (targets.includes("pg")) {
     console.error(`[${label}] postgres ...`);
-    out.targets.postgres = await runPgBench(root, {
-      host: env.PG_HOST, port: Number(env.PG_PORT),
-      user: env.PG_USER, password: env.PG_PASSWORD, database: env.PG_DATABASE,
-    }, opts);
+    out.targets.postgres = await runPgBench(
+      root,
+      {
+        host: env.PG_HOST,
+        port: Number(env.PG_PORT),
+        user: env.PG_USER,
+        password: env.PG_PASSWORD,
+        database: env.PG_DATABASE,
+      },
+      opts,
+    );
   }
   if (targets.includes("mongo")) {
     console.error(`[${label}] mongo ...`);
-    out.targets.mongodb = await runMongoBench(root, {
-      url: env.MONGO_URL, database: env.MONGO_DATABASE,
-    }, opts);
+    out.targets.mongodb = await runMongoBench(
+      root,
+      {
+        url: env.MONGO_URL,
+        database: env.MONGO_DATABASE,
+      },
+      opts,
+    );
   }
 
   const dir = path.dirname(fileURLToPath(import.meta.url));
@@ -49,4 +64,9 @@ async function main() {
   console.error(`[${label}] wrote ${file}`);
 }
 
-main().then(() => process.exit(0)).catch((e) => { console.error(e); process.exit(1); });
+main()
+  .then(() => process.exit(0))
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });

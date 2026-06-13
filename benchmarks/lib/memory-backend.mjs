@@ -14,14 +14,24 @@ export function createMemoryBackend() {
   const data = new Map();
   return {
     _data: data,
-    get isAsync() { return true; },
+    get isAsync() {
+      return true;
+    },
     settings: {},
     logger: undefined,
     async init() {},
-    async close() { data.clear(); },
-    async get(key) { return data.get(key); },
-    async set(key, value) { data.set(key, value); },
-    async remove(key) { data.delete(key); },
+    async close() {
+      data.clear();
+    },
+    async get(key) {
+      return data.get(key);
+    },
+    async set(key, value) {
+      data.set(key, value);
+    },
+    async remove(key) {
+      data.delete(key);
+    },
     async findKeys(key, notKey) {
       const re = globToRegExp(key, notKey);
       const out = [];

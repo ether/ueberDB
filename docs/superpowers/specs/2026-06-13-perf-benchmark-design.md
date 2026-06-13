@@ -56,14 +56,14 @@ The three commits changed two different layers, so a single uniform entry point
 does not faithfully exercise all of them. Concretely: the `CacheAndBufferLayer`
 flushes writes through the driver's `doBulk`, so the Postgres single-row
 prepared `set`/`remove` statements and the Mongo/PG `findKeys` paths are
-*bypassed* when driving purely through the public API. We therefore measure
+_bypassed_ when driving purely through the public API. We therefore measure
 each commit at its own layer:
 
-| Target            | Entry point                          | Exercises                                              | Infra            |
-|-------------------|--------------------------------------|--------------------------------------------------------|------------------|
-| cache (`acd8cd9`) | **`CacheAndBufferLayer` `Database` class, deep-imported** from `<root>/lib/CacheAndBufferLayer.ts`, wrapping a harness-local in-memory async backend that implements `doBulk` | `CacheAndBufferLayer` hot paths (structuredClone read, dirty-key Set, lock-free get, lazy flush) | none |
-| postgres (`70e76da`) | **driver class directly** (`<root>/databases/postgres_db.ts`) | prepared `get`/`set`/`remove`, batched multi-row `doBulk` upsert, `findKeys` | docker `postgres:14-alpine` |
-| mongodb (`73fdb5f`) | **driver class directly** (`<root>/databases/mongodb_db.ts`) | `get`/`set`/`remove`, unordered bulk `doBulk`, fixed `findKeys` regex | docker `mongo` |
+| Target               | Entry point                                                                                                                                                                   | Exercises                                                                                        | Infra                       |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | --------------------------- |
+| cache (`acd8cd9`)    | **`CacheAndBufferLayer` `Database` class, deep-imported** from `<root>/lib/CacheAndBufferLayer.ts`, wrapping a harness-local in-memory async backend that implements `doBulk` | `CacheAndBufferLayer` hot paths (structuredClone read, dirty-key Set, lock-free get, lazy flush) | none                        |
+| postgres (`70e76da`) | **driver class directly** (`<root>/databases/postgres_db.ts`)                                                                                                                 | prepared `get`/`set`/`remove`, batched multi-row `doBulk` upsert, `findKeys`                     | docker `postgres:14-alpine` |
+| mongodb (`73fdb5f`)  | **driver class directly** (`<root>/databases/mongodb_db.ts`)                                                                                                                  | `get`/`set`/`remove`, unordered bulk `doBulk`, fixed `findKeys` regex                            | docker `mongo`              |
 
 For the cache target we do not use the public `Database`/`memory` backend: the
 `memory` backend forces `cache=0` and does not implement `doBulk`, so enabling
@@ -82,7 +82,7 @@ harness wraps their methods with `util.promisify` to drive them.
 **Caveat to record in the report:** the `before` worktree installs the
 lockfile as it was at `809bcc2` (e.g. `mongodb@7.2.0`), while `after` uses the
 current lockfile (`mongodb@7.3.0`). The measured deltas reflect our code
-changes *and* any driver-library minor-version differences. This is the honest
+changes _and_ any driver-library minor-version differences. This is the honest
 "state of the repo then vs now"; the report notes it explicitly.
 
 ### Measurement methodology

@@ -20,8 +20,11 @@ export async function runPgBench(root, conn, opts = {}) {
   const bulkBatch = opts.bulkBatch ?? 100;
   const PgDb = await loadPgDriver(root);
   const db = new PgDb({
-    host: conn.host, port: conn.port, user: conn.user,
-    password: conn.password, database: conn.database,
+    host: conn.host,
+    port: conn.port,
+    user: conn.user,
+    password: conn.password,
+    database: conn.database,
   });
   const init = promisify(db.init.bind(db));
   const get = promisify(db.get.bind(db));
@@ -39,13 +42,37 @@ export async function runPgBench(root, conn, opts = {}) {
   const results = {};
 
   // set (prepared upsert, single-row path).
-  results.set = (await timeLoop({ warmup, iters, fn: async (i) => { await set("set:" + i, val); } })).stats;
+  results.set = (
+    await timeLoop({
+      warmup,
+      iters,
+      fn: async (i) => {
+        await set("set:" + i, val);
+      },
+    })
+  ).stats;
 
   // get (prepared select), keys exist from the set loop.
-  results.get = (await timeLoop({ warmup, iters, fn: async (i) => { await get("set:" + (i % iters)); } })).stats;
+  results.get = (
+    await timeLoop({
+      warmup,
+      iters,
+      fn: async (i) => {
+        await get("set:" + (i % iters));
+      },
+    })
+  ).stats;
 
   // findKeys (LIKE query). Fewer iters: each call scans many rows.
-  results.findKeys = (await timeLoop({ warmup: 20, iters: 200, fn: async () => { await findKeys("set:*", null); } })).stats;
+  results.findKeys = (
+    await timeLoop({
+      warmup: 20,
+      iters: 200,
+      fn: async () => {
+        await findKeys("set:*", null);
+      },
+    })
+  ).stats;
 
   // doBulk (batched multi-row upsert).
   {
@@ -53,7 +80,8 @@ export async function runPgBench(root, conn, opts = {}) {
     const warmupRounds = 20;
     for (let r = 0; r < bulkRounds + warmupRounds; r++) {
       const ops = [];
-      for (let j = 0; j < bulkBatch; j++) ops.push({ type: "set", key: `bulk:${r}:${j}`, value: val });
+      for (let j = 0; j < bulkBatch; j++)
+        ops.push({ type: "set", key: `bulk:${r}:${j}`, value: val });
       const t0 = performance.now();
       await doBulk(ops);
       const dt = performance.now() - t0;
@@ -63,7 +91,15 @@ export async function runPgBench(root, conn, opts = {}) {
   }
 
   // remove (prepared delete), removes the keys written by the set loop.
-  results.remove = (await timeLoop({ warmup: 0, iters, fn: async (i) => { await remove("set:" + i); } })).stats;
+  results.remove = (
+    await timeLoop({
+      warmup: 0,
+      iters,
+      fn: async (i) => {
+        await remove("set:" + i);
+      },
+    })
+  ).stats;
 
   await close();
   return results;

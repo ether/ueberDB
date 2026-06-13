@@ -16,8 +16,10 @@ const harness = path.join(benchDir, "harness.mjs");
 const registerTs = pathToFileURL(path.join(benchDir, "register-ts.mjs")).href;
 const beforeRoot = path.resolve(repoRoot, "..", "ueberDB-bench-before");
 
-const sh = (cmd, args, cwd) => execFileSync(cmd, args, { cwd, stdio: "inherit", shell: process.platform === "win32" });
-const gitRev = (ref) => execFileSync("git", ["rev-parse", "--short", ref], { cwd: repoRoot }).toString().trim();
+const sh = (cmd, args, cwd) =>
+  execFileSync(cmd, args, { cwd, stdio: "inherit", shell: process.platform === "win32" });
+const gitRev = (ref) =>
+  execFileSync("git", ["rev-parse", "--short", ref], { cwd: repoRoot }).toString().trim();
 
 function setupBeforeWorktree() {
   if (!existsSync(beforeRoot)) {
@@ -35,7 +37,14 @@ function runHarness(label, root, commit, extraEnv) {
   const res = spawnSync("node", ["--import", registerTs, harness], {
     cwd: repoRoot,
     stdio: "inherit",
-    env: { ...process.env, UEBERDB_ROOT: root, BENCH_LABEL: label, BENCH_COMMIT: commit, BENCH_TARGETS: TARGETS, ...extraEnv },
+    env: {
+      ...process.env,
+      UEBERDB_ROOT: root,
+      BENCH_LABEL: label,
+      BENCH_COMMIT: commit,
+      BENCH_TARGETS: TARGETS,
+      ...extraEnv,
+    },
   });
   if (res.status !== 0) throw new Error(`harness ${label} failed with code ${res.status}`);
 }
@@ -43,18 +52,32 @@ function runHarness(label, root, commit, extraEnv) {
 async function main() {
   const wantPg = TARGETS.includes("pg");
   const wantMongo = TARGETS.includes("mongo");
-  let pg, mongo, connEnv = {};
+  let pg,
+    mongo,
+    connEnv = {};
 
   setupBeforeWorktree();
 
   if (wantPg) {
     console.error(`> starting postgres:14-alpine ...`);
     pg = await new GenericContainer("postgres:14-alpine")
-      .withEnvironment({ POSTGRES_USER: "ueberdb", POSTGRES_PASSWORD: "ueberdb", POSTGRES_DB: "ueberdb", POSTGRES_HOST_AUTH_METHOD: "trust" })
+      .withEnvironment({
+        POSTGRES_USER: "ueberdb",
+        POSTGRES_PASSWORD: "ueberdb",
+        POSTGRES_DB: "ueberdb",
+        POSTGRES_HOST_AUTH_METHOD: "trust",
+      })
       .withExposedPorts(5432)
       .withWaitStrategy(Wait.forLogMessage(/database system is ready to accept connections/, 2))
       .start();
-    connEnv = { ...connEnv, PG_HOST: pg.getHost(), PG_PORT: String(pg.getMappedPort(5432)), PG_USER: "ueberdb", PG_PASSWORD: "ueberdb", PG_DATABASE: "ueberdb" };
+    connEnv = {
+      ...connEnv,
+      PG_HOST: pg.getHost(),
+      PG_PORT: String(pg.getMappedPort(5432)),
+      PG_USER: "ueberdb",
+      PG_PASSWORD: "ueberdb",
+      PG_DATABASE: "ueberdb",
+    };
   }
   if (wantMongo) {
     console.error(`> starting mongo ...`);
@@ -62,7 +85,11 @@ async function main() {
       .withExposedPorts(27017)
       .withWaitStrategy(Wait.forLogMessage(/Waiting for connections/))
       .start();
-    connEnv = { ...connEnv, MONGO_URL: `mongodb://${mongo.getHost()}:${mongo.getMappedPort(27017)}/?directConnection=true`, MONGO_DATABASE: "ueberdb_bench" };
+    connEnv = {
+      ...connEnv,
+      MONGO_URL: `mongodb://${mongo.getHost()}:${mongo.getMappedPort(27017)}/?directConnection=true`,
+      MONGO_DATABASE: "ueberdb_bench",
+    };
   }
 
   try {
@@ -78,4 +105,7 @@ async function main() {
   }
 }
 
-main().catch((e) => { console.error(e); process.exit(1); });
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});
