@@ -26,22 +26,29 @@ The three commits under test (all after `809bcc2`):
 
 ## Approach
 
-### Isolation via two git worktrees
+### Isolation via one git worktree, no build step
 
-Create two worktrees and build each:
+The "after" side is the **current working tree** (`HEAD`). The "before" side is
+a single git worktree checked out at `809bcc2`. Only the `before` worktree is
+created; `after` needs nothing extra.
 
-- `before/` checked out at `809bcc2`
-- `after/`  checked out at `HEAD`
+**No build is required.** This repo targets Node ≥24 (verified: v26.1.0), which
+runs `.ts` files directly via type-stripping with no flags. The harness
+deep-imports the library's TypeScript **source** from each tree, so we test the
+exact source at each commit without a rolldown build. (The bundled `dist` is
+unusable here anyway: rolldown emits a flat, hash-named bundle and does not
+export `CacheAndBufferLayer`.) The source files' only runtime imports are Node
+builtins and bare driver packages (`pg`, `mongodb`, `async`); their relative
+imports are type-only and are erased by type-stripping.
 
-Each gets `pnpm install --frozen-lockfile` + `pnpm run build`. The benchmark
-harness lives in the **main** working tree (`benchmarks/`), outside both
-worktrees, and is run twice — once pointed at `before/dist`, once at
-`after/dist` — via an env var (`UEBERDB_DIST`). Same harness, same machine,
-same docker containers → only library code differs between runs.
+The `before` worktree therefore only needs `pnpm install --frozen-lockfile`
+(to provide the driver packages from that commit's lockfile) — no build. The
+harness lives in the **main** tree (`benchmarks/`) and is run once per side,
+pointed at a tree root via the `UEBERDB_ROOT` env var (the current tree for
+`after`, the worktree for `before`). Same harness, same machine, same docker
+containers → only library source differs between runs.
 
-Worktrees are created via the `using-git-worktrees` skill (native tool or
-`git worktree` fallback). They are temporary build scratch space, not
-committed.
+The `before` worktree is temporary scratch space, not committed.
 
 ### Measure each commit at the layer it changed (refined during planning)
 
@@ -54,9 +61,9 @@ each commit at its own layer:
 
 | Target            | Entry point                          | Exercises                                              | Infra            |
 |-------------------|--------------------------------------|--------------------------------------------------------|------------------|
-| cache (`acd8cd9`) | **`CacheAndBufferLayer` `Database` class, deep-imported** from `dist/lib/CacheAndBufferLayer.js`, wrapping a harness-local in-memory async backend that implements `doBulk` | `CacheAndBufferLayer` hot paths (structuredClone read, dirty-key Set, lock-free get, lazy flush) | none |
-| postgres (`70e76da`) | **driver class directly** (`dist/databases/postgres_db.js`) | prepared `get`/`set`/`remove`, batched multi-row `doBulk` upsert, `findKeys` | docker `postgres:14-alpine` |
-| mongodb (`73fdb5f`) | **driver class directly** (`dist/databases/mongodb_db.js`) | `get`/`set`/`remove`, unordered bulk `doBulk`, fixed `findKeys` regex | docker `mongo` |
+| cache (`acd8cd9`) | **`CacheAndBufferLayer` `Database` class, deep-imported** from `<root>/lib/CacheAndBufferLayer.ts`, wrapping a harness-local in-memory async backend that implements `doBulk` | `CacheAndBufferLayer` hot paths (structuredClone read, dirty-key Set, lock-free get, lazy flush) | none |
+| postgres (`70e76da`) | **driver class directly** (`<root>/databases/postgres_db.ts`) | prepared `get`/`set`/`remove`, batched multi-row `doBulk` upsert, `findKeys` | docker `postgres:14-alpine` |
+| mongodb (`73fdb5f`) | **driver class directly** (`<root>/databases/mongodb_db.ts`) | `get`/`set`/`remove`, unordered bulk `doBulk`, fixed `findKeys` regex | docker `mongo` |
 
 For the cache target we do not use the public `Database`/`memory` backend: the
 `memory` backend forces `cache=0` and does not implement `doBulk`, so enabling
@@ -135,13 +142,15 @@ harness itself; it imports the already-built library `dist`):
   `CacheAndBufferLayer`.
 - `benchmarks/pg-bench.mjs` — Postgres driver-direct workload.
 - `benchmarks/mongo-bench.mjs` — Mongo driver-direct workload.
-- `benchmarks/harness.mjs` — entry: reads `UEBERDB_DIST` + container conn env,
-  runs the requested targets, writes `<label>.json`.
+- `benchmarks/harness.mjs` — entry: reads `UEBERDB_ROOT` (tree root) + container
+  conn env, deep-imports `.ts` sources under that root, runs the requested
+  targets, writes `<label>.json`.
 - `benchmarks/render.mjs` — merges `before.json` + `after.json` → self-contained
   `results.html` (inline SVG) + `results.json`.
-- `benchmarks/run.mjs` — orchestrator: build `after`, add+build a `before`
-  worktree at `809bcc2`, start PG/Mongo via testcontainers, run harness twice,
-  render, tear down.
+- `benchmarks/run.mjs` — orchestrator: add a `before` worktree at `809bcc2` +
+  `pnpm install` there (no build), start PG/Mongo via testcontainers, run the
+  harness once per side (`after` = current tree, `before` = worktree), render,
+  tear down.
 - `benchmarks/README.md` — how to run it.
 
 Unit tests for the pure pieces (`stats`, `render`) use Node's built-in
