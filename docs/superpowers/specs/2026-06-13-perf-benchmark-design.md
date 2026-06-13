@@ -43,20 +43,40 @@ Worktrees are created via the `using-git-worktrees` skill (native tool or
 `git worktree` fallback). They are temporary build scratch space, not
 committed.
 
-### Drive through the public ueberDB API
+### Measure each commit at the layer it changed (refined during planning)
 
-All measurements go through the stable public surface
-(`init / get / set / remove / findKeys / doBulk`), which is identical in both
-versions. Each backend naturally exercises the changed code:
+The three commits changed two different layers, so a single uniform entry point
+does not faithfully exercise all of them. Concretely: the `CacheAndBufferLayer`
+flushes writes through the driver's `doBulk`, so the Postgres single-row
+prepared `set`/`remove` statements and the Mongo/PG `findKeys` paths are
+*bypassed* when driving purely through the public API. We therefore measure
+each commit at its own layer:
 
-| Backend            | Exercises                                              | Infra            |
-|--------------------|-------------------------------------------------------|------------------|
-| `memory`           | `CacheAndBufferLayer` hot paths (no real I/O)         | none             |
-| `postgres`         | batched `doBulk` upsert + prepared `get/set/remove`   | docker `postgres:14-alpine` |
-| `mongodb`          | no per-op ping, unordered bulk, `findKeys` regex      | docker `mongo`   |
+| Target            | Entry point                          | Exercises                                              | Infra            |
+|-------------------|--------------------------------------|--------------------------------------------------------|------------------|
+| cache (`acd8cd9`) | **`CacheAndBufferLayer` `Database` class, deep-imported** from `dist/lib/CacheAndBufferLayer.js`, wrapping a harness-local in-memory async backend that implements `doBulk` | `CacheAndBufferLayer` hot paths (structuredClone read, dirty-key Set, lock-free get, lazy flush) | none |
+| postgres (`70e76da`) | **driver class directly** (`dist/databases/postgres_db.js`) | prepared `get`/`set`/`remove`, batched multi-row `doBulk` upsert, `findKeys` | docker `postgres:14-alpine` |
+| mongodb (`73fdb5f`) | **driver class directly** (`dist/databases/mongodb_db.js`) | `get`/`set`/`remove`, unordered bulk `doBulk`, fixed `findKeys` regex | docker `mongo` |
 
-Using the `memory` backend for the cache means timing reflects the cache/buffer
-layer changes rather than driver or network cost.
+For the cache target we do not use the public `Database`/`memory` backend: the
+`memory` backend forces `cache=0` and does not implement `doBulk`, so enabling
+caching on it would throw on flush. Instead the harness constructs the
+`CacheAndBufferLayer` `Database` directly (`new Database(backend, { cache:
+100000, writeInterval: 100 }, noopLogger)`) around a harness-local async
+backend backed by a `Map` that implements `init/close/get/set/remove/findKeys/
+doBulk` and reports `isAsync === true`. Underlying I/O is then a fast in-memory
+Map, so timing reflects the cache layer, not storage. The harness asserts
+`metrics.readsFromCache` advances to confirm the cache-hit path is actually
+measured.
+
+Both driver classes are callback-style (`isAsync` is false / unset); the
+harness wraps their methods with `util.promisify` to drive them.
+
+**Caveat to record in the report:** the `before` worktree installs the
+lockfile as it was at `809bcc2` (e.g. `mongodb@7.2.0`), while `after` uses the
+current lockfile (`mongodb@7.3.0`). The measured deltas reflect our code
+changes *and* any driver-library minor-version differences. This is the honest
+"state of the repo then vs now"; the report notes it explicitly.
 
 ### Measurement methodology
 
@@ -91,28 +111,44 @@ them sequentially, then containers are torn down.
 
 ### Output
 
-`benchmarks/results.html` — a self-contained file:
+`benchmarks/results.html` — a self-contained file with **no external
+resources** (no CDN, no JS library):
 
-- One grouped bar chart per backend (before vs after, x-axis = operation,
-  y-axis = ops/sec or median latency). Chart.js inlined (no network at view
-  time).
-- A markdown/HTML summary table with before, after, and **% delta** per op.
+- One grouped bar chart per target, drawn as inline `<svg>` `<rect>` bars
+  (before vs after per operation, y-axis = ops/sec). Hand-rolled so the file
+  renders offline with zero dependencies.
+- An HTML summary table with before, after, and **% delta** per op.
 
 Raw measurements also written to `benchmarks/results.json` for reproducibility.
 
 ## Components
 
-- `benchmarks/harness.ts` — workload definitions + timing loop; reads
-  `UEBERDB_DIST` to import the build under test; writes one JSON result set.
-- `benchmarks/run.ts` (or a small script) — orchestrates: start containers,
-  build both worktrees, run harness twice, merge JSON, render HTML, tear down.
-- `benchmarks/render.ts` — turns merged JSON into `results.html`.
+Plain ESM JavaScript (`.mjs`), run directly on Node ≥24 (no build step for the
+harness itself; it imports the already-built library `dist`):
+
+- `benchmarks/lib/stats.mjs` — pure stats: mean/median/min/p95/opsPerSec/percentDelta.
+- `benchmarks/lib/timing.mjs` — `timeLoop({ warmup, iters, fn })` → per-iteration
+  samples + stats.
+- `benchmarks/lib/memory-backend.mjs` — harness-local async `Map` backend
+  (implements `doBulk`) for the cache target.
+- `benchmarks/cache-bench.mjs` — cache workload via deep-imported
+  `CacheAndBufferLayer`.
+- `benchmarks/pg-bench.mjs` — Postgres driver-direct workload.
+- `benchmarks/mongo-bench.mjs` — Mongo driver-direct workload.
+- `benchmarks/harness.mjs` — entry: reads `UEBERDB_DIST` + container conn env,
+  runs the requested targets, writes `<label>.json`.
+- `benchmarks/render.mjs` — merges `before.json` + `after.json` → self-contained
+  `results.html` (inline SVG) + `results.json`.
+- `benchmarks/run.mjs` — orchestrator: build `after`, add+build a `before`
+  worktree at `809bcc2`, start PG/Mongo via testcontainers, run harness twice,
+  render, tear down.
 - `benchmarks/README.md` — how to run it.
 
-The harness and renderer are committed under `benchmarks/`. Generated
-`results.html` / `results.json` are committed as the recorded result of this
-comparison (or gitignored if we prefer to regenerate — decide at implementation
-time; default: commit the harness, commit a sample result).
+Unit tests for the pure pieces (`stats`, `render`) use Node's built-in
+`node:test` runner (`node --test`) to keep the harness self-contained and avoid
+touching the repo's vitest config. The harness and renderer are committed under
+`benchmarks/`; a generated `results.html` / `results.json` from one run is
+committed as the recorded result.
 
 ## Error handling
 
