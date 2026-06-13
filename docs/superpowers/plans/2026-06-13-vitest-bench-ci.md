@@ -81,6 +81,12 @@ In the `"scripts"` block, add these two entries (after `"test"`):
 
 - [ ] **Step 3: Create `benchmarks/cache.bench.ts`**
 
+**NOTE (applies to all bench files):** `vitest bench` (4.1.8) does NOT execute
+`beforeAll`/`afterAll` declared *inside* a `describe` block — they silently
+no-op and the benches read `NaN`. Declare the shared `let` state and the
+`beforeAll`/`afterAll` hooks at **file scope**; keep only the `bench()` calls
+inside `describe("cache")`. The block below shows the hooks at file scope.
+
 ```ts
 import { afterAll, beforeAll, bench, describe } from "vitest";
 import { Database } from "../lib/CacheAndBufferLayer";
@@ -219,6 +225,11 @@ git commit -m "feat(bench): vitest cache benches + benchmark config/scripts"
 
 - [ ] **Step 1: Create `benchmarks/postgres.bench.ts`**
 
+**IMPORTANT (learned in Task 1):** `vitest bench` (4.1.8) does NOT run
+`beforeAll`/`afterAll` declared *inside* a `describe` block — they silently no-op
+and benches produce `NaN`. So hooks and shared state live at **file scope**; only
+the `bench()` calls go inside `describe("postgres")`.
+
 ```ts
 import { afterAll, beforeAll, bench, describe } from "vitest";
 import { GenericContainer, type StartedTestContainer } from "testcontainers";
@@ -228,56 +239,57 @@ import PgDb from "../databases/postgres_db";
 const val = JSON.stringify({ a: "x".repeat(64), n: 1 });
 const SEED = 2000;
 
-describe("postgres", () => {
-  let container: StartedTestContainer;
-  let db: any;
-  let set: any;
-  let get: any;
-  let findKeys: any;
-  let doBulk: any;
-  let remove: any;
-  let close: any;
-  let setI = 0;
-  let getI = 0;
-  let rmI = 0;
-  let bulkR = 0;
+let container: StartedTestContainer;
+let db: any;
+let set: any;
+let get: any;
+let findKeys: any;
+let doBulk: any;
+let remove: any;
+let close: any;
+let setI = 0;
+let getI = 0;
+let rmI = 0;
+let bulkR = 0;
 
-  beforeAll(async () => {
-    container = await new GenericContainer("postgres:14-alpine")
-      .withExposedPorts(5432)
-      .withEnvironment({
-        POSTGRES_USER: "ueberdb",
-        POSTGRES_PASSWORD: "ueberdb",
-        POSTGRES_DB: "ueberdb",
-        POSTGRES_HOST_AUTH_METHOD: "trust",
-      })
-      .start();
-    db = new PgDb({
-      host: container.getHost(),
-      port: container.getMappedPort(5432),
-      user: "ueberdb",
-      password: "ueberdb",
-      database: "ueberdb",
-    });
-    const init = promisify(db.init.bind(db));
-    set = promisify(db.set.bind(db));
-    get = promisify(db.get.bind(db));
-    findKeys = promisify(db.findKeys.bind(db));
-    doBulk = promisify(db.doBulk.bind(db));
-    remove = promisify(db.remove.bind(db));
-    close = promisify(db.close.bind(db));
-    await init();
-    // Seed rows so get/findKeys have stable data to read.
-    const ops = [];
-    for (let i = 0; i < SEED; i++) ops.push({ type: "set", key: "seed:" + i, value: val });
-    await doBulk(ops);
-  }, 120000);
-
-  afterAll(async () => {
-    if (close) await close();
-    if (container) await container.stop();
+// File-scope hooks: vitest bench skips describe-level beforeAll/afterAll (4.1.8).
+beforeAll(async () => {
+  container = await new GenericContainer("postgres:14-alpine")
+    .withExposedPorts(5432)
+    .withEnvironment({
+      POSTGRES_USER: "ueberdb",
+      POSTGRES_PASSWORD: "ueberdb",
+      POSTGRES_DB: "ueberdb",
+      POSTGRES_HOST_AUTH_METHOD: "trust",
+    })
+    .start();
+  db = new PgDb({
+    host: container.getHost(),
+    port: container.getMappedPort(5432),
+    user: "ueberdb",
+    password: "ueberdb",
+    database: "ueberdb",
   });
+  const init = promisify(db.init.bind(db));
+  set = promisify(db.set.bind(db));
+  get = promisify(db.get.bind(db));
+  findKeys = promisify(db.findKeys.bind(db));
+  doBulk = promisify(db.doBulk.bind(db));
+  remove = promisify(db.remove.bind(db));
+  close = promisify(db.close.bind(db));
+  await init();
+  // Seed rows so get/findKeys have stable data to read.
+  const ops = [];
+  for (let i = 0; i < SEED; i++) ops.push({ type: "set", key: "seed:" + i, value: val });
+  await doBulk(ops);
+}, 120000);
 
+afterAll(async () => {
+  if (close) await close();
+  if (container) await container.stop();
+});
+
+describe("postgres", () => {
   bench("set", async () => {
     await set("set:" + setI++, val);
   });
@@ -331,6 +343,9 @@ git commit -m "feat(bench): vitest postgres driver benches (testcontainers)"
 
 - [ ] **Step 1: Create `benchmarks/mongodb.bench.ts`**
 
+**IMPORTANT (same as Task 2):** hooks at **file scope**, `bench()` calls inside
+`describe("mongodb")` — `vitest bench` 4.1.8 skips describe-level hooks.
+
 ```ts
 import { afterAll, beforeAll, bench, describe } from "vitest";
 import { GenericContainer, type StartedTestContainer } from "testcontainers";
@@ -340,42 +355,43 @@ import MongoDb from "../databases/mongodb_db";
 const val = JSON.stringify({ a: "x".repeat(64), n: 1 });
 const SEED = 2000;
 
+let container: StartedTestContainer;
+let db: any;
+let set: any;
+let get: any;
+let findKeys: any;
+let doBulk: any;
+let remove: any;
+let close: any;
+let setI = 0;
+let getI = 0;
+let rmI = 0;
+let bulkR = 0;
+
+// File-scope hooks: vitest bench skips describe-level beforeAll/afterAll (4.1.8).
+beforeAll(async () => {
+  container = await new GenericContainer("mongo").withExposedPorts(27017).start();
+  const url = `mongodb://${container.getHost()}:${container.getMappedPort(27017)}/?directConnection=true`;
+  db = new MongoDb({ url, database: "ueberdb_bench", collection: "ueberdb_bench" });
+  const init = promisify(db.init.bind(db));
+  set = promisify(db.set.bind(db));
+  get = promisify(db.get.bind(db));
+  findKeys = promisify(db.findKeys.bind(db));
+  doBulk = promisify(db.doBulk.bind(db));
+  remove = promisify(db.remove.bind(db));
+  close = promisify(db.close.bind(db));
+  await init();
+  const ops = [];
+  for (let i = 0; i < SEED; i++) ops.push({ type: "set", key: "seed:" + i, value: val });
+  await doBulk(ops);
+}, 120000);
+
+afterAll(async () => {
+  if (close) await close();
+  if (container) await container.stop();
+});
+
 describe("mongodb", () => {
-  let container: StartedTestContainer;
-  let db: any;
-  let set: any;
-  let get: any;
-  let findKeys: any;
-  let doBulk: any;
-  let remove: any;
-  let close: any;
-  let setI = 0;
-  let getI = 0;
-  let rmI = 0;
-  let bulkR = 0;
-
-  beforeAll(async () => {
-    container = await new GenericContainer("mongo").withExposedPorts(27017).start();
-    const url = `mongodb://${container.getHost()}:${container.getMappedPort(27017)}/?directConnection=true`;
-    db = new MongoDb({ url, database: "ueberdb_bench", collection: "ueberdb_bench" });
-    const init = promisify(db.init.bind(db));
-    set = promisify(db.set.bind(db));
-    get = promisify(db.get.bind(db));
-    findKeys = promisify(db.findKeys.bind(db));
-    doBulk = promisify(db.doBulk.bind(db));
-    remove = promisify(db.remove.bind(db));
-    close = promisify(db.close.bind(db));
-    await init();
-    const ops = [];
-    for (let i = 0; i < SEED; i++) ops.push({ type: "set", key: "seed:" + i, value: val });
-    await doBulk(ops);
-  }, 120000);
-
-  afterAll(async () => {
-    if (close) await close();
-    if (container) await container.stop();
-  });
-
   bench("set", async () => {
     await set("set:" + setI++, val);
   });
