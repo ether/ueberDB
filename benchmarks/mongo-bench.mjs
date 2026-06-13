@@ -29,6 +29,9 @@ export async function runMongoBench(root, conn, opts = {}) {
   const close = promisify(db.close.bind(db));
 
   await init();
+  // Start each side from an empty collection so docs left by a prior side (both
+  // sides share one container) don't bias findKeys/doBulk. Driver exposes it.
+  await db.collection.deleteMany({});
   const val = JSON.stringify({ a: "x".repeat(64), n: 1 });
   const results = {};
 

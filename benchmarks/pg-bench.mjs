@@ -32,6 +32,9 @@ export async function runPgBench(root, conn, opts = {}) {
   const close = promisify(db.close.bind(db));
 
   await init();
+  // Start each side from an empty table so rows left by a prior side (both sides
+  // share one container) don't bias findKeys/doBulk. The driver exposes the Pool.
+  await new Promise((res, rej) => db.db.query("TRUNCATE store", (e) => (e ? rej(e) : res())));
   const val = JSON.stringify({ a: "x".repeat(64), n: 1 });
   const results = {};
 

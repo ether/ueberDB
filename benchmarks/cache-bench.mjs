@@ -102,5 +102,36 @@ export async function runCacheBench(root, opts = {}) {
     await db.close();
   }
 
+  // flushBigCache: a large mostly-clean cache with only a few dirty keys per
+  // flush. The dirty-key Set lets flush() iterate just the dirty entries instead
+  // of scanning the whole LRU — the headline cache optimization, which the small
+  // `flush` case above does not exercise. Fill BIG clean entries, then each round
+  // dirty `dirtyN` of them and time the flush draining only those.
+  {
+    const BIG = opts.bigCache ?? 20_000;
+    const dirtyN = 10;
+    const db = new Database(createMemoryBackend(), { cache: BIG + 1000, writeInterval: NO_AUTO_FLUSH }, noopLogger);
+    await db.init();
+    const prime = [];
+    for (let i = 0; i < BIG; i++) prime.push(db.set("big:" + i, payload(i)));
+    await nextTick();
+    await db.flush();
+    await Promise.all(prime);
+    const durs = [];
+    const warmupRounds = 20;
+    for (let r = 0; r < bulkRounds + warmupRounds; r++) {
+      const ps = [];
+      for (let j = 0; j < dirtyN; j++) ps.push(db.set("big:" + ((r * dirtyN + j) % BIG), payload(j)));
+      await nextTick();
+      const t0 = performance.now();
+      await db.flush();
+      const dt = performance.now() - t0;
+      await Promise.all(ps);
+      if (r >= warmupRounds) durs.push(dt);
+    }
+    results.flushBigCache = summarize(durs);
+    await db.close();
+  }
+
   return results;
 }
