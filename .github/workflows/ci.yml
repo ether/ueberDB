@@ -141,3 +141,66 @@ jobs:
 
       - name: Connection-drop survival test
         run: pnpm exec vitest run test/rethink/connection-drop.spec.ts
+
+  # Permanent performance regression tracking. Runs the vitest benchmarks
+  # (cache + PG + Mongo via testcontainers) and feeds the results to
+  # github-action-benchmark, which stores history on the gh-pages branch,
+  # renders a chart over time, and alerts when a benchmark drops past the
+  # threshold. Cache benches are the reliable signal; the DB benches are
+  # informative but noisier on shared runners (hence fail-on-alert: false).
+  benchmark:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # github-action-benchmark pushes history to gh-pages
+      pull-requests: write # and comments on a PR when a regression is detected
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Get pnpm store path
+        id: pnpm-cache
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+
+      - name: Cache pnpm store
+        uses: actions/cache@v5
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Run benchmarks
+        run: pnpm run bench:ci
+
+      - name: Track / alert on benchmark results
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: ueberDB benchmarks
+          tool: customBiggerIsBetter
+          output-file-path: benchmarks/ci/output.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # Alert (and on PRs, comment) when a benchmark is >=1.5x slower than
+          # the stored baseline. Do NOT fail the build — shared-runner noise
+          # makes hard gating flaky; tighten later once variance is known.
+          alert-threshold: "150%"
+          comment-on-alert: true
+          fail-on-alert: false
+          # Only persist history on pushes to the default branch. On PRs
+          # (including forks, where GITHUB_TOKEN is read-only) compare + comment
+          # without pushing.
+          auto-push: ${{ github.event_name == 'push' }}
+          gh-pages-branch: gh-pages
+          benchmark-data-dir-path: dev/bench
