@@ -58,6 +58,8 @@
     "build:js": "pnpm exec rolldown -c rolldown.config.mjs",
     "build:types": "pnpm exec tsc --emitDeclarationOnly",
     "test": "vitest --test-timeout=120000",
+    "bench": "vitest bench --run",
+    "bench:ci": "vitest bench --run --outputJson=benchmarks/ci/results.json && node benchmarks/ci/to-gab.mjs",
     "ts-check": "tsc --noEmit",
     "ts-check:watch": "tsc --noEmit --watch"
   },

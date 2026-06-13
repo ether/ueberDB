@@ -54,6 +54,31 @@ node --test benchmarks/lib/stats.test.mjs benchmarks/lib/timing.test.mjs benchma
   cache layer) so the prepared statements, batched `doBulk`, and `findKeys`
   query paths are actually exercised.
 
+## Permanent CI tracking (vitest bench)
+
+Alongside the one-off before/after harness above, the repo runs `vitest bench`
+in CI to catch regressions over time. The bench files live next to the harness:
+
+- `benchmarks/cache.bench.ts`, `benchmarks/postgres.bench.ts`,
+  `benchmarks/mongodb.bench.ts` — measured with `vitest bench`.
+
+Run locally:
+
+    pnpm bench                                              # all targets (PG/Mongo need Docker)
+    pnpm exec vitest bench --run benchmarks/cache.bench.ts  # cache only, no Docker
+
+The `benchmark` CI job runs `pnpm bench:ci` (which writes
+`benchmarks/ci/output.json` via `benchmarks/ci/to-gab.mjs`) and feeds
+`benchmark-action/github-action-benchmark`. On pushes to the default branch it
+stores history on the `gh-pages` branch (a chart-over-time page under
+`dev/bench`); on PRs it compares and comments. A benchmark that drops 1.5x or
+more versus the baseline raises an alert. `fail-on-alert` is off by default —
+the job warns rather than failing red, because DB-throughput benches on shared
+runners are noisy. The cache benches are the reliable signal.
+
+Note: github-action-benchmark creates and maintains the `gh-pages` branch and a
+published benchmark page on the repository.
+
 ## Reading the results (important)
 
 The three perf commits are **not** a uniform speedup — read the chart with that
