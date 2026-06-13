@@ -114,7 +114,7 @@ push events.
 ## Noise & alerting
 
 The project already documents that DB-container tests are flaky on shared CI
-runners; benchmark *throughput* there fluctuates even more. Therefore:
+runners; benchmark _throughput_ there fluctuates even more. Therefore:
 
 - Default `fail-on-alert: false` — regressions are **commented/alerted**, not
   hard-failing red builds. This satisfies "check if it drops" without flaky

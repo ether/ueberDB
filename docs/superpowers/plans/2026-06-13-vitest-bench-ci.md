@@ -27,6 +27,7 @@
 Benches reuse `benchmarks/lib/memory-backend.mjs` and the `payload` shape from the harness.
 
 **Conventions verified up front (do not re-derive):**
+
 - Bench files are NOT in `tsconfig` `include` (`["index.ts","lib","databases"]`), so `pnpm run ts-check` will not type-check them. They MUST still pass `pnpm run lint` (oxlint) and `pnpm run format:check` (oxfmt).
 - Local `pnpm run format:check` shows false failures because the Windows working tree is CRLF; git stores LF and CI runs on Linux (LF), where oxfmt passes. To verify formatting locally, run `pnpm exec oxfmt --write <file>` on the new file (it rewrites to LF) before committing.
 - testcontainers pattern (from `test/postgres/connection-drop.spec.ts`): `new GenericContainer(image).withExposedPorts(p).withEnvironment({...}).start()`, `container.getHost()`, `container.getMappedPort(p)`, stop in `afterAll`, 120000ms `beforeAll` timeout.
@@ -37,6 +38,7 @@ Benches reuse `benchmarks/lib/memory-backend.mjs` and the `payload` shape from t
 ## Task 1: vitest benchmark config + cache benches + `bench` script
 
 **Files:**
+
 - Modify: `vitest.config.ts`
 - Modify: `package.json`
 - Create: `benchmarks/cache.bench.ts`
@@ -82,7 +84,7 @@ In the `"scripts"` block, add these two entries (after `"test"`):
 - [ ] **Step 3: Create `benchmarks/cache.bench.ts`**
 
 **NOTE (applies to all bench files):** `vitest bench` (4.1.8) does NOT execute
-`beforeAll`/`afterAll` declared *inside* a `describe` block — they silently
+`beforeAll`/`afterAll` declared _inside_ a `describe` block — they silently
 no-op and the benches read `NaN`. Declare the shared `let` state and the
 `beforeAll`/`afterAll` hooks at **file scope**; keep only the `bench()` calls
 inside `describe("cache")`. The block below shows the hooks at file scope.
@@ -142,12 +144,20 @@ describe("cache", () => {
     await rmDb.init();
 
     // flush: small cache, dirty a batch then flush.
-    flushDb = new Database(createMemoryBackend(), { cache: 4000, writeInterval: NO_AUTO_FLUSH }, noopLogger);
+    flushDb = new Database(
+      createMemoryBackend(),
+      { cache: 4000, writeInterval: NO_AUTO_FLUSH },
+      noopLogger,
+    );
     await flushDb.init();
 
     // flushBigCache: large mostly-clean cache; flush() iterates the dirty Set
     // instead of scanning the LRU. Prime POP clean entries once.
-    bigDb = new Database(createMemoryBackend(), { cache: POP + 1000, writeInterval: NO_AUTO_FLUSH }, noopLogger);
+    bigDb = new Database(
+      createMemoryBackend(),
+      { cache: POP + 1000, writeInterval: NO_AUTO_FLUSH },
+      noopLogger,
+    );
     await bigDb.init();
     const prime = [];
     for (let i = 0; i < POP; i++) prime.push(bigDb.set("big:" + i, payload(i)));
@@ -221,12 +231,13 @@ git commit -m "feat(bench): vitest cache benches + benchmark config/scripts"
 ## Task 2: Postgres driver benches (testcontainers)
 
 **Files:**
+
 - Create: `benchmarks/postgres.bench.ts`
 
 - [ ] **Step 1: Create `benchmarks/postgres.bench.ts`**
 
 **IMPORTANT (learned in Task 1):** `vitest bench` (4.1.8) does NOT run
-`beforeAll`/`afterAll` declared *inside* a `describe` block — they silently no-op
+`beforeAll`/`afterAll` declared _inside_ a `describe` block — they silently no-op
 and benches produce `NaN`. So hooks and shared state live at **file scope**; only
 the `bench()` calls go inside `describe("postgres")`.
 
@@ -339,6 +350,7 @@ git commit -m "feat(bench): vitest postgres driver benches (testcontainers)"
 ## Task 3: Mongo driver benches (testcontainers)
 
 **Files:**
+
 - Create: `benchmarks/mongodb.bench.ts`
 
 - [ ] **Step 1: Create `benchmarks/mongodb.bench.ts`**
@@ -439,6 +451,7 @@ git commit -m "feat(bench): vitest mongo driver benches (testcontainers)"
 ## Task 4: Output adapter (TDD) + `bench:ci` wiring
 
 **Files:**
+
 - Create: `benchmarks/ci/to-gab.mjs`
 - Create: `benchmarks/ci/to-gab.test.mjs`
 - Create: `benchmarks/ci/.gitkeep`
@@ -502,7 +515,10 @@ export function toGab(vitestJson) {
   const out = [];
   for (const file of vitestJson?.files ?? []) {
     for (const group of file?.groups ?? []) {
-      const label = String(group?.fullName ?? "").split(" > ").pop() || "bench";
+      const label =
+        String(group?.fullName ?? "")
+          .split(" > ")
+          .pop() || "bench";
       for (const b of group?.benchmarks ?? []) {
         out.push({ name: `${label} / ${b.name}`, unit: "ops/sec", value: b.hz });
       }
@@ -552,6 +568,7 @@ Temporarily run just the cache bench through the full pipeline to prove the adap
 pnpm exec vitest bench --run benchmarks/cache.bench.ts --outputJson=benchmarks/ci/results.json && node benchmarks/ci/to-gab.mjs
 cat benchmarks/ci/output.json
 ```
+
 Expected: `output.json` is a JSON array of `{ name: "cache / <op>", unit: "ops/sec", value: <number> }` for all 6 cache ops; the script prints `Wrote ... with 6 benchmark(s)`.
 
 - [ ] **Step 7: Format + lint + commit**
@@ -568,6 +585,7 @@ git commit -m "feat(bench): vitest-json -> github-action-benchmark adapter + ben
 ## Task 5: CI job + README
 
 **Files:**
+
 - Modify: `.github/workflows/ci.yml`
 - Modify: `benchmarks/README.md`
 
@@ -576,68 +594,68 @@ git commit -m "feat(bench): vitest-json -> github-action-benchmark adapter + ben
 Add this job at the end of the `jobs:` map (sibling of `build`, `postgres-resilience`, `rethink-resilience`), indented two spaces like the others:
 
 ```yaml
-  # Permanent performance regression tracking. Runs the vitest benchmarks
-  # (cache + PG + Mongo via testcontainers) and feeds the results to
-  # github-action-benchmark, which stores history on the gh-pages branch,
-  # renders a chart over time, and alerts when a benchmark drops past the
-  # threshold. Cache benches are the reliable signal; the DB benches are
-  # informative but noisier on shared runners (hence fail-on-alert: false).
-  benchmark:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write # github-action-benchmark pushes history to gh-pages
-      pull-requests: write # and comments on a PR when a regression is detected
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
+# Permanent performance regression tracking. Runs the vitest benchmarks
+# (cache + PG + Mongo via testcontainers) and feeds the results to
+# github-action-benchmark, which stores history on the gh-pages branch,
+# renders a chart over time, and alerts when a benchmark drops past the
+# threshold. Cache benches are the reliable signal; the DB benches are
+# informative but noisier on shared runners (hence fail-on-alert: false).
+benchmark:
+  runs-on: ubuntu-latest
+  permissions:
+    contents: write # github-action-benchmark pushes history to gh-pages
+    pull-requests: write # and comments on a PR when a regression is detected
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v6
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.33.0
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 10.33.0
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: 24
 
-      - name: Get pnpm store path
-        id: pnpm-cache
-        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+    - name: Get pnpm store path
+      id: pnpm-cache
+      run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
 
-      - name: Cache pnpm store
-        uses: actions/cache@v5
-        with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+    - name: Cache pnpm store
+      uses: actions/cache@v5
+      with:
+        path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile --ignore-scripts
 
-      - name: Run benchmarks
-        run: pnpm run bench:ci
+    - name: Run benchmarks
+      run: pnpm run bench:ci
 
-      - name: Track / alert on benchmark results
-        uses: benchmark-action/github-action-benchmark@v1
-        with:
-          name: ueberDB benchmarks
-          tool: customBiggerIsBetter
-          output-file-path: benchmarks/ci/output.json
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          # Alert (and on PRs, comment) when a benchmark is >=1.5x slower than
-          # the stored baseline. Do NOT fail the build — shared-runner noise
-          # makes hard gating flaky; tighten later once variance is known.
-          alert-threshold: "150%"
-          comment-on-alert: true
-          fail-on-alert: false
-          # Only persist history on pushes to the default branch. On PRs
-          # (including forks, where GITHUB_TOKEN is read-only) compare + comment
-          # without pushing.
-          auto-push: ${{ github.event_name == 'push' }}
-          gh-pages-branch: gh-pages
-          benchmark-data-dir-path: dev/bench
+    - name: Track / alert on benchmark results
+      uses: benchmark-action/github-action-benchmark@v1
+      with:
+        name: ueberDB benchmarks
+        tool: customBiggerIsBetter
+        output-file-path: benchmarks/ci/output.json
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        # Alert (and on PRs, comment) when a benchmark is >=1.5x slower than
+        # the stored baseline. Do NOT fail the build — shared-runner noise
+        # makes hard gating flaky; tighten later once variance is known.
+        alert-threshold: "150%"
+        comment-on-alert: true
+        fail-on-alert: false
+        # Only persist history on pushes to the default branch. On PRs
+        # (including forks, where GITHUB_TOKEN is read-only) compare + comment
+        # without pushing.
+        auto-push: ${{ github.event_name == 'push' }}
+        gh-pages-branch: gh-pages
+        benchmark-data-dir-path: dev/bench
 ```
 
 - [ ] **Step 2: Validate the workflow YAML parses**
@@ -653,7 +671,7 @@ Expected: prints the job list including `benchmark`. No parse error.
 
 Insert this section immediately before the existing `## Reading the results (important)` heading:
 
-```markdown
+````markdown
 ## Permanent CI tracking (vitest bench)
 
 Alongside the one-off before/after harness above, the repo runs `vitest bench`
@@ -668,6 +686,7 @@ Run locally:
 pnpm bench                                   # all targets (PG/Mongo need Docker)
 pnpm exec vitest bench --run benchmarks/cache.bench.ts   # cache only, no Docker
 ```
+````
 
 The `benchmark` CI job runs `pnpm bench:ci` (which writes
 `benchmarks/ci/output.json` via `benchmarks/ci/to-gab.mjs`) and feeds
@@ -680,7 +699,8 @@ runners are noisy. The cache benches are the reliable signal.
 
 Note: github-action-benchmark creates and maintains the `gh-pages` branch and a
 published benchmark page on the repository.
-```
+
+````
 
 - [ ] **Step 4: Format check (LF) + commit**
 
@@ -688,13 +708,14 @@ published benchmark page on the repository.
 pnpm exec oxfmt --write benchmarks/README.md
 git add .github/workflows/ci.yml benchmarks/README.md
 git commit -m "ci(bench): track vitest benchmarks via github-action-benchmark"
-```
+````
 
 ---
 
 ## Self-Review
 
 **Spec coverage:**
+
 - vitest bench files for cache + PG + Mongo → Tasks 1/2/3. ✓
 - Import source directly, no worktree/loader → cache imports `../lib/CacheAndBufferLayer`; drivers import `../databases/*` default export (vitest transpiles TS). ✓
 - Reuse `memory-backend.mjs` + `payload` → Task 1. ✓
