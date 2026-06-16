@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1781385532375,
+  "lastUpdate": 1781607297124,
   "repoUrl": "https://github.com/ether/ueberDB",
   "entries": {
     "ueberDB benchmarks": [
@@ -103,6 +103,110 @@ window.BENCHMARK_DATA = {
           {
             "name": "postgres / remove",
             "value": 3363.138343776877,
+            "unit": "ops/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "john@mclear.co.uk",
+            "name": "John McLear",
+            "username": "JohnMcLear"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c6bc61139e44fccf2f38773113994052490c615b",
+          "message": "test: guard that an open Database keeps the host event loop alive (#1022)\n\nFor years the cache layer created an always-on, *referenced* `setInterval`\nflush timer in its constructor, which had the side effect of anchoring the\nhost process's event loop for as long as a Database was open. Consumers\n(notably Etherpad) relied on this implicitly: during the window between \"DB\ninitialised\" and \"HTTP server listening\" nothing else holds the loop open, so\nwhen the cache-layer rewrite replaced that referenced timer with a\nlazily-armed, `.unref()`'d `setTimeout` (armed only while there are dirty\nkeys), a freshly-opened write-free Database stopped anchoring the loop — and\nthe consumer's process exits 0 *mid-startup*, before it can bind a port or\nserve traffic. This silently broke Etherpad's packaged (.deb/systemd) boot.\n\nThis adds a regression test for that contract. It must run in a SEPARATE\nprocess — a same-process test runner keeps its own loop alive and can never\nobserve the loop draining. The child opens a Database, goes idle, and unref's\nits own stdio so that ueberdb's flush machinery is the *only* thing that can\nkeep it alive; the parent asserts the child stays running rather than exiting\non its own. The child loads the TS source graph with no build step via the\nexisting benchmarks/register-ts.mjs hook.\n\nNOTE: this test is RED on current main — the regression is present. It is\nintentionally test-only (no fix) to lock in the contract. It goes green once\nthe cache layer restores a referenced keepalive (released on close()).\n\nCo-authored-by: Claude Opus 4.8 (1M context) <noreply@anthropic.com>",
+          "timestamp": "2026-06-16T11:53:59+01:00",
+          "tree_id": "c70a2f0ff99312da39e557c643af04691e4bcb64",
+          "url": "https://github.com/ether/ueberDB/commit/c6bc61139e44fccf2f38773113994052490c615b"
+        },
+        "date": 1781607296668,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "cache / set",
+            "value": 114905.41210030603,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / getHit",
+            "value": 305113.25674410304,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / getMiss",
+            "value": 672814.8185373205,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / remove",
+            "value": 85062.96869604681,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / flush",
+            "value": 537.9007049867561,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / flushBigCache",
+            "value": 7403.111096392245,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / set",
+            "value": 2322.603919945354,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / get",
+            "value": 2713.4980734074393,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / findKeys",
+            "value": 143.19361461009984,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / doBulk",
+            "value": 261.5233506793266,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / remove",
+            "value": 2874.430704556744,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / set",
+            "value": 2730.4945090864608,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / get",
+            "value": 4020.456787866507,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / findKeys",
+            "value": 782.3176087713498,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / doBulk",
+            "value": 308.39518915124575,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / remove",
+            "value": 3233.2328573063633,
             "unit": "ops/sec"
           }
         ]
