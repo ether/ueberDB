@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1781607297124,
+  "lastUpdate": 1781723416616,
   "repoUrl": "https://github.com/ether/ueberDB",
   "entries": {
     "ueberDB benchmarks": [
@@ -207,6 +207,110 @@ window.BENCHMARK_DATA = {
           {
             "name": "postgres / remove",
             "value": 3233.2328573063633,
+            "unit": "ops/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "40429738+samtv12345@users.noreply.github.com",
+            "name": "SamTV12345",
+            "username": "SamTV12345"
+          },
+          "committer": {
+            "email": "40429738+samtv12345@users.noreply.github.com",
+            "name": "SamTV12345",
+            "username": "SamTV12345"
+          },
+          "distinct": true,
+          "id": "1e3d457c2c0cb46834bde646408cd5894fed4bdd",
+          "message": "fix: fixed event loop hanging",
+          "timestamp": "2026-06-17T21:09:26+02:00",
+          "tree_id": "ba3eb5e2f82dad505902718615cd132bb268cfc0",
+          "url": "https://github.com/ether/ueberDB/commit/1e3d457c2c0cb46834bde646408cd5894fed4bdd"
+        },
+        "date": 1781723416323,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "cache / set",
+            "value": 114169.20034286722,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / getHit",
+            "value": 280103.8907594857,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / getMiss",
+            "value": 662246.6278247774,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / remove",
+            "value": 93333.84067072734,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / flush",
+            "value": 494.70415708979436,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / flushBigCache",
+            "value": 7176.410740782969,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / set",
+            "value": 2181.651965425077,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / get",
+            "value": 2561.5442602913754,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / findKeys",
+            "value": 137.41656444600278,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / doBulk",
+            "value": 249.17164928403136,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / remove",
+            "value": 2730.181295190531,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / set",
+            "value": 2539.586565465335,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / get",
+            "value": 3821.674530910215,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / findKeys",
+            "value": 764.5046899867748,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / doBulk",
+            "value": 299.5852541741314,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / remove",
+            "value": 2763.810043335684,
             "unit": "ops/sec"
           }
         ]
