@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1781723416616,
+  "lastUpdate": 1781723797950,
   "repoUrl": "https://github.com/ether/ueberDB",
   "entries": {
     "ueberDB benchmarks": [
@@ -311,6 +311,110 @@ window.BENCHMARK_DATA = {
           {
             "name": "postgres / remove",
             "value": 2763.810043335684,
+            "unit": "ops/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "40429738+samtv12345@users.noreply.github.com",
+            "name": "SamTV12345",
+            "username": "SamTV12345"
+          },
+          "committer": {
+            "email": "40429738+samtv12345@users.noreply.github.com",
+            "name": "SamTV12345",
+            "username": "SamTV12345"
+          },
+          "distinct": true,
+          "id": "eb5d66cba93f8ffcdeb56f4b903471c5515c2f69",
+          "message": "fix: fixed pnpm lockfile and dependabot",
+          "timestamp": "2026-06-17T21:15:28+02:00",
+          "tree_id": "8441b525a72e8ada7f9be0ed3c175e4aca3db779",
+          "url": "https://github.com/ether/ueberDB/commit/eb5d66cba93f8ffcdeb56f4b903471c5515c2f69"
+        },
+        "date": 1781723797341,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "cache / set",
+            "value": 109449.96020197078,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / getHit",
+            "value": 341569.1802339914,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / getMiss",
+            "value": 625561.3293982227,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / remove",
+            "value": 92183.01253028672,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / flush",
+            "value": 570.9212648232841,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / flushBigCache",
+            "value": 9291.163535128831,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / set",
+            "value": 2886.781893512383,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / get",
+            "value": 3895.9946780710693,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / findKeys",
+            "value": 155.4706274884609,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / doBulk",
+            "value": 406.632027239039,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / remove",
+            "value": 4042.7581374695637,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / set",
+            "value": 2567.5230569169275,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / get",
+            "value": 6879.361787848668,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / findKeys",
+            "value": 1041.5889993967244,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / doBulk",
+            "value": 353.47978239034614,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / remove",
+            "value": 3245.9133600792484,
             "unit": "ops/sec"
           }
         ]
