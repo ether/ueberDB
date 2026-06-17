@@ -163,6 +163,7 @@ export class Database {
   private _flushDone: Promise<void> | null = null;
   public metrics: Metrics;
   private _flushTimer: ReturnType<typeof setTimeout> | null = null;
+  private _keepAlive: ReturnType<typeof setInterval> | null = null;
 
   constructor(
     wrappedDB: LegacyWrappedDB,
@@ -221,6 +222,15 @@ export class Database {
       writesToDbFinished: 0,
       writesToDbRetried: 0,
     };
+
+    // Keep the host process's event loop anchored for as long as this Database is open. For years
+    // the cache layer's always-on, *referenced* flush `setInterval` did this implicitly, and
+    // consumers (notably Etherpad) rely on it: during the window between "DB initialised" and "HTTP
+    // server listening" nothing else holds the loop open, so without an anchor the process exits 0
+    // *mid-startup*. The lazily-armed flush timer (_scheduleFlush) is `.unref()`'d and only exists
+    // while there are dirty keys, so it cannot fill this role. This dedicated referenced timer does;
+    // it effectively never fires (max timer delay) so it costs nothing, and close() releases it.
+    this._keepAlive = setInterval(() => {}, 2 ** 31 - 1);
   }
 
   private async _lock(key: string): Promise<void> {
@@ -284,6 +294,10 @@ export class Database {
 
   async close(): Promise<void> {
     this._cancelFlushTimer();
+    if (this._keepAlive != null) {
+      clearInterval(this._keepAlive);
+      this._keepAlive = null;
+    }
     await this.flush();
     await this.wrappedDB!.close();
     this.wrappedDB = null;
