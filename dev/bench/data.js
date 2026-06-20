@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1781723797950,
+  "lastUpdate": 1781967929951,
   "repoUrl": "https://github.com/ether/ueberDB",
   "entries": {
     "ueberDB benchmarks": [
@@ -415,6 +415,110 @@ window.BENCHMARK_DATA = {
           {
             "name": "postgres / remove",
             "value": 3245.9133600792484,
+            "unit": "ops/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "49275beea52ebbc2eeb40e363abb840626e49fe3",
+          "message": "build(deps): bump actions/checkout from 6 to 7 (#1024)\n\nBumps [actions/checkout](https://github.com/actions/checkout) from 6 to 7.\n- [Release notes](https://github.com/actions/checkout/releases)\n- [Changelog](https://github.com/actions/checkout/blob/main/CHANGELOG.md)\n- [Commits](https://github.com/actions/checkout/compare/v6...v7)\n\n---\nupdated-dependencies:\n- dependency-name: actions/checkout\n  dependency-version: '7'\n  dependency-type: direct:production\n  update-type: version-update:semver-major\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
+          "timestamp": "2026-06-20T16:02:35+01:00",
+          "tree_id": "349a3fbaae9468e201141368552f6fc75dd2ea33",
+          "url": "https://github.com/ether/ueberDB/commit/49275beea52ebbc2eeb40e363abb840626e49fe3"
+        },
+        "date": 1781967929134,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "cache / set",
+            "value": 114419.5038241035,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / getHit",
+            "value": 554004.8798021262,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / getMiss",
+            "value": 1103149.8279084694,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / remove",
+            "value": 75800.98948789926,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / flush",
+            "value": 982.7171472779092,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / flushBigCache",
+            "value": 14815.787025155394,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / set",
+            "value": 4915.986854223499,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / get",
+            "value": 5910.3835810156315,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / findKeys",
+            "value": 245.84811405175049,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / doBulk",
+            "value": 725.949244532648,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / remove",
+            "value": 6270.039797457252,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / set",
+            "value": 3581.472377489361,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / get",
+            "value": 10851.606390533267,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / findKeys",
+            "value": 2019.0508724517686,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / doBulk",
+            "value": 448.5155096453889,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / remove",
+            "value": 4929.320995891632,
             "unit": "ops/sec"
           }
         ]
