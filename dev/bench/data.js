@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1781967929951,
+  "lastUpdate": 1782311809193,
   "repoUrl": "https://github.com/ether/ueberDB",
   "entries": {
     "ueberDB benchmarks": [
@@ -519,6 +519,110 @@ window.BENCHMARK_DATA = {
           {
             "name": "postgres / remove",
             "value": 4929.320995891632,
+            "unit": "ops/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ccb1785d977727deb6d33ccb6d2850643ca626b4",
+          "message": "build(deps): bump actions/cache from 5 to 6 (#1029)\n\nBumps [actions/cache](https://github.com/actions/cache) from 5 to 6.\n- [Release notes](https://github.com/actions/cache/releases)\n- [Changelog](https://github.com/actions/cache/blob/main/RELEASES.md)\n- [Commits](https://github.com/actions/cache/compare/v5...v6)\n\n---\nupdated-dependencies:\n- dependency-name: actions/cache\n  dependency-version: '6'\n  dependency-type: direct:production\n  update-type: version-update:semver-major\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
+          "timestamp": "2026-06-24T15:35:53+01:00",
+          "tree_id": "210bda78f6d0db015bc4eed2f0e335466fb4d0d0",
+          "url": "https://github.com/ether/ueberDB/commit/ccb1785d977727deb6d33ccb6d2850643ca626b4"
+        },
+        "date": 1782311808257,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "cache / set",
+            "value": 114868.91747532372,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / getHit",
+            "value": 271503.13401294174,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / getMiss",
+            "value": 646118.9261504032,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / remove",
+            "value": 96724.07499746002,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / flush",
+            "value": 458.5566461833612,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / flushBigCache",
+            "value": 7279.2575739613585,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / set",
+            "value": 2125.2962421541274,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / get",
+            "value": 2525.7902129162653,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / findKeys",
+            "value": 131.27654859346157,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / doBulk",
+            "value": 249.63000639267895,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / remove",
+            "value": 2659.0122460849666,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / set",
+            "value": 2504.139934872994,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / get",
+            "value": 3869.507651585508,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / findKeys",
+            "value": 769.0425927288761,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / doBulk",
+            "value": 291.7050098083691,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / remove",
+            "value": 2758.9888802371993,
             "unit": "ops/sec"
           }
         ]
