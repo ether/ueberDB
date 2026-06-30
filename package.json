@@ -86,7 +86,7 @@
     "rolldown": "^1.1.3",
     "semver": "^7.8.5",
     "surrealdb": "^2.0.4",
-    "testcontainers": "^12.0.3",
+    "testcontainers": "^12.0.4",
     "typescript": "^6.0.3",
     "vitest": "^4.1.9",
     "wtfnode": "^0.10.1"

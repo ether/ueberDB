@@ -92,8 +92,8 @@ importers:
         specifier: ^2.0.4
         version: 2.0.4(tslib@2.8.1)(typescript@6.0.3)
       testcontainers:
-        specifier: ^12.0.3
-        version: 12.0.3
+        specifier: ^12.0.4
+        version: 12.0.4
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
@@ -953,8 +953,8 @@ packages:
       bare-buffer:
         optional: true
 
-  bare-os@3.9.1:
-    resolution: {integrity: sha512-6M5XjcnsygQNPMCMPXSK379xrJFiZ/AEMNBmFEmQW8d/789VQATvriyi5r0HYTL9TkQ26rn3kgdTG3aisbrXkQ==}
+  bare-os@3.9.3:
+    resolution: {integrity: sha512-fF4Q7QsyKVF5Rj0qvI8BgUNjqzC2JvQlpTaPLjVJVxYVUX5Zr9un+y3w1HmA4nNKdFmRBT8z/WmrjvXzXVerKQ==}
     engines: {bare: '>=1.14.0'}
 
   bare-path@3.0.1:
@@ -1129,8 +1129,8 @@ packages:
     resolution: {integrity: sha512-XJgGhoR/CLpqshm4d3L7rzH6t8NgDFUIIpztYlLHIApeJjMZKYJMz2zxPsYxnejq5h3ELYSw/RBsi3t5h7gNTA==}
     engines: {node: '>= 8.0'}
 
-  dockerode@5.0.0:
-    resolution: {integrity: sha512-C52mvJ+7lcyhWNfrzVfFsbTrBfy/ezE9FGEYLpu17FUeBcCkxERk9nN7uDl/478ynDiQ4U+5DbQC2vENHkVEtQ==}
+  dockerode@5.0.1:
+    resolution: {integrity: sha512-avsq/xk4YPIrn0CgleX5bjT9Y8IT1p9PxrNQ++RBQ2WEyFfHCTDsT9kmyxz+H/axnjAwg8wJWEIuPGOUuNupiA==}
     engines: {node: '>= 14.17'}
 
   drange@2.0.1:
@@ -1211,9 +1211,9 @@ packages:
     resolution: {integrity: sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg==}
     engines: {node: 6.* || 8.* || >= 10.*}
 
-  get-port@7.2.0:
-    resolution: {integrity: sha512-afP4W205ONCuMoPBqcR6PSXnzX35KTcJygfJfcp+QY+uwm3p20p1YczWXhlICIzGMCxYBQcySEcOgsJcrkyobg==}
-    engines: {node: '>=16'}
+  get-port@5.1.1:
+    resolution: {integrity: sha512-g/Q1aTSDOxFpchXC4i8ZWvxA1lnPqx/JHqcpIw0/LX9T8x/GBbi6YnlN5nhaKIFkT8oFsscUKgDJYxfwfS6QsQ==}
+    engines: {node: '>=8'}
 
   glob@10.5.0:
     resolution: {integrity: sha512-DfXN8DfhJ7NH3Oe7cFmu3NCu1wKbkReJ8TorzSAFbSKrlNaQSKfIzqYqVY8zlbs2NLBbWpRiU52GX2PbaBVNkg==}
@@ -1481,8 +1481,8 @@ packages:
     resolution: {integrity: sha512-Tz09sEL2EEuv5fFowm419c1+a/jSMiBjI9gHxVLrVdbUkkNUUfjsVYs9pVZu5oCon/kmRh9TfLEObFtkVxmY0w==}
     engines: {node: '>=8.0.0'}
 
-  nan@2.27.0:
-    resolution: {integrity: sha512-hC+0LidcL3XE4rp1C4H54KujgXKzbfyTngZTwBByQxsOxCEKZT0MPQ4hOKUH2jU1OYstqdDH4onyHPDzcV0XdQ==}
+  nan@2.28.0:
+    resolution: {integrity: sha512-fTsDz99OTq2sVePhGdp4qQhggZFtKr64ZNVyVajRKtMOkJxYekplBh577PiJB12v/D3s2E5cGtOI45LWp6rnLQ==}
 
   nano@11.0.5:
     resolution: {integrity: sha512-yLYmFH7S33OWYPAG12wNqMR6l9hC3qOWLbr7hZPqKBVKO8BYhAaLlWENeJEpPY8Rm12lGvzKWBp8LGEgWhEqmw==}
@@ -1859,11 +1859,11 @@ packages:
       tslib: ^2.6.3
       typescript: ^5.0.0 || ^6.0.0
 
-  tar-fs@2.1.4:
-    resolution: {integrity: sha512-mDAjwmZdh7LTT6pNleZ05Yt65HC3E+NiQzl672vQG38jIrehtJk/J3mNwIg+vShQPcLF/LV7CMnDW6vjj6sfYQ==}
+  tar-fs@2.1.5:
+    resolution: {integrity: sha512-OboTd8mmMhZDNPV+UjQcK9yKAatXu2aJ+r1w4im1Otd4M4fl2hwvdoXUxIYHFTHWK/3y3FarBP70v3vwmGlOxw==}
 
-  tar-fs@3.1.2:
-    resolution: {integrity: sha512-QGxxTxxyleAdyM3kpFs14ymbYmNFrfY+pHj7Z8FgtbZ7w2//VAgLMac7sT6nRpIHjppXO2AwwEOg0bPFVRcmXw==}
+  tar-fs@3.1.3:
+    resolution: {integrity: sha512-/hU4AXnIdZu+Gvl1pk0oI5f5HxWsCJRtY2aFaJdk9VvyL48DWU6iU5WAIPG+wIi1YvWA6eTJvIviP/tMAZZNwQ==}
 
   tar-stream@2.2.0:
     resolution: {integrity: sha512-ujeqbceABgwMZxEJnk2HDY2DlnUZ+9oEcb1KzTVfYHio0UE6dG71n60d8D2I4qNvleWrrXpmjpt7vZeF1LnMZQ==}
@@ -1887,8 +1887,8 @@ packages:
   teex@1.0.1:
     resolution: {integrity: sha512-eYE6iEI62Ni1H8oIa7KlDU6uQBtqr4Eajni3wX7rpfXD8ysFx8z0+dri+KWEPWpBsxXfxu58x/0jvTVT1ekOSg==}
 
-  testcontainers@12.0.3:
-    resolution: {integrity: sha512-6vfiL9CWIX0rWhTJitzrzHcv4Q/sUfUdBV12jMz6HZ58Lz6ZtXVecO6jljd1O3ookEWQHNICiYoYNEPpDLzuRw==}
+  testcontainers@12.0.4:
+    resolution: {integrity: sha512-QIR/8xF1+F/26cIM+9B4yyxNTbKJxAv3hygZyhPRgZ8Q2AhlPZjDdpXRuk16V37X4bgJRI3hXFhoEICMBA7Adg==}
 
   text-decoder@1.2.7:
     resolution: {integrity: sha512-vlLytXkeP4xvEq2otHeJfSQIRyWxo/oZGEbXrtEEF9Hnmrdly59sUbzZ/QgyWuLYHctCHxFF4tRQZNQ9k60ExQ==}
@@ -2094,8 +2094,8 @@ packages:
     resolution: {integrity: sha512-tVpsJW7DdjecAiFpbIB1e3qxIQsE6NoPc5/eTdrbbIC4h0LVsWhnoa3g+m2HclBIujHzsxZ4VJVA+GUuc2/LBw==}
     engines: {node: '>=12'}
 
-  yargs@17.7.2:
-    resolution: {integrity: sha512-7dSzzRQ++CKnNI/krKnYRV7JKKPUXMEh61soaHKg9mrWEhzFWhFnxPxGl+69cD1Ou63C13NUPCnmIcrvqCuM6w==}
+  yargs@17.7.3:
+    resolution: {integrity: sha512-GZtjxm/J/4TSxuL3FNYjCmLktBTnIw/rVmKSIyKeYAZpmJB2ig9VauCC5xsa82GNKVKDAqpOn3KVzNt0zmrU0g==}
     engines: {node: '>=12'}
 
   zip-stream@6.0.1:
@@ -2314,14 +2314,14 @@ snapshots:
       lodash.camelcase: 4.3.0
       long: 5.3.2
       protobufjs: 7.6.4
-      yargs: 17.7.2
+      yargs: 17.7.3
 
   '@grpc/proto-loader@0.8.1':
     dependencies:
       lodash.camelcase: 4.3.0
       long: 5.3.2
       protobufjs: 7.6.4
-      yargs: 17.7.2
+      yargs: 17.7.3
 
   '@isaacs/cliui@8.0.2':
     dependencies:
@@ -2859,11 +2859,11 @@ snapshots:
       - bare-abort-controller
       - react-native-b4a
 
-  bare-os@3.9.1: {}
+  bare-os@3.9.3: {}
 
   bare-path@3.0.1:
     dependencies:
-      bare-os: 3.9.1
+      bare-os: 3.9.3
 
   bare-stream@2.13.3(bare-events@2.9.1):
     dependencies:
@@ -2978,7 +2978,7 @@ snapshots:
   cpu-features@0.0.10:
     dependencies:
       buildcheck: 0.0.7
-      nan: 2.27.0
+      nan: 2.28.0
     optional: true
 
   crc-32@1.2.2: {}
@@ -3028,14 +3028,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  dockerode@5.0.0:
+  dockerode@5.0.1:
     dependencies:
       '@balena/dockerignore': 1.0.2
       '@grpc/grpc-js': 1.14.4
       '@grpc/proto-loader': 0.7.15
       docker-modem: 5.0.7
       protobufjs: 7.6.4
-      tar-fs: 2.1.4
+      tar-fs: 2.1.5
     transitivePeerDependencies:
       - supports-color
 
@@ -3101,7 +3101,7 @@ snapshots:
 
   get-caller-file@2.0.5: {}
 
-  get-port@7.2.0: {}
+  get-port@5.1.1: {}
 
   glob@10.5.0:
     dependencies:
@@ -3328,7 +3328,7 @@ snapshots:
     dependencies:
       lru.min: 1.1.4
 
-  nan@2.27.0:
+  nan@2.28.0:
     optional: true
 
   nano@11.0.5: {}
@@ -3702,7 +3702,7 @@ snapshots:
       bcrypt-pbkdf: 1.0.2
     optionalDependencies:
       cpu-features: 0.0.10
-      nan: 2.27.0
+      nan: 2.28.0
 
   stackback@0.0.2: {}
 
@@ -3751,14 +3751,14 @@ snapshots:
       tslib: 2.8.1
       typescript: 6.0.3
 
-  tar-fs@2.1.4:
+  tar-fs@2.1.5:
     dependencies:
       chownr: 1.1.4
       mkdirp-classic: 0.5.3
       pump: 3.0.4
       tar-stream: 2.2.0
 
-  tar-fs@3.1.2:
+  tar-fs@3.1.3:
     dependencies:
       pump: 3.0.4
       tar-stream: 3.2.0
@@ -3815,7 +3815,7 @@ snapshots:
       - bare-abort-controller
       - react-native-b4a
 
-  testcontainers@12.0.3:
+  testcontainers@12.0.4:
     dependencies:
       '@balena/dockerignore': 1.0.2
       '@types/dockerode': 4.0.1
@@ -3824,12 +3824,12 @@ snapshots:
       byline: 5.0.0
       debug: 4.4.3
       docker-compose: 1.4.2
-      dockerode: 5.0.0
-      get-port: 7.2.0
+      dockerode: 5.0.1
+      get-port: 5.1.1
       proper-lockfile: 4.1.2
       properties-reader: 3.0.1
       ssh-remote-port-forward: 1.0.4
-      tar-fs: 3.1.2
+      tar-fs: 3.1.3
       tmp: 0.2.7
       undici: 8.5.0
     transitivePeerDependencies:
@@ -3967,7 +3967,7 @@ snapshots:
 
   yargs-parser@21.1.1: {}
 
-  yargs@17.7.2:
+  yargs@17.7.3:
     dependencies:
       cliui: 8.0.1
       escalade: 3.2.0
