@@ -56,8 +56,8 @@ importers:
         specifier: ^7.4.0
         version: 7.4.0
       mssql:
-        specifier: ^12.6.0
-        version: 12.6.0
+        specifier: ^12.7.0
+        version: 12.7.0
       mysql2:
         specifier: ^3.22.5
         version: 3.22.5(@types/node@25.9.3)
@@ -239,6 +239,9 @@ packages:
 
   '@js-joda/core@5.7.0':
     resolution: {integrity: sha512-WBu4ULVVxySLLzK1Ppq+OdfP+adRS4ntmDQT915rzDJ++i95gc2jZkM5B6LWEAwN3lGXpfie3yPABozdD3K3Vg==}
+
+  '@js-joda/core@6.0.1':
+    resolution: {integrity: sha512-Iev3Cfa3MC+06JXXeFzSLew/7yeCXLMhjesyH/BD4EQYlUUDV49Ln3s8hd7p5XK5UesO/dO3K1LFJ7RT7v0Ddg==}
 
   '@js-sdsl/ordered-map@4.4.2':
     resolution: {integrity: sha512-iUKgm52T8HOE/makSxjqoWhe95ZJA1/G1sYsGev2JDKUSS14KAgg1LHb+Ba+IPow0xflbnSkOsZcO08C7w1gYw==}
@@ -1239,6 +1242,10 @@ packages:
     resolution: {integrity: sha512-im9DjEDQ55s9fL4EYzOAv0yMqmMBSZp6G0VvFyTMPKWxiSBHUj9NW/qqLmXUwXrrM7AvqSlTCfvqRb0cM8yYqw==}
     engines: {node: '>=0.10.0'}
 
+  iconv-lite@0.7.3:
+    resolution: {integrity: sha512-IKXpvIzjnC9XTAUbVBcMfGS0EPaIXtW6v+zr+RRp+hqULEpo0owZax6wyRwPOJbWbzjYspQwusTsfVr0ifh4uQ==}
+    engines: {node: '>=0.10.0'}
+
   ieee754@1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
 
@@ -1466,8 +1473,8 @@ packages:
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
 
-  mssql@12.6.0:
-    resolution: {integrity: sha512-shOPombtihqeQ/URNsdkAebOqjeSSpFaTgZ4kO+XdMU8QvfAGzZ8lfB7AliakWhM8U+/AgOOPHV+jHW67UJlPQ==}
+  mssql@12.7.0:
+    resolution: {integrity: sha512-J6SJKXi1jYbhHjjooLNtPnX7+s3cq5IJ701Wgy/UW1SXRpgFlJJsYi3IPve9RVgCUkq0Cqv2aaaSJ4IXtIF3mg==}
     engines: {node: '>=18.19.0'}
     hasBin: true
 
@@ -1887,6 +1894,10 @@ packages:
   tedious@19.2.1:
     resolution: {integrity: sha512-pk1Q16Yl62iocuQB+RWbg6rFUFkIyzqOFQ6NfysCltRvQqKwfurgj8v/f2X+CKvDhSL4IJ0cCOfCHDg9PWEEYA==}
     engines: {node: '>=18.17'}
+
+  tedious@20.0.0:
+    resolution: {integrity: sha512-bTR0aou0Ghucf0ytvZUJjnKHGKDV8tT57jPYtEkSpfTWFe++4uR1wxJLQ4mh5wlSvAYXzmgBxbI0vaE56qigXw==}
+    engines: {node: '>=22'}
 
   teex@1.0.1:
     resolution: {integrity: sha512-eYE6iEI62Ni1H8oIa7KlDU6uQBtqr4Eajni3wX7rpfXD8ysFx8z0+dri+KWEPWpBsxXfxu58x/0jvTVT1ekOSg==}
@@ -2339,6 +2350,8 @@ snapshots:
   '@jridgewell/sourcemap-codec@1.5.5': {}
 
   '@js-joda/core@5.7.0': {}
+
+  '@js-joda/core@6.0.1': {}
 
   '@js-sdsl/ordered-map@4.4.2': {}
 
@@ -3138,6 +3151,10 @@ snapshots:
     dependencies:
       safer-buffer: 2.1.2
 
+  iconv-lite@0.7.3:
+    dependencies:
+      safer-buffer: 2.1.2
+
   ieee754@1.2.1: {}
 
   inherits@2.0.4: {}
@@ -3306,13 +3323,13 @@ snapshots:
 
   ms@2.1.3: {}
 
-  mssql@12.6.0:
+  mssql@12.7.0:
     dependencies:
       '@tediousjs/connection-string': 1.1.0
       commander: 11.1.0
       debug: 4.4.3
       tarn: 3.1.0
-      tedious: 19.2.1
+      tedious: 20.0.0
     transitivePeerDependencies:
       - supports-color
 
@@ -3808,6 +3825,21 @@ snapshots:
       '@types/node': 25.9.3
       bl: 6.1.6
       iconv-lite: 0.7.2
+      js-md4: 0.3.2
+      native-duplexpair: 1.0.0
+      sprintf-js: 1.1.3
+    transitivePeerDependencies:
+      - supports-color
+
+  tedious@20.0.0:
+    dependencies:
+      '@azure/core-auth': 1.10.1
+      '@azure/identity': 4.13.1
+      '@azure/keyvault-keys': 4.10.2
+      '@js-joda/core': 6.0.1
+      '@types/node': 25.9.3
+      bl: 6.1.6
+      iconv-lite: 0.7.3
       js-md4: 0.3.2
       native-duplexpair: 1.0.0
       sprintf-js: 1.1.3
