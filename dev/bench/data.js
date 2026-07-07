@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1782311809193,
+  "lastUpdate": 1783452917362,
   "repoUrl": "https://github.com/ether/ueberDB",
   "entries": {
     "ueberDB benchmarks": [
@@ -623,6 +623,110 @@ window.BENCHMARK_DATA = {
           {
             "name": "postgres / remove",
             "value": 2758.9888802371993,
+            "unit": "ops/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d4eb57bb19584b80eed3c738d120616e935e0d9d",
+          "message": "build(deps-dev): bump @types/node from 25.9.3 to 26.1.0 (#1041)\n\nBumps [@types/node](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/HEAD/types/node) from 25.9.3 to 26.1.0.\n- [Release notes](https://github.com/DefinitelyTyped/DefinitelyTyped/releases)\n- [Commits](https://github.com/DefinitelyTyped/DefinitelyTyped/commits/HEAD/types/node)\n\n---\nupdated-dependencies:\n- dependency-name: \"@types/node\"\n  dependency-version: 26.1.0\n  dependency-type: direct:development\n  update-type: version-update:semver-major\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
+          "timestamp": "2026-07-07T21:34:21+02:00",
+          "tree_id": "82840680d9f6558d1bf13c07c37fd8ece898d81d",
+          "url": "https://github.com/ether/ueberDB/commit/d4eb57bb19584b80eed3c738d120616e935e0d9d"
+        },
+        "date": 1783452916412,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "cache / set",
+            "value": 114335.17139704397,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / getHit",
+            "value": 289360.89290523453,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / getMiss",
+            "value": 647360.9033705597,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / remove",
+            "value": 91847.9608727595,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / flush",
+            "value": 485.5409724778695,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / flushBigCache",
+            "value": 7490.767903513517,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / set",
+            "value": 2148.8197006125524,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / get",
+            "value": 2553.3053120105574,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / findKeys",
+            "value": 127.98973496727743,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / doBulk",
+            "value": 240.36801033688923,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / remove",
+            "value": 2650.689711062062,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / set",
+            "value": 2571.092738505507,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / get",
+            "value": 3619.102817173407,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / findKeys",
+            "value": 741.794552580707,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / doBulk",
+            "value": 286.2287199357283,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / remove",
+            "value": 2763.494065033667,
             "unit": "ops/sec"
           }
         ]
