@@ -73,7 +73,7 @@
     "@types/wtfnode": "^0.10.0",
     "cassandra-driver": "^4.9.0",
     "cli-table3": "^0.6.5",
-    "mongodb": "^7.4.0",
+    "mongodb": "^7.5.0",
     "mssql": "^12.7.0",
     "mysql2": "^3.22.6",
     "nano": "^11.0.6",

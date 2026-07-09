@@ -53,8 +53,8 @@ importers:
         specifier: ^0.6.5
         version: 0.6.5
       mongodb:
-        specifier: ^7.4.0
-        version: 7.4.0
+        specifier: ^7.5.0
+        version: 7.5.0
       mssql:
         specifier: ^12.7.0
         version: 12.7.0
@@ -252,8 +252,8 @@ packages:
   '@kwsites/promise-deferred@1.1.1':
     resolution: {integrity: sha512-GaHYm+c0O9MjZRu0ongGBRbinu8gVAMd2UZjji6jVmqKtZluZnptXGWhz1E8j8D2HJ3f/yMxKAUC0b+57wncIw==}
 
-  '@mongodb-js/saslprep@1.4.11':
-    resolution: {integrity: sha512-o9rAHc0IpIjuPSxRutWpE1F62x7n+4mVS4rCNHkzhIUMQcc18bb6xEq5wd2NdN0WjepIyXIppRshYI2kQDOZVA==}
+  '@mongodb-js/saslprep@1.4.12':
+    resolution: {integrity: sha512-QAfAMwNgnYxZ2C6D1HgeP7Gc4i/uvJRim415PCIL9ptRxWMNbWeLBYb2/9R4pGKny/s1FVu2JA2cxCUBUOggrA==}
 
   '@napi-rs/wasm-runtime@1.1.6':
     resolution: {integrity: sha512-ZLv/JdUfkvOy9eCnnBaGfiO+XimbjebAeO+MRQqD/B+FR1tnRN0tpKSJHRbE8sFfS6aqsXZ67TQjfwfsxULVbg==}
@@ -1439,15 +1439,15 @@ packages:
     resolution: {integrity: sha512-h0AZ9A7IDVwwHyMxmdMXKy+9oNlF0zFoahHiX3vQ8e3KFcSP3VmsmfvtRSuLPxmyv2vjIDxqty8smTgie/SNRQ==}
     engines: {node: '>=20.19.0'}
 
-  mongodb@7.4.0:
-    resolution: {integrity: sha512-giySkkdYiwoBFo/oCc8nzov3xOYZ/sB8OpAYk5GINRLEjVw0LDsm8xgQL0XMTyU4extQlDZjhdUr1ZEwKFaazw==}
+  mongodb@7.5.0:
+    resolution: {integrity: sha512-5FnrEDLnvp6ycUOGLNLLU33BfCx2qmp2mJjGPDwKLruYsVzXVSK5fsGpoDXvsXJwBfBsD7ebMRdawbDxC2814g==}
     engines: {node: '>=20.19.0'}
     peerDependencies:
       '@aws-sdk/credential-providers': ^3.806.0
       '@mongodb-js/zstd': ^7.0.0
       gcp-metadata: ^7.0.1
       kerberos: ^7.0.0
-      mongodb-client-encryption: '>=7.0.0 <7.1.0'
+      mongodb-client-encryption: ^7.2.0
       snappy: ^7.3.2
       socks: ^2.8.6
     peerDependenciesMeta:
@@ -2355,7 +2355,7 @@ snapshots:
 
   '@kwsites/promise-deferred@1.1.1': {}
 
-  '@mongodb-js/saslprep@1.4.11':
+  '@mongodb-js/saslprep@1.4.12':
     dependencies:
       sparse-bitfield: 3.0.3
 
@@ -3303,9 +3303,9 @@ snapshots:
       '@types/whatwg-url': 13.0.0
       whatwg-url: 14.2.0
 
-  mongodb@7.4.0:
+  mongodb@7.5.0:
     dependencies:
-      '@mongodb-js/saslprep': 1.4.11
+      '@mongodb-js/saslprep': 1.4.12
       bson: 7.3.1
       mongodb-connection-string-url: 7.0.1
 
