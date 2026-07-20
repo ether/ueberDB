@@ -85,7 +85,7 @@
     "rethinkdb": "^2.4.2",
     "rolldown": "^1.2.0",
     "semver": "^7.8.5",
-    "surrealdb": "^2.0.4",
+    "surrealdb": "^2.0.5",
     "testcontainers": "^12.0.4",
     "typescript": "^6.0.3",
     "vitest": "^4.1.10",
