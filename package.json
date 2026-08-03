@@ -64,7 +64,7 @@
     "ts-check:watch": "tsc --noEmit --watch"
   },
   "devDependencies": {
-    "@elastic/elasticsearch": "^9.4.2",
+    "@elastic/elasticsearch": "^9.4.3",
     "@types/async": "^3.2.25",
     "@types/mssql": "^12.3.0",
     "@types/node": "^26.1.2",
