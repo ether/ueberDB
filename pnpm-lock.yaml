@@ -26,8 +26,8 @@ importers:
         version: 3.36.0
     devDependencies:
       '@elastic/elasticsearch':
-        specifier: ^9.4.3
-        version: 9.4.3
+        specifier: ^9.5.0
+        version: 9.5.0
       '@types/async':
         specifier: ^3.2.25
         version: 3.2.25
@@ -185,9 +185,9 @@ packages:
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
     engines: {node: '>=0.1.90'}
 
-  '@elastic/elasticsearch@9.4.3':
-    resolution: {integrity: sha512-SF8FEzWVdYO7X0X0NcuzDqwj5jGOu6kbvKhbx+mLtHZG5NBzlBrP9Jk7XfwACjoXtwXszqdGRzuCRYsKZhitHw==}
-    engines: {node: '>=20'}
+  '@elastic/elasticsearch@9.5.0':
+    resolution: {integrity: sha512-6PApbQaAgVHpOvZJrAUSMrU+Nm2PznuIuTUoV29jCezL9Yze1keptiTvtsMqBsnw8v8wvfN6e4L1RTlwa5624A==}
+    engines: {node: '>=22'}
     peerDependencies:
       apache-arrow: 18.x - 21.x
     peerDependenciesMeta:
@@ -2276,7 +2276,7 @@ snapshots:
   '@colors/colors@1.5.0':
     optional: true
 
-  '@elastic/elasticsearch@9.4.3':
+  '@elastic/elasticsearch@9.5.0':
     dependencies:
       '@elastic/transport': 9.4.0
       tslib: 2.8.1
