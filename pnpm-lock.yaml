@@ -59,8 +59,8 @@ importers:
         specifier: ^12.7.0
         version: 12.7.0
       mysql2:
-        specifier: ^3.23.2
-        version: 3.23.2(@types/node@26.2.0)
+        specifier: ^3.23.3
+        version: 3.23.3(@types/node@26.2.0)
       nano:
         specifier: ^11.0.6
         version: 11.0.6
@@ -1123,10 +1123,6 @@ packages:
     resolution: {integrity: sha512-N+MeXYoqr3pOgn8xfyRPREN7gHakLYjhsHhWGT3fWAiL4IkAt0iDw14QiiEm2bE30c5XX5q0FtAA3CK5f9/BUg==}
     engines: {node: '>=12'}
 
-  denque@2.1.0:
-    resolution: {integrity: sha512-HVQE3AAb/pxF8fQAoiqpvg9i3evqug3hoiwakOyZAwJm+6vZehbkYXZ0l4JxS+I3QxM97v5aaRNhj8v5oBhekw==}
-    engines: {node: '>=0.10'}
-
   detect-libc@2.1.2:
     resolution: {integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==}
     engines: {node: '>=8'}
@@ -1489,8 +1485,8 @@ packages:
     engines: {node: '>=18.19.0'}
     hasBin: true
 
-  mysql2@3.23.2:
-    resolution: {integrity: sha512-fxh3HpQ8vJtu/Mmnd4Xsur19jGjHGzRLMxptiDtOkbX7EVBgnafGSGDx1WGGVmJLClVh2LeeBMMo24IFv8wCyQ==}
+  mysql2@3.23.3:
+    resolution: {integrity: sha512-ehp9HEKr4wVJaBOUVxNFa+CNrsCCCZ6363/jbGhb7WpEmSRNIXjHBjFs5K2s2cXn7j/RhDieejsQJ6nfUwD6vQ==}
     engines: {node: '>= 8.0'}
     peerDependencies:
       '@types/node': '>= 8'
@@ -2999,8 +2995,6 @@ snapshots:
 
   define-lazy-prop@3.0.0: {}
 
-  denque@2.1.0: {}
-
   detect-libc@2.1.2: {}
 
   dirty-ts@1.1.8:
@@ -3304,11 +3298,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  mysql2@3.23.2(@types/node@26.2.0):
+  mysql2@3.23.3(@types/node@26.2.0):
     dependencies:
       '@types/node': 26.2.0
       aws-ssl-profiles: 1.1.2
-      denque: 2.1.0
       generate-function: 2.3.1
       iconv-lite: 0.7.3
       long: 5.3.2
