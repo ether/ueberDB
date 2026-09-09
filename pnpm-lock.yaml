@@ -59,8 +59,8 @@ importers:
         specifier: ^12.7.0
         version: 12.7.0
       mysql2:
-        specifier: ^3.24.3
-        version: 3.24.3(@types/node@26.5.0)
+        specifier: ^3.24.4
+        version: 3.24.4(@types/node@26.5.0)
       nano:
         specifier: ^11.0.7
         version: 11.0.7
@@ -1491,8 +1491,8 @@ packages:
     engines: {node: '>=18.19.0'}
     hasBin: true
 
-  mysql2@3.24.3:
-    resolution: {integrity: sha512-OKfWHkMAg9v06neq8FmSyhbxPQKABN9PAW5G9/bDTXzJBO5xXtkKL0V27vju7HQWk9UD4Od5BZsvCtBTB1CPEw==}
+  mysql2@3.24.4:
+    resolution: {integrity: sha512-A2olluVlj0mvgyIRRISMEzXc51m+21mRtcMVjJyIpt2GG98+XrC9m9HzsqcMsX2LcnfccJvY5NB22g8fENBnOA==}
     engines: {node: '>= 8.0'}
     peerDependencies:
       '@types/node': '>= 8'
@@ -3307,7 +3307,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  mysql2@3.24.3(@types/node@26.5.0):
+  mysql2@3.24.4(@types/node@26.5.0):
     dependencies:
       '@types/node': 26.5.0
       aws-ssl-profiles: 1.1.2
