@@ -29,8 +29,8 @@ importers:
         specifier: ^9.5.1
         version: 9.5.1
       '@types/async':
-        specifier: ^3.2.25
-        version: 3.2.25
+        specifier: ^3.2.26
+        version: 3.2.26
       '@types/mssql':
         specifier: ^12.3.0
         version: 12.3.0
@@ -858,8 +858,8 @@ packages:
   '@tybys/wasm-util@0.10.3':
     resolution: {integrity: sha512-F3fo1MYrRJYL3zER0OUOmkutjr1Vp23m7OsSgp7nq4SP6OqX6C/56XFIPAl5bt3zaBRjmW7SGz3u/6LwFpYcOg==}
 
-  '@types/async@3.2.25':
-    resolution: {integrity: sha512-O6Th/DI18XjrL9TX8LO9F/g26qAz5vynmQqlXt/qLGrskvzCKXKc5/tATz3G2N6lM8eOf3M8/StB14FncAmocg==}
+  '@types/async@3.2.26':
+    resolution: {integrity: sha512-KqX2Cp6N7C0KEpExkHkDalNgx9ohk8oxjDM9ygtFTJr5BsHaiKWYjVnUQusGnc8A1jOoJuzldeazVRZuFYxjfw==}
 
   '@types/chai@5.2.3':
     resolution: {integrity: sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA==}
@@ -2806,7 +2806,7 @@ snapshots:
       tslib: 2.8.1
     optional: true
 
-  '@types/async@3.2.25': {}
+  '@types/async@3.2.26': {}
 
   '@types/chai@5.2.3':
     dependencies:
