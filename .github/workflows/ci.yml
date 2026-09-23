@@ -102,6 +102,9 @@ jobs:
       - name: Connection-drop recovery test
         run: pnpm exec vitest run test/postgres/connection-drop.spec.ts
 
+      - name: findKeysPaged key order test
+        run: pnpm exec vitest run test/postgres/paging-collation.spec.ts
+
   # Behavioural regression test for the rethinkdb connection error handler.
   # rethink is intentionally absent from the container `test` matrix in
   # npmpublish.yml, so this dedicated job gives the fix coverage: it starts a

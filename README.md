@@ -393,6 +393,21 @@ const db = new ueberdb.Database("postgres", {
 });
 ```
 
+### Key collation
+
+The `store` table is created with `"key" ... COLLATE "C"`, so keys compare in
+byte order: the same order as JavaScript string comparison, which
+`findKeysPaged()` pages in. Tables created by earlier versions inherit the
+database's default collation, usually a linguistic one such as `en_US.utf8`.
+Paging is still correct there (the query forces `COLLATE "C"`), but prefix
+lookups such as `findKeys("pad:*")` can't use the primary-key index and scan
+the whole table. To fix an existing table (this rebuilds only the index; it
+takes about a second per million keys and locks the table meanwhile):
+
+```sql
+ALTER TABLE store ALTER COLUMN key TYPE character varying(100) COLLATE "C";
+```
+
 ## Redis TLS communication
 
 If you enabled TLS on your Redis database (available since Redis 6.0) you will
