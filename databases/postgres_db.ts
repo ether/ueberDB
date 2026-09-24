@@ -67,9 +67,12 @@ export default class extends AbstractDatabase {
   init(callback: (err: Error) => {}) {
     const testTableExists = "SELECT 1 as exists FROM pg_tables WHERE tablename = 'store'";
 
+    // COLLATE "C" (byte order) matches the JavaScript string order the rest of
+    // ueberDB assumes, and lets `key LIKE 'prefix%'` use the primary-key index;
+    // under a linguistic default collation (e.g. en_US.utf8) it can't.
     const createTable =
       "CREATE TABLE IF NOT EXISTS store (" +
-      '"key" character varying(100) NOT NULL, ' +
+      '"key" character varying(100) COLLATE "C" NOT NULL, ' +
       '"value" text NOT NULL, ' +
       "CONSTRAINT store_pkey PRIMARY KEY (key))";
 
@@ -197,11 +200,14 @@ export default class extends AbstractDatabase {
       query += ` AND key NOT LIKE $${n++}`;
       params.push(notKey.replace(/\*/g, "%"));
     }
+    // COLLATE "C" forces a byte-wise comparison (like BINARY in the mysql
+    // driver) so paging follows JavaScript string order even when the column
+    // uses a linguistic collation, as tables created by earlier versions do.
     if (options.after != null) {
-      query += ` AND key > $${n++}`;
+      query += ` AND key COLLATE "C" > $${n++}`;
       params.push(options.after);
     }
-    query += ` ORDER BY key ASC LIMIT $${n}`;
+    query += ` ORDER BY key COLLATE "C" ASC LIMIT $${n}`;
     params.push(options.limit);
     this.db.query(query, params, (err, results) => {
       const value: string[] = [];
