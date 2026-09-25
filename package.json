@@ -71,7 +71,7 @@
     "@types/pg": "^8.23.1",
     "@types/rethinkdb": "^2.3.21",
     "@types/wtfnode": "^0.10.0",
-    "cassandra-driver": "^4.9.0",
+    "cassandra-driver": "^4.10.0",
     "cli-table3": "^0.6.5",
     "mongodb": "^7.6.0",
     "mssql": "^12.7.2",
