@@ -89,8 +89,8 @@ importers:
         specifier: ^7.8.5
         version: 7.8.5
       surrealdb:
-        specifier: ^2.0.8
-        version: 2.0.8(tslib@2.8.1)(typescript@6.0.3)
+        specifier: ^2.0.9
+        version: 2.0.9(tslib@2.8.1)(typescript@6.0.3)
       testcontainers:
         specifier: ^12.2.0
         version: 12.2.0
@@ -846,8 +846,8 @@ packages:
     resolution: {integrity: sha512-l/hNZ3ZCOJq8rzwx1y5ZV/8b2bYCWdhGqRVY33Pu50NAHyAW5qLsMn3ZBkZow77mAKwNCsbDsRGnyYEuU95mjw==}
     engines: {node: '>=18.0.0'}
 
-  '@surrealdb/sqon@0.1.0':
-    resolution: {integrity: sha512-pooKLZ0W6mN8XHzJQavGOdfZOZksycmIjhwFwvG0kdCAt4I5U6KKPHcXQwFkTDNKFKFKdufczLRnzHapPIslQw==}
+  '@surrealdb/sqon@0.1.4':
+    resolution: {integrity: sha512-RM/zS9dfcXW8j+2xyCnDDpO5aEcojJCzaZn84pJXTlBQzGdBgJiHYvoW0V3S91SyHoQmLpxz6WSfzskUi7d/hw==}
     peerDependencies:
       tslib: ^2.6.3
       typescript: ^5.0.0
@@ -1923,8 +1923,8 @@ packages:
     resolution: {integrity: sha512-yDPMNjp4WyfYBkHnjIRLfca1i6KMyGCtsVgoKe/z1+6vukgaENdgGBZt+ZmKPc4gavvEZ5OgHfHdrazhgNyG7w==}
     engines: {node: '>=12'}
 
-  surrealdb@2.0.8:
-    resolution: {integrity: sha512-nkoTAdnfJYc0EvB2Hut0MET/UiWTOT6+TJODoubHzoC952gJvjEbHMx5TLrecUYo1vIN3/qBgwMIcLKK0WC7zQ==}
+  surrealdb@2.0.9:
+    resolution: {integrity: sha512-y+G+z2BD4a33KqA5l8ZRAtfI2VbYV2DKqSwTiGmeoYx8ru4ZJiPNX9rWpDotyRLpZkf3zdLG1QtKvlZjpDss5Q==}
     peerDependencies:
       tslib: ^2.6.3
       typescript: ^5.0.0 || ^6.0.0
@@ -2780,7 +2780,7 @@ snapshots:
 
   '@surrealdb/cbor@2.0.0-alpha.4': {}
 
-  '@surrealdb/sqon@0.1.0(tslib@2.8.1)(typescript@6.0.3)':
+  '@surrealdb/sqon@0.1.4(tslib@2.8.1)(typescript@6.0.3)':
     dependencies:
       '@surrealdb/cbor': 2.0.0-alpha.4
       tslib: 2.8.1
@@ -3869,9 +3869,9 @@ snapshots:
     dependencies:
       ansi-regex: 6.2.2
 
-  surrealdb@2.0.8(tslib@2.8.1)(typescript@6.0.3):
+  surrealdb@2.0.9(tslib@2.8.1)(typescript@6.0.3):
     dependencies:
-      '@surrealdb/sqon': 0.1.0(tslib@2.8.1)(typescript@6.0.3)
+      '@surrealdb/sqon': 0.1.4(tslib@2.8.1)(typescript@6.0.3)
       tslib: 2.8.1
       typescript: 6.0.3
 
