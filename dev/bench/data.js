@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783452917362,
+  "lastUpdate": 1791298339406,
   "repoUrl": "https://github.com/ether/ueberDB",
   "entries": {
     "ueberDB benchmarks": [
@@ -727,6 +727,110 @@ window.BENCHMARK_DATA = {
           {
             "name": "postgres / remove",
             "value": 2763.494065033667,
+            "unit": "ops/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0cfc2b9372e30722fc169945c482b5c50e8fca92",
+          "message": "build(deps): bump pnpm/action-setup from 4 to 5 (#1078)\n\nBumps [pnpm/action-setup](https://github.com/pnpm/action-setup) from 4 to 5.\n- [Release notes](https://github.com/pnpm/action-setup/releases)\n- [Commits](https://github.com/pnpm/action-setup/compare/v4...v5)\n\n---\nupdated-dependencies:\n- dependency-name: pnpm/action-setup\n  dependency-version: '5'\n  dependency-type: direct:production\n  update-type: version-update:semver-major\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
+          "timestamp": "2026-10-06T16:51:26+02:00",
+          "tree_id": "73c370c4f8061146a036ed9f6214c4bc06b903c3",
+          "url": "https://github.com/ether/ueberDB/commit/0cfc2b9372e30722fc169945c482b5c50e8fca92"
+        },
+        "date": 1791298338819,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "cache / set",
+            "value": 115035.0245040563,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / getHit",
+            "value": 296602.7750305899,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / getMiss",
+            "value": 656061.4174175579,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / remove",
+            "value": 96352.6279385924,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / flush",
+            "value": 529.7894394256175,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "cache / flushBigCache",
+            "value": 7344.020815766008,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / set",
+            "value": 2403.1392820220512,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / get",
+            "value": 2800.414041515956,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / findKeys",
+            "value": 141.27736936380504,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / doBulk",
+            "value": 362.82414789113784,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "mongodb / remove",
+            "value": 2953.2640170385844,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / set",
+            "value": 2553.222074085522,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / get",
+            "value": 3749.9769751419954,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / findKeys",
+            "value": 802.6389234403132,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / doBulk",
+            "value": 294.272377486622,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "postgres / remove",
+            "value": 3011.2749632818873,
             "unit": "ops/sec"
           }
         ]
