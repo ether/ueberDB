@@ -74,7 +74,7 @@
     "cassandra-driver": "^4.10.0",
     "cli-table3": "^0.6.5",
     "mongodb": "^7.7.0",
-    "mssql": "^12.7.2",
+    "mssql": "^12.7.4",
     "mysql2": "^3.24.5",
     "nano": "^11.0.7",
     "oxfmt": "^0.72.0",
