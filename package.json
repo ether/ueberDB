@@ -88,7 +88,7 @@
     "surrealdb": "^2.1.1",
     "testcontainers": "^12.2.1",
     "typescript": "^6.0.3",
-    "vitest": "^5.0.4",
+    "vitest": "^5.0.5",
     "wtfnode": "^0.10.1"
   },
   "peerDependencies": {
