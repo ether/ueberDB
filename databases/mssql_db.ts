@@ -55,7 +55,7 @@ const bulkParamType = (kind: BulkParamKind) => {
 
 /**
  * Turns a bulk op list into parameterised T-SQL statements. Keys and values are only ever bound
- * as parameters (@k<n>, @v<n>, @r<n>) and never appear in the SQL text (GHSA-xmqq-59rx-x7pf).
+ * as parameters (@k<n>, @v<n>, @r<n>) and never appear in the SQL text.
  */
 export const buildBulkStatements = (
   bulk: BulkObject[],

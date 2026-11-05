@@ -1,5 +1,5 @@
-// Regression tests for GHSA-xmqq-59rx-x7pf: the MSSQL adapter's doBulk() used to interpolate keys
-// and values straight into the T-SQL text. These tests need no SQL Server; they capture the SQL
+// Tests for the MSSQL adapter's doBulk() parameter binding: keys and values must never be pasted
+// into the T-SQL text. These tests need no SQL Server; they capture the SQL
 // and the bound parameters the adapter hands to the mssql driver. (Lives under test/mock/ so the
 // `mock` CI matrix job runs it.) The live-server counterpart is test/mssql/test.mssql.spec.ts.
 

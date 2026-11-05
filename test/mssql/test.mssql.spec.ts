@@ -1,11 +1,12 @@
-// Live SQL Server regression test for GHSA-xmqq-59rx-x7pf (SQL injection in MSSQL doBulk()).
+// Live SQL Server test for the MSSQL adapter's doBulk() parameter binding.
 //
 // MSSQL is not in the CI container matrix, so this suite is skipped unless MSSQL_TEST_HOST is set,
 // for example:
 //   docker run -d -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD='Str0ng!Passw0rd' -p 1433:1433 \
 //     mcr.microsoft.com/mssql/server:2022-latest
 //   MSSQL_TEST_HOST=127.0.0.1 MSSQL_TEST_PASSWORD='Str0ng!Passw0rd' pnpm exec vitest run test/mssql
-// The database named by MSSQL_TEST_DATABASE (default: master) must already exist.
+// The suite creates its own throwaway database and drops it afterwards, so it never touches
+// existing tables.
 
 import mssql from "mssql";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
@@ -18,11 +19,11 @@ const settings = {
   port: Number(process.env.MSSQL_TEST_PORT ?? 1433),
   user: process.env.MSSQL_TEST_USER ?? "sa",
   password: process.env.MSSQL_TEST_PASSWORD ?? "",
-  database: process.env.MSSQL_TEST_DATABASE ?? "master",
   options: { trustServerCertificate: true, encrypt: false },
 };
 
-const CANARY = "ueberdb_ghsa_xmqq_canary";
+const TEST_DB = `ueberdb_test_${process.pid}_${Date.now()}`;
+const CANARY = "ueberdb_bulk_canary";
 
 describe.skipIf(!host)(__filename, () => {
   let admin: mssql.ConnectionPool;
@@ -33,11 +34,33 @@ describe.skipIf(!host)(__filename, () => {
       .id != null;
 
   beforeAll(async () => {
-    admin = await new mssql.ConnectionPool({ ...settings, server: host! } as any).connect();
+    const master = await new mssql.ConnectionPool({
+      ...settings,
+      server: host!,
+      database: "master",
+    } as any).connect();
+    await master.request().query(`CREATE DATABASE [${TEST_DB}]`);
+    await master.close();
+    admin = await new mssql.ConnectionPool({
+      ...settings,
+      server: host!,
+      database: TEST_DB,
+    } as any).connect();
   });
 
   afterAll(async () => {
     await admin?.close();
+    const master = await new mssql.ConnectionPool({
+      ...settings,
+      server: host!,
+      database: "master",
+    } as any).connect();
+    await master
+      .request()
+      .query(
+        `IF DB_ID(N'${TEST_DB}') IS NOT NULL BEGIN ALTER DATABASE [${TEST_DB}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [${TEST_DB}] END`,
+      );
+    await master.close();
   });
 
   afterEach(async () => {
@@ -52,7 +75,7 @@ describe.skipIf(!host)(__filename, () => {
   // The adapter itself defaults to writeInterval 0, which never batches. A host that passes
   // wrapper settings with a write interval (as the reporter describes) reaches doBulk().
   const openBuffered = async () => {
-    db = new Database("mssql", { ...settings }, { writeInterval: 50, cache: 0 });
+    db = new Database("mssql", { ...settings, database: TEST_DB }, { writeInterval: 50, cache: 0 });
     await db.init();
     return db;
   };
