@@ -131,8 +131,8 @@ Semantics:
 - `limit` must be a positive integer; non-positive or non-integer values
   throw.
 - Native implementations: **mysql** (ranged `BINARY \`key\` > ?`),
-**postgres** (`key > $n`). All other backends fall back to
-`findKeys() + JS-side slicing` via the cache layer — correct, but
+  **postgres** (`key > $n`). All other backends fall back to
+  `findKeys() + JS-side slicing` via the cache layer — correct, but
   defeats the OOM-mitigation purpose. PRs for native paged paths on
   other backends welcome.
 

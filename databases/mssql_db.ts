@@ -26,6 +26,87 @@ import mssql from "mssql";
 import type { ConnectionPool } from "mssql";
 import type { BulkObject } from "./cassandra_db";
 
+// Number of ops per generated statement. Each set op binds two parameters, so 100 ops stays far
+// below SQL Server's limit of 2100 parameters per request.
+export const MSSQL_BULK_CHUNK_SIZE = 100;
+
+// Must match the [key] column width in init().
+const MAX_KEY_LENGTH = 100;
+
+export type BulkParamKind = "key" | "value" | "removeKey";
+
+export type BulkStatement = {
+  sql: string;
+  params: Array<{ name: string; kind: BulkParamKind; value: string }>;
+};
+
+const bulkParamType = (kind: BulkParamKind) => {
+  switch (kind) {
+    case "key":
+      return mssql.NVarChar(MAX_KEY_LENGTH);
+    case "value":
+      return mssql.NText;
+    case "removeKey":
+      // NVARCHAR(MAX) so that an over-long key is compared in full instead of being silently
+      // truncated to 100 characters (which could match, and delete, a different row).
+      return mssql.NVarChar(mssql.MAX);
+  }
+};
+
+/**
+ * Turns a bulk op list into parameterised T-SQL statements. Keys and values are only ever bound
+ * as parameters (@k<n>, @v<n>, @r<n>) and never appear in the SQL text.
+ */
+export const buildBulkStatements = (
+  bulk: BulkObject[],
+  chunkSize: number = MSSQL_BULK_CHUNK_SIZE,
+): BulkStatement[] => {
+  const sets: BulkObject[] = [];
+  const removes: string[] = [];
+  for (const op of bulk) {
+    if (typeof op.key !== "string") throw new TypeError("bulk op key must be a string");
+    if (op.type === "set") {
+      if (op.key.length > MAX_KEY_LENGTH) {
+        throw new Error(`Your Key can only be ${MAX_KEY_LENGTH} chars`);
+      }
+      sets.push(op);
+    } else if (op.type === "remove") {
+      removes.push(op.key);
+    } else {
+      throw new Error(`unknown op type: ${String(op.type)}`);
+    }
+  }
+
+  const statements: BulkStatement[] = [];
+  for (let start = 0; start < sets.length; start += chunkSize) {
+    const params: BulkStatement["params"] = [];
+    const lines = ["SET XACT_ABORT ON;", "BEGIN TRANSACTION;"];
+    sets.slice(start, start + chunkSize).forEach((op, n) => {
+      params.push({ name: `k${n}`, kind: "key", value: op.key });
+      params.push({ name: `v${n}`, kind: "value", value: op.value as string });
+      lines.push(
+        `MERGE [store] t USING (SELECT @k${n} [key], @v${n} [value]) s`,
+        "ON t.[key] = s.[key]",
+        "WHEN MATCHED AND s.[value] IS NOT NULL THEN UPDATE SET t.[value] = s.[value]",
+        "WHEN NOT MATCHED THEN INSERT ([key], [value]) VALUES (s.[key], s.[value]);",
+      );
+    });
+    lines.push("COMMIT TRANSACTION;");
+    statements.push({ sql: lines.join("\n"), params });
+  }
+  for (let start = 0; start < removes.length; start += chunkSize) {
+    const chunk = removes.slice(start, start + chunkSize);
+    const params = chunk.map((key, n) => ({
+      name: `r${n}`,
+      kind: "removeKey" as const,
+      value: key,
+    }));
+    const placeholders = params.map((p) => `@${p.name}`).join(",");
+    statements.push({ sql: `DELETE FROM [store] WHERE [key] IN (${placeholders});`, params });
+  }
+  return statements;
+};
+
 type RowResult = {
   key: string;
 };
@@ -155,69 +236,26 @@ export default class MSSQL extends AbstractDatabase {
   }
 
   doBulk(bulk: BulkObject[], callback: (err: any, results?: any) => {}) {
-    const maxInserts = 100;
-    const request = new mssql.Request(this.db);
-    let firstReplace = true;
-    let firstRemove = true;
-    const replacements: string[] = [];
-    let removeSQL = "DELETE FROM [store] WHERE [key] IN (";
-
-    for (const i in bulk) {
-      if (bulk[i].type === "set") {
-        if (firstReplace) {
-          replacements.push("BEGIN TRANSACTION;");
-          firstReplace = false;
-        } else if (Number(i) % maxInserts === 0) {
-          replacements.push("\nCOMMIT TRANSACTION;\nBEGIN TRANSACTION;\n");
-        }
-
-        replacements.push(
-          `MERGE [store] t USING (SELECT '${bulk[i].key}' [key], '${bulk[i].value}' [value]) s`,
-          "ON t.[key] = s.[key]",
-          "WHEN MATCHED AND s.[value] IS NOT NULL THEN UPDATE SET t.[value] = s.[value]",
-          "WHEN NOT MATCHED THEN INSERT ([key], [value]) VALUES (s.[key], s.[value]);",
-        );
-      } else if (bulk[i].type === "remove") {
-        if (!firstRemove) {
-          removeSQL += ",";
-        }
-
-        firstRemove = false;
-        removeSQL += `'${bulk[i].key}'`;
-      }
+    let statements: BulkStatement[];
+    try {
+      statements = buildBulkStatements(bulk);
+    } catch (err) {
+      // CacheAndBufferLayer falls back to per-op set()/remove() on a doBulk error, which
+      // reports the problem (e.g. an over-long key) for the affected op only.
+      callback(err);
+      return;
     }
 
-    removeSQL += ");";
-    replacements.push("COMMIT TRANSACTION;");
-
-    async.parallel(
-      [
-        (callback) => {
-          if (!firstReplace) {
-            request.batch(replacements.join("\n"), (err, results) => {
-              if (err) {
-                callback(err);
-              }
-              callback(err, results);
-            });
-          } else {
-            callback();
-          }
-        },
-        (callback) => {
-          if (!firstRemove) {
-            request.query(removeSQL, callback);
-          } else {
-            callback();
-          }
-        },
-      ],
-      (err, results) => {
-        if (err) {
-          callback(err);
+    async.mapSeries(
+      statements,
+      (statement: BulkStatement, cb: (err?: Error | null, result?: unknown) => void) => {
+        const request = new mssql.Request(this.db);
+        for (const param of statement.params) {
+          request.input(param.name, bulkParamType(param.kind), param.value);
         }
-        callback(err, results);
+        request.query(statement.sql, (err, result) => cb(err, result));
       },
+      (err, results) => callback(err, results),
     );
   }
 
