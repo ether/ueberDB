@@ -1,6 +1,6 @@
 {
   "name": "ueberdb2",
-  "version": "6.1.19",
+  "version": "6.1.20",
   "description": "Transform every database into a object key value store",
   "keywords": [
     "database",
